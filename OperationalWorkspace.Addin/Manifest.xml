@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:type="TaskPaneApp">
+  <Id>23F4B3A6-5E0D-4C67-988D-F6943082C49B</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>YourCompany</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="OperationalWorkspace ERP Add-In"/>
+  <Description DefaultValue="ERP-first Sage X3 integration for Outlook"/>
+  <IconUrl DefaultValue="https://yourcdn.com/icons/erpaddin-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://yourcdn.com/icons/erpaddin-64.png"/>
+  <SupportUrl DefaultValue="https://yourcompany.com/support"/>
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+  <Requirements>
+    <Sets DefaultMinVersion="1.8">
+      <Set Name="Mailbox"/>
+    </Sets>
+  </Requirements>
+
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://localhost:5002/dashboard.html"/>
+        <RequestedHeight>600</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+    <Form xsi:type="MessageCompose">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://localhost:5002/compose.html"/>
+        <RequestedHeight>600</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+
+  <Permissions>ReadWriteMailbox</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/>
+  </Rule>
+
+</OfficeApp>
