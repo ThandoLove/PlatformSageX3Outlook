@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using System;
 
 namespace OperationalWorkspaceAPI.Controllers;
 
-
 [ApiController]
 [Produces("application/json")]
-[Route("api/v1/[controller]")] // Added Versioning: Critical for production breaking changes
+[Route("api/v1/[controller]")]
 public abstract class ApiController : ControllerBase
 {
-    // Accessing the TraceIdentifier assigned by the Middleware
     protected string TraceId => HttpContext.TraceIdentifier;
 
     protected IActionResult Success<T>(T data)
@@ -17,25 +15,38 @@ public abstract class ApiController : ControllerBase
         {
             success = true,
             data,
-            traceId = TraceId, // Link response to server logs
+            traceId = TraceId,
             timestamp = DateTime.UtcNow
         });
 
-    protected IActionResult Failure(string message, int statusCode = 400)
+    // FIX: Added '?' to string message to allow nulls, then handle them internally
+    protected IActionResult Failure(string? message = null, int statusCode = 400)
         => StatusCode(statusCode, new
         {
             success = false,
-            error = message,
+            // Fallback to a generic message if the service returns a null error
+            error = message ?? "An unexpected error occurred.",
             traceId = TraceId,
             timestamp = DateTime.UtcNow
         });
 
-    protected IActionResult NotFoundResponse(string message)
+    protected IActionResult NotFoundResponse(string? message = null)
         => NotFound(new
         {
             success = false,
-            error = message,
+            error = message ?? "The requested resource was not found.",
             traceId = TraceId,
             timestamp = DateTime.UtcNow
         });
+
+    // NEW: Helper to clean up your Controller code
+    // This allows you to just write: return HandleResult(result);
+    protected IActionResult HandleResult<T>(dynamic result)
+    {
+        if (result == null) return Failure("Service returned no result.");
+
+        return result.IsSuccess
+            ? Success(result.Value)
+            : Failure(result.Error);
+    }
 }

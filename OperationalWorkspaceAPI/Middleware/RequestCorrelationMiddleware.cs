@@ -1,4 +1,9 @@
-﻿namespace OperationalWorkspaceAPI.Middleware;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using System;
+using System.Threading.Tasks;
+
+namespace OperationalWorkspaceAPI.Middleware;
 
 public sealed class RequestCorrelationMiddleware
 {
@@ -9,17 +14,20 @@ public sealed class RequestCorrelationMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Check if upstream (Gateway/Proxy) already sent a Trace ID
-        if (!context.Request.Headers.TryGetValue(CorrelationHeader, out var correlationId))
+        // 1. Safely extract or generate the ID
+        if (!context.Request.Headers.TryGetValue(CorrelationHeader, out StringValues correlationId) ||
+            StringValues.IsNullOrEmpty(correlationId))
         {
             correlationId = Guid.NewGuid().ToString();
         }
 
-        // Apply to current Context for the ApiController and ExceptionFilter to use
-        context.TraceIdentifier = correlationId;
+        // 2. Assign to TraceIdentifier (ensuring it's a string, not StringValues)
+        // This fixes the null reference assignment warning
+        context.TraceIdentifier = correlationId.ToString() ?? Guid.NewGuid().ToString();
 
-        // Apply to Response so the client/frontend can report it to support
-        context.Response.Headers[CorrelationHeader] = correlationId;
+        // 3. Use .Append() instead of [] to safely add the header to the response
+        // This is the production standard for .NET 8/9/10
+        context.Response.Headers.Append(CorrelationHeader, correlationId);
 
         await _next(context);
     }
