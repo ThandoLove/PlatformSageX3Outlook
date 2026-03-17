@@ -20,7 +20,7 @@ public class IntegrationDbContext : DbContext
     public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
     public DbSet<InventoryItem> Inventories => Set<InventoryItem>();
     public DbSet<Task> Tasks => Set<Task>();
-    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<Email> Emails => Set<Email>();
     public DbSet<Knowledge> KnowledgeBase => Set<Knowledge>();
@@ -34,7 +34,7 @@ public class IntegrationDbContext : DbContext
         modelBuilder.Entity<SalesOrder>().HasKey(o => o.Id);
         modelBuilder.Entity<InventoryItem>().HasKey(i => i.Id);
         modelBuilder.Entity<Task>().HasKey(t => t.Id);
-        modelBuilder.Entity<AuditLog>().HasKey(a => a.Id);
+        modelBuilder.Entity<AuditLogEntry>().HasKey(a => a.Id);
         modelBuilder.Entity<Attachment>().HasKey(a => a.Id);
     }
 }

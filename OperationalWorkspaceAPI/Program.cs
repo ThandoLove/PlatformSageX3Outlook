@@ -1,15 +1,24 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using OperationalWorkspaceApplication.Interfaces.IServices;
-using OperationalWorkspaceApplication.Services;
+
 using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
-
+using OperationalWorkspaceApplication.Interfaces.IRepository;
+using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
+using OperationalWorkspaceInfrastructure.Services;
+using OperationalWorkspaceInfrastructure.Persistence.Repositories;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+// --- SAGE X3 CONFIGURATION ---
+var sageConfig = builder.Configuration.GetSection("SageX3");
+builder.Services.AddHttpClient<ISageRestService, SageRestService>(client => {
+    // This uses the "RestBaseUrl" you added to appsettings.json
+    client.BaseAddress = new Uri(sageConfig["RestBaseUrl"] ?? "https://localhost");
+});
+// -----------------------------
 
 // 1. SERVICES CONFIGURATION
 builder.Services.AddApiLayer();
@@ -27,6 +36,10 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
+
+
+    // Also register the Audit Repo for testing
+    builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 }
 else
 {
@@ -34,6 +47,8 @@ else
     // This call lives in InfrastructureServiceRegistration.cs
     builder.Services.AddInfrastructureServices(builder.Configuration);
 }
+
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
 builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
 
@@ -63,5 +78,3 @@ app.UseMiddleware<RbacMiddleware>();
 app.MapControllers();
 
 app.Run();
-// DO NOT ADD ANY CODE BELOW THIS LINE. 
-// ANY EXTRA CLASSES MUST LIVE IN THEIR OWN FILES.
