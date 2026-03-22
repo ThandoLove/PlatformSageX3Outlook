@@ -4,5 +4,6 @@ using System.Text;
 
 namespace OperationalWorkspaceApplication.DTOs
 {
-    public record KnowledgeDto(Guid Id, string Title, string Content, string Category);
+    public record KnowledgeDto(Guid Id, string Title, string Content, string Category, string Summary, string Url);
+
 }

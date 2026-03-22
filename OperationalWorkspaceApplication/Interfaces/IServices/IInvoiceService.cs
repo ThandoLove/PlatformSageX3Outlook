@@ -4,6 +4,11 @@ namespace OperationalWorkspaceApplication.Interfaces.IServices
 {
     public interface IInvoiceService
     {
+        Task<int> CountHighRiskAccountsAsync();
+        Task<int> CountInvoicesDueAsync(string userId);
+        Task<int> CountInvoicesGeneratedAsync();
+        Task<int> CountOverdueInvoicesAsync();
+
         // Shield: Use concrete DTOs so the Controller can access 'Id' and other properties
         Task<InvoiceDto> CreateFromOrderAsync(Guid orderId);
 
@@ -15,5 +20,11 @@ namespace OperationalWorkspaceApplication.Interfaces.IServices
         Task<IEnumerable<InvoiceDto>> GetAllAsync(int page, int pageSize);
 
         Task<InvoiceDto?> GetByIdAsync(Guid id);
+        Task<decimal> GetMonthlySalesAsync(string userId);
+        Task<decimal> GetOutstandingReceivablesAsync(string userId);
+        Task<decimal> GetOutstandingReceivablesAsync();
+
+        Task<decimal> GetTotalOutstandingReceivablesAsync();
+        Task<decimal> GetTotalMonthlySalesAsync();
     }
 }

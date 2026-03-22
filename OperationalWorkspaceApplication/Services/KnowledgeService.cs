@@ -26,14 +26,14 @@ public sealed class KnowledgeService : IKnowledgeService
             article.Id,
             article.Title,
             article.Content,
-            article.Category);
+            article.Category,
+            article.Summary, // Parameter 5
+            article.Url);     // Parameter 6
     }
 
     public async Task<IEnumerable<KnowledgeDto>> SearchAsync(string query)
     {
         if (string.IsNullOrWhiteSpace(query)) return Enumerable.Empty<KnowledgeDto>();
-
-        _logger.LogInformation("Knowledge search performed for: {Query}", query);
 
         var results = await _repository.SearchAsync(query);
 
@@ -41,6 +41,22 @@ public sealed class KnowledgeService : IKnowledgeService
             a.Id,
             a.Title,
             a.Content,
-            a.Category));
+            a.Category,
+            a.Summary,
+            a.Url));
+    }
+
+    public async Task<List<KnowledgeDto>> GetRecentArticlesAsync()
+    {
+        var results = await _repository.GetRecentAsync();
+
+        return results.Select(a => new KnowledgeDto(
+            a.Id,
+            a.Title,
+            a.Content,
+            a.Category,
+            a.Summary,
+            a.Url)).ToList();
     }
 }
+

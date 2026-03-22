@@ -1,4 +1,5 @@
 ﻿
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using static OperationalWorkspaceApplication.Responses.TaskResponse;
@@ -18,4 +19,8 @@ public interface ITaskService
     Task<TaskListResponse> GetAsync(
         GetTasksRequest request,
         CancellationToken cancellationToken);
+    Task<List<TaskDto>> GetTasksAssignedToAsync(string userId);
+    Task<List<ApprovalDto>> GetPendingApprovalsAsync(string userId);
+    Task<List<TaskDto>> GetAllTasksAsync();
+    Task<List<ApprovalDto>> GetAllPendingApprovalsAsync();
 }

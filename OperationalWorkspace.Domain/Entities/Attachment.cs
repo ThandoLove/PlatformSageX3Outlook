@@ -1,11 +1,9 @@
-﻿
-namespace OperationalWorkspace.Domain.Entities;
+﻿namespace OperationalWorkspace.Domain.Entities;
 
 public class Attachment
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
 
-    // Use = null!; for properties that EF Core will populate
     public string OwnerType { get; private set; } = null!;
     public string OwnerId { get; private set; } = null!;
     public string FileName { get; set; } = null!;
@@ -17,6 +15,9 @@ public class Attachment
     public DateTime CreatedAt { get; private set; }
     public Guid EntityId { get; set; }
 
+    // FIX: Initialize with null! to satisfy the compiler if not in constructor
+    public string Source { get; set; } = null!;
+
     public Attachment() { }
 
     public Attachment(
@@ -26,7 +27,8 @@ public class Attachment
         string contentType,
         long fileSize,
         string storagePath,
-        DateTime createdAt)
+        DateTime createdAt,
+        string source) // ADDED: source parameter
     {
         OwnerType = ownerType;
         OwnerId = ownerId;
@@ -35,5 +37,6 @@ public class Attachment
         FileSize = fileSize;
         StoragePath = storagePath;
         CreatedAt = createdAt;
+        Source = source; // FIXED: Source is now assigned
     }
 }

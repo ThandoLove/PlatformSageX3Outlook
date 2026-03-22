@@ -18,4 +18,8 @@ public interface ITaskRepository
     System.Threading.Tasks.Task UpdateAsync(OperationalWorkspace.Domain.Entities.Task task, CancellationToken ct);
 
     System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.Task>> GetByUserAsync(string userId, CancellationToken ct);
+
+    // NEW: Retrieval methods for extended service functionality
+    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.Task>> GetAllAsync(CancellationToken ct);
+    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.Task>> GetPendingApprovalsAsync(string? userId, CancellationToken ct);
 }

@@ -9,5 +9,7 @@ namespace OperationalWorkspaceApplication.Interfaces.IRepository
     {
         Task<Knowledge?> GetByIdAsync(Guid id);
         Task<IEnumerable<Knowledge>> SearchAsync(string query);
+
+        Task<IEnumerable<Knowledge>> GetRecentAsync();
     }
 }

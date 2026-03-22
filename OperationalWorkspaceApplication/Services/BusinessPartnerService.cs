@@ -29,7 +29,30 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         _clock = clock;
     }
 
-    // FIX: Return Task<BusinessPartnersResponse?> to match Interface
+    public async Task<int> CountActiveCustomersAsync()
+        => await _partnerRepo.GetActiveCountAsync();
+
+    public async Task<int> CountNewLeadsTodayAsync()
+        => await _partnerRepo.GetLeadsCreatedAfterAsync(_clock.UtcNow.Date);
+
+    public async Task<int> CountOpenOpportunitiesAsync(string userId)
+        => await _partnerRepo.GetOpenOpportunitiesCountAsync(userId);
+
+    public async Task<int> CountOpenOpportunitiesAsync()
+        => await _partnerRepo.GetOpenOpportunitiesCountAsync();
+
+    public async Task<string> GetRecentInteractionAsync(string userId)
+    {
+        var interaction = await _partnerRepo.GetLatestInteractionNoteAsync(userId);
+        return interaction ?? "No recent interactions";
+    }
+
+    public async Task<string?> GetTopCustomerAsync(string userId)
+    {
+        var partner = await _partnerRepo.GetTopCustomerBySalesAsync(userId);
+        return partner?.Company;
+    }
+
     public async Task<BusinessPartnersResponse?> GetSnapshotAsync(
         GetBusinessPartnerSnapshotRequest request,
         CancellationToken ct)
@@ -41,10 +64,7 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         var orders = await _salesRepo.GetOpenOrdersAsync(request.BpCode, ct);
 
         var now = _clock.UtcNow;
-
-        var overdue = invoices
-            .Where(i => i.DueDate < now && i.OutstandingAmount > 0)
-            .ToList();
+        var overdue = invoices.Where(i => i.DueDate < now && i.OutstandingAmount > 0).ToList();
 
         var dto = new BusinessPartnerSnapshotDto(
             partner.BpCode,
@@ -56,7 +76,6 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             overdue.Sum(i => i.OutstandingAmount),
             partner.LastContactDate);
 
-        // FIX: Return the specific Response record
         return new BusinessPartnersResponse(dto);
     }
 
@@ -67,9 +86,7 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         var partner = await _partnerRepo.GetByCodeAsync(request.BpCode, ct);
         if (partner is null) return new UpdateCreditLimitResponse(false);
 
-        // FIX: This now exists in the Domain Entity
         partner.UpdateCreditLimit(request.NewLimit);
-
         await _partnerRepo.UpdateAsync(partner, ct);
         await _uow.SaveChangesAsync(ct);
 

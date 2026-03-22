@@ -17,6 +17,14 @@ public interface IInvoiceRepository
     Task AddAsync(Invoice invoice);
     Task<Invoice> CreateFromOrderAsync(Guid orderId);
     Task<IReadOnlyList<Invoice>> GetByBusinessPartnerAsync(string bpCode, CancellationToken ct);
+    Task<decimal> GetTotalOutstandingAmountAsync(string userId);
+    Task<decimal> GetMonthlySalesAsync(string userId);
+    Task<decimal> GetTotalOutstandingAmountAsync();
+    Task<int> GetOverdueCountAsync();
+    Task<int> GetGeneratedCountAsync();
+    Task<int> GetDueSoonCountAsync(string userId);
+    Task<int> GetHighRiskAccountsCountAsync();
+    Task<decimal> GetTotalMonthlySalesAsync();
 }
 
 

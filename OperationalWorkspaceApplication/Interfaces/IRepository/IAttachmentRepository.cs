@@ -6,7 +6,6 @@ namespace OperationalWorkspaceApplication.Interfaces.IRepository
 
     public interface IAttachmentRepository
     {
-        // Use the full namespace here to force the correct type
         Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.Attachment>> GetByOwnerAsync(
             string ownerType,
             string ownerId,
@@ -17,6 +16,11 @@ namespace OperationalWorkspaceApplication.Interfaces.IRepository
         System.Threading.Tasks.Task AddAsync(OperationalWorkspace.Domain.Entities.Attachment attachment, CancellationToken ct);
 
         void Remove(OperationalWorkspace.Domain.Entities.Attachment attachment);
+
+        // ADD THIS: Fetch recent items (e.g., last 5 or 10) for a specific user
+        Task<List<OperationalWorkspace.Domain.Entities.Attachment>> GetRecentByUserIdAsync(
+            string userId,
+            CancellationToken ct = default);
     }
 
 }

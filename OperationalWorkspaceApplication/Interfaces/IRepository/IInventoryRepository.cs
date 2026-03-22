@@ -19,4 +19,12 @@ public interface IInventoryRepository
     Task AddAsync(InventoryItem item, CancellationToken ct);
     Task UpdateAsync(InventoryItem item, CancellationToken ct);
     Task DeleteAsync(InventoryItem item, CancellationToken ct);
+    Task<int> GetStockAlertCountAsync(CancellationToken ct = default);
+    Task<decimal> GetTotalOutstandingAmountAsync(string? userId = null);
+    Task<decimal> GetMonthlySalesAsync(string userId);
+    Task<int> GetOverdueCountAsync();
+    Task<int> GetGeneratedCountAsync();
+    Task<int> GetDueSoonCountAsync(string userId);
+    Task<int> GetHighRiskAccountsCountAsync();
+
 }

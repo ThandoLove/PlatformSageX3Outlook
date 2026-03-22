@@ -1,6 +1,7 @@
 ﻿using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using OperationalWorkspaceApplication.Abstractions;
+using OperationalWorkspaceApplication.DTOs;
 
 
 namespace OperationalWorkspaceApplication.Interfaces.IServices
@@ -18,5 +19,6 @@ namespace OperationalWorkspaceApplication.Interfaces.IServices
         Task<Result<AttachmentListResponse>> GetAsync(
             GetAttachmentsRequest request,
             CancellationToken cancellationToken);
+        Task<List<AttachmentDto>> GetRecentAttachmentsAsync(string userId);
     }
 }

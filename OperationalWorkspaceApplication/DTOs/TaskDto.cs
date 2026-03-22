@@ -22,8 +22,9 @@ public class TaskDto
     public DateTime CreatedDate { get; set; }
     public DateTime UpdatedDate { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
-   
-    
-        
+
+  
+    public string RelatedEntity { get; set; } = string.Empty; // e.g., "Invoice #12345", "Leave Request for John Doe"
+
 
 }

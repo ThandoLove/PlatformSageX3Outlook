@@ -37,6 +37,14 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
+    //real implementations for these services, even in development, since they don't depend on a database
+
+
+    builder.Services.AddScoped<IUserContextService, UserContextService>();
+    builder.Services.AddScoped<IIntegrationService, IntegrationService>();
+    
+   
+
 
     // Also register the Audit Repo for testing
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();

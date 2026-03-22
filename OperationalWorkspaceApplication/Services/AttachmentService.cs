@@ -1,9 +1,10 @@
-﻿using System.Linq; // <--- ADD THIS LINE
+﻿using System.Linq;
 using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.Mappers;
 
@@ -63,17 +64,17 @@ public sealed class AttachmentService : IAttachmentService
     }
 
     public async Task<Result<AttachmentListResponse>> GetAsync(
-    GetAttachmentsRequest request,
-    CancellationToken cancellationToken)
+        GetAttachmentsRequest request,
+        CancellationToken cancellationToken)
     {
         var items = await _repository.GetByOwnerAsync(
             request.OwnerType,
             request.OwnerId,
             cancellationToken);
 
-        // FIX: Using Cast<T> ensures LINQ uses your Domain Entity, not the Mail object
+        // Since GetByOwnerAsync now uses the full namespace in the interface, 
+        // we can map directly without Cast<T> hacks.
         var dtos = items
-            .Cast<OperationalWorkspace.Domain.Entities.Attachment>()
             .Select(x => ApplicationMapper.ToAttachmentDto(x))
             .ToList();
 
@@ -81,4 +82,14 @@ public sealed class AttachmentService : IAttachmentService
             new AttachmentListResponse(dtos));
     }
 
+    public async Task<List<AttachmentDto>> GetRecentAttachmentsAsync(string userId)
+    {
+        // 1. Fetch from repository (using default CancellationToken since not in interface signature)
+        var attachments = await _repository.GetRecentByUserIdAsync(userId);
+
+        // 2. Map the Domain Entities to DTOs
+        return attachments
+            .Select(x => ApplicationMapper.ToAttachmentDto(x))
+            .ToList();
+    }
 }

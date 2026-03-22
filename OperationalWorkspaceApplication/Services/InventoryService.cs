@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using OperationalWorkspaceApplication.Abstractions;
-using OperationalWorkspaceApplication.Audit;
+using OperationalWorkspace.Domain.Entities; 
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
@@ -120,5 +120,12 @@ public sealed class InventoryService : IInventoryService
             ReasonCode = request.ReasonCode,
             AdjustedAtUtc = _clock.UtcNow
         };
+
+    }
+
+    public async Task<int> CountStockAlertsAsync()
+    {
+        // Pass a default token or wire it through if needed
+        return await _inventoryRepository.GetStockAlertCountAsync();
     }
 }

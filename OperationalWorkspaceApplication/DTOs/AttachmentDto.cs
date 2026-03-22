@@ -10,8 +10,9 @@ namespace OperationalWorkspaceApplication.DTOs
     string FileName,
     string ContentType,
     long FileSize,
+    string FileUrl,
+    string RelatedEntity,
     DateTime UploadedAtUtc);
   
-
-
+  
 }

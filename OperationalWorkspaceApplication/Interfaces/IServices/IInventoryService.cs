@@ -28,4 +28,5 @@ public interface IInventoryService
     Task<StockAdjustmentDto> GetAdjustmentDetailsAsync(
         StockAdjustmentRequest request,
         CancellationToken ct);
+    Task<int> CountStockAlertsAsync();
 }

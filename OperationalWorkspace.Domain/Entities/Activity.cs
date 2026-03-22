@@ -10,6 +10,6 @@ public sealed class Activity
     public Guid? RelatedEntityId { get; set; } // Link to SalesOrder, Partner, etc.
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string CreatedBy { get; set; } = string.Empty; // Outlook User Email
-   
-
+    public DateTime Timestamp { get; set; }
+    public string Action { get; set; } = string.Empty; // e.g., "Create", "Update", "Delete"
 }

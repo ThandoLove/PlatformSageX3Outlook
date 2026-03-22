@@ -24,35 +24,59 @@ public sealed class ActivityService : IActivityService
             Title = dto.Title,
             Description = dto.Description,
             ActivityType = dto.ActivityType,
-            RelatedEntityId = dto.RelatedEntityId,
-            CreatedBy = userEmail
+            // Convert Guid? to Guid by providing a fallback (Guid.Empty)
+            RelatedEntityId = dto.RelatedEntityId ?? Guid.Empty,
+            CreatedBy = userEmail,
+            CreatedAt = DateTime.UtcNow,
+            Timestamp = DateTime.UtcNow,
+            Action = "Create"
         };
 
-        await _repo.AddAsync(entity, default); // Shield: Using default CancellationToken
-        return new ActivityDto(entity.Id, entity.Title, entity.Description, entity.ActivityType, entity.RelatedEntityId, entity.CreatedAt, entity.CreatedBy);
+        await _repo.AddAsync(entity, default);
+
+        return new ActivityDto(
+            entity.Id,
+            entity.Title,
+            entity.Description,
+            entity.ActivityType,
+            entity.RelatedEntityId ?? Guid.Empty, // Now passed as a non-nullable Guid
+            entity.CreatedAt,
+            entity.CreatedBy,
+            entity.Timestamp,
+            entity.Action);
     }
 
     public async Task<ActivityDto?> GetByIdAsync(Guid id)
     {
         var a = await _repo.GetByIdAsync(id, default);
-        return a == null ? null : new ActivityDto(a.Id, a.Title, a.Description, a.ActivityType, a.RelatedEntityId, a.CreatedAt, a.CreatedBy);
+        if (a == null) return null;
+
+        return new ActivityDto(
+            a.Id,
+            a.Title,
+            a.Description,
+            a.ActivityType,
+            a.RelatedEntityId ?? Guid.Empty, // Handle potential null from DB
+            a.CreatedAt,
+            a.CreatedBy,
+            a.Timestamp,
+            a.Action);
     }
 
-    // FIX: Implementation of the missing Interface member
-    // Production Shield: Maps Domain Entities to DTOs for the Blazor UI
-    // FIX: This must match the Interface EXACTLY
     public async Task<IEnumerable<ActivityDto>> GetByRelatedEntityAsync(Guid partnerId)
     {
         var activities = await _repo.GetByRelatedEntityAsync(partnerId, default);
 
-        // Return as a mapped list to satisfy the 'object' or 'IEnumerable' requirement
         return activities.Select(a => new ActivityDto(
             a.Id,
             a.Title,
             a.Description,
             a.ActivityType,
-            a.RelatedEntityId,
+            a.RelatedEntityId ?? Guid.Empty, // Handle potential null from DB
             a.CreatedAt,
-            a.CreatedBy)).ToList();
+            a.CreatedBy,
+            a.Timestamp,
+            a.Action)).ToList();
     }
+
 }
