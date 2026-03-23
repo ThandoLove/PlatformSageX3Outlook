@@ -30,6 +30,7 @@ public sealed class AttachmentService : IAttachmentService
         UploadAttachmentRequest request,
         CancellationToken cancellationToken)
     {
+        // FIX: Added the 8th parameter 'source' to match the updated Attachment constructor
         var attachment = new Attachment(
             request.OwnerType,
             request.OwnerId,
@@ -37,7 +38,12 @@ public sealed class AttachmentService : IAttachmentService
             request.ContentType,
             request.FileSize,
             request.StoragePath,
-            _clock.UtcNow);
+            _clock.UtcNow,
+            request.Source ?? "SageX3Outlook" // The missing 'source' argument
+        );
+
+        // Map the EntityId manually as it's a property, not in the constructor
+        attachment.EntityId = request.EntityId;
 
         await _repository.AddAsync(attachment, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -72,8 +78,6 @@ public sealed class AttachmentService : IAttachmentService
             request.OwnerId,
             cancellationToken);
 
-        // Since GetByOwnerAsync now uses the full namespace in the interface, 
-        // we can map directly without Cast<T> hacks.
         var dtos = items
             .Select(x => ApplicationMapper.ToAttachmentDto(x))
             .ToList();
@@ -84,10 +88,8 @@ public sealed class AttachmentService : IAttachmentService
 
     public async Task<List<AttachmentDto>> GetRecentAttachmentsAsync(string userId)
     {
-        // 1. Fetch from repository (using default CancellationToken since not in interface signature)
         var attachments = await _repository.GetRecentByUserIdAsync(userId);
 
-        // 2. Map the Domain Entities to DTOs
         return attachments
             .Select(x => ApplicationMapper.ToAttachmentDto(x))
             .ToList();

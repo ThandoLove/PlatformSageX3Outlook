@@ -25,6 +25,9 @@ public interface IInvoiceRepository
     Task<int> GetDueSoonCountAsync(string userId);
     Task<int> GetHighRiskAccountsCountAsync();
     Task<decimal> GetTotalMonthlySalesAsync();
+
+
+
 }
 
 

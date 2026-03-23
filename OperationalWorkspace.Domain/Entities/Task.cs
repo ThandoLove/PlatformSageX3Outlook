@@ -8,5 +8,6 @@ public class Task
     public string CreatedBy { get; set; } = string.Empty; // Added
     public OperationalWorkspace.Domain.Enums.TaskStatus Status { get; set; } // Added
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Added
-    public Guid  AssignedToUserId { get; set; }
+    public Guid AssignedToUserId { get; set; }
+
 }

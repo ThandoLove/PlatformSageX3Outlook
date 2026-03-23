@@ -11,7 +11,11 @@ namespace OperationalWorkspaceApplication.Requests
         string FileName,
         string ContentType,
         long FileSize,
-        string StoragePath);
+        string StoragePath)
+    {
+        public string? Source { get; internal set; }
+        public Guid EntityId { get; internal set; }
+    }
 
     public sealed record DeleteAttachmentRequest(Guid AttachmentId);
 

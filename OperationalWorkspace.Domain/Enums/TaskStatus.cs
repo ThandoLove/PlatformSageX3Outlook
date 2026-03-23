@@ -7,5 +7,6 @@ public enum TaskStatus
 {
     Open,
     Assigned,
+    PendingApproval,
     Completed
 }

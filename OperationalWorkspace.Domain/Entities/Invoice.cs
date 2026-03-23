@@ -4,17 +4,11 @@ namespace OperationalWorkspace.Domain.Entities;
 
 public class Invoice
 {
-    // FIX: Change init to set so EF and Repository can assign values
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid BusinessPartnerId { get; set; }
-
-    // FIX: Changed to string to match the Repository logic (INV-DATE-ID)
     public string InvoiceNumber { get; set; } = string.Empty;
-
     public string InvoiceId { get; set; } = string.Empty;
     public string BpCode { get; set; } = string.Empty;
-
-    // FIX: Change private set to set so Repository can map these from DB/Orders
     public decimal Amount { get; set; }
     public decimal AmountPaid { get; set; }
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Draft;
@@ -22,13 +16,17 @@ public class Invoice
     public DateTime DueDate { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    // FIX: Added parameterless constructor for EF Core and Repository Initialization
+    // FIX: Use null! to satisfy the compiler's nullability check
+    public string UserId { get; set; } = null!;
+
+    // FIX: Ensure parameterless constructor exists for EF Core
     public Invoice() { }
 
-    public Invoice(string bpCode, decimal amount)
+    public Invoice(string bpCode, decimal amount, string userId)
     {
         BpCode = bpCode;
         Amount = amount;
+        UserId = userId; // FIX: Assign UserId here
     }
 
     public void ProcessPayment(decimal payment)

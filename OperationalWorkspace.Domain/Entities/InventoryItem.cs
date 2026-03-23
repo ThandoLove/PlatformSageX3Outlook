@@ -13,6 +13,8 @@ public class InventoryItem
 
     public decimal UnitCost { get; private set; }
     public DateTime LastUpdatedUtc { get; private set; }
+    public int Quantity { get; set; }
+    public int ReorderLevel { get; set; }
 
     public InventoryItem() { }
 
