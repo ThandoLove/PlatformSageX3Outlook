@@ -1,0 +1,10 @@
+﻿@using OperationalWorkspaceUI.State
+
+
+<!-- CODE START: Components/Layout/Topbar.razor -->
+<div class="topbar">
+    <h2>@UIState.CurrentPageTitle</h2>
+    <GlassModeToggle IsGlass="@UIState.IsGlassMode"
+                     OnChanged="UIState.ToggleGlassMode" />
+</div>
+<!-- CODE END -->

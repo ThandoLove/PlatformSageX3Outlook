@@ -1,0 +1,7 @@
+﻿.workspace-summary-panel {
+    background-color: #1e293b;
+}
+
+.summary-content > * {
+    margin-bottom: 0.5rem;
+}

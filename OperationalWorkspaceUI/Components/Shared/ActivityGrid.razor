@@ -1,0 +1,39 @@
+﻿<!-- CODE START: ActivityGrid.razor -->
+@using OperationalWorkspaceApplication.DTOs
+
+@if (IsLoading)
+{
+    <LoadingSpinner />
+}
+else if (Data == null || !Data.Any())
+{
+    <EmptyState Message="No activity found." />
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Action</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var act in Data)
+            {
+                <tr>
+                    <td>@act.UserName</td>
+                    <td>@act.Action</td>
+                    <td>@act.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public List<ActivityDto> Data { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+}
+<!-- CODE END -->

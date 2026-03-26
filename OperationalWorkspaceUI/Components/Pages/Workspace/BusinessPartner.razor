@@ -1,0 +1,66 @@
+﻿
+
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.UIServices.Workspace
+
+
+@page "/workspace/businesspartners"
+
+@inject BusinessPartnerUIService BPService
+@inject WorkspaceState WorkspaceState
+@inject NavigationService NavigationService
+@inject NotificationService NotificationService
+
+<h3>Business Partners</h3>
+
+<WorkspaceHeader Title="Business Partners" Subtitle="Manage clients and contacts" />
+
+<WorkspaceToolbar>
+    <button class="btn btn-primary" @onclick="Create">+ New Client</button>
+    <button class="btn btn-outline-secondary" @onclick="Refresh">Refresh</button>
+</WorkspaceToolbar>
+
+<WorkspaceFilters>
+    <FormField Label="Search" @bind-Value="SearchQuery" />
+</WorkspaceFilters>
+
+@if (FilteredClients == null)
+{
+    <LoadingSpinner />
+}
+else if (!FilteredClients.Any())
+{
+    <EmptyState Message="No clients found." />
+}
+else
+{
+    <BpGrid Items="FilteredClients" OnRowClick="Open" />
+}
+
+@code {
+    private string SearchQuery;
+
+    private IEnumerable<ClientDTO> FilteredClients =>
+        WorkspaceState.Clients?
+            .Where(c => string.IsNullOrWhiteSpace(SearchQuery)
+                     || c.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BPService.LoadClientsAsync();
+    }
+
+    private async Task Refresh()
+    {
+        await BPService.LoadClientsAsync();
+        NotificationService.ShowSuccess("Clients refreshed");
+    }
+
+    private void Create() => NavigationService.NavigateTo("/forms/create-client");
+
+    private void Open(ClientDTO client) =>
+        NavigationService.NavigateTo($"/workspace/businesspartners/{client.Id}");
+}
+
+<!-- CODE END -->

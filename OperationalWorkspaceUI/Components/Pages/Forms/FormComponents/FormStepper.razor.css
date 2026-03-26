@@ -1,0 +1,64 @@
+﻿/* CODE START: FormStepper.razor.css */
+
+.form-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* HEADER */
+.stepper-header {
+    display: flex;
+    gap: 12px;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 10px;
+}
+
+/* STEP */
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+}
+
+    .step.active {
+        color: white;
+        font-weight: bold;
+    }
+
+    .step.completed {
+        color: #22c55e;
+    }
+
+/* INDEX */
+.step-index {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.step.active .step-index {
+    background: #2563eb;
+}
+
+.step.completed .step-index {
+    background: #22c55e;
+}
+
+/* CONTENT */
+.stepper-content {
+    min-height: 200px;
+}
+
+/* ACTIONS */
+.stepper-actions {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* CODE END */

@@ -1,0 +1,11 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@inject DashboardState State
+
+<div class="dashboard-panel erp-panel">
+    <h4>ERP Overview</h4>
+    <div class="panel-content">
+        <KPIWidget Label="Orders" Value="@State.ERPData?.Orders ?? 0" />
+        <KPIWidget Label="Revenue" Value="@State.ERPData?.Revenue ?? 0" Prefix="$" />
+    </div>
+</div>

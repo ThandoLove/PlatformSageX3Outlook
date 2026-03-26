@@ -1,0 +1,22 @@
+﻿<!-- CODE START: MetricItem.razor -->
+
+<div class="metric-item">
+    <span class="metric-label">@Label</span>
+    <span class="metric-value">@FormattedValue</span>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; }
+    [Parameter] public object Value { get; set; }
+
+    private string FormattedValue => Value switch
+    {
+        null => "-",
+        decimal d => d.ToString("N2"),
+        int i => i.ToString("N0"),
+        DateTime dt => dt.ToShortDateString(),
+        _ => Value.ToString()
+    };
+}
+
+<!-- CODE END -->

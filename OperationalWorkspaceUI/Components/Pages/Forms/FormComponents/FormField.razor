@@ -1,0 +1,28 @@
+﻿<!-- FormField.razor -->
+<div class="form-field">
+    <label>@Label</label>
+    @if (Type == "textarea")
+    {
+        <textarea @bind="@Value" class="form-control"></textarea>
+    }
+    else if (Type == "select" && Options != null)
+    {
+        <select @bind="@Value" class="form-control">
+            @foreach (var opt in Options)
+            {
+                <option value="@opt.Key">@opt.Value</option>
+            }
+        </select>
+    }
+    else
+    {
+        <input type="@Type" @bind="@Value" class="form-control" />
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; }
+    [Parameter] public string Type { get; set; } = "text";
+    [Parameter] public string Value { get; set; }
+    [Parameter] public List<KeyValuePair<string, string>> Options { get; set; }
+}

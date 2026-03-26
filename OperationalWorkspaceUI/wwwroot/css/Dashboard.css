@@ -1,0 +1,30 @@
+﻿
+/* CODE START: dashboard.css */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.dashboard-panel {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.kpi-widget {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    margin: 8px 0;
+}
+
+.status-badge {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px;
+}
+
+/* CODE END */

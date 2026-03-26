@@ -1,0 +1,42 @@
+﻿<!-- CODE START: TaskGrid.razor -->
+@using OperationalWorkspaceApplication.DTOs
+
+@if (IsLoading)
+{
+    <LoadingSpinner />
+}
+else if (Data == null || !Data.Any())
+{
+    <EmptyState Message="No tasks available." />
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th>Due Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in Data)
+            {
+                <tr @onclick="() => OnRowClick.InvokeAsync(task)">
+                    <td>@task.Title</td>
+                    <td>@task.Status</td>
+                    <td>@task.AssignedToName</td>
+                    <td>@task.DueDate?.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public List<TaskDTO> Data { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public EventCallback<TaskDTO> OnRowClick { get; set; }
+}
+<!-- CODE END -->

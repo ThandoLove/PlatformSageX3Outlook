@@ -1,0 +1,64 @@
+﻿<!-- CODE START: QuoteGrid.razor -->
+
+@using OperationalWorkspaceApplication.DTOs
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>Quote #</th>
+            <th>Client</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var q in Items)
+        {
+            <tr>
+                <td>@q.OrderNumber</td>
+                <td>@q.ClientName</td>
+                <td>@q.TotalAmount.ToString("C")</td>
+
+                <td>
+                    <StatusBadge Status="@q.Status" />
+                </td>
+
+                <td>@q.OrderDate.ToShortDateString()</td>
+
+                <td class="text-end">
+
+                    <button class="btn btn-sm btn-outline-primary"
+                            @onclick="() => OnView.InvokeAsync(q)">
+                        View
+                    </button>
+
+                    <button class="btn btn-sm btn-success"
+                            disabled="@(q.Status != "Draft")"
+                            @onclick="() => OnApprove.InvokeAsync(q)">
+                        Approve
+                    </button>
+
+                    <button class="btn btn-sm btn-warning"
+                            disabled="@(q.Status != "Approved")"
+                            @onclick="() => OnConvert.InvokeAsync(q)">
+                        Convert
+                    </button>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public IEnumerable<OpenOrderDto> Items { get; set; }
+
+    [Parameter] public EventCallback<OpenOrderDto> OnView { get; set; }
+    [Parameter] public EventCallback<OpenOrderDto> OnApprove { get; set; }
+    [Parameter] public EventCallback<OpenOrderDto> OnConvert { get; set; }
+}
+
+<!-- CODE END -->

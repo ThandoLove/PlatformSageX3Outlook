@@ -1,30 +1,46 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">OperationalWorkspaceUI</a>
+﻿<!-- CODE START: NavMenu.razor -->
+@using OperationalWorkspaceUI
+
+<div class="sidebar-container">
+
+    <!-- LOGO / TITLE -->
+    <div class="sidebar-header">
+        <h4>Operational Workspace</h4>
     </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <!-- NAVIGATION -->
     <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+        <NavLink class="nav-link" href="@AppRoutes.Dashboard" Match="NavLinkMatch.All">
+            <span class="icon">🏠</span> Dashboard
+        </NavLink>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
+        <NavLink class="nav-link" href="@AppRoutes.BusinessPartners">
+            <span class="icon">👤</span> Business Partners
+        </NavLink>
+
+        <NavLink class="nav-link" href="@AppRoutes.Orders">
+            <span class="icon">📦</span> Orders
+        </NavLink>
+
+        <NavLink class="nav-link" href="@AppRoutes.Tasks">
+            <span class="icon">✅</span> Tasks
+        </NavLink>
+
+        <NavLink class="nav-link" href="@AppRoutes.Activity">
+            <span class="icon">📊</span> Activity
+        </NavLink>
+
+        <NavLink class="nav-link" href="@AppRoutes.Knowledge">
+            <span class="icon">📚</span> Knowledge
+        </NavLink>
+
+        <NavLink class="nav-link" href="@AppRoutes.Attachments">
+            <span class="icon">📎</span> Attachments
+        </NavLink>
+
     </nav>
+
 </div>
 
+<!-- CODE END -->

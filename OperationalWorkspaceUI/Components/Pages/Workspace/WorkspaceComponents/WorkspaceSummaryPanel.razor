@@ -1,0 +1,15 @@
+﻿<!-- CODE START: WorkspaceSummaryPanel.razor -->
+
+<div class="workspace-summary-panel p-3 mb-3 border rounded bg-gray-800 text-white">
+    <h5>@Title</h5>
+    <div class="summary-content">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}
+
+<!-- CODE END -->

@@ -1,0 +1,41 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+
+
+<!-- CODE START: EmailTaskSummary.razor -->
+@if (Tasks == null || !Tasks.Any())
+{
+    <EmptyState Message="No related tasks found." />
+}
+else
+{
+    <div class="email-tasks">
+        <h5>Related Tasks</h5>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Due</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var task in Tasks)
+                {
+                    <tr @onclick="() => OnOpenTask.InvokeAsync(task)">
+                        <td>@task.Title</td>
+                        <td>@task.Status</td>
+                        <td>@task.DueDate?.ToString("yyyy-MM-dd")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter] public List<TaskDto> Tasks { get; set; }
+    [Parameter] public EventCallback<TaskDto> OnOpenTask { get; set; }
+}
+
+<!-- CODE END -->

@@ -1,0 +1,25 @@
+﻿<!-- CODE START: ChartWidget.razor -->
+@inject IJSRuntime JS
+
+<div class="chart-widget">
+    <h5>@Title</h5>
+    <canvas id="@ChartId"></canvas>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public List<double> Data { get; set; } = new();
+    [Parameter] public List<string> Labels { get; set; } = new();
+
+    private string ChartId = $"chart_{Guid.NewGuid()}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("renderChart", ChartId, Labels, Data);
+        }
+    }
+}
+
+<!-- CODE END -->

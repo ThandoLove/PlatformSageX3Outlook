@@ -1,0 +1,62 @@
+﻿@page "/forms/create-order"
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.UIServices.Workspace
+
+@inject OrdersUIService OrderService
+@inject WorkspaceState WorkspaceState
+@inject NotificationService NotificationService
+@inject NavigationService NavigationService
+
+<h3>Create Order</h3>
+
+<FormStepper Steps="@Steps" OnCompleted="SaveOrderAsync" />
+
+@code {
+
+    private OpenOrderDto NewOrder = new();
+
+    private List<KeyValuePair<string,string>> Clients =>
+        WorkspaceState.Clients
+            .Select(c => new KeyValuePair<string,string>(c.Id.ToString(), c.Name))
+            .ToList();
+
+    private List<FormStepper.FormStep> Steps => new()
+    {
+        new()
+        {
+            Title = "Order",
+            Content = @<FormSection Title="Order Info">
+                            <FormField Label="Order Number" @bind-Value="NewOrder.OrderNumber" />
+                            <FormField Label="Client" Type="select" Options="Clients" @bind-Value="NewOrder.ClientId" />
+                       </FormSection>,
+            Validate = async () => !string.IsNullOrWhiteSpace(NewOrder.OrderNumber)
+        },
+
+        new()
+        {
+            Title = "Financial",
+            Content = @<FormSection Title="Financial">
+                            <FormField Label="Amount" Type="number" @bind-Value="NewOrder.TotalAmount" />
+                       </FormSection>,
+            Validate = async () => NewOrder.TotalAmount > 0
+        }
+    };
+
+    private async Task SaveOrderAsync()
+    {
+        var success = await OrderService.CreateOrderAsync(NewOrder);
+
+        if (success)
+        {
+            WorkspaceState.ReloadOrders();
+            NotificationService.ShowSuccess("Order created");
+            NavigationService.NavigateTo("/workspace/orders");
+        }
+        else
+        {
+            NotificationService.ShowError("Failed");
+        }
+    }
+}

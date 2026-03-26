@@ -1,0 +1,27 @@
+﻿
+<!-- CODE START: Activity.razor -->
+
+@page "/workspace/activity"
+
+@inject WorkspaceState WorkspaceState
+@inject OperationalWorkspaceUI.UIServices.Workspace.ActivityUiService ActivityService
+
+
+<h3>Activity</h3>
+
+<WorkspaceHeader Title="Activity Log" Subtitle="System-wide activity tracking" />
+
+@if (WorkspaceState.ActivityLogs == null)
+{
+    <LoadingSpinner />
+}
+else if (!WorkspaceState.ActivityLogs.Any())
+{
+    <EmptyState Message="No activity found." />
+}
+else
+{
+    <ActivityGrid Items="WorkspaceState.ActivityLogs" />
+}
+
+<!-- CODE END -->

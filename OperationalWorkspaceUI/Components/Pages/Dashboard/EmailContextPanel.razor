@@ -1,0 +1,33 @@
+﻿@inject EmailContextUIService EmailService
+@inject EmailContextState EmailState
+@inject WorkspaceState WorkspaceState
+@inject NotificationService NotificationService
+@inject NavigationService NavigationService
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.UIServices.EmailService
+@using OperationalWorkspaceUI.UIServices.System
+
+<div class="email-context-panel">
+    <EmailHeader Email="@EmailState.CurrentEmail" />
+
+    <EmailDetails Email="@EmailState.CurrentEmail" />
+
+    <div class="email-actions">
+        <QuickActionsPanel EmailId="@EmailState.CurrentEmail?.Id" />
+    </div>
+
+    <EmailClientMatch Email="@EmailState.CurrentEmail" Clients="@WorkspaceState.Clients" />
+
+    <EmailOrderSummary Orders="@EmailState.LinkedOrders" />
+    <EmailTaskSummary Tasks="@EmailState.LinkedTasks" />
+</div>
+
+@code {
+    protected override async Task OnParametersSetAsync()
+    {
+        if (EmailState.CurrentEmail != null)
+        {
+            await EmailService.LoadEmailContextAsync(EmailState.CurrentEmail.Id, EmailState, WorkspaceState);
+        }
+    }
+}

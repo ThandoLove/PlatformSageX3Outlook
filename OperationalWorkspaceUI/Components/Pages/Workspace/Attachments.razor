@@ -1,0 +1,29 @@
+﻿
+
+<!-- CODE START: Attachments.razor -->
+
+@page "/workspace/attachments"
+
+
+@inject WorkspaceState WorkspaceState
+@inject OperationalWorkspaceUI.UIServices.Workspace.AttachmentUIService AttachmentService
+
+
+<h3>Attachments</h3>
+
+<WorkspaceHeader Title="Attachments" Subtitle="Files and documents" />
+
+@if (WorkspaceState.Attachments == null)
+{
+    <LoadingSpinner />
+}
+else if (!WorkspaceState.Attachments.Any())
+{
+    <EmptyState Message="No attachments found." />
+}
+else
+{
+    <AttachmentGrid Items="WorkspaceState.Attachments" />
+}
+
+<!-- CODE END -->

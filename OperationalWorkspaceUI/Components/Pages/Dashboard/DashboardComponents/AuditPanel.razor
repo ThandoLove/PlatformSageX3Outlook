@@ -1,0 +1,18 @@
+﻿@inject DashboardState State
+
+<div class="dashboard-panel audit-panel">
+    <h4>Audit Logs</h4>
+    @if(State.AuditLogs != null && State.AuditLogs.Any())
+    {
+        <ul>
+            @foreach(var log in State.AuditLogs)
+            {
+                <li>@log.Time: @log.User - @log.Event</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <EmptyState Message="No audit events." />
+    }
+</div>

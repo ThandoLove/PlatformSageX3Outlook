@@ -1,0 +1,18 @@
+﻿@inject DashboardState State
+
+<div class="dashboard-panel tasks-panel">
+    <h4>Tasks</h4>
+    @if(State.Tasks != null && State.Tasks.Any())
+    {
+        <ul>
+            @foreach(var task in State.Tasks)
+            {
+                <li>@task.Title (@task.Status)</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <EmptyState Message="No tasks available." />
+    }
+</div>

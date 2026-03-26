@@ -1,0 +1,90 @@
+﻿@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceUI.UIServices.Actions
+@using OperationalWorkspaceUI.UIServices.System
+<!-- CODE START: AttachEmailForm.razor -->
+
+@inject EmailContextState EmailState
+@inject QuickActionUIService Actions
+@inject NotificationService Notifications
+@inject NavigationService NavigationService
+
+<h3>Attach Email</h3>
+
+@if (EmailState.CurrentEmail == null)
+{
+    <EmptyState Message="No email selected." />
+}
+else
+{
+    <FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
+}
+
+@code {
+
+    private AttachEmailModel Model = new();
+
+    private List<KeyValuePair<string, string>> EntityOptions = new()
+    {
+        new("Client", "Client"),
+        new("Order", "Order"),
+        new("Task", "Task")
+    };
+
+    private List<FormStepper.FormStep> Steps => new()
+    {
+        new()
+        {
+            Title = "Email",
+            Content = @<FormSection Title="Email Details">
+                            <FormField Label="Subject" Value="@EmailState.CurrentEmail.Subject" />
+                            <FormField Label="From" Value="@EmailState.CurrentEmail.From" />
+                       </FormSection>,
+            Validate = async () => true
+        },
+
+        new()
+        {
+            Title = "Target",
+            Content = @<FormSection Title="Attach To">
+                            <FormField Label="Entity Type"
+                                       Type="select"
+                                       Options="EntityOptions"
+                                       @bind-Value="Model.EntityType" />
+
+                            <FormField Label="Record ID"
+                                       @bind-Value="Model.RecordId" />
+                       </FormSection>,
+            Validate = async () =>
+                !string.IsNullOrWhiteSpace(Model.EntityType) &&
+                !string.IsNullOrWhiteSpace(Model.RecordId)
+        }
+    };
+
+    private async Task HandleSubmit()
+    {
+        if (EmailState.CurrentEmail == null)
+        {
+            Notifications.Error("No email context available");
+            return;
+        }
+
+        try
+        {
+            await Actions.AttachEmailAsync(Model);
+            Notifications.Success("Email attached successfully");
+            NavigationService.NavigateTo("/dashboard");
+        }
+        catch
+        {
+            Notifications.Error("Failed to attach email");
+        }
+    }
+
+    public class AttachEmailModel
+    {
+        public string EntityType { get; set; }
+        public string RecordId { get; set; }
+    }
+}
+
+<!-- CODE END -->

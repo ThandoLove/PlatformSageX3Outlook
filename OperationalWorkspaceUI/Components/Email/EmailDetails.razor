@@ -1,0 +1,24 @@
+﻿@using OperationalWorkspaceUI.Models
+@using OperationalWorkspaceApplication.DTOs
+
+<h3>EmailDetails</h3>
+
+<!-- CODE START: EmailDetails.razor -->
+@if (Email == null)
+{
+    <EmptyState Message="No email content available." />
+}
+else
+{
+    <div class="email-details">
+        <div class="email-body" @onclick:stopPropagation>
+            @((MarkupString)Email.Body)
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EmailInsightDto Email { get; set; }
+}
+
+<!-- CODE END -->

@@ -1,0 +1,38 @@
+﻿<!-- CODE START: StatusBadge.razor -->
+
+<span class="badge @GetClass()">
+    @DisplayText
+</span>
+
+@code {
+
+    [Parameter] public string Status { get; set; }
+
+    // Optional override for display text
+    [Parameter] public string DisplayText { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // Fallback if no custom text provided
+        DisplayText ??= Status ?? "Unknown";
+    }
+
+    private string GetClass()
+    {
+        if (string.IsNullOrWhiteSpace(Status))
+            return "bg-secondary";
+
+        return Status switch
+        {
+            "Draft" => "bg-secondary",
+            "Sent" => "bg-info",
+            "Approved" => "bg-success",
+            "Rejected" => "bg-danger",
+            "Pending" => "bg-warning text-dark",
+            _ => "bg-light text-dark"
+        };
+    }
+
+}
+
+<!-- CODE END -->

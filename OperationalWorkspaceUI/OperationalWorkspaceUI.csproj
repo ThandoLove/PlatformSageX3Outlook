@@ -18,8 +18,4 @@
     <ProjectReference Include="..\OperationalWorkspaceApplication\OperationalWorkspaceApplication.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Components\Pages\Dashboard\" />
-  </ItemGroup>
-
 </Project>

@@ -1,0 +1,33 @@
+﻿<h3>ConfirmDialog</h3>
+
+@if (IsVisible)
+{
+    <div class="modal-backdrop"></div>
+    <div class="modal-window">
+        <div class="modal-header">
+            <h5>@Title</h5>
+        </div>
+        <div class="modal-body">
+            <p>@Message</p>
+            <button class="btn btn-primary" @onclick="Confirm">Confirm</button>
+            <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Message { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+
+    private async Task Confirm() => await Close(true);
+    private async Task Cancel() => await Close(false);
+
+    private async Task Close(bool confirmed)
+    {
+        IsVisible = false;
+        if (OnClose.HasDelegate)
+            await OnClose.InvokeAsync(confirmed);
+    }
+}

@@ -1,0 +1,35 @@
+﻿<!-- CODE START: GlassModeToggle.razor -->
+
+<div class="glass-toggle">
+
+    <label class="switch">
+        <input type="checkbox"
+               checked="@IsGlass"
+               @onchange="Toggle" />
+
+        <span class="slider"></span>
+    </label>
+
+    <span class="label">
+        @(IsGlass ? "Glass Mode" : "Standard Mode")
+    </span>
+
+</div>
+
+@code {
+
+    [Parameter] public bool IsGlass { get; set; }
+
+    [Parameter] public EventCallback<bool> OnChanged { get; set; }
+
+    private async Task Toggle(ChangeEventArgs e)
+    {
+        var value = (bool)e.Value;
+
+        if (OnChanged.HasDelegate)
+            await OnChanged.InvokeAsync(value);
+    }
+
+}
+
+<!-- CODE END -->

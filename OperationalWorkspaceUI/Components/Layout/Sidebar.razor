@@ -1,0 +1,14 @@
+﻿@using OperationalWorkspaceUI.UIServices.System
+<!-- CODE START: Components/Layout/Sidebar.razor -->
+@inject NavigationService NavService
+
+<nav class="sidebar">
+    <ul>
+        <li @onclick="@(() => NavService.NavigateTo("/dashboard"))">Dashboard</li>
+        <li @onclick="@(() => NavService.NavigateTo("/workspace/businesspartners"))">Clients</li>
+        <li @onclick="@(() => NavService.NavigateTo("/workspace/orders"))">Orders</li>
+        <li @onclick="@(() => NavService.NavigateTo("/workspace/tasks"))">Tasks</li>
+        <li @onclick="@(() => NavService.NavigateTo("/workspace/knowledge"))">Knowledge Base</li>
+    </ul>
+</nav>
+<!-- CODE END -->

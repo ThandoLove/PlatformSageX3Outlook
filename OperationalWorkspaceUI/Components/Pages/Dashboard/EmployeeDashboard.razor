@@ -1,0 +1,40 @@
+﻿@using OperationalWorkspaceUI.State
+
+
+<!-- CODE START: EmployeeDashboard.razor -->
+
+@inject DashboardState DashboardState
+@inject EmailContextState EmailState
+
+<div class="dashboard employee-dashboard">
+
+    <!-- EMAIL CONTEXT -->
+    <EmailContextPanel />
+
+    <!-- QUICK ACTIONS -->
+    <QuickActionsPanel />
+
+    <div class="dashboard-grid">
+
+        <!-- CRM -->
+        <CRMPanel Clients="@DashboardState.TopClients" />
+
+        <!-- TASKS -->
+        <TasksPanel Tasks="@DashboardState.MyTasks" />
+
+        <!-- ACTIVITY -->
+        <RecentActivityPanel Activities="@DashboardState.RecentActivities" />
+
+    </div>
+
+</div>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DashboardState.LoadEmployeeDashboardAsync();
+    }
+}
+
+<!-- CODE END -->

@@ -1,0 +1,13 @@
+﻿
+<!-- FormSection.razor -->
+<div class="form-section">
+    <h3>@Title</h3>
+    <div class="form-content">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

@@ -1,0 +1,36 @@
+﻿@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+<h3>Send Knowledge</h3>
+
+<FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
+
+@code {
+
+    private SendKnowledgeModel Model = new();
+
+    private List<FormStepper.FormStep> Steps => new()
+    {
+        new()
+        {
+            Title = "Search",
+            Content = @<FormSection Title="Search">
+                            <FormField Label="Search" @bind-Value="Model.SearchQuery" />
+                       </FormSection>,
+            Validate = async () => !string.IsNullOrWhiteSpace(Model.SearchQuery)
+        },
+
+        new()
+        {
+            Title = "Message",
+            Content = @<FormSection Title="Message">
+                            <FormField Label="Message" Type="textarea" @bind-Value="Model.Message" />
+                       </FormSection>,
+            Validate = async () => true
+        }
+    };
+
+    private async Task HandleSubmit()
+    {
+        await Actions.SendKnowledgeAsync(Model);
+        Notifications.Success("Sent");
+    }
+}

@@ -1,23 +1,38 @@
 ﻿@inherits LayoutComponentBase
+@inject OperationalWorkspaceUI.State.UIState UIState
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<div class="main-layout @(UIState.CurrentTheme)">
+
+    <!-- LEFT -->
+    <Sidebar />
+
+    <!-- CENTER -->
+    <div class="main-content">
+        <Topbar />
+
+        <div class="page-container">
+            @Body
+        </div>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    <!-- RIGHT -->
+    <RightPanel />
 </div>
 
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
+<!-- GLOBAL COMPONENTS -->
+<ErrorBanner Message="@UIState.ErrorMessage"
+             IsVisible="@UIState.ShowError"
+             OnDismiss="@UIState.ClearError" />
+
+<GlassModeToggle /> <!-- button-based theme switcher -->
+<ToastNotification />
+<Modal />
+<LoadingSpinner />
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Load persisted theme from localStorage
+        await UIState.LoadThemeFromLocalStorage();
+    }
+}

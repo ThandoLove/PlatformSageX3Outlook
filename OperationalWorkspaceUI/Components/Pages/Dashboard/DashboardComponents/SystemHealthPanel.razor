@@ -1,0 +1,7 @@
+﻿@inject DashboardState State
+
+<div class="dashboard-panel system-health-panel">
+    <h4>System Health</h4>
+    <StatusBadge Label="Uptime" Value="@State.SystemHealth?.Uptime ?? " N /A"" />
+    <StatusBadge Label="Errors" Value="@State.SystemHealth?.Errors ?? 0" />
+</div>

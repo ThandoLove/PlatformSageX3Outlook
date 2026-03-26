@@ -1,0 +1,21 @@
+﻿<!-- CODE START: RelatedRecordsPanel.razor -->
+
+<div class="related-records-panel p-3 border rounded">
+    <h5>@Title</h5>
+    <ul class="list-group list-group-flush mt-2">
+        @foreach (var record in Records)
+        {
+            <li class="list-group-item" @onclick="() => OnRecordClicked.InvokeAsync(record)">
+                @record
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public List<string> Records { get; set; } = new();
+    [Parameter] public EventCallback<string> OnRecordClicked { get; set; }
+}
+
+<!-- CODE END -->

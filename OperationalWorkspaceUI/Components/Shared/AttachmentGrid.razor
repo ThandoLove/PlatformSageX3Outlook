@@ -1,0 +1,49 @@
+﻿<!-- CODE START: AttachmentGrid.razor -->
+@using OperationalWorkspaceApplication.DTOs
+
+@if (IsLoading)
+{
+    <LoadingSpinner />
+}
+else if (Data == null || !Data.Any())
+{
+    <EmptyState Message="No attachments available." />
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File Name</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var file in Data)
+            {
+                <tr @onclick="() => OnDownload.InvokeAsync(file)">
+                    <td>@file.FileName</td>
+                    <td>@file.FileType</td>
+                    <td>@FormatSize(file.Size)</td>
+                    <td>@file.UploadedAt.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public List<AttachmentDto> Data { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public EventCallback<AttachmentDto> OnDownload { get; set; }
+
+    private string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1048576) return $"{bytes / 1024} KB";
+        return $"{bytes / 1048576} MB";
+    }
+}
+<!-- CODE END -->

@@ -1,0 +1,63 @@
+﻿<!-- CODE START: Tasks.razor -->
+
+@page "/workspace/tasks"
+@using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.UIServices.Workspace
+
+@inject TasksUIService TaskService
+@inject WorkspaceState WorkspaceState
+@inject NavigationService NavigationService
+@inject NotificationService NotificationService
+
+<h3>Tasks</h3>
+
+<WorkspaceHeader Title="Tasks" Subtitle="Track and manage work" />
+
+<WorkspaceToolbar>
+    <button class="btn btn-primary" @onclick="Create">+ New Task</button>
+    <button class="btn btn-outline-secondary" @onclick="Refresh">Refresh</button>
+</WorkspaceToolbar>
+
+<WorkspaceFilters>
+    <FormField Label="Search" @bind-Value="SearchQuery" />
+</WorkspaceFilters>
+
+@if (FilteredTasks == null)
+{
+    <LoadingSpinner />
+}
+else if (!FilteredTasks.Any())
+{
+    <EmptyState Message="No tasks found." />
+}
+else
+{
+    <TaskGrid Items="FilteredTasks" OnRowClick="Open" />
+}
+
+@code {
+    private string SearchQuery;
+
+    private IEnumerable<TaskDto> FilteredTasks =>
+        WorkspaceState.Tasks?
+            .Where(t => string.IsNullOrWhiteSpace(SearchQuery)
+                     || t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await TaskService.LoadTasksAsync();
+    }
+
+    private async Task Refresh()
+    {
+        await TaskService.LoadTasksAsync();
+        NotificationService.ShowSuccess("Tasks refreshed");
+    }
+
+    private void Create() => NavigationService.NavigateTo("/forms/create-task");
+
+    private void Open(TaskDto task) =>
+        NavigationService.NavigateTo($"/workspace/tasks/{task.Id}");
+}
+
+<!-- CODE END -->

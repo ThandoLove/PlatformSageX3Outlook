@@ -1,0 +1,63 @@
+﻿<!-- CODE START: SalesOrders.razor -->
+
+@page "/workspace/orders"
+@using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.UIServices.Workspace
+
+@inject OrdersUIService OrderService
+@inject WorkspaceState WorkspaceState
+@inject NavigationService NavigationService
+@inject NotificationService NotificationService
+
+<h3>Sales Orders</h3>
+
+<WorkspaceHeader Title="Orders" Subtitle="Manage all sales orders" />
+
+<WorkspaceToolbar>
+    <button class="btn btn-primary" @onclick="Create">+ New Order</button>
+    <button class="btn btn-outline-secondary" @onclick="Refresh">Refresh</button>
+</WorkspaceToolbar>
+
+<WorkspaceFilters>
+    <FormField Label="Search" @bind-Value="SearchQuery" />
+</WorkspaceFilters>
+
+@if (FilteredOrders == null)
+{
+    <LoadingSpinner />
+}
+else if (!FilteredOrders.Any())
+{
+    <EmptyState Message="No orders found." />
+}
+else
+{
+    <BpGrid Items="FilteredOrders" OnRowClick="Open" />
+}
+
+@code {
+    private string SearchQuery;
+
+    private IEnumerable<OpenOrderDto> FilteredOrders =>
+        WorkspaceState.Orders?
+            .Where(o => string.IsNullOrWhiteSpace(SearchQuery)
+                     || o.OrderNumber.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await OrderService.LoadOrdersAsync();
+    }
+
+    private async Task Refresh()
+    {
+        await OrderService.LoadOrdersAsync();
+        NotificationService.ShowSuccess("Orders refreshed");
+    }
+
+    private void Create() => NavigationService.NavigateTo("/forms/create-order");
+
+    private void Open(OpenOrderDto order) =>
+        NavigationService.NavigateTo($"/workspace/orders/{order.Id}");
+}
+
+<!-- CODE END -->

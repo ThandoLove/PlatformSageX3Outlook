@@ -1,0 +1,58 @@
+﻿@using OperationalWorkspaceUI.UIServices.Actions
+@using OperationalWorkspaceUI.UIServices.System
+@inject QuickActionUIService ActionService
+@inject EmailContextState EmailState
+@inject WorkspaceState WorkspaceState
+@inject NotificationService NotificationService
+@inject NavigationService NavigationService
+
+<div class="quick-actions-panel">
+    <button class="btn btn-primary" @onclick="CreateOrder">Create Order</button>
+    <button class="btn btn-secondary" @onclick="CreateTask">Create Task</button>
+    <button class="btn btn-info" @onclick="AttachEmail">Attach Email</button>
+    <button class="btn btn-warning" @onclick="SendKnowledge">Send Knowledge</button>
+</div>
+
+@code {
+    private void CreateOrder()
+    {
+        if (EmailState.CurrentEmail != null)
+        {
+            WorkspaceState.PreFillOrderFromEmail(EmailState.CurrentEmail);
+            NavigationService.NavigateTo("/forms/create-order");
+        }
+        else
+        {
+            NotificationService.ShowError("No email selected.");
+        }
+    }
+
+    private void CreateTask()
+    {
+        if (EmailState.CurrentEmail != null)
+        {
+            WorkspaceState.PreFillTaskFromEmail(EmailState.CurrentEmail);
+            NavigationService.NavigateTo("/forms/create-task");
+        }
+        else
+        {
+            NotificationService.ShowError("No email selected.");
+        }
+    }
+
+    private void AttachEmail()
+    {
+        if (EmailState.CurrentEmail != null)
+        {
+            NavigationService.NavigateTo($"/forms/attach-email?emailId={EmailState.CurrentEmail.Id}");
+        }
+    }
+
+    private void SendKnowledge()
+    {
+        if (EmailState.CurrentEmail != null)
+        {
+            NavigationService.NavigateTo($"/forms/send-knowledge?emailId={EmailState.CurrentEmail.Id}");
+        }
+    }
+}

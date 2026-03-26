@@ -1,0 +1,8 @@
+﻿.related-records-panel ul li {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .related-records-panel ul li:hover {
+        background-color: #f3f4f6;
+    }

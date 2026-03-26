@@ -1,0 +1,18 @@
+﻿@inject DashboardState State
+
+<div class="dashboard-panel knowledge-base-panel">
+    <h4>Knowledge Base</h4>
+    @if(State.KnowledgeBase != null && State.KnowledgeBase.Any())
+    {
+        <ul>
+            @foreach(var kb in State.KnowledgeBase)
+            {
+                <li><a href="@kb.Link">@kb.Title</a></li>
+            }
+        </ul>
+    }
+    else
+    {
+        <EmptyState Message="No knowledge articles." />
+    }
+</div>

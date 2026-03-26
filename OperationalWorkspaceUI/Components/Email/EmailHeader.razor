@@ -1,0 +1,28 @@
+﻿@using OperationalWorkspaceUI.Models.Email
+@using OperationalWorkspaceApplication.DTOs
+
+
+<h3>EmailHeader</h3>
+<!-- CODE START: EmailHeader.razor -->
+@if (Email == null)
+{
+    <EmptyState Message="No email selected." />
+}
+else
+{
+    <div class="email-header">
+        <h4>@Email.Subject</h4>
+
+        <div class="email-meta">
+            <span><b>From:</b> @Email.From</span>
+            <span><b>To:</b> @Email.To</span>
+            <span><b>Date:</b> @Email.ReceivedAt.ToString("yyyy-MM-dd HH:mm")</span>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EmailInsightDto Email { get; set; }
+}
+
+<!-- CODE END -->

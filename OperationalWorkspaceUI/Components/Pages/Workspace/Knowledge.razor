@@ -1,0 +1,36 @@
+﻿@page "/workspace/knowledge"
+
+<!-- CODE START: Knowledge.razor -->
+@using OperationalWorkspaceUI.UIServices.System
+@inject WorkspaceState WorkspaceState
+@inject NavigationService NavigationService
+@inject WorkspaceState WorkspaceState
+@inject OperationalWorkspaceUI.UIServices.Workspace.KnowledgeUIService KBService
+
+
+<h3>Knowledge Base</h3>
+
+<WorkspaceHeader Title="Knowledge Base" Subtitle="Articles and documentation" />
+
+<WorkspaceToolbar>
+    <button class="btn btn-primary" @onclick="Create">+ New Article</button>
+</WorkspaceToolbar>
+
+@if (WorkspaceState.Knowledge == null)
+{
+    <LoadingSpinner />
+}
+else if (!WorkspaceState.Knowledge.Any())
+{
+    <EmptyState Message="No articles found." />
+}
+else
+{
+    <KnowledgeGrid Items="WorkspaceState.Knowledge" />
+}
+
+@code {
+    private void Create() => NavigationService.NavigateTo("/forms/send-knowledge");
+}
+
+<!-- CODE END -->

@@ -1,0 +1,9 @@
+﻿@inject DashboardState State
+
+<div class="dashboard-panel crm-panel">
+    <h4>CRM Overview</h4>
+    <div class="panel-content">
+        <KPIWidget Label="Top Clients" Value="@State.CRMData?.TopClients ?? 0" />
+        <KPIWidget Label="Opportunities" Value="@State.CRMData?.Opportunities ?? 0" />
+    </div>
+</div>

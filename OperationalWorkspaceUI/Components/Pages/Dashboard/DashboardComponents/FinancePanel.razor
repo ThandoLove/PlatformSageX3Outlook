@@ -1,0 +1,7 @@
+﻿@inject DashboardState State
+
+<div class="dashboard-panel finance-panel">
+    <h4>Finance</h4>
+    <KPIWidget Label="Receivables" Value="@State.FinanceData?.Receivables ?? 0" Prefix="$" />
+    <KPIWidget Label="Payables" Value="@State.FinanceData?.Payables ?? 0" Prefix="$" />
+</div>

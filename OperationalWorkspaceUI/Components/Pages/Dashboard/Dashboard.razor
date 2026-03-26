@@ -1,0 +1,26 @@
+﻿@using OperationalWorkspace.UIServices.DashboardUI
+@using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
+
+
+<!-- CODE START: Pages/Dashboard/Dashboard.razor -->
+@inject DashboardUIService DashboardService
+@inject DashboardState State
+
+<div class="dashboard-grid">
+    <ERPPanel Data="@State.ERPData" />
+    <CrmPanel Data="@State.CRMData" />
+    <TasksPanel Data="@State.Tasks" />
+    <FinancePanel Data="@State.FinanceData" />
+    <SystemHealthPanel Data="@State.SystemHealth" />
+    <RecentActivityPanel Data="@State.RecentActivity" />
+    <KnowledgeBasePanel Data="@State.KnowledgeBase" />
+    <AuditPanel Data="@State.AuditLogs" />
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await DashboardService.LoadDashboardAsync(State);
+    }
+}
+<!-- CODE END -->

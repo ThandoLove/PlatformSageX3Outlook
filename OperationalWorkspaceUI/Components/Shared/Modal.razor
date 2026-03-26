@@ -1,0 +1,27 @@
+﻿@if (IsVisible)
+{
+    <div class="modal-backdrop" @onclick="Close"></div>
+    <div class="modal-window">
+        <div class="modal-header">
+            <h5>@Title</h5>
+            <button class="close" @onclick="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        if (OnClose.HasDelegate)
+            await OnClose.InvokeAsync(null);
+    }
+}

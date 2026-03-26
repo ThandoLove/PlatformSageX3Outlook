@@ -1,0 +1,14 @@
+﻿<h3>ToastNotification</h3>
+
+@if (IsVisible)
+{
+    <div class="toast @Type">
+        @Message
+    </div>
+}
+
+@code {
+    [Parameter] public string Message { get; set; }
+    [Parameter] public string Type { get; set; } = "info"; // info, success, error, warning
+    [Parameter] public bool IsVisible { get; set; } = true;
+}

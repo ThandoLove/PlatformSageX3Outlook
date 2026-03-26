@@ -1,0 +1,31 @@
+﻿.kpi-widget {
+    padding: 16px;
+    border-radius: 10px;
+    background: #1e293b;
+    color: white;
+    min-width: 160px;
+}
+
+    .kpi-widget.success {
+        background: #065f46;
+    }
+
+    .kpi-widget.warning {
+        background: #78350f;
+    }
+
+.kpi-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.kpi-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.kpi-trend {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    color: #22c55e;
+}

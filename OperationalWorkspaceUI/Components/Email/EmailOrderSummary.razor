@@ -1,0 +1,41 @@
+﻿@using OperationalWorkspaceApplication.DTOs;
+
+
+<!-- CODE START: EmailOrderSummary.razor -->
+@if (Orders == null || !Orders.Any())
+{
+    <EmptyState Message="No related orders found." />
+}
+else
+{
+    <div class="email-orders">
+        <h5>Recent Orders</h5>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order No</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Orders)
+                {
+                    <tr @onclick="() => OnOpenOrder.InvokeAsync(order)">
+                        <td>@order.OrderNumber</td>
+                        <td>@order.Status</td>
+                        <td>@order.TotalAmount.ToString("C")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter] public List<OrderDTO> Orders { get; set; }
+    [Parameter] public EventCallback<OrderDTO> OnOpenOrder { get; set; }
+}
+
+<!-- CODE END -->

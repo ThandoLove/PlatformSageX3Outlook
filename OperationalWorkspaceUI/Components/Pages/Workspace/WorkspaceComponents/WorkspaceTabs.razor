@@ -1,0 +1,28 @@
+﻿<!-- CODE START: WorkspaceTabs.razor -->
+
+<ul class="workspace-tabs nav nav-tabs mb-3">
+    @foreach (var tab in Tabs)
+    {
+        <li class="nav-item">
+            <a class="nav-link @(tab == SelectedTab ? "active" : "")"
+                   @onclick="@(() => SelectTab(tab))">
+                @tab
+            </a>
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter] public List<string> Tabs { get; set; }
+    [Parameter] public EventCallback<string> OnTabChanged { get; set; }
+    [Parameter] public string SelectedTab { get; set; }
+
+    private async Task SelectTab(string tab)
+    {
+        SelectedTab = tab;
+        if (OnTabChanged.HasDelegate)
+            await OnTabChanged.InvokeAsync(tab);
+    }
+}
+
+<!-- CODE END -->

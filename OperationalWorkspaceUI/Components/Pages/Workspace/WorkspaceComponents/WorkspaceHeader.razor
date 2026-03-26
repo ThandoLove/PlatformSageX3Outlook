@@ -1,0 +1,17 @@
+﻿<!-- CODE START: WorkspaceHeader.razor -->
+@using Microsoft.AspNetCore.Components
+
+<div class="workspace-header">
+    <h2>@Title</h2>
+    @if (!string.IsNullOrEmpty(Subtitle))
+    {
+        <p class="workspace-subtitle">@Subtitle</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } 
+    [Parameter] public string Subtitle { get; set; }
+}
+
+<!-- CODE END -->

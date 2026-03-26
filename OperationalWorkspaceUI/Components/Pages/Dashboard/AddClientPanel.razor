@@ -1,0 +1,58 @@
+﻿@using OperationalWorkspaceUI.UIServices.Actions
+@using OperationalWorkspaceUI.UIServices.System
+
+<!-- CODE START: AddClientPanel.razor -->
+@inject QuickActionUIService QuickActions
+@inject EmailContextState EmailState
+@inject NotificationService NotificationService
+
+<div class="panel add-client-panel">
+
+    <h5>Add / Link Client</h5>
+
+    @if (EmailState.CurrentEmail == null)
+    {
+        <EmptyState Message="No email selected." />
+    }
+    else
+    {
+        <div class="client-preview">
+            <p><b>Email:</b> @EmailState.CurrentEmail.From</p>
+            <p><b>Name (Detected):</b> @EmailState.CurrentEmail.SenderName</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" @onclick="CreateClient">
+                Create New Client
+            </button>
+
+            <button class="btn btn-outline-secondary" @onclick="SearchClient">
+                Search Existing
+            </button>
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private async Task CreateClient()
+    {
+        try
+        {
+            await QuickActions.CreateClientFromEmailAsync();
+            NotificationService.Success("Client created successfully");
+        }
+        catch
+        {
+            NotificationService.Error("Failed to create client");
+        }
+    }
+
+    private async Task SearchClient()
+    {
+        await QuickActions.OpenClientSearchAsync();
+    }
+}
+
+<!-- CODE END -->

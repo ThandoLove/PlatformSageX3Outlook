@@ -1,0 +1,82 @@
+﻿<!-- CODE START: FormStepper.razor -->
+
+<div class="form-stepper">
+
+    <!-- HEADER -->
+    <div class="stepper-header">
+        @for (int i = 0; i < Steps.Count; i++)
+        {
+            var step = Steps[i];
+
+            <div class="step @(i == CurrentStep ? "active" : "") @(i < CurrentStep ? "completed" : "")">
+                <div class="step-index">@(i + 1)</div>
+                <div class="step-title">@step.Title</div>
+            </div>
+        }
+    </div>
+
+    <!-- CONTENT -->
+    <div class="stepper-content">
+        @Steps[CurrentStep].Content
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="stepper-actions">
+
+        <button class="btn btn-secondary"
+                @onclick="Prev"
+                disabled="@(CurrentStep == 0)">
+            Back
+        </button>
+
+        @if (IsLast)
+        {
+            <button class="btn btn-success" @onclick="Finish">Finish</button>
+        }
+        else
+        {
+            <button class="btn btn-primary" @onclick="Next">Next</button>
+        }
+
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter] public List<FormStep> Steps { get; set; } = new();
+    [Parameter] public EventCallback OnCompleted { get; set; }
+
+    private int CurrentStep = 0;
+    private bool IsLast => CurrentStep == Steps.Count - 1;
+
+    private async Task Next()
+    {
+        if (!await Validate()) return;
+        CurrentStep++;
+    }
+
+    private void Prev() => CurrentStep--;
+
+    private async Task Finish()
+    {
+        if (!await Validate()) return;
+        await OnCompleted.InvokeAsync();
+    }
+
+    private async Task<bool> Validate()
+    {
+        var step = Steps[CurrentStep];
+        if (step.Validate == null) return true;
+        return await step.Validate.Invoke();
+    }
+
+    public class FormStep
+    {
+        public string Title { get; set; }
+        public RenderFragment Content { get; set; }
+        public Func<Task<bool>> Validate { get; set; }
+    }
+}
+
+<!-- CODE END -->

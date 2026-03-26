@@ -1,0 +1,18 @@
+﻿@inject DashboardState State
+
+<div class="dashboard-panel recent-activity-panel">
+    <h4>Recent Activity</h4>
+    @if(State.RecentActivity != null && State.RecentActivity.Any())
+    {
+        <ul>
+            @foreach(var activity in State.RecentActivity)
+            {
+                <li>@activity.User - @activity.Action</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <EmptyState Message="No recent activity." />
+    }
+</div>

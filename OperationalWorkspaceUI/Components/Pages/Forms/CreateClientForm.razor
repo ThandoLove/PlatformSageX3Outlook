@@ -1,0 +1,56 @@
+﻿@page "/forms/create-client"
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceUI.UIServices.System
+
+@inject OperationalWorkspaceUI.UIServices.Workspace.BusinessPartnerUIService BPService
+@inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
+@inject NotificationService NotificationService
+@inject NavigationService NavigationService
+
+<h3>Create Client</h3>
+
+<FormStepper Steps="@Steps" OnCompleted="SaveClientAsync" />
+
+@code {
+
+    private ClientDTO NewClient = new();
+
+    private List<FormStepper.FormStep> Steps => new()
+    {
+        new()
+        {
+            Title = "Basic Info",
+            Content = @<FormSection Title="Client Details">
+                            <FormField Label="Client Name" @bind-Value="NewClient.Name" />
+                            <FormField Label="Email" @bind-Value="NewClient.Email" />
+                       </FormSection>,
+            Validate = async () => !string.IsNullOrWhiteSpace(NewClient.Name)
+        },
+
+        new()
+        {
+            Title = "Contact",
+            Content = @<FormSection Title="Contact Info">
+                            <FormField Label="Phone" @bind-Value="NewClient.PhoneNumber" />
+                            <FormField Label="Address" @bind-Value="NewClient.Address" />
+                       </FormSection>,
+            Validate = async () => true
+        }
+    };
+
+    private async Task SaveClientAsync()
+    {
+        var success = await BPService.CreateClientAsync(NewClient);
+
+        if (success)
+        {
+            WorkspaceState.ReloadClients();
+            NotificationService.ShowSuccess("Client created");
+            NavigationService.NavigateTo("/workspace/businesspartners");
+        }
+        else
+        {
+            NotificationService.ShowError("Failed");
+        }
+    }
+}

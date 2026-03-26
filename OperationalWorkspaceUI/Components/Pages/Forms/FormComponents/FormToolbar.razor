@@ -1,0 +1,8 @@
+﻿<!-- FormToolbar.razor -->
+<div class="form-toolbar">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}
