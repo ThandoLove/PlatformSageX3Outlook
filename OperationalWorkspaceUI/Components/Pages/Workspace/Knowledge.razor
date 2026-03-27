@@ -1,6 +1,7 @@
 ﻿@page "/workspace/knowledge"
 
 <!-- CODE START: Knowledge.razor -->
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
 @inject WorkspaceState WorkspaceState
 @inject NavigationService NavigationService
@@ -31,6 +32,13 @@ else
 
 @code {
     private void Create() => NavigationService.NavigateTo("/forms/send-knowledge");
+
+    protected override async Task OnInitializedAsync()
+    {
+        var articles = await KBService.GetArticlesAsync();
+        WorkspaceState.ReloadKnowledge(articles);
+    }
+  
 }
 
 <!-- CODE END -->

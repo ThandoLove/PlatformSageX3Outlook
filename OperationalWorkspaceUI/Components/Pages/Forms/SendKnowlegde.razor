@@ -1,12 +1,11 @@
 ﻿@page "/forms/send-knowledge"
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
-@using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.UIServices.Workspace
 
-@* Inject with names that match your HandleSubmit logic *@
 @inject KnowledgeUIService KBService
 @inject NotificationService Notifications
-@inject NavigationService Navigation
+@inject NavigationManager Navigation
 
 <h3>Send Knowledge</h3>
 
@@ -17,14 +16,16 @@
 
     private List<FormStepper.FormStep> Steps => new()
     {
-        new() {
+        new()
+        {
             Title = "Search",
             Content = @<FormSection Title="Search">
                             <FormField Label="Search" @bind-Value="Model.SearchQuery" />
                        </FormSection>,
             Validate = async () => !string.IsNullOrWhiteSpace(Model.SearchQuery)
         },
-        new() {
+        new()
+        {
             Title = "Message",
             Content = @<FormSection Title="Message">
                             <FormField Label="Message" Type="textarea" @bind-Value="Model.Message" />
@@ -35,12 +36,13 @@
 
     private async Task HandleSubmit()
     {
-        // Changed 'Actions' to 'KBService'
+        // Call the service we updated above
         await KBService.SendKnowledgeAsync(Model);
         
-        // Changed 'Notifications' to match the @inject above
-        await Notifications.Success("Sent");
+        // Show success notification
+        await Notifications.Success("Knowledge sent successfully");
         
+        // Go back to the main knowledge page
         Navigation.NavigateTo("/workspace/knowledge");
     }
 }

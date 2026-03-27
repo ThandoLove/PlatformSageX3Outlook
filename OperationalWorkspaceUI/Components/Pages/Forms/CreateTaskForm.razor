@@ -1,15 +1,16 @@
 ﻿<!-- CODE START: CreateTaskForm.razor -->
 
 @page "/forms/create-task"
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceUI.UIServices.System
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.TasksUIService TaskService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
 @inject NotificationService NotificationService
 @inject NavigationService NavigationService
 
-@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
-@using OperationalWorkspaceUI.UIServices.System
+
 
 <h3>Create Task</h3>
 
@@ -32,7 +33,7 @@
             Content = @<FormSection Title="Task Info">
                             <FormField Label="Title" @bind-Value="NewTask.Title" />
                             <FormField Label="Description" Type="textarea"
-                                       @bind-Value="NewTask.Description" />
+                                       @bind-Value="NewTask.StatusDescription" />
                        </FormSection>,
             Validate = async () =>
                 !string.IsNullOrWhiteSpace(NewTask.Title)
@@ -45,10 +46,10 @@
                             <FormField Label="Assigned To"
                                        Type="select"
                                        Options="Users"
-                                       @bind-Value="NewTask.AssignedToId" />
+                                       @bind-Value="NewTask.AssignedTo" />
                        </FormSection>,
             Validate = async () =>
-                !string.IsNullOrWhiteSpace(NewTask.AssignedToId)
+                !string.IsNullOrWhiteSpace(NewTask.AssignedTo)
         },
 
         new()
@@ -65,7 +66,7 @@
 
     private string DueDateString
     {
-        get => NewTask.DueDate?.ToString("yyyy-MM-dd");
+        get => NewTask.DueDate.ToString("yyyy-MM-dd");
         set
         {
             if (DateTime.TryParse(value, out var date))
@@ -80,12 +81,13 @@
         if (success)
         {
             WorkspaceState.ReloadTasks();
-            NotificationService.ShowSuccess("Task created successfully");
+            await NotificationService.Success("Task created successfully");
+            
             NavigationService.NavigateTo("/workspace/tasks");
         }
         else
         {
-            NotificationService.ShowError("Failed to create task");
+            await NotificationService.Error("Failed to create task");
         }
     }
 }

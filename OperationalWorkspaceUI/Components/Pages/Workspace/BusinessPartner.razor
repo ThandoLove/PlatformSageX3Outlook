@@ -1,6 +1,8 @@
 ﻿
 
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
 
@@ -54,7 +56,7 @@ else
     private async Task Refresh()
     {
         await BPService.LoadClientsAsync();
-        NotificationService.ShowSuccess("Clients refreshed");
+        await NotificationService.Success("Clients refreshed");
     }
 
     private void Create() => NavigationService.NavigateTo("/forms/create-client");

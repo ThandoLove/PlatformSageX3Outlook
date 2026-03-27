@@ -48,7 +48,6 @@ public sealed class EmailInsightDto
     public string Subject { get; init; } = string.Empty;
     public string From { get; init; } = string.Empty;   
     public DateTime ReceivedAt { get; init; }
-  
-
-
+    public string AssignedUserId { get; set; }
+    public Guid ClientId { get; set; }
 }

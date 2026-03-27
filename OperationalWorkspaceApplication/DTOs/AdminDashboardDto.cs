@@ -38,6 +38,7 @@ namespace OperationalWorkspaceApplication.DTOs
 
         // Attachments (shared)
         public List<AttachmentDto> Attachments { get; set; } = new List<AttachmentDto>();
+        public List<ActivityDto> RecentActivity { get; set; }
     }
     // CODE END
 }

@@ -11,9 +11,11 @@
 else
 {
     <div class="email-details">
+        <!-- Change Email.Body to Email.Message -->
         <div class="email-body" @onclick:stopPropagation>
-            @((MarkupString)Email.Body)
+            @((MarkupString)Email.Message)
         </div>
+
     </div>
 }
 

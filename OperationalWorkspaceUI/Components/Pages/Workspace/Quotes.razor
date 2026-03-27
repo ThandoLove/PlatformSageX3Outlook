@@ -1,12 +1,9 @@
-﻿<!-- CODE START: Quotes.razor -->
-
-@page "/workspace/quotes"
-
+﻿@page "/workspace/quotes"
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
-@using OperationalWorkspaceUI.Components.Shared
-
 @inject OrdersUIService OrdersService
 @inject WorkspaceState WorkspaceState
 @inject NavigationService NavigationService
@@ -14,32 +11,15 @@
 
 <h3>Quotes</h3>
 
-<WorkspaceHeader Title="Quotes"
-                 Subtitle="Manage quotations lifecycle" />
+<WorkspaceHeader Title="Quotes" Subtitle="Manage quotations lifecycle" />
 
-<!-- 🔥 KPI SUMMARY -->
 <WorkspaceSummaryPanel Title="Quote Overview">
-
     <div class="d-flex gap-4">
-
-        <div>
-            <strong>Total:</strong> @TotalQuotes
-        </div>
-
-        <div>
-            <strong>Draft:</strong> @DraftCount
-        </div>
-
-        <div>
-            <strong>Approved:</strong> @ApprovedCount
-        </div>
-
-        <div>
-            <strong>Value:</strong> @TotalValue.ToString("C")
-        </div>
-
+        <div><strong>Total:</strong> @TotalQuotes</div>
+        <div><strong>Draft:</strong> @DraftCount</div>
+        <div><strong>Approved:</strong> @ApprovedCount</div>
+        <div><strong>Value:</strong> @TotalValue.ToString("C")</div>
     </div>
-
 </WorkspaceSummaryPanel>
 
 <WorkspaceToolbar>
@@ -48,81 +28,56 @@
 </WorkspaceToolbar>
 
 <WorkspaceFilters>
-
-    <FormField Label="Search" @bind-Value="SearchQuery" />
-
-    <FormField Label="Status"
-               Type="select"
-               Options="StatusOptions"
-               @bind-Value="SelectedStatus" />
-
+    @* FIX: Ensure bind-value is lowercase if your component expects it *@
+    <FormField Label="Search" @bind-value="SearchQuery" />
+    <FormField Label="Status" Type="select" Options="StatusOptions" @bind-value="SelectedStatus" />
 </WorkspaceFilters>
 
 @if (IsLoading)
 {
     <LoadingSpinner />
 }
-else if (!FilteredQuotes.Any())
-{
-    <EmptyState Message="No quotes found." />
-}
 else
 {
-    <QuoteGrid Items="FilteredQuotes"
-               OnView="OpenQuote"
-               OnApprove="ApproveQuote"
-               OnConvert="ConvertQuote" />
+    <QuoteGrid Items="FilteredQuotes" OnView="OpenQuote" OnApprove="ApproveQuote" OnConvert="ConvertQuote" />
 }
 
 @code {
-
     private bool IsLoading = true;
-    private string SearchQuery;
+    private string SearchQuery = "";
     private string SelectedStatus = "All";
 
     private List<KeyValuePair<string,string>> StatusOptions = new()
     {
-        new("All", "All"),
-        new("Draft", "Draft"),
-        new("Approved", "Approved"),
-        new("Rejected", "Rejected")
+        new("All", "All"), new("Draft", "Draft"), new("Approved", "Approved"), new("Rejected", "Rejected")
     };
 
-    private List<OpenOrderDto> Quotes =>
-        WorkspaceState.Quotes ?? new();
+    // FIX: Renamed from 'Quotes' to 'QuoteList' to avoid class name conflict
+    private List<OpenOrderDto> QuoteList => WorkspaceState.Quotes ?? new();
 
     private IEnumerable<OpenOrderDto> FilteredQuotes =>
-        Quotes.Where(q =>
-            (string.IsNullOrWhiteSpace(SearchQuery) ||
-             q.OrderNumber?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) == true)
-            &&
-            (SelectedStatus == "All" || q.Status == SelectedStatus)
+        QuoteList.Where(q =>
+            (string.IsNullOrWhiteSpace(SearchQuery) || q.OrderNumber.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+            && (SelectedStatus == "All" || q.Status == SelectedStatus)
         );
 
-    // 🔥 KPI CALCULATIONS
-    private int TotalQuotes => Quotes.Count;
-    private int DraftCount => Quotes.Count(q => q.Status == "Draft");
-    private int ApprovedCount => Quotes.Count(q => q.Status == "Approved");
-    private decimal TotalValue => Quotes.Sum(q => q.TotalAmount);
+    private int TotalQuotes => QuoteList.Count;
+    private int DraftCount => QuoteList.Count(q => q.Status == "Draft");
+    private int ApprovedCount => QuoteList.Count(q => q.Status == "Approved");
+    private decimal TotalValue => QuoteList.Sum(q => q.TotalAmount);
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadQuotes();
-    }
+    protected override async Task OnInitializedAsync() => await LoadQuotes();
 
     private async Task LoadQuotes()
     {
-        try
-        {
+        try {
             IsLoading = true;
             await OrdersService.LoadQuotesAsync();
         }
-        catch
-        {
-            NotificationService.ShowError("Failed to load quotes");
+        catch {
+            await NotificationService.Error("Failed to load quotes");
         }
-        finally
-        {
+        finally {
             IsLoading = false;
         }
     }
@@ -130,43 +85,33 @@ else
     private async Task Refresh()
     {
         await LoadQuotes();
-        NotificationService.ShowSuccess("Quotes refreshed");
+        await NotificationService.Success("Quotes refreshed");
     }
 
-    private void CreateQuote()
-        => NavigationService.NavigateTo("/forms/create-quote");
-
-    private void OpenQuote(OpenOrderDto quote)
-        => NavigationService.NavigateTo($"/workspace/orders/{quote.Id}");
+    private void CreateQuote() => NavigationService.NavigateTo("/forms/create-quote");
+    private void OpenQuote(OpenOrderDto quote) => NavigationService.NavigateTo($"/workspace/orders/{quote.Id}");
 
     private async Task ApproveQuote(OpenOrderDto quote)
     {
-        try
-        {
+        try {
             await OrdersService.ApproveQuoteAsync(quote.Id);
-            NotificationService.ShowSuccess("Quote approved");
+            await NotificationService.Success("Quote approved");
             await LoadQuotes();
         }
-        catch
-        {
-            NotificationService.ShowError("Failed to approve quote");
+        catch {
+            await NotificationService.Error("Failed to approve quote");
         }
     }
 
     private async Task ConvertQuote(OpenOrderDto quote)
     {
-        try
-        {
+        try {
             await OrdersService.ConvertToOrderAsync(quote.Id);
-            NotificationService.ShowSuccess("Converted to order");
+            await NotificationService.Success("Converted to order");
             await LoadQuotes();
         }
-        catch
-        {
-            NotificationService.ShowError("Conversion failed");
+        catch {
+            await NotificationService.Error("Conversion failed");
         }
     }
-
 }
-
-<!-- CODE END -->

@@ -7,16 +7,24 @@ namespace OperationalWorkspaceUI.State
     public class WorkspaceState
     {
         public List<ClientDTO> Clients { get; set; } = new();
-        public List<OrderDTO> Orders { get; set; } = new();
+        public List<OrderDto> Orders { get; set; } = new();
         public List<TaskDto> Tasks { get; set; } = new();
         public List<ActivityDto> ActivityLogs { get; set; } = new();
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
         public List<AttachmentDto> Attachments { get; set; } = new();
-        public List<UserDTO> Users { get; set; } = new();
+        public List<UserDto> Users { get; set; } = new();
+
+        public List<string> Knowledge { get; set; } = new();
+        public List<OpenOrderDto> Quotes { get; set; } = new();
+
+        public void ReloadKnowledge(List<string> articles)
+        {
+            Knowledge = articles;
+        }
 
         public void PreFillOrderFromEmail(EmailInsightDto email)
         {
-            Orders.Add(new OrderDTO
+            Orders.Add(new OrderDto
             {
                 ClientId = email.ClientId,
                 OrderDate = DateTime.UtcNow,
@@ -29,8 +37,8 @@ namespace OperationalWorkspaceUI.State
             Tasks.Add(new TaskDto
             {
                 Title = $"Follow-up: {email.Subject}",
-                Description = email.Body,
-                AssignedToId = email.AssignedUserId,
+                StatusDescription = email.Message,
+                AssignedTo = email.AssignedUserId,
                 DueDate = DateTime.UtcNow.AddDays(3)
             });
         }

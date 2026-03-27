@@ -14,8 +14,7 @@
 <FormStepper Steps="@Steps" OnCompleted="SaveOrderAsync" />
 
 @code {
-
-    private OpenOrderDto NewOrder = new();
+    private CreateOrderDto NewOrder = new();
 
     private List<KeyValuePair<string,string>> Clients =>
         WorkspaceState.Clients
@@ -29,7 +28,10 @@
             Title = "Order",
             Content = @<FormSection Title="Order Info">
                             <FormField Label="Order Number" @bind-Value="NewOrder.OrderNumber" />
-                            <FormField Label="Client" Type="select" Options="Clients" @bind-Value="NewOrder.ClientId" />
+                            @* Use a wrapper or string-based binding if FormField is not generic *@
+                            <FormField Label="Client" Type="select" Options="Clients" 
+                                       Value="@NewOrder.ClientId.ToString()" 
+                                       ValueChanged="@((string val) => NewOrder.ClientId = Guid.Parse(val))" />
                        </FormSection>,
             Validate = async () => !string.IsNullOrWhiteSpace(NewOrder.OrderNumber)
         },
@@ -38,7 +40,9 @@
         {
             Title = "Financial",
             Content = @<FormSection Title="Financial">
-                            <FormField Label="Amount" Type="number" @bind-Value="NewOrder.TotalAmount" />
+                            <FormField Label="Amount" Type="number" 
+                                       Value="@NewOrder.TotalAmount.ToString()" 
+                                       ValueChanged="@((string val) => NewOrder.TotalAmount = decimal.Parse(val))" />
                        </FormSection>,
             Validate = async () => NewOrder.TotalAmount > 0
         }
@@ -46,17 +50,20 @@
 
     private async Task SaveOrderAsync()
     {
+        // Ensure this method exists in your OrdersUIService
         var success = await OrderService.CreateOrderAsync(NewOrder);
 
         if (success)
         {
             WorkspaceState.ReloadOrders();
-            NotificationService.ShowSuccess("Order created");
+            // FIXED: Using method names from your NotificationService class
+            await NotificationService.Success("Order created");
             NavigationService.NavigateTo("/workspace/orders");
         }
         else
         {
-            NotificationService.ShowError("Failed");
+            // FIXED: Using method names from your NotificationService class
+            await NotificationService.Error("Failed");
         }
     }
 }

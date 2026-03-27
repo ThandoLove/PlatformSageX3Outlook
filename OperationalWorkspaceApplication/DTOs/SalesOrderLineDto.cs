@@ -1,6 +1,4 @@
-﻿
-
-namespace OperationalWorkspaceApplication.DTOs;
+﻿namespace OperationalWorkspaceApplication.DTOs;
 
 public sealed class SalesOrderLineDto
 {
@@ -22,7 +20,6 @@ public sealed class SalesOrderLineDto
     public decimal LineTotal { get; init; }
 
     public string LineStatus { get; init; } = string.Empty;
-    // Open | BackOrder | Delivered | Cancelled
 
     public bool HasStockIssue { get; init; }
 }

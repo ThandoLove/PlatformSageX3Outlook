@@ -1,23 +1,17 @@
-﻿
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿namespace OperationalWorkspaceUI.UIServices.Workspace;
 
-    namespace OperationalWorkspaceUI.UIServices.Workspace
+using OperationalWorkspaceApplication.DTOs;
 
+public class TasksUIService
 {
-    public class TasksUIService
-        {
-            private readonly List<string> _tasks = new();
+    private readonly List<TaskDto> _tasks = new();
 
-            public Task<List<string>> GetTasksAsync()
-            {
-                return Task.FromResult(_tasks);
-            }
+    public Task<List<TaskDto>> GetTasksAsync() => Task.FromResult(_tasks);
 
-            public Task AddTaskAsync(string task)
-            {
-                _tasks.Add(task);
-                return Task.CompletedTask;
-            }
-        }
+    // FIXED: Renamed to match the Razor component and accepts TaskDto
+    public Task<bool> CreateTaskAsync(TaskDto task)
+    {
+        _tasks.Add(task);
+        return Task.FromResult(true);
     }
+}
