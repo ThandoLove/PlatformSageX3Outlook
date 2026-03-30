@@ -18,6 +18,7 @@ public sealed class MockUnifiedService :
     IInvoiceService
 {
     // --- IActivityService ---
+    // Assuming ActivityDto has a constructor based on your previous code
     public async Task<ActivityDto?> GetActivityByIdAsync(Guid id) =>
         new ActivityDto(id, "Meeting", "Sync", "Meeting", Guid.Empty, DateTime.UtcNow, "user@test.com", DateTime.UtcNow, "System");
 
@@ -64,7 +65,17 @@ public sealed class MockUnifiedService :
     public async Task<int> CountPendingDeliveriesAsync(string userId) => 0;
     public async Task<int> CountTotalOrdersAsync() => 0;
     public async Task<CreateSalesOrderResponse> CreateOrderAsync(CreateSalesOrderRequest req, CancellationToken ct) => new CreateSalesOrderResponse(Guid.NewGuid());
-    public async Task<SalesOrderDetailsResponse?> GetOrderAsync(GetSalesOrderRequest req, CancellationToken ct) => new SalesOrderDetailsResponse(new SalesOrderDto(Guid.NewGuid(), "MOCK-101", 1500m));
+
+    // FIXED: Using object initializer for SalesOrderDto
+    public async Task<SalesOrderDetailsResponse?> GetOrderAsync(GetSalesOrderRequest req, CancellationToken ct) =>
+        new SalesOrderDetailsResponse(new SalesOrderDto
+        {
+            Id = Guid.NewGuid(),
+            OrderNumber = "MOCK-101",
+            TotalAmount = 1500m,
+            OrderDate = DateTime.UtcNow,
+            OrderStatus = "Open"
+        });
 
     // --- IKnowledgeService ---
     private async Task<KnowledgeDto?> GetKnowledgeByIdInternalAsync(Guid id) =>

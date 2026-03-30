@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using OperationalWorkspaceApplication.DTOs; // Ensure this matches your DTO location
-using OperationalWorkspaceUI.State; // Ensure this matches your WorkspaceState location
+using OperationalWorkspaceApplication.DTOs;
+using OperationalWorkspaceUI.State;
 
 namespace OperationalWorkspaceUI.UIServices.Workspace
 {
@@ -9,32 +10,47 @@ namespace OperationalWorkspaceUI.UIServices.Workspace
     {
         private readonly WorkspaceState _state;
 
-        // Inject WorkspaceState to manage the global client list
         public BusinessPartnerUIService(WorkspaceState state)
         {
             _state = state;
         }
 
-        // FIXED: Renamed to match your UI's call and uses DTOs
         public async Task LoadClientsAsync()
         {
-            // Simulate API call - Replace with: 
-            // _state.Clients = await _http.GetFromJsonAsync<List<ClientDTO>>("api/partners");
-
-            if (_state.Clients == null || !_state.Clients.Any())
+            // Standardize on ClientDto (PascalCase)
+            if (_state.Clients == null)
             {
-                _state.Clients = new List<ClientDTO>();
+                _state.Clients = new List<ClientDto>();
             }
+
+            // Example: _state.Clients = await _http.GetFromJsonAsync<List<ClientDto>>("api/partners") ?? new();
 
             await Task.CompletedTask;
         }
 
-        public Task<List<ClientDTO>> GetPartnersAsync()
+        // FIX: Ensure return type matches the WorkspaceState.Clients type exactly
+        public Task<List<ClientDto>> GetPartnersAsync()
         {
-            return Task.FromResult(_state.Clients ?? new List<ClientDTO>());
+            return Task.FromResult(_state.Clients ?? new List<ClientDto>());
         }
 
-        public Task AddPartnerAsync(ClientDTO partner)
+        // FIX: Added missing method called by CreateClient.razor
+        public async Task<bool> CreateClientAsync(ClientDto partner)
+        {
+            try
+            {
+                // Simulate API POST call here
+                _state.Clients?.Add(partner);
+                await Task.CompletedTask;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public Task AddPartnerAsync(ClientDto partner)
         {
             _state.Clients?.Add(partner);
             return Task.CompletedTask;

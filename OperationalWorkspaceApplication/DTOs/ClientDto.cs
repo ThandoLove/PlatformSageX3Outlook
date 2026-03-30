@@ -3,7 +3,7 @@ using System;
 
 namespace OperationalWorkspaceApplication.DTOs
 {
-    public class ClientDTO
+    public class ClientDto
     {
         public Guid Id { get; set; }
 

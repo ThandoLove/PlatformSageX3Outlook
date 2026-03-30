@@ -46,12 +46,12 @@
         if (success)
         {
             WorkspaceState.ReloadClients();
-            NotificationService.ShowSuccess("Client created");
+            await NotificationService.Success("Client created");
             NavigationService.NavigateTo("/workspace/businesspartners");
         }
         else
         {
-            NotificationService.ShowError("Failed");
+            await NotificationService.Error("Failed");
         }
     }
 }

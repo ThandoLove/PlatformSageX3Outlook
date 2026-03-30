@@ -29,7 +29,7 @@ else
 }
 
 @code {
-    [Parameter] public ClientDTO Client { get; set; }
+    [Parameter] public ClientDTO? Client { get; set; }
     [Parameter] public bool IsLoading { get; set; }
 
     [Parameter] public EventCallback<ClientDTO> OnOpenClient { get; set; }

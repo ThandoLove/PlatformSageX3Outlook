@@ -1,60 +1,51 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspace.UIServices.DashboardUI;
 
-namespace OperationalWorkspaceUI.State
+namespace OperationalWorkspaceUI.State;
+
+public class DashboardState
 {
-    public class DashboardState
+    private readonly DashboardUIService _dashboardService;
+
+    public DashboardState(DashboardUIService dashboardService)
     {
-        private readonly IDashboardService _dashboardService;
+        _dashboardService = dashboardService;
+    }
 
-        public DashboardState(IDashboardService dashboardService)
-        {
-            _dashboardService = dashboardService;
-        }
+    // --- ADMIN DASHBOARD DATA ---
+    public AdminErpDto AdminErp { get;  set; } = new();
+    public AdminCrmDto AdminCrm { get; set; } = new();
+    public AdminFinanceDto AdminFinance { get; set; } = new();
+    public AdminSystemHealthDto AdminHealth { get; set; } = new();
+    public List<AuditLogDto> AuditLogs { get; set; } = new();
 
-        // =========================
-        // RAW DATA (FROM APPLICATION)
-        // =========================
-        public AdminErpDto ERPData { get; private set; } = new();
-        public AdminCrmDto CRMData { get; private set; } = new();
-        public AdminFinanceDto FinanceData { get; private set; } = new();
-        public AdminSystemHealthDto SystemHealth { get; private set; } = new();
+    // --- EMPLOYEE DASHBOARD DATA ---
+    public EmployeeErpDto EmployeeErp { get; set; } = new();
+    public EmployeeCRMDTO EmployeeCrm { get; set; } = new();
+    public EmployeeFinanceDto EmployeeFinance { get; set; } = new();
+    public List<TaskDto> MyTasks { get; set; } = new();
 
-        public List<TaskDto> Tasks { get; private set; } = new();
-        public List<ActivityDto> RecentActivity { get; private set; } = new();
-        public List<AuditLogDto> AuditLogs { get; private set; } = new();
-        public List<KnowledgeDto> KnowledgeBase { get; private set; } = new();
+    // --- SHARED DATA ---
+    public List<ClientDto> TopClients { get; set; } = new();
+    public List<ActivityDto> RecentActivities { get; set; } = new();
+    public List<TaskDto> AllTasks { get; set; } = new();
 
-        // =========================
-        // UI-FRIENDLY PROPERTIES (🔥 IMPORTANT)
-        // =========================
+    // --- State Management ---
+    public event Action? OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
 
-        // CRM Panel
-        public List<ClientDTO> TopClients =>
-            CRMData?.TopClients ?? new List<ClientDTO>();
+    // --- Methods ---
+    public async Task LoadAdminDashboardAsync()
+    {
+        await _dashboardService.LoadDashboardAsync(this);
+        NotifyStateChanged();
+    }
 
-        // Tasks Panel
-        public List<TaskDto> AllTasks => Tasks;
-
-        // Activity Panel
-        public List<ActivityDto> RecentActivities => RecentActivity;
-
-        // =========================
-        // LOAD DATA (🔥 REQUIRED)
-        // =========================
-        public async Task LoadAdminDashboardAsync()
-        {
-            var data = await _dashboardService.GetAdminDashboardAsync();
-
-            ERPData = data.ERP;
-            CRMData = data.CRM;
-            FinanceData = data.Finance;
-            SystemHealth = data.SystemHealth;
-
-            Tasks = data.Tasks;
-            RecentActivity = data.RecentActivity;
-            AuditLogs = data.AuditLogs;
-            KnowledgeBase = data.KnowledgeBase;
-        }
+    public async Task LoadEmployeeDashboardAsync()
+    {
+        await _dashboardService.LoadDashboardAsync(this);
+        // Logic to filter tasks for the current user
+        MyTasks = AllTasks.Where(t => t.Status != "Completed").ToList();
+        NotifyStateChanged();
     }
 }

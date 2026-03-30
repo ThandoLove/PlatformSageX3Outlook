@@ -20,10 +20,10 @@
 </div>
 
 @code {
-    [Parameter] public string Label { get; set; }
-    [Parameter] public object Value { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public object? Value { get; set; }
     [Parameter] public string Prefix { get; set; } = "";
-    [Parameter] public string Trend { get; set; } // e.g. "+12%"
+    [Parameter] public string? Trend { get; set; } // e.g. "+12%"
     [Parameter] public string Variant { get; set; } = "default"; // success, warning, etc
 
     private string FormattedValue => Value switch
@@ -31,7 +31,7 @@
         null => "-",
         decimal d => d.ToString("N2"),
         int i => i.ToString("N0"),
-        _ => Value.ToString()
+        _ => Value?.ToString() ?? "-" // FIX: Added null-safe operator
     };
 }
 

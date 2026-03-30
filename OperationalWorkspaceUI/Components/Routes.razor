@@ -1,4 +1,5 @@
-﻿<!-- CODE START: Routes.razor -->
+﻿@using Microsoft.AspNetCore.Components.Authorization
+<!-- CODE START: Routes.razor -->
 
 <CascadingAuthenticationState>
     <CascadingValue Value="@UIState">
@@ -25,7 +26,7 @@
 </CascadingAuthenticationState>
 
 @code {
-    [Inject] private UIState UIState { get; set; }
+    [Inject] private UIState? UIState { get; set; }
 }
 
 <!-- CODE END -->

@@ -1,26 +1,43 @@
 ﻿@using OperationalWorkspaceUI.Models
 @using OperationalWorkspaceApplication.DTOs
 
-<h3>EmailDetails</h3>
-
-<!-- CODE START: EmailDetails.razor -->
-@if (Email == null)
-{
-    <EmptyState Message="No email content available." />
-}
-else
-{
-    <div class="email-details">
-        <!-- Change Email.Body to Email.Message -->
-        <div class="email-body" @onclick:stopPropagation>
-            @((MarkupString)Email.Message)
+<div class="email-container p-3">
+    <div class="email-header mb-3">
+        <h4>@Email?.Subject</h4>
+        <div class="text-muted d-flex justify-content-between">
+            <span><strong>From:</strong> @Email?.From</span>
+            <span>@Email?.ReceivedAt.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</span>
         </div>
-
     </div>
-}
+
+    <hr />
+
+    @if (Email == null)
+    {
+        <EmptyState Message="No email content available." />
+    }
+    else
+    {
+        <div class="email-details">
+            @*
+               Using MarkupString allows HTML content to render. 
+               Ensure Email.Message is sanitized before this step.
+            *@
+            <div class="email-body border rounded p-3 bg-light" @onclick:stopPropagation>
+                @((MarkupString)Email.Message)
+            </div>
+        </div>
+        
+        @if (Email.HasOverdueInvoices)
+        {
+            <div class="alert alert-danger mt-3">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                Warning: Client has @Email.OpenInvoiceCount overdue invoices totaling @Email.TotalOutstanding.ToString("C").
+            </div>
+        }
+    }
+</div>
 
 @code {
-    [Parameter] public EmailInsightDto Email { get; set; }
+    [Parameter] public EmailInsightDto? Email { get; set; }
 }
-
-<!-- CODE END -->

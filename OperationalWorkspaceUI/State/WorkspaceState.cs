@@ -6,7 +6,7 @@ namespace OperationalWorkspaceUI.State
     
     public class WorkspaceState
     {
-        public List<ClientDTO> Clients { get; set; } = new();
+        public List<ClientDto> Clients { get; set; } = new();
         public List<OrderDto> Orders { get; set; } = new();
         public List<TaskDto> Tasks { get; set; } = new();
         public List<ActivityDto> ActivityLogs { get; set; } = new();

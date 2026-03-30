@@ -34,7 +34,7 @@ else
 }
 
 @code {
-    [Parameter] public List<OpenOrderDto> Orders { get; set; }
+    [Parameter] public List<OpenOrderDto>? Orders { get; set; }
     [Parameter] public EventCallback<OpenOrderDto> OnOpenOrder { get; set; }
 }
 

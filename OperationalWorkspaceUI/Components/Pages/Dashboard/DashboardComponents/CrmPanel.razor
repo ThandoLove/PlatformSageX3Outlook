@@ -3,7 +3,8 @@
 <div class="dashboard-panel crm-panel">
     <h4>CRM Overview</h4>
     <div class="panel-content">
-        <KPIWidget Label="Top Clients" Value="@State.CRMData?.TopClients ?? 0" />
-        <KPIWidget Label="Opportunities" Value="@State.CRMData?.Opportunities ?? 0" />
+        @* Update from CRMData to AdminCrm *@
+        <KpiWidget Label="Active Customers" Value="@State.AdminCrm.ActiveCustomers" />
+        <KpiWidget Label="Opportunities" Value="@State.AdminCrm.OpenOpportunities" />
     </div>
 </div>

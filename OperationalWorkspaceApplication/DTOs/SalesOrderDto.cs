@@ -32,6 +32,8 @@ public sealed class SalesOrderDto
     public IReadOnlyCollection<SalesOrderLineDto> Lines { get; init; }
         = Array.Empty<SalesOrderLineDto>();
 
+    
+
     public Guid CreatedBy { get; init; }
     public DateTime CreatedAtUtc { get; init; }
     public Guid? LastModifiedBy { get; init; }

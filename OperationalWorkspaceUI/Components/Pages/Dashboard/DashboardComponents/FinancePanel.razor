@@ -2,6 +2,7 @@
 
 <div class="dashboard-panel finance-panel">
     <h4>Finance</h4>
-    <KPIWidget Label="Receivables" Value="@State.FinanceData?.Receivables ?? 0" Prefix="$" />
-    <KPIWidget Label="Payables" Value="@State.FinanceData?.Payables ?? 0" Prefix="$" />
+    @* Update from FinanceData to AdminFinance *@
+    <KpiWidget Label="Receivables" Value="@State.AdminFinance.TotalOutstandingReceivables" Prefix="$" />
+    <KpiWidget Label="Monthly Sales" Value="@State.AdminFinance.TotalSalesThisMonth" Prefix="$" />
 </div>

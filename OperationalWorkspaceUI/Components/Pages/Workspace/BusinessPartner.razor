@@ -1,13 +1,9 @@
-﻿
-
+﻿@page "/workspace/businesspartners"
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
-
-
-@page "/workspace/businesspartners"
 
 @inject BusinessPartnerUIService BPService
 @inject WorkspaceState WorkspaceState
@@ -27,35 +23,55 @@
     <FormField Label="Search" @bind-Value="SearchQuery" />
 </WorkspaceFilters>
 
-@if (FilteredClients == null)
-{
-    <LoadingSpinner />
-}
-else if (!FilteredClients.Any())
-{
-    <EmptyState Message="No clients found." />
-}
-else
-{
-    <BpGrid Items="FilteredClients" OnRowClick="Open" />
-}
+<BpGrid TItem="ClientDTO"
+        Items="FilteredClients"
+        IsLoading="IsLoading"
+        OnRowClick="@(client => Open(client))">
+    <HeaderContent>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th class="text-end">Revenue</th>
+    </HeaderContent>
+    <RowTemplate Context="client">
+        <td><span class="badge bg-light text-dark">@client.ClientCode</span></td>
+        <td><strong>@client.Name</strong></td>
+        <td>@client.Email</td>
+        <td>
+            <span class="badge @(client.Status == "Active" ? "bg-success" : "bg-secondary")">
+                @client.Status
+            </span>
+        </td>
+        <td class="text-end">@client.TotalRevenue.ToString("C")</td>
+    </RowTemplate>
+</BpGrid>
 
 @code {
-    private string SearchQuery;
+    private string SearchQuery = string.Empty;
+    private bool IsLoading = true;
 
     private IEnumerable<ClientDTO> FilteredClients =>
-        WorkspaceState.Clients?
+        (WorkspaceState.Clients ?? Enumerable.Empty<ClientDTO>())
             .Where(c => string.IsNullOrWhiteSpace(SearchQuery)
-                     || c.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+                     || c.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)
+                     || c.ClientCode.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        IsLoading = true;
         await BPService.LoadClientsAsync();
+        IsLoading = false;
     }
 
     private async Task Refresh()
     {
-        await BPService.LoadClientsAsync();
+        await LoadData();
         await NotificationService.Success("Clients refreshed");
     }
 
@@ -64,5 +80,3 @@ else
     private void Open(ClientDTO client) =>
         NavigationService.NavigateTo($"/workspace/businesspartners/{client.Id}");
 }
-
-<!-- CODE END -->

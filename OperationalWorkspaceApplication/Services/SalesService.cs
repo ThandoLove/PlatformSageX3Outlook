@@ -25,21 +25,14 @@ public sealed class SalesService : ISalesService
         _uow = uow;
     }
 
-    public async Task<int> CountOpenOrdersAsync(string userId)
-    {
-        // Calling updated repository interface method
-        return await _salesRepo.CountByStatusAsync(userId, "Open", CancellationToken.None);
-    }
+    public async Task<int> CountOpenOrdersAsync(string userId) =>
+        await _salesRepo.CountByStatusAsync(userId, "Open", CancellationToken.None);
 
-    public async Task<int> CountPendingDeliveriesAsync(string userId)
-    {
-        return await _salesRepo.CountByStatusAsync(userId, "Pending", CancellationToken.None);
-    }
+    public async Task<int> CountPendingDeliveriesAsync(string userId) =>
+        await _salesRepo.CountByStatusAsync(userId, "Pending", CancellationToken.None);
 
-    public async Task<int> CountTotalOrdersAsync()
-    {
-        return await _salesRepo.CountTotalAsync(CancellationToken.None);
-    }
+    public async Task<int> CountTotalOrdersAsync() =>
+        await _salesRepo.CountTotalAsync(CancellationToken.None);
 
     public async Task<CreateSalesOrderResponse> CreateOrderAsync(CreateSalesOrderRequest request, CancellationToken ct)
     {
@@ -70,7 +63,16 @@ public sealed class SalesService : ISalesService
         var order = await _salesRepo.GetByIdAsync(request.OrderId, ct);
         if (order is null) return null;
 
-        var dto = new SalesOrderDto(order.Id, order.BpCode, order.TotalAmount);
+        // FIXED: Using object initializer {} because SalesOrderDto has 'init' properties
+        var dto = new SalesOrderDto
+        {
+            Id = order.Id,
+            BusinessPartnerCode = order.BpCode,
+            TotalAmount = order.TotalAmount,
+            OrderDate = DateTime.UtcNow, // Map to your entity's date if it exists
+            OrderStatus = "Open"
+        };
+
         return new SalesOrderDetailsResponse(dto);
     }
 }

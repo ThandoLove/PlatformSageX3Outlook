@@ -1,42 +1,41 @@
-﻿<!-- CODE START: BpGrid.razor -->
+﻿@typeparam TItem
 @using OperationalWorkspaceApplication.DTOs
 
 @if (IsLoading)
 {
     <LoadingSpinner />
 }
-else if (Data == null || !Data.Any())
+else if (Items == null || !Items.Any())
 {
-    <EmptyState Message="No clients found." />
+    <EmptyState Message="No items found." />
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>City</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var client in Data)
-            {
-                <tr @onclick="() => OnRowClick.InvokeAsync(client)">
-                    <td>@client.Name</td>
-                    <td>@client.Email</td>
-                    <td>@client.PhoneNumber</td>
-                    <td>@client.City</td>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    @HeaderContent
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var item in Items)
+                {
+                    @* This line fixes the 'object' conversion error by using the generic TItem *@
+                    <tr @onclick="() => OnRowClick.InvokeAsync(item)" style="cursor: pointer;">
+                        @RowTemplate(item)
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
-    [Parameter] public List<ClientDTO> Data { get; set; }
+    [Parameter] public IEnumerable<TItem> Items { get; set; } = default!;
     [Parameter] public bool IsLoading { get; set; }
-    [Parameter] public EventCallback<ClientDTO> OnRowClick { get; set; }
+    [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+    
+    [Parameter] public RenderFragment HeaderContent { get; set; } = default!;
+    [Parameter] public RenderFragment<TItem> RowTemplate { get; set; } = default!;
 }
-<!-- CODE END -->

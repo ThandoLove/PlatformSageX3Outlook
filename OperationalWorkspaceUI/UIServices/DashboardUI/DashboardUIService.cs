@@ -1,8 +1,5 @@
-﻿
-// CODE START: Services/Dashboard/DashboardUIService.cs
-
-using OperationalWorkspace.Models.Dashboard;
-using OperationalWorkspaceUI.State;
+﻿using OperationalWorkspaceUI.State;
+using OperationalWorkspaceApplication.DTOs;
 
 namespace OperationalWorkspace.UIServices.DashboardUI;
 
@@ -10,25 +7,43 @@ public class DashboardUIService
 {
     public async Task LoadDashboardAsync(DashboardState state)
     {
-        // Example: fetch dashboard data from API or local cache
-        // For production: inject HttpClient or API client
-        state.ERPData = await Task.FromResult(GetERPData());
-        state.CRMData = await Task.FromResult(GetCRMData());
-        state.Tasks = await Task.FromResult(GetTasks());
-        state.FinanceData = await Task.FromResult(GetFinanceData());
-        state.SystemHealth = await Task.FromResult(GetSystemHealth());
-        state.RecentActivity = await Task.FromResult(GetRecentActivity());
-        state.KnowledgeBase = await Task.FromResult(GetKnowledgeBase());
-        state.AuditLogs = await Task.FromResult(GetAuditLogs());
+        // Mocking data population - replace with real API calls later
+        state.AdminErp = new AdminErpDto
+        {
+            TotalOrdersToday = 42,
+            InvoicesGenerated = 15,
+            StockAlerts = 3
+        };
+
+        state.EmployeeErp = new EmployeeErpDto
+        {
+            MyOpenOrders = 5,
+            PendingDeliveries = 2
+        };
+
+        state.AdminHealth = new AdminSystemHealthDto
+        {
+            SageX3Connected = true,
+            APIHealthStatus = "Healthy"
+        };
+
+        // Populate Lists
+        state.AllTasks = GetMockTasks();
+        state.RecentActivities = GetMockActivities();
+        state.AuditLogs = new List<AuditLogDto>();
+
+        await Task.CompletedTask;
     }
 
-    private object GetERPData() => new { Orders = 123, Revenue = 45678 };
-    private object GetCRMData() => new { TopClients = 12, Opportunities = 7 };
-    private object GetTasks() => new List<object> { new { Title = "Task 1", Status = "Open" } };
-    private object GetFinanceData() => new { Receivables = 10234, Payables = 2045 };
-    private object GetSystemHealth() => new { Uptime = "99.9%", Errors = 0 };
-    private object GetRecentActivity() => new List<object> { new { User = "Alice", Action = "Created Order" } };
-    private object GetKnowledgeBase() => new List<object> { new { Title = "KB Article", Link = "#" } };
-    private object GetAuditLogs() => new List<object> { new { Event = "Login", User = "Bob", Time = DateTime.Now } };
+    private List<TaskDto> GetMockTasks() => new()
+    {
+        new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Report", Status = "Pending" },
+        new TaskDto { Id = Guid.NewGuid(), Title = "Update Client Contact", Status = "Open" }
+    };
+
+    private List<ActivityDto> GetMockActivities() => new()
+    {
+        new ActivityDto { Title = "New Order", Action = "Created", Timestamp = DateTime.Now },
+        new ActivityDto { Title = "Inventory", Action = "Updated", Timestamp = DateTime.Now.AddHours(-1) }
+    };
 }
-// CODE END

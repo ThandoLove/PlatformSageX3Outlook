@@ -21,8 +21,8 @@
 </div>
 
 @code {
-    [Parameter] public string Label { get; set; }
+    [Parameter] public string? Label { get; set; }
     [Parameter] public string Type { get; set; } = "text";
-    [Parameter] public string Value { get; set; }
-    [Parameter] public List<KeyValuePair<string, string>> Options { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public List<KeyValuePair<string, string>>? Options { get; set; }
 }

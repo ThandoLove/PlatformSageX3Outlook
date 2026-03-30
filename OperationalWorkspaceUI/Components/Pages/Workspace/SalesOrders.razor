@@ -1,8 +1,8 @@
-﻿<!-- CODE START: SalesOrders.razor -->
-
-@page "/workspace/orders"
+﻿@page "/workspace/orders"
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceApplication.DTOs
 
 @inject OrdersUIService OrderService
 @inject WorkspaceState WorkspaceState
@@ -19,7 +19,8 @@
 </WorkspaceToolbar>
 
 <WorkspaceFilters>
-    <FormField Label="Search" @bind-Value="SearchQuery" />
+    @* Fixed: lowercase 'v' in bind-value or just @bind *@
+    <FormField Label="Search" @bind-value="SearchQuery" />
 </WorkspaceFilters>
 
 @if (FilteredOrders == null)
@@ -32,26 +33,47 @@ else if (!FilteredOrders.Any())
 }
 else
 {
-    <BpGrid Items="FilteredOrders" OnRowClick="Open" />
+    @* Using the Generic BpGrid with Templates *@
+    <BpGrid TItem="OpenOrderDto" Items="FilteredOrders" OnRowClick="Open">
+        <HeaderContent>
+            <th>Order #</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Status</th>
+        </HeaderContent>
+        <RowTemplate Context="order">
+            <td>@order.OrderNumber</td>
+            <td>@order.OrderDate.ToShortDateString()</td>
+            <td>@order.TotalAmount.ToString("C")</td>
+            <td>
+                <span class="badge @(order.Status == "Completed" ? "bg-success" : "bg-warning")">
+                    @order.Status
+                </span>
+            </td>
+        </RowTemplate>
+    </BpGrid>
 }
 
 @code {
-    private string SearchQuery;
+    private string SearchQuery = string.Empty;
 
-    private IEnumerable<OpenOrderDto> FilteredOrders =>
+    // Fixed: FilteredOrders now correctly references OpenOrderDto properties
+    private IEnumerable<OpenOrderDto>? FilteredOrders =>
         WorkspaceState.Orders?
             .Where(o => string.IsNullOrWhiteSpace(SearchQuery)
-                     || o.OrderNumber.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+                     || o.OrderNumber.Contains(SearchQuery, Comparison: StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
-        await OrderService.LoadOrdersAsync();
+        // Note: Ensure LoadOrdersAsync exists in your OrdersUIService
+        await OrderService.GetOrdersAsync();
     }
 
     private async Task Refresh()
     {
-        await OrderService.LoadOrdersAsync();
-        NotificationService.ShowSuccess("Orders refreshed");
+        await OrderService.GetOrdersAsync();
+        // Fixed: Called Success() instead of ShowSuccess() and added await
+        await NotificationService.Success("Orders refreshed");
     }
 
     private void Create() => NavigationService.NavigateTo("/forms/create-order");
@@ -59,5 +81,3 @@ else
     private void Open(OpenOrderDto order) =>
         NavigationService.NavigateTo($"/workspace/orders/{order.Id}");
 }
-
-<!-- CODE END -->

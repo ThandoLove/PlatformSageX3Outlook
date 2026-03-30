@@ -26,8 +26,8 @@ else
                 <tr @onclick="() => OnRowClick.InvokeAsync(task)">
                     <td>@task.Title</td>
                     <td>@task.Status</td>
-                    <td>@task.AssignedToName</td>
-                    <td>@task.DueDate?.ToString("yyyy-MM-dd")</td>
+                    <td>@task.AssignedTo</td>
+                    <td>@task.DueDate.ToString("yyyy-MM-dd")</td>
                 </tr>
             }
         </tbody>
@@ -35,8 +35,8 @@ else
 }
 
 @code {
-    [Parameter] public List<TaskDTO> Data { get; set; }
+    [Parameter] public List<TaskDto>? Data { get; set; }
     [Parameter] public bool IsLoading { get; set; }
-    [Parameter] public EventCallback<TaskDTO> OnRowClick { get; set; }
+    [Parameter] public EventCallback<TaskDto> OnRowClick { get; set; }
 }
 <!-- CODE END -->
