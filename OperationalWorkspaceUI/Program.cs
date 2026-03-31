@@ -23,6 +23,15 @@ builder.Services.AddScoped<WorkspaceState>();
 builder.Services.AddScoped<EmailContextState>();
 builder.Services.AddScoped<UIState>();
 
+// HTTP client and auth
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    // Base address should point at your API. Read from configuration in future.
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7123");
+});
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
+builder.Services.AddScoped<OperationalWorkspaceUI.UIServices.System.AuthService>();
+
 // ------------------ UI SERVICES ------------------
 builder.Services.AddScoped<DashboardUIService>();
 builder.Services.AddScoped<EmailContextUIService>();
@@ -33,6 +42,8 @@ builder.Services.AddScoped<TasksUIService>();
 builder.Services.AddScoped<ModalService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<NavigationService>();
+builder.Services.AddScoped<OperationalWorkspaceUI.UIServices.System.AuthService>();
+builder.Services.AddScoped<OperationalWorkspaceUI.UIServices.EmailService.EmailSyncService>();
 
 // ------------------ APPLICATION LAYER ------------------
 builder.Services.AddScoped<IClientService, ClientService>();
@@ -41,6 +52,9 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IKnowledgeService, KnowledgeService>();
+
+// Make EmailContextState available as a singleton-like scoped service for components to use
+builder.Services.AddScoped<EmailContextState>();
 
 var app = builder.Build();
 

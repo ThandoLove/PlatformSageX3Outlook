@@ -1,0 +1,71 @@
+@page "/welcome"
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Welcome to OperationalWorkspace</h3>
+
+<div class="login-panel">
+    <p>Please sign in to continue.</p>
+    <div>
+        <label>Username</label>
+        <input @bind="Username" />
+    </div>
+    <div>
+        <label>Password</label>
+        <input type="password" @bind="Password" />
+    </div>
+    <div class="mt-2">
+        <button class="btn btn-primary" @onclick="OnLogin">Sign in</button>
+    </div>
+    <div class="mt-3">
+        <button class="btn btn-secondary" @onclick="ReadOfficeItem">Detect email context</button>
+        <div class="mt-1"><small>Detected subject: @DetectedSubject</small></div>
+    </div>
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <div class="mt-2 text-danger">@Message</div>
+    }
+</div>
+
+@code {
+    private string Username { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
+    private string Message { get; set; } = string.Empty;
+
+    private string DetectedSubject { get; set; } = string.Empty;
+
+    private void OnLogin()
+    {
+        // Minimal placeholder authentication for developer testing.
+        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+        {
+            Message = "Enter username and password.";
+            return;
+        }
+
+        // TODO: Replace with real authentication against your API.
+        // For now navigate to the app home after "successful" login.
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task ReadOfficeItem()
+    {
+        try
+        {
+            // Read the window.initialOfficeItem object populated by dashboard.html/compose.html
+            var json = await JS.InvokeAsync<string>("eval", "JSON.stringify(window['initialOfficeItem'] || {})");
+            if (!string.IsNullOrEmpty(json))
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("subject", out var subj))
+                {
+                    DetectedSubject = subj.GetString() ?? string.Empty;
+                }
+            }
+        }
+        catch
+        {
+            DetectedSubject = string.Empty;
+        }
+    }
+}

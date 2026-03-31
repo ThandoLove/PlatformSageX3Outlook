@@ -24,6 +24,20 @@ builder.Services.AddHttpClient<ISageRestService, SageRestService>(client => {
 builder.Services.AddApiLayer();
 builder.Services.AddWorkspaceSwagger(); // Defined in SwaggerExtensions.cs
 
+// CORS: allow the Blazor UI (taskpane) to call this API during development.
+// The add-in taskpane is hosted from OperationalWorkspaceUI (https://localhost:7173)
+// and may also be served over http during development (http://localhost:5065).
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("OutlookAddInPolicy", policy =>
+    {
+        policy.WithOrigins("https://localhost:7173", "http://localhost:5065")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 if (builder.Environment.IsDevelopment())
 {
     // Mock Services for local development
