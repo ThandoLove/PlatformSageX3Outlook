@@ -1,8 +1,25 @@
-﻿@inject DashboardState State
+﻿@using OperationalWorkspaceUI.State
+@inject DashboardState State
 
 <div class="dashboard-panel finance-panel">
-    <h4>Finance</h4>
-    @* Update from FinanceData to AdminFinance *@
-    <KpiWidget Label="Receivables" Value="@State.AdminFinance.TotalOutstandingReceivables" Prefix="$" />
-    <KpiWidget Label="Monthly Sales" Value="@State.AdminFinance.TotalSalesThisMonth" Prefix="$" />
+    <h4>Finance Overview</h4>
+    
+    <div class="panel-content">
+        @if (IsAdminView)
+        {
+            @* Use State.Property (the instance) not the Class Name *@
+            <KpiWidget Label="Total Receivables" Value="@State.AdminFinance.TotalOutstandingReceivables" Prefix="$" />
+            <KpiWidget Label="High Risk Accounts" Value="@State.AdminFinance.HighRiskAccounts" Variant="danger" />
+        }
+        else
+        {
+            <KpiWidget Label="My Sales (Month)" Value="@State.EmployeeFinance.ThisMonthSales" Prefix="$" />
+            <KpiWidget Label="Pending My Action" Value="@State.EmployeeFinance.OutstandingReceivables" Prefix="$" />
+        }
+    </div>
 </div>
+
+@code {
+    // FIX: This defines the 'IsAdminView' variable the HTML is looking for
+    [Parameter] public bool IsAdminView { get; set; }
+}

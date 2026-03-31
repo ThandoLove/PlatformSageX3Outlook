@@ -2,12 +2,13 @@
 
 <div class="dashboard-panel knowledge-base-panel">
     <h4>Knowledge Base</h4>
-    @if(State.KnowledgeBase != null && State.KnowledgeBase.Any())
+    @if (State.KnowledgeBase != null && State.KnowledgeBase.Any())
     {
         <ul>
-            @foreach(var kb in State.KnowledgeBase)
+            @foreach (var kb in State.KnowledgeBase)
             {
-                <li><a href="@kb.Link">@kb.Title</a></li>
+                @* Changed kb.Link to kb.Url *@
+                <li><a href="@kb.Url" target="_blank">@kb.Title</a></li>
             }
         </ul>
     }

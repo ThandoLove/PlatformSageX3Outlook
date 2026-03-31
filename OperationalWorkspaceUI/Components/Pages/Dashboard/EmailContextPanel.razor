@@ -1,7 +1,7 @@
 ﻿@inject EmailContextUIService EmailService
 @inject EmailContextState EmailState
 @inject WorkspaceState WorkspaceState
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 @inject NavigationService NavigationService
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.EmailService
@@ -18,7 +18,7 @@
 
     <EmailClientMatch Email="@EmailState.CurrentEmail" Clients="@WorkspaceState.Clients" />
 
-    <EmailOrderSummary Orders="@EmailState.LinkedOrders" />
+    <QuickActionsPanel EmailId="@EmailState.CurrentEmail?.MessageId" />
     <EmailTaskSummary Tasks="@EmailState.LinkedTasks" />
 </div>
 
@@ -27,7 +27,7 @@
     {
         if (EmailState.CurrentEmail != null)
         {
-            await EmailService.LoadEmailContextAsync(EmailState.CurrentEmail.Id, EmailState, WorkspaceState);
+            await EmailService.LoadEmailContextAsync(EmailState.CurrentEmail.MessageId, EmailState, WorkspaceState);
         }
     }
 }

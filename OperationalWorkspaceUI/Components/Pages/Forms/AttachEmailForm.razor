@@ -5,7 +5,7 @@
 
 @inject EmailContextState EmailState
 @inject QuickActionUIService Actions
-@inject NotificationService Notifications
+@inject Radzen.NotificationService Notifications
 @inject NavigationService NavigationService
 
 <h3>Attach Email</h3>
@@ -36,8 +36,10 @@ else
         {
             Title = "Email",
             Content = @<FormSection Title="Email Details">
-                            <FormField Label="Subject" Value="@EmailState.CurrentEmail.Subject" />
-                            <FormField Label="From" Value="@EmailState.CurrentEmail.From" />
+                            @* Change these lines inside the 'Steps' list *@
+                            <FormField Label="Subject" Value="@EmailState.CurrentEmail!.Subject" />
+                            <FormField Label="From" Value="@EmailState.CurrentEmail!.From" />
+
                        </FormSection>,
             Validate = async () => true
         },
@@ -64,26 +66,46 @@ else
     {
         if (EmailState.CurrentEmail == null)
         {
-            Notifications.Error("No email context available");
+            // Fix 1: NotificationService.Error replacement
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "No email context available"
+            });
             return;
         }
 
         try
         {
             await Actions.AttachEmailAsync(Model);
-            Notifications.Success("Email attached successfully");
+            
+            // Fix 2: NotificationService.Success replacement
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Email attached successfully"
+            });
+            
             NavigationService.NavigateTo("/dashboard");
         }
         catch
         {
-            Notifications.Error("Failed to attach email");
+            // Fix 3: NotificationService.Error replacement
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to attach email"
+            });
         }
     }
 
     public class AttachEmailModel
     {
-        public string EntityType { get; set; }
-        public string RecordId { get; set; }
+        public string? EntityType { get; set; }
+        public string? RecordId { get; set; }
     }
 }
 

@@ -4,6 +4,10 @@ namespace OperationalWorkspaceApplication.DTOs;
 
 public sealed class EmailInsightDto
 {
+    // Add this line at the top of your class
+    public Guid Id { get; init; } = Guid.NewGuid();
+
+
     // Core Identification
     public Guid BusinessPartnerId { get; init; }
     public string BusinessPartnerCode { get; init; } = string.Empty;
@@ -39,7 +43,7 @@ public sealed class EmailInsightDto
 
     // ERP Metadata
     public DateTime SnapshotGeneratedAtUtc { get; init; }
-
+    public string To { get; init; } = string.Empty;
 
     //email metadata
 

@@ -1,51 +1,56 @@
 ﻿@using OperationalWorkspaceUI.UIServices.Actions
 @using OperationalWorkspaceUI.UIServices.System
-
-<!-- CODE START: AddClientPanel.razor -->
+@using Radzen
 @inject QuickActionUIService QuickActions
 @inject EmailContextState EmailState
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 
 <div class="panel add-client-panel">
-
     <h5>Add / Link Client</h5>
 
     @if (EmailState.CurrentEmail == null)
     {
-        <EmptyState Message="No email selected." />
+        <p>No email selected.</p>
     }
     else
     {
         <div class="client-preview">
             <p><b>Email:</b> @EmailState.CurrentEmail.From</p>
-            <p><b>Name (Detected):</b> @EmailState.CurrentEmail.SenderName</p>
+            @* FIXED: Used BusinessPartnerName as a substitute for SenderName *@
+            <p><b>Name (Detected):</b> @EmailState.CurrentEmail.BusinessPartnerName</p>
         </div>
 
         <div class="actions">
-            <button class="btn btn-primary" @onclick="CreateClient">
-                Create New Client
-            </button>
-
-            <button class="btn btn-outline-secondary" @onclick="SearchClient">
-                Search Existing
-            </button>
+            <button class="btn btn-primary" @onclick="CreateClient">Create New Client</button>
+            <button class="btn btn-outline-secondary" @onclick="SearchClient">Search Existing</button>
         </div>
     }
-
 </div>
 
 @code {
-
     private async Task CreateClient()
     {
         try
         {
             await QuickActions.CreateClientFromEmailAsync();
-            NotificationService.Success("Client created successfully");
+            
+            // FIXED: Radzen uses .Notify instead of .Success
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Client created successfully"
+            });
         }
         catch
         {
-            NotificationService.Error("Failed to create client");
+            // FIXED: Radzen uses .Notify instead of .Error
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to create client"
+            });
         }
     }
 
@@ -54,5 +59,3 @@
         await QuickActions.OpenClientSearchAsync();
     }
 }
-
-<!-- CODE END -->

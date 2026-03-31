@@ -1,8 +1,10 @@
-﻿
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Services;
 
@@ -27,8 +29,8 @@ public sealed class KnowledgeService : IKnowledgeService
             article.Title,
             article.Content,
             article.Category,
-            article.Summary, // Parameter 5
-            article.Url);     // Parameter 6
+            article.Summary,
+            article.Url);
     }
 
     public async Task<IEnumerable<KnowledgeDto>> SearchAsync(string query)
@@ -58,5 +60,12 @@ public sealed class KnowledgeService : IKnowledgeService
             a.Summary,
             a.Url)).ToList();
     }
-}
 
+    // ADDED: Implementation to satisfy the interface
+    public async Task SendKnowledgeAsync(object model)
+    {
+        _logger.LogInformation("Sending knowledge base article...");
+        // TODO: Implement the actual sending logic (e.g., Email or Chat)
+        await Task.CompletedTask;
+    }
+}

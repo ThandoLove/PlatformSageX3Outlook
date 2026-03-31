@@ -25,7 +25,7 @@ else
                     <tr @onclick="() => OnOpenTask.InvokeAsync(task)">
                         <td>@task.Title</td>
                         <td>@task.Status</td>
-                        <td>@task.DueDate?.ToString("yyyy-MM-dd")</td>
+                        <td>@task.DueDate.ToString("yyyy-MM-dd")</td>
                     </tr>
                 }
             </tbody>
@@ -34,7 +34,7 @@ else
 }
 
 @code {
-    [Parameter] public List<TaskDto> Tasks { get; set; }
+    [Parameter] public List<TaskDto>? Tasks { get; set; }
     [Parameter] public EventCallback<TaskDto> OnOpenTask { get; set; }
 }
 

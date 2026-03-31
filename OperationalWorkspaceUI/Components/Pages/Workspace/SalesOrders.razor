@@ -7,7 +7,7 @@
 @inject OrdersUIService OrderService
 @inject WorkspaceState WorkspaceState
 @inject NavigationService NavigationService
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 
 <h3>Sales Orders</h3>
 
@@ -57,23 +57,39 @@ else
 @code {
     private string SearchQuery = string.Empty;
 
-    // Fixed: FilteredOrders now correctly references OpenOrderDto properties
+    // We map the "Base" OrderDto from State into "UI-Friendly" OpenOrderDto locally
     private IEnumerable<OpenOrderDto>? FilteredOrders =>
         WorkspaceState.Orders?
+            .Select(o => new OpenOrderDto
+            {
+                Id = o.Id,
+                // Ensure OrderDto has 'OrderNumber' or map it from another field like 'Description'
+                OrderNumber = o.OrderNumber,
+                OrderDate = o.OrderDate,
+                TotalAmount = o.TotalAmount,
+                // Since OrderDto doesn't have Status, we provide a default here
+                Status = "Open"
+            })
             .Where(o => string.IsNullOrWhiteSpace(SearchQuery)
-                     || o.OrderNumber.Contains(SearchQuery, Comparison: StringComparison.OrdinalIgnoreCase));
+                     || (o.OrderNumber != null && o.OrderNumber.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
 
     protected override async Task OnInitializedAsync()
     {
-        // Note: Ensure LoadOrdersAsync exists in your OrdersUIService
         await OrderService.GetOrdersAsync();
     }
 
     private async Task Refresh()
     {
         await OrderService.GetOrdersAsync();
-        // Fixed: Called Success() instead of ShowSuccess() and added await
-        await NotificationService.Success("Orders refreshed");
+        
+        // Correct Radzen Notification syntax (not awaited)
+        NotificationService.Notify(new Radzen.NotificationMessage
+        {
+            Severity = Radzen.NotificationSeverity.Success,
+            Summary = "Success",
+            Detail = "Orders refreshed",
+            Duration = 4000
+        });
     }
 
     private void Create() => NavigationService.NavigateTo("/forms/create-order");

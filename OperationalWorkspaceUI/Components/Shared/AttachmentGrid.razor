@@ -1,5 +1,4 @@
-﻿<!-- CODE START: AttachmentGrid.razor -->
-@using OperationalWorkspaceApplication.DTOs
+﻿@using OperationalWorkspaceApplication.DTOs
 
 @if (IsLoading)
 {
@@ -23,11 +22,14 @@ else
         <tbody>
             @foreach (var file in Data)
             {
-                <tr @onclick="() => OnDownload.InvokeAsync(file)">
+                <tr @onclick="() => OnDownload.InvokeAsync(file)" style="cursor:pointer">
                     <td>@file.FileName</td>
-                    <td>@file.FileType</td>
-                    <td>@FormatSize(file.Size)</td>
-                    <td>@file.UploadedAt.ToString("yyyy-MM-dd")</td>
+                    @* FIX 1: Changed FileType to ContentType *@
+                    <td>@file.ContentType</td>
+                    @* FIX 2: Changed Size to FileSize *@
+                    <td>@FormatSize(file.FileSize)</td>
+                    @* FIX 3: Changed UploadedAt to UploadedAtUtc *@
+                    <td>@file.UploadedAtUtc.ToString("yyyy-MM-dd")</td>
                 </tr>
             }
         </tbody>
@@ -35,15 +37,15 @@ else
 }
 
 @code {
-    [Parameter] public List<AttachmentDto> Data { get; set; }
+    // FIX 4: Added ! to handle the non-nullable warning
+    [Parameter] public List<AttachmentDto> Data { get; set; } = new();
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public EventCallback<AttachmentDto> OnDownload { get; set; }
 
     private string FormatSize(long bytes)
     {
         if (bytes < 1024) return $"{bytes} B";
-        if (bytes < 1048576) return $"{bytes / 1024} KB";
-        return $"{bytes / 1048576} MB";
+        if (bytes < 1048576) return $"{(bytes / 1024.0):F1} KB";
+        return $"{(bytes / 1048576.0):F1} MB";
     }
 }
-<!-- CODE END -->

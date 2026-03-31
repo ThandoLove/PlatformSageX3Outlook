@@ -5,7 +5,8 @@
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.BusinessPartnerUIService BPService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
-@inject NotificationService NotificationService
+@* Fix 1: Use explicit namespace for the injection *@
+@inject Radzen.NotificationService NotificationService
 @inject NavigationService NavigationService
 
 <h3>Create Client</h3>
@@ -46,12 +47,26 @@
         if (success)
         {
             WorkspaceState.ReloadClients();
-            await NotificationService.Success("Client created");
+            
+            // Fix 2: Use Radzen's Notify method for Success
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Client created"
+            });
+
             NavigationService.NavigateTo("/workspace/businesspartners");
         }
         else
         {
-            await NotificationService.Error("Failed");
+            // Fix 3: Use Radzen's Notify method for Error
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to create client"
+            });
         }
     }
 }

@@ -5,7 +5,21 @@
 <div class="dashboard-panel erp-panel">
     <h4>ERP Overview</h4>
     <div class="panel-content">
-        <KPIWidget Label="Orders" Value="@State.ERPData?.Orders ?? 0" />
-        <KPIWidget Label="Revenue" Value="@State.ERPData?.Revenue ?? 0" Prefix="$" />
+        @if (IsAdminView)
+        {
+            @* Use AdminErp for Admin users *@
+            <KpiWidget Label="Total Orders" Value="@State.AdminErp.TotalOrdersToday" />
+            <KpiWidget Label="Stock Alerts" Value="@State.AdminErp.StockAlerts" Variant="warning" />
+        }
+        else
+        {
+            @* Use EmployeeErp for Employee users *@
+            <KpiWidget Label="My Open Orders" Value="@State.EmployeeErp.MyOpenOrders" />
+            <KpiWidget Label="Pending Deliveries" Value="@State.EmployeeErp.PendingDeliveries" />
+        }
     </div>
 </div>
+
+@code {
+    [Parameter] public bool IsAdminView { get; set; }
+}

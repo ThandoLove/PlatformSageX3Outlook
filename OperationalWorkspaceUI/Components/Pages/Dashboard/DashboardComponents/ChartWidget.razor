@@ -7,7 +7,7 @@
 </div>
 
 @code {
-    [Parameter] public string Title { get; set; }
+    [Parameter] public string Title { get; set; } = "Chart Title";
     [Parameter] public List<double> Data { get; set; } = new();
     [Parameter] public List<string> Labels { get; set; } = new();
 

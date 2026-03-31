@@ -4,7 +4,7 @@
 @using OperationalWorkspaceUI.UIServices.Workspace
 
 @inject KnowledgeUIService KBService
-@inject NotificationService Notifications
+@inject Radzen.NotificationService Notifications
 @inject NavigationManager Navigation
 
 <h3>Send Knowledge</h3>
@@ -36,13 +36,32 @@
 
     private async Task HandleSubmit()
     {
-        // Call the service we updated above
-        await KBService.SendKnowledgeAsync(Model);
-        
-        // Show success notification
-        await Notifications.Success("Knowledge sent successfully");
-        
-        // Go back to the main knowledge page
-        Navigation.NavigateTo("/workspace/knowledge");
+        try
+        {
+            // Call the service
+            await KBService.SendKnowledgeAsync(Model);
+            
+            // FIX: Use Radzen's Notify method (no await)
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Knowledge sent successfully",
+                Duration = 4000
+            });
+            
+            // Go back to the main knowledge page
+            Navigation.NavigateTo("/workspace/knowledge");
+        }
+        catch (Exception)
+        {
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to send knowledge base article"
+            });
+        }
     }
+
 }

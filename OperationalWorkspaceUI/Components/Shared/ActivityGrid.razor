@@ -1,5 +1,4 @@
-﻿<!-- CODE START: ActivityGrid.razor -->
-@using OperationalWorkspaceApplication.DTOs
+﻿@using OperationalWorkspaceApplication.DTOs
 
 @if (IsLoading)
 {
@@ -23,7 +22,8 @@ else
             @foreach (var act in Data)
             {
                 <tr>
-                    <td>@act.UserName</td>
+                    @* FIX 1: Change UserName to CreatedBy *@
+                    <td>@act.CreatedBy</td>
                     <td>@act.Action</td>
                     <td>@act.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
                 </tr>
@@ -33,7 +33,7 @@ else
 }
 
 @code {
-    [Parameter] public List<ActivityDto> Data { get; set; }
+    // FIX 2: Initialize with an empty list and use '!' to satisfy the non-nullable warning
+    [Parameter] public List<ActivityDto> Data { get; set; } = new();
     [Parameter] public bool IsLoading { get; set; }
 }
-<!-- CODE END -->

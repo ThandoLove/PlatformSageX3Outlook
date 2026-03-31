@@ -16,16 +16,16 @@ else
             <tr>
                 <th>Title</th>
                 <th>Category</th>
-                <th>Created</th>
+                <th>Summary</th> @* Changed from Created to Summary *@
             </tr>
         </thead>
         <tbody>
             @foreach (var kb in Data)
             {
-                <tr @onclick="() => OnRowClick.InvokeAsync(kb)">
+                <tr @onclick="() => OnRowClick.InvokeAsync(kb)" style="cursor:pointer">
                     <td>@kb.Title</td>
                     <td>@kb.Category</td>
-                    <td>@kb.CreatedDate.ToString("yyyy-MM-dd")</td>
+                    <td>@kb.Summary</td> @* Removed .CreatedDate and used .Summary *@
                 </tr>
             }
         </tbody>
@@ -33,8 +33,7 @@ else
 }
 
 @code {
-    [Parameter] public List<KnowledgeDto> Data { get; set; }
+    [Parameter] public List<KnowledgeDto>? Data { get; set; }
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public EventCallback<KnowledgeDto> OnRowClick { get; set; }
 }
-<!-- CODE END -->

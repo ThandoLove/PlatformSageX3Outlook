@@ -1,10 +1,12 @@
 ﻿@using OperationalWorkspaceUI.UIServices.Actions
 @using OperationalWorkspaceUI.UIServices.System
+@using Radzen
 @inject QuickActionUIService ActionService
 @inject EmailContextState EmailState
 @inject WorkspaceState WorkspaceState
-@inject NotificationService NotificationService
-@inject NavigationService NavigationService
+@* Use Radzen's service directly to fix the 'Notify' error *@
+@inject Radzen.NotificationService RadzenNotify
+@inject NavigationManager NavigationManager
 
 <div class="quick-actions-panel">
     <button class="btn btn-primary" @onclick="CreateOrder">Create Order</button>
@@ -19,11 +21,11 @@
         if (EmailState.CurrentEmail != null)
         {
             WorkspaceState.PreFillOrderFromEmail(EmailState.CurrentEmail);
-            NavigationService.NavigateTo("/forms/create-order");
+            NavigationManager.NavigateTo("/forms/create-order");
         }
         else
         {
-            NotificationService.ShowError("No email selected.");
+            ShowNoEmailError();
         }
     }
 
@@ -32,11 +34,11 @@
         if (EmailState.CurrentEmail != null)
         {
             WorkspaceState.PreFillTaskFromEmail(EmailState.CurrentEmail);
-            NavigationService.NavigateTo("/forms/create-task");
+            NavigationManager.NavigateTo("/forms/create-task");
         }
         else
         {
-            NotificationService.ShowError("No email selected.");
+            ShowNoEmailError();
         }
     }
 
@@ -44,7 +46,8 @@
     {
         if (EmailState.CurrentEmail != null)
         {
-            NavigationService.NavigateTo($"/forms/attach-email?emailId={EmailState.CurrentEmail.Id}");
+            // FIX: Changed .Id to .MessageId to match your EmailInsightDto
+            NavigationManager.NavigateTo($"/forms/attach-email?emailId={EmailState.CurrentEmail.MessageId}");
         }
     }
 
@@ -52,7 +55,19 @@
     {
         if (EmailState.CurrentEmail != null)
         {
-            NavigationService.NavigateTo($"/forms/send-knowledge?emailId={EmailState.CurrentEmail.Id}");
+            // FIX: Changed .Id to .MessageId to match your EmailInsightDto
+            NavigationManager.NavigateTo($"/forms/send-knowledge?emailId={EmailState.CurrentEmail.MessageId}");
         }
+    }
+
+    private void ShowNoEmailError()
+    {
+        RadzenNotify.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error,
+            Summary = "Error",
+            Detail = "No email selected.",
+            Duration = 4000
+        });
     }
 }

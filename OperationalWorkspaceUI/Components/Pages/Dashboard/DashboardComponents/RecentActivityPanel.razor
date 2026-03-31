@@ -2,12 +2,14 @@
 
 <div class="dashboard-panel recent-activity-panel">
     <h4>Recent Activity</h4>
-    @if(State.RecentActivity != null && State.RecentActivity.Any())
+    @* 1. Change RecentActivity to RecentActivities *@
+    @if (State.RecentActivities != null && State.RecentActivities.Any())
     {
         <ul>
-            @foreach(var activity in State.RecentActivity)
+            @foreach (var activity in State.RecentActivities)
             {
-                <li>@activity.User - @activity.Action</li>
+                @* 2. Change User to CreatedBy and Action to Title (or Action if it exists in your DTO) *@
+                <li>@activity.CreatedBy - @activity.Title</li>
             }
         </ul>
     }

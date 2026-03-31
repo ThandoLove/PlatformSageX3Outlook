@@ -20,9 +20,12 @@
 </div>
 
 <!-- GLOBAL COMPONENTS -->
+<!-- GLOBAL COMPONENTS -->
 <ErrorBanner Message="@UIState.ErrorMessage"
              IsVisible="@UIState.ShowError"
-             OnDismiss="@UIState.ClearError" />
+             @* FIX: Wrap the method in a lambda so it can be invoked correctly *@
+             OnDismiss="@(() => UIState.ClearError())" />
+
 
 <GlassModeToggle /> <!-- button-based theme switcher -->
 <ToastNotification />

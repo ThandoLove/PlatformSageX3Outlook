@@ -10,4 +10,5 @@ public class OpenOrderDto
     public decimal TotalAmount { get; set; }
     public string Status { get; set; } = string.Empty;
     public Guid Id { get; set; }
+    public string ClientName { get; set; } = "Unknown Client";
 }

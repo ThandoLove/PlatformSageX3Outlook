@@ -13,7 +13,7 @@
 </div>
 
 @code {
-    [Parameter] public string Title { get; set; }
+    [Parameter] public string Title { get; set; } = "Related Records";
     [Parameter] public List<string> Records { get; set; } = new();
     [Parameter] public EventCallback<string> OnRecordClicked { get; set; }
 }

@@ -1,19 +1,21 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
-using System.Threading.Channels;
-
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks; // Added for Task support
 
 namespace OperationalWorkspaceApplication.Interfaces.IServices
 {
     public interface IActivityService
     {
-        Task<ActivityDto?> GetByIdAsync(Guid id);
-        Task<ActivityDto> CreateAsync(CreateActivityDto dto, string userEmail);
-       
-       
-        // FIX: Changed from Task<object> to Task<IEnumerable<ActivityDto>>
-        // This allows the Controller and Service to handle the collection properly
-        Task<IEnumerable<ActivityDto>> GetByRelatedEntityAsync(Guid partnerId);
+        // Use System.Threading.Tasks.Task to avoid conflict with Domain.Entities.Task
+        System.Threading.Tasks.Task<ActivityDto?> GetByIdAsync(Guid id);
 
+        System.Threading.Tasks.Task<ActivityDto> CreateAsync(CreateActivityDto dto, string userEmail);
+
+        System.Threading.Tasks.Task AttachEmailAsync(object model);
+
+        System.Threading.Tasks.Task LogAsync(ActivityDto activity);
+
+        System.Threading.Tasks.Task<IEnumerable<ActivityDto>> GetByRelatedEntityAsync(Guid partnerId);
     }
-
 }

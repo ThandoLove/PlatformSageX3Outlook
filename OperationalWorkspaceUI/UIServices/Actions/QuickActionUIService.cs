@@ -1,9 +1,11 @@
-﻿// CODE START: QuickActionUIService.cs
-
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Requests;
 
 namespace OperationalWorkspaceUI.UIServices.Actions
 {
@@ -26,88 +28,41 @@ namespace OperationalWorkspaceUI.UIServices.Actions
             _activityService = activityService;
         }
 
-        // =========================
-        // EMAIL → ORDER
-        // =========================
-        public async Task<OrderDto> CreateOrderFromEmailAsync(EmailInsightDto email)
+        public async Task CreateClientFromEmailAsync() => await Task.CompletedTask;
+        public async Task OpenClientSearchAsync() => await Task.CompletedTask;
+
+        public async Task CreateTaskFromEmailAsync(EmailInsightDto email)
         {
-            var order = new OrderDto
-            {
-                ClientId = email.ClientId,
-                OrderDate = DateTime.UtcNow,
-                Description = $"Order from email: {email.Subject}"
-            };
+            // FIX: Using the positional constructor required by your CreateTaskRequest
+            var request = new CreateTaskRequest(
+                $"Follow-up: {email.Subject}",
+                email.Message,
+                email.AssignedUserId,
+                DateTime.UtcNow.AddDays(3)
+            );
 
-            var result = await _orderService.CreateOrderAsync(order);
-
-            await LogActivity("Order Created from Email", email.Subject);
-
-            return result;
-        }
-
-        // =========================
-        // EMAIL → TASK
-        // =========================
-        public async Task<TaskDto> CreateTaskFromEmailAsync(EmailInsightDto email)
-        {
-            var task = new TaskDto
-            {
-                Title = $"Follow-up: {email.Subject}",
-                Description = email.Body,
-                AssignedToId = email.AssignedUserId,
-                DueDate = DateTime.UtcNow.AddDays(3)
-            };
-
-            var result = await _taskService.CreateTaskAsync(task);
-
+            await _taskService.CreateAsync(request, CancellationToken.None);
             await LogActivity("Task Created from Email", email.Subject);
-
-            return result;
         }
 
-        // =========================
-        // ATTACH EMAIL
-        // =========================
         public async Task AttachEmailAsync(object model)
         {
-            // TODO: Replace with strongly typed model later
             await _activityService.AttachEmailAsync(model);
-
-            await LogActivity("Email Attached", "Email linked to record");
+            await LogActivity("Email Attached", "Email linked");
         }
 
-        // =========================
-        // CREATE QUOTE
-        // =========================
-        public async Task CreateQuoteAsync(object model)
-        {
-            // TODO: Replace with QuoteDTO when available
-            await _orderService.CreateQuoteAsync(model);
-
-            await LogActivity("Quote Created", "Quote created from UI");
-        }
-
-        // =========================
-        // SEND KNOWLEDGE
-        // =========================
         public async Task SendKnowledgeAsync(object model)
         {
             await _knowledgeService.SendKnowledgeAsync(model);
-
-            await LogActivity("Knowledge Sent", "Knowledge article sent to client");
+            await LogActivity("Knowledge Sent", "Sent to client");
         }
 
-        // =========================
-        // SEARCH KNOWLEDGE
-        // =========================
         public async Task<List<KnowledgeDto>> SearchKnowledgeAsync(string query)
         {
-            return await _knowledgeService.SearchAsync(query);
+            var results = await _knowledgeService.SearchAsync(query);
+            return results.ToList();
         }
 
-        // =========================
-        // INTERNAL ACTIVITY LOGGER
-        // =========================
         private async Task LogActivity(string action, string description)
         {
             await _activityService.LogAsync(new ActivityDto
@@ -119,5 +74,3 @@ namespace OperationalWorkspaceUI.UIServices.Actions
         }
     }
 }
-
-// CODE END

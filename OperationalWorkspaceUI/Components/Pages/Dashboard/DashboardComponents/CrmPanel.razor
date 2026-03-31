@@ -1,10 +1,23 @@
-﻿@inject DashboardState State
+﻿@using OperationalWorkspaceUI.State
+@inject DashboardState State
 
 <div class="dashboard-panel crm-panel">
     <h4>CRM Overview</h4>
+    
     <div class="panel-content">
-        @* Update from CRMData to AdminCrm *@
-        <KpiWidget Label="Active Customers" Value="@State.AdminCrm.ActiveCustomers" />
-        <KpiWidget Label="Opportunities" Value="@State.AdminCrm.OpenOpportunities" />
+        @if (IsAdminView)
+        {
+            <KpiWidget Label="Active Customers" Value="@State.AdminCrm.ActiveCustomers" />
+            <KpiWidget Label="Open Opportunities" Value="@State.AdminCrm.OpenOpportunities" />
+        }
+        else
+        {
+            <KpiWidget Label="Top Customer" Value="@State.EmployeeCrm.TopCustomer" />
+            <KpiWidget Label="Open Ops" Value="@State.EmployeeCrm.OpenOpportunities" />
+        }
     </div>
 </div>
+
+@code {
+    [Parameter] public bool IsAdminView { get; set; }
+}

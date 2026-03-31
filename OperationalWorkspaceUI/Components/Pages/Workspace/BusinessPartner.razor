@@ -8,7 +8,7 @@
 @inject BusinessPartnerUIService BPService
 @inject WorkspaceState WorkspaceState
 @inject NavigationService NavigationService
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 
 <h3>Business Partners</h3>
 
@@ -23,7 +23,7 @@
     <FormField Label="Search" @bind-Value="SearchQuery" />
 </WorkspaceFilters>
 
-<BpGrid TItem="ClientDTO"
+<BpGrid TItem="ClientDto"
         Items="FilteredClients"
         IsLoading="IsLoading"
         OnRowClick="@(client => Open(client))">
@@ -51,8 +51,8 @@
     private string SearchQuery = string.Empty;
     private bool IsLoading = true;
 
-    private IEnumerable<ClientDTO> FilteredClients =>
-        (WorkspaceState.Clients ?? Enumerable.Empty<ClientDTO>())
+    private IEnumerable<ClientDto> FilteredClients =>
+        (WorkspaceState.Clients ?? Enumerable.Empty<ClientDto>())
             .Where(c => string.IsNullOrWhiteSpace(SearchQuery)
                      || c.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)
                      || c.ClientCode.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
@@ -72,11 +72,17 @@
     private async Task Refresh()
     {
         await LoadData();
-        await NotificationService.Success("Clients refreshed");
+        NotificationService.Notify(new Radzen.NotificationMessage
+        {
+            Severity = Radzen.NotificationSeverity.Success,
+            Summary = "Success",
+            Detail = "Clients refreshed",
+            Duration = 4000
+        });
     }
 
     private void Create() => NavigationService.NavigateTo("/forms/create-client");
 
-    private void Open(ClientDTO client) =>
+    private void Open(ClientDto client) =>
         NavigationService.NavigateTo($"/workspace/businesspartners/{client.Id}");
 }

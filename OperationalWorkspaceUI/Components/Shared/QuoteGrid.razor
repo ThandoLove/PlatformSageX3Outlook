@@ -1,6 +1,6 @@
 ﻿<!-- CODE START: QuoteGrid.razor -->
-
 @using OperationalWorkspaceApplication.DTOs
+@using System.Linq
 
 <table class="table table-hover">
     <thead>
@@ -15,7 +15,8 @@
     </thead>
 
     <tbody>
-        @foreach (var q in Items)
+        @* Using the null-coalescing operator ensures the loop never hits a null value *@
+        @foreach (var q in Items ?? Enumerable.Empty<OpenOrderDto>())
         {
             <tr>
                 <td>@q.OrderNumber</td>
@@ -29,7 +30,6 @@
                 <td>@q.OrderDate.ToShortDateString()</td>
 
                 <td class="text-end">
-
                     <button class="btn btn-sm btn-outline-primary"
                             @onclick="() => OnView.InvokeAsync(q)">
                         View
@@ -46,7 +46,6 @@
                             @onclick="() => OnConvert.InvokeAsync(q)">
                         Convert
                     </button>
-
                 </td>
             </tr>
         }
@@ -54,11 +53,17 @@
 </table>
 
 @code {
-    [Parameter] public IEnumerable<OpenOrderDto> Items { get; set; }
+    // FIX: Removed the duplicate property and kept the null-safe initialized version
+    [Parameter]
+    public IEnumerable<OpenOrderDto>? Items { get; set; } = Enumerable.Empty<OpenOrderDto>();
 
-    [Parameter] public EventCallback<OpenOrderDto> OnView { get; set; }
-    [Parameter] public EventCallback<OpenOrderDto> OnApprove { get; set; }
-    [Parameter] public EventCallback<OpenOrderDto> OnConvert { get; set; }
+    [Parameter]
+    public EventCallback<OpenOrderDto> OnView { get; set; }
+
+    [Parameter]
+    public EventCallback<OpenOrderDto> OnApprove { get; set; }
+
+    [Parameter]
+    public EventCallback<OpenOrderDto> OnConvert { get; set; }
 }
-
 <!-- CODE END -->

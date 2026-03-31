@@ -1,7 +1,19 @@
-﻿@inject DashboardState State
+﻿@using OperationalWorkspaceUI.State
+@inject DashboardState State
 
-<div class="dashboard-panel system-health-panel">
+<div class="dashboard-panel system-health">
     <h4>System Health</h4>
-    <StatusBadge Label="Uptime" Value="@State.SystemHealth?.Uptime ?? " N /A"" />
-    <StatusBadge Label="Errors" Value="@State.SystemHealth?.Errors ?? 0" />
+    <div class="panel-content">
+        @* Wrap complex C# in @(...) to fix the attribute error *@
+        <KpiWidget Label="Sage Status"
+                   Value="@(State.AdminHealth.SageX3Connected ? "Connected" : "Disconnected")"
+                   Variant="@(State.AdminHealth.SageX3Connected ? "success" : "danger")" />
+
+        <KpiWidget Label="API Health"
+                   Value="@(State.AdminHealth.APIHealthStatus ?? "Unknown")" />
+
+        <KpiWidget Label="Failed Syncs"
+                   Value="@State.AdminHealth.FailedTransactions"
+                   Variant="warning" />
+    </div>
 </div>

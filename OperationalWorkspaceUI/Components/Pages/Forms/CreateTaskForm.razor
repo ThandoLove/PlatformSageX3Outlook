@@ -7,7 +7,7 @@
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.TasksUIService TaskService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 @inject NavigationService NavigationService
 
 
@@ -22,7 +22,7 @@
 
     private List<KeyValuePair<string,string>> Users =>
         WorkspaceState.Users
-            .Select(u => new KeyValuePair<string,string>(u.Id.ToString(), u.FullName))
+            .Select(u => new KeyValuePair<string,string>(u.Id.ToString(), u.Name))
             .ToList();
 
     private List<FormStepper.FormStep> Steps => new()
@@ -81,15 +81,27 @@
         if (success)
         {
             WorkspaceState.ReloadTasks();
-            await NotificationService.Success("Task created successfully");
-            
+        
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Task created successfully"
+            });
+        
             NavigationService.NavigateTo("/workspace/tasks");
         }
         else
         {
-            await NotificationService.Error("Failed to create task");
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to create task"
+            });
         }
     }
+
 }
 
 <!-- CODE END -->

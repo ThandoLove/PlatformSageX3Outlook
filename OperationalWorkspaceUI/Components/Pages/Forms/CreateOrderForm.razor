@@ -6,7 +6,7 @@
 
 @inject OrdersUIService OrderService
 @inject WorkspaceState WorkspaceState
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 @inject NavigationService NavigationService
 
 <h3>Create Order</h3>
@@ -56,14 +56,29 @@
         if (success)
         {
             WorkspaceState.ReloadOrders();
-            // FIXED: Using method names from your NotificationService class
-            await NotificationService.Success("Order created");
+            
+            // FIXED: Using Radzen NotificationMessage syntax
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Order created",
+                Duration = 4000
+            });
+
             NavigationService.NavigateTo("/workspace/orders");
         }
         else
         {
-            // FIXED: Using method names from your NotificationService class
-            await NotificationService.Error("Failed");
+            // FIXED: Using Radzen NotificationMessage syntax
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to create order",
+                Duration = 4000
+            });
         }
     }
+
 }

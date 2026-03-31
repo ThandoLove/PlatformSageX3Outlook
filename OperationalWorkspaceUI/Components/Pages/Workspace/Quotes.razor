@@ -7,7 +7,7 @@
 @inject OrdersUIService OrdersService
 @inject WorkspaceState WorkspaceState
 @inject NavigationService NavigationService
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 
 <h3>Quotes</h3>
 
@@ -47,12 +47,11 @@ else
     private string SearchQuery = "";
     private string SelectedStatus = "All";
 
-    private List<KeyValuePair<string,string>> StatusOptions = new()
+    private List<KeyValuePair<string, string>> StatusOptions = new()
     {
         new("All", "All"), new("Draft", "Draft"), new("Approved", "Approved"), new("Rejected", "Rejected")
     };
 
-    // FIX: Renamed from 'Quotes' to 'QuoteList' to avoid class name conflict
     private List<OpenOrderDto> QuoteList => WorkspaceState.Quotes ?? new();
 
     private IEnumerable<OpenOrderDto> FilteredQuotes =>
@@ -70,14 +69,22 @@ else
 
     private async Task LoadQuotes()
     {
-        try {
+        try
+        {
             IsLoading = true;
             await OrdersService.LoadQuotesAsync();
         }
-        catch {
-            await NotificationService.Error("Failed to load quotes");
+        catch
+        {
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to load quotes"
+            });
         }
-        finally {
+        finally
+        {
             IsLoading = false;
         }
     }
@@ -85,7 +92,12 @@ else
     private async Task Refresh()
     {
         await LoadQuotes();
-        await NotificationService.Success("Quotes refreshed");
+        NotificationService.Notify(new Radzen.NotificationMessage
+        {
+            Severity = Radzen.NotificationSeverity.Success,
+            Summary = "Success",
+            Detail = "Quotes refreshed"
+        });
     }
 
     private void CreateQuote() => NavigationService.NavigateTo("/forms/create-quote");
@@ -93,25 +105,49 @@ else
 
     private async Task ApproveQuote(OpenOrderDto quote)
     {
-        try {
+        try
+        {
             await OrdersService.ApproveQuoteAsync(quote.Id);
-            await NotificationService.Success("Quote approved");
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Quote approved"
+            });
             await LoadQuotes();
         }
-        catch {
-            await NotificationService.Error("Failed to approve quote");
+        catch
+        {
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to approve quote"
+            });
         }
     }
 
     private async Task ConvertQuote(OpenOrderDto quote)
     {
-        try {
+        try
+        {
             await OrdersService.ConvertToOrderAsync(quote.Id);
-            await NotificationService.Success("Converted to order");
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Converted to order"
+            });
             await LoadQuotes();
         }
-        catch {
-            await NotificationService.Error("Conversion failed");
+        catch
+        {
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Conversion failed"
+            });
         }
     }
 }

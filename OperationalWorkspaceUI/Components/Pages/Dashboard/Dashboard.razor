@@ -1,26 +1,36 @@
-﻿@using OperationalWorkspace.UIServices.DashboardUI
-@using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
-
+﻿@using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
+@using OperationalWorkspace.UIServices.DashboardUI
+@using OperationalWorkspaceUI.State
 
 <!-- CODE START: Pages/Dashboard/Dashboard.razor -->
 @inject DashboardUIService DashboardService
 @inject DashboardState State
 
 <div class="dashboard-grid">
-    <ErpPanel Data="@State.ERPData" />
-    <CrmPanel Data="@State.CRMData" />
-    <TasksPanel Data="@State.Tasks" />
-    <FinancePanel Data="@State.FinanceData" />
-    <SystemHealthPanel Data="@State.SystemHealth" />
-    <RecentActivityPanel Data="@State.RecentActivity" />
-    <KnowledgeBasePanel Data="@State.KnowledgeBase" />
-    <AuditPanel Data="@State.AuditLogs" />
+    @* Using Admin property names from your DashboardState.cs *@
+    <ErpPanel Data="@State.AdminErp" />
+    
+    <CrmPanel Data="@State.AdminCrm" />
+    
+    @* Using AllTasks since Tasks doesn't exist *@
+    <TasksPanel Tasks="@State.AllTasks" />
+    
+    <FinancePanel Data="@State.AdminFinance" />
+    
+    <SystemHealthPanel Status="@State.AdminHealth" />
+    
+    @* Using RecentActivities since RecentActivity doesn't exist *@
+    <RecentActivityPanel Activities="@State.RecentActivities" />
+
+    @* If KnowledgeBase isn't in your State class yet, you can use a placeholder or add it to State *@
+    <KnowledgeBasePanel />
+
+    <AuditPanel Logs="@State.AuditLogs" />
 </div>
 
 @code {
     protected override async Task OnInitializedAsync()
     {
-        await DashboardService.LoadDashboardAsync(State);
+        await State.LoadAdminDashboardAsync();
     }
 }
-<!-- CODE END -->

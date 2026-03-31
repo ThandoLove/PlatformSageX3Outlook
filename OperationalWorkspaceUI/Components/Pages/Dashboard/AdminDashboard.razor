@@ -1,6 +1,6 @@
 ﻿@using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
-@using OperationalWorkspaceUI.UIServices.System 
-<!-- CODE START: AdminDashboard.razor -->
+@using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.State
 
 @inject DashboardState DashboardState
 
@@ -8,20 +8,20 @@
 
     <div class="dashboard-grid">
 
-        <!-- ERP -->
-        <ErpPanel Data="@DashboardState.ERPData" />
+        <!-- ERP: Changed ERPData to AdminErp -->
+        <ErpPanel Data="@DashboardState.AdminErp" />
 
         <!-- CRM -->
         <CrmPanel Clients="@DashboardState.TopClients" />
 
-        <!-- FINANCE -->
-        <FinancePanel Data="@DashboardState.FinanceData" />
+        <!-- FINANCE: Changed FinanceData to AdminFinance -->
+        <FinancePanel Data="@DashboardState.AdminFinance" />
 
         <!-- TASKS -->
         <TasksPanel Tasks="@DashboardState.AllTasks" />
 
-        <!-- SYSTEM HEALTH -->
-        <SystemHealthPanel Status="@DashboardState.SystemHealth" />
+        <!-- SYSTEM HEALTH: Changed SystemHealth to AdminHealth -->
+        <SystemHealthPanel Status="@DashboardState.AdminHealth" />
 
         <!-- AUDIT -->
         <AuditPanel Logs="@DashboardState.AuditLogs" />
@@ -34,11 +34,8 @@
 </div>
 
 @code {
-
     protected override async Task OnInitializedAsync()
     {
         await DashboardState.LoadAdminDashboardAsync();
     }
 }
-
-<!-- CODE END -->

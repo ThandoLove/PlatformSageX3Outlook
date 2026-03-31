@@ -1,13 +1,16 @@
-﻿@inject DashboardState State
+﻿
+
+@inject DashboardState State
 
 <div class="dashboard-panel audit-panel">
     <h4>Audit Logs</h4>
-    @if(State.AuditLogs != null && State.AuditLogs.Any())
+    @if (State.AuditLogs != null && State.AuditLogs.Any())
     {
         <ul>
-            @foreach(var log in State.AuditLogs)
+            @foreach (var log in State.AuditLogs)
             {
-                <li>@log.Time: @log.User - @log.Event</li>
+                @* Changed Time to Timestamp and Event to Action *@
+                <li>@log.Timestamp.ToShortTimeString(): @log.User - @log.Action (@log.Entity)</li>
             }
         </ul>
     }

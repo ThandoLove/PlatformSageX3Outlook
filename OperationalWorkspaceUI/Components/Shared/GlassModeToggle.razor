@@ -24,11 +24,15 @@
 
     private async Task Toggle(ChangeEventArgs e)
     {
-        var value = (bool)e.Value;
-
-        if (OnChanged.HasDelegate)
-            await OnChanged.InvokeAsync(value);
+        // FIX: Use 'is bool' or null-safe unboxing
+        if (e.Value is bool value)
+        {
+            IsGlass = value; // Update local state if needed
+            if (OnChanged.HasDelegate)
+                await OnChanged.InvokeAsync(value);
+        }
     }
+
 
 }
 

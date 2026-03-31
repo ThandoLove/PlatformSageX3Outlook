@@ -8,7 +8,7 @@
 }
 
 @code {
-    [Parameter] public string Message { get; set; }
+    [Parameter] public string Message { get; set; } = "This is a toast notification.";
     [Parameter] public string Type { get; set; } = "info"; // info, success, error, warning
     [Parameter] public bool IsVisible { get; set; } = true;
 }

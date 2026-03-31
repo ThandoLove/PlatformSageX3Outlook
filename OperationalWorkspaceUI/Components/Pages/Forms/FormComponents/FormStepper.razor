@@ -73,9 +73,9 @@
 
     public class FormStep
     {
-        public string Title { get; set; }
-        public RenderFragment Content { get; set; }
-        public Func<Task<bool>> Validate { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public RenderFragment? Content { get; set; }
+        public Func<Task<bool>>? Validate { get; set; } 
     }
 }
 

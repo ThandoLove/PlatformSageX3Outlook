@@ -10,7 +10,7 @@
 @inject TasksUIService TaskService
 @inject WorkspaceState WorkspaceState
 @inject NavigationService NavigationService
-@inject NotificationService NotificationService
+@inject Radzen.NotificationService NotificationService
 
 <h3>Tasks</h3>
 
@@ -41,15 +41,13 @@ else
 }
 
 @code {
-    // 1. Declare as nullable to fix "must contain a non-null value"
     private string? SearchQuery;
 
-    // 2. Add the null-forgiving operator (!) or a null check to the return
-    private IEnumerable<TaskDto>? FilteredTasks =>
+    private IEnumerable<TaskDto> FilteredTasks =>
         WorkspaceState.Tasks?
             .Where(t => string.IsNullOrWhiteSpace(SearchQuery)
-                     || t.Title.Contains(SearchQuery!, StringComparison.OrdinalIgnoreCase))
-            ?? Enumerable.Empty<TaskDto>(); // Fixes "Possible null reference return"
+                     || (t.Title != null && t.Title.Contains(SearchQuery!, StringComparison.OrdinalIgnoreCase)))
+            ?? Enumerable.Empty<TaskDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,8 +56,17 @@ else
 
     private async Task Refresh()
     {
+        // Ensure data is reloaded
         await TaskService.LoadTasksAsync();
-        await NotificationService.Success("Tasks refreshed");
+
+        // FIX: Correct Radzen Notification syntax (no await)
+        NotificationService.Notify(new Radzen.NotificationMessage
+        {
+            Severity = Radzen.NotificationSeverity.Success,
+            Summary = "Success",
+            Detail = "Tasks refreshed",
+            Duration = 4000
+        });
     }
 
     private void Create() => NavigationService.NavigateTo("/forms/create-task");
@@ -67,5 +74,6 @@ else
     private void Open(TaskDto task) =>
         NavigationService.NavigateTo($"/workspace/tasks/{task.Id}");
 }
+
 
 <!-- CODE END -->

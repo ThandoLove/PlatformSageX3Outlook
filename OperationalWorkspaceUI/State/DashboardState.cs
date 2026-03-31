@@ -34,6 +34,10 @@ public class DashboardState
     public event Action? OnChange;
     private void NotifyStateChanged() => OnChange?.Invoke();
 
+    // Inside DashboardState.cs, add this line with your other Admin/Shared data:
+    public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
+
+
     // --- Methods ---
     public async Task LoadAdminDashboardAsync()
     {

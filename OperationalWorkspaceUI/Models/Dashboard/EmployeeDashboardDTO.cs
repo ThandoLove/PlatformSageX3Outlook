@@ -3,10 +3,10 @@
 // CODE START
 public class EmployeeDashboardDTO
 {
-    public ERPOverviewDTO ERP { get; set; }
-    public CRMOverviewDTO CRM { get; set; }
-    public List<TaskItemDTO> Tasks { get; set; }
-    public FinanceSummaryDTO Finance { get; set; }
-    public List<ActivityItemDTO> RecentActivity { get; set; }
+    public ERPOverviewDTO ERP { get; set; } = new ERPOverviewDTO();
+    public CRMOverviewDTO CRM { get; set; } = new CRMOverviewDTO();
+    public List<TaskItemDTO> Tasks { get; set; } = new List<TaskItemDTO>();
+    public FinanceSummaryDTO Finance { get; set; } = new FinanceSummaryDTO();
+    public List<ActivityItemDTO> RecentActivity { get; set; } = new List<ActivityItemDTO>();
 }
 // CODE END

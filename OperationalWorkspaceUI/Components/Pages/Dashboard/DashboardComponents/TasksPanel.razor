@@ -2,11 +2,13 @@
 
 <div class="dashboard-panel tasks-panel">
     <h4>Tasks</h4>
-    @if(State.Tasks != null && State.Tasks.Any())
+    @* 1. Change State.Tasks to State.AllTasks (or State.MyTasks) *@
+    @if (State.AllTasks != null && State.AllTasks.Any())
     {
         <ul>
-            @foreach(var task in State.Tasks)
+            @foreach (var task in State.AllTasks)
             {
+                @* 2. Ensure TaskDto has Title and Status properties *@
                 <li>@task.Title (@task.Status)</li>
             }
         </ul>

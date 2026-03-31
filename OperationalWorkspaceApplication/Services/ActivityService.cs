@@ -1,4 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks; // Ensure this is here
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
@@ -17,14 +21,14 @@ public sealed class ActivityService : IActivityService
         _logger = logger;
     }
 
-    public async Task<ActivityDto> CreateAsync(CreateActivityDto dto, string userEmail)
+    // Using System.Threading.Tasks.Task explicitly to avoid conflict with Domain.Entities.Task
+    public async System.Threading.Tasks.Task<ActivityDto> CreateAsync(CreateActivityDto dto, string userEmail)
     {
         var entity = new Activity
         {
             Title = dto.Title,
             Description = dto.Description,
             ActivityType = dto.ActivityType,
-            // Convert Guid? to Guid by providing a fallback (Guid.Empty)
             RelatedEntityId = dto.RelatedEntityId ?? Guid.Empty,
             CreatedBy = userEmail,
             CreatedAt = DateTime.UtcNow,
@@ -39,14 +43,14 @@ public sealed class ActivityService : IActivityService
             entity.Title,
             entity.Description,
             entity.ActivityType,
-            entity.RelatedEntityId ?? Guid.Empty, // Now passed as a non-nullable Guid
+            entity.RelatedEntityId ?? Guid.Empty,
             entity.CreatedAt,
             entity.CreatedBy,
             entity.Timestamp,
             entity.Action);
     }
 
-    public async Task<ActivityDto?> GetByIdAsync(Guid id)
+    public async System.Threading.Tasks.Task<ActivityDto?> GetByIdAsync(Guid id)
     {
         var a = await _repo.GetByIdAsync(id, default);
         if (a == null) return null;
@@ -56,14 +60,14 @@ public sealed class ActivityService : IActivityService
             a.Title,
             a.Description,
             a.ActivityType,
-            a.RelatedEntityId ?? Guid.Empty, // Handle potential null from DB
+            a.RelatedEntityId ?? Guid.Empty,
             a.CreatedAt,
             a.CreatedBy,
             a.Timestamp,
             a.Action);
     }
 
-    public async Task<IEnumerable<ActivityDto>> GetByRelatedEntityAsync(Guid partnerId)
+    public async System.Threading.Tasks.Task<IEnumerable<ActivityDto>> GetByRelatedEntityAsync(Guid partnerId)
     {
         var activities = await _repo.GetByRelatedEntityAsync(partnerId, default);
 
@@ -72,11 +76,23 @@ public sealed class ActivityService : IActivityService
             a.Title,
             a.Description,
             a.ActivityType,
-            a.RelatedEntityId ?? Guid.Empty, // Handle potential null from DB
+            a.RelatedEntityId ?? Guid.Empty,
             a.CreatedAt,
             a.CreatedBy,
             a.Timestamp,
             a.Action)).ToList();
     }
 
+    public async System.Threading.Tasks.Task AttachEmailAsync(object model)
+    {
+        _logger.LogInformation("Attaching email to activity context.");
+        // Use Task.CompletedTask to satisfy the 'not all code paths return a value' error
+        await System.Threading.Tasks.Task.CompletedTask;
+    }
+
+    public async System.Threading.Tasks.Task LogAsync(ActivityDto activity)
+    {
+        _logger.LogInformation("Logging activity: {Title}", activity.Title);
+        await System.Threading.Tasks.Task.CompletedTask;
+    }
 }

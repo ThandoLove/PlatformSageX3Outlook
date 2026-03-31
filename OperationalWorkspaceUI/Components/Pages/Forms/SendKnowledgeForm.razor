@@ -3,9 +3,9 @@
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.System
 
-@* Inject with names that match your HandleSubmit logic *@
 @inject KnowledgeUIService KBService
-@inject NotificationService Notifications
+@* Fix 1: Use explicit namespace to resolve ambiguity *@
+@inject Radzen.NotificationService Notifications
 @inject NavigationService Navigation
 
 <h3>Send Knowledge</h3>
@@ -13,7 +13,8 @@
 <FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
 
 @code {
-    private SendKnowledgeModel Model = new();
+    // Fix 2: Use the model from the UIServices namespace to match the method signature
+    private OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel Model = new();
 
     private List<FormStepper.FormStep> Steps => new()
     {
@@ -35,12 +36,30 @@
 
     private async Task HandleSubmit()
     {
-        // Changed 'Actions' to 'KBService'
-        await KBService.SendKnowledgeAsync(Model);
-        
-        // Changed 'Notifications' to match the @inject above
-        await Notifications.Success("Sent");
-        
-        Navigation.NavigateTo("/workspace/knowledge");
+        try 
+        {
+            // Now the types match perfectly
+            await KBService.SendKnowledgeAsync(Model);
+            
+            // Fix 3: Use Radzen's Notify syntax (no await)
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Sent successfully"
+            });
+            
+            Navigation.NavigateTo("/workspace/knowledge");
+        }
+        catch 
+        {
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to send"
+            });
+        }
     }
+    
 }
