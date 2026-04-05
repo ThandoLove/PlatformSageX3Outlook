@@ -1,0 +1,36 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Orientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
+
+
+<FluentCard Style="height: 100%; border-left: 4px solid #005A9E; padding: 12px;">
+    <FluentStack Orientation="Orientation.Vertical" Spacing="2">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <FluentLabel Typo="Typography.Header">CRM Snapshot</FluentLabel>
+            <FluentIcon Value="@(new Icons.Regular.Size20.ChevronDown())" />
+        </div>
+        
+        <FluentLabel Typo="Typography.Body"><strong>Tech Innovations Inc.</strong></FluentLabel>
+        
+        <FluentDivider Role="DividerRole.Presentation" />
+
+        <FluentGrid Spacing="2">
+            <FluentGridItem xs="6">
+                <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: gray;">Open Opportunities</FluentLabel>
+                <FluentLabel Typo="Typography.Body"><strong>2 Active</strong></FluentLabel>
+            </FluentGridItem>
+            <FluentGridItem xs="6">
+                <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: #d83b01;">Overdue Invoices</FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: #d83b01;"><strong>$ 12,500</strong></FluentLabel>
+            </FluentGridItem>
+            <FluentGridItem xs="6">
+                <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: gray;">Credit Limit</FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: #107c10;"><strong>$50,000</strong></FluentLabel>
+            </FluentGridItem>
+            <FluentGridItem xs="6">
+                <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: gray;">Last Contact</FluentLabel>
+                <FluentLabel Typo="Typography.Body"><strong>3 days ago</strong></FluentLabel>
+            </FluentGridItem>
+        </FluentGrid>
+    </FluentStack>
+</FluentCard>

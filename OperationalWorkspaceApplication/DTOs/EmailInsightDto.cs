@@ -47,6 +47,10 @@ public sealed class EmailInsightDto
 
     //email metadata
 
+    // UI-friendly sender info
+    public string SenderName { get; init; } = string.Empty;
+    public string SenderEmail { get; init; } = string.Empty;
+
     public string MessageId { get; init; } = string.Empty;
     public string Message { get; init; } = string.Empty;
     public string Subject { get; init; } = string.Empty;

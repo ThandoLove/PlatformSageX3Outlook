@@ -21,6 +21,11 @@ namespace OperationalWorkspaceApplication.DTOs
         public string ClientCode { get; set; } = string.Empty;
         public string Status { get; set; } = "Active"; // Active / Inactive
 
+        // ERP specific
+        public string Category { get; set; } = string.Empty;
+        public string Currency { get; set; } = string.Empty;
+        public decimal Balance { get; set; }
+
         // FINANCIAL SUMMARY (UI-friendly)
         public decimal TotalOrders { get; set; }
         public decimal TotalRevenue { get; set; }

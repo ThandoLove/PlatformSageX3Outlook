@@ -1,21 +1,69 @@
-﻿@using OperationalWorkspaceUI.UIServices.Actions
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceUI.UIServices.Actions
 @using OperationalWorkspaceUI.UIServices.System
 @using Radzen
+@using FluentOrientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
+
+@* Radzen types are referenced explicitly to avoid enum conflicts with Fluent UI *@
+
 @inject QuickActionUIService ActionService
 @inject EmailContextState EmailState
 @inject WorkspaceState WorkspaceState
-@* Use Radzen's service directly to fix the 'Notify' error *@
 @inject Radzen.NotificationService RadzenNotify
 @inject NavigationManager NavigationManager
 
-<div class="quick-actions-panel">
-    <button class="btn btn-primary" @onclick="CreateOrder">Create Order</button>
-    <button class="btn btn-secondary" @onclick="CreateTask">Create Task</button>
-    <button class="btn btn-info" @onclick="AttachEmail">Attach Email</button>
-    <button class="btn btn-warning" @onclick="SendKnowledge">Send Knowledge</button>
-</div>
+<FluentCard Style="margin-bottom: 10px; padding: 12px; border-bottom: 4px solid #f2c94c;">
+    <FluentStack Orientation="Orientation.Vertical" Spacing="3">
+        <FluentLabel Typo="Typography.Header">Quick Actions</FluentLabel>
+
+        <FluentGrid Spacing="2">
+            <!-- CREATE ORDER -->
+            <FluentGridItem xs="6">
+                <FluentButton Appearance="Appearance.Accent"
+                              Style="width: 100%;"
+                              IconStart="@(new Icons.Regular.Size20.Cart())"
+                              OnClick="CreateOrder">
+                    Create Order
+                </FluentButton>
+            </FluentGridItem>
+
+            <!-- CREATE TASK -->
+            <FluentGridItem xs="6">
+                <FluentButton Appearance="Appearance.Outline"
+                              Style="width: 100%;"
+                              IconStart="@(new Icons.Regular.Size20.TaskListLtr())"
+                              OnClick="CreateTask">
+                    Create Task
+                </FluentButton>
+            </FluentGridItem>
+
+            <!-- ATTACH EMAIL -->
+            <FluentGridItem xs="6">
+                <FluentButton Appearance="Appearance.Outline"
+                              Style="width: 100%;"
+                              IconStart="@(new Icons.Regular.Size20.Attach())"
+                              OnClick="AttachEmail">
+                    Attach Email
+                </FluentButton>
+            </FluentGridItem>
+
+            <!-- SEND KNOWLEDGE -->
+            <FluentGridItem xs="6">
+                <FluentButton Appearance="Appearance.Outline"
+                              Style="width: 100%;"
+                              IconStart="@(new Icons.Regular.Size20.BookInformation())"
+                              OnClick="SendKnowledge">
+                    Knowledge
+                </FluentButton>
+            </FluentGridItem>
+        </FluentGrid>
+    </FluentStack>
+</FluentCard>
 
 @code {
+    [Parameter] public string? EmailId { get; set; }
+
     private void CreateOrder()
     {
         if (EmailState.CurrentEmail != null)
@@ -46,8 +94,11 @@
     {
         if (EmailState.CurrentEmail != null)
         {
-            // FIX: Changed .Id to .MessageId to match your EmailInsightDto
             NavigationManager.NavigateTo($"/forms/attach-email?emailId={EmailState.CurrentEmail.MessageId}");
+        }
+        else
+        {
+            ShowNoEmailError();
         }
     }
 
@@ -55,8 +106,11 @@
     {
         if (EmailState.CurrentEmail != null)
         {
-            // FIX: Changed .Id to .MessageId to match your EmailInsightDto
             NavigationManager.NavigateTo($"/forms/send-knowledge?emailId={EmailState.CurrentEmail.MessageId}");
+        }
+        else
+        {
+            ShowNoEmailError();
         }
     }
 
@@ -64,9 +118,10 @@
     {
         RadzenNotify.Notify(new NotificationMessage
         {
+            Style = "position: absolute; z-index: 9999;",
             Severity = NotificationSeverity.Error,
-            Summary = "Error",
-            Detail = "No email selected.",
+            Summary = "Action Required",
+            Detail = "Please select an email in Outlook first.",
             Duration = 4000
         });
     }

@@ -1,28 +1,27 @@
-﻿@using OperationalWorkspaceUI.Models.Email
+﻿@using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceApplication.DTOs
+@* FIX 1: Use the Alias to stop the Radzen/Fluent conflict *@
+@using FluentOrientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
 
-
-<h3>EmailHeader</h3>
-<!-- CODE START: EmailHeader.razor -->
-@if (Email == null)
-{
-    <EmptyState Message="No email selected." />
-}
-else
-{
-    <div class="email-header">
-        <h4>@Email.Subject</h4>
-
-        <div class="email-meta">
-            <span><b>From:</b> @Email.From</span>
-            <span><b>To:</b> @Email.To</span>
-            <span><b>Date:</b> @Email.ReceivedAt.ToString("yyyy-MM-dd HH:mm")</span>
-        </div>
-    </div>
-}
+<FluentCard Style="margin-bottom: 10px; padding: 12px; border-top: 4px solid #005A9E;">
+    @* FIX 2: Use FluentOrientation instead of Orientation *@
+    <FluentStack Orientation="FluentOrientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" Spacing="3">
+        
+        @* FIX 3: Fully qualified Enums to resolve the 'does not exist' error *@
+        <FluentPersona Name="@(Email?.SenderName ?? "Unknown Sender")"
+                       Status="@Microsoft.FluentUI.AspNetCore.Components.PersonaStatus.Available"
+                       StatusSize="@Microsoft.FluentUI.AspNetCore.Components.StatusSize.Size12"
+                       Size="@Microsoft.FluentUI.AspNetCore.Components.PersonaSize.Size32" />
+        
+        <FluentStack Orientation="FluentOrientation.Vertical" Spacing="0">
+            <FluentLabel Typo="Typography.Header">@Email?.SenderName</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: gray;">
+                @Email?.SenderEmail
+            </FluentLabel>
+        </FluentStack>
+    </FluentStack>
+</FluentCard>
 
 @code {
     [Parameter] public EmailInsightDto? Email { get; set; }
 }
-
-<!-- CODE END -->

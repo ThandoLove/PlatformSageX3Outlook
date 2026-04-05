@@ -1,44 +1,63 @@
-﻿@using OperationalWorkspaceApplication.DTOs
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.UIServices.Workspace
+@* FIX 1: Resolve Radzen conflict with an alias *@
+@using FluentOrientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
 
-<!-- CODE START: EmailClientMatch.razor -->
-@if (IsLoading)
-{
-    <LoadingSpinner />
-}
-else if (Client == null)
-{
-    <div class="email-client-match">
-        <EmptyState Message="No matching client found." />
+<FluentCard Style="margin-bottom: 10px; padding: 12px; border-left: 4px solid #107c10;">
+    @* FIX 2: Use the FluentOrientation alias *@
+    <FluentStack Orientation="FluentOrientation.Vertical" Spacing="2">
+        
+        <FluentStack Orientation="FluentOrientation.Horizontal" Justify="JustifyContent.SpaceBetween">
+            <FluentLabel Typo="Typography.Header">Sage X3 Match</FluentLabel>
+            @* FIX 3: In v4, use Appearance.Accent + Success color for the green look *@
+            <FluentBadge Appearance="Appearance.Accent" BackgroundColor="#107c10" Color="white">
+                Auto-Detected
+            </FluentBadge>
+        </FluentStack>
 
-        <button class="btn btn-primary" @onclick="CreateClient">
-            Create New Client
-        </button>
-    </div>
-}
-else
-{
-    <div class="email-client-match">
-        <h5>Matched Client</h5>
+        @if (Clients == null || !Clients.Any())
+        {
+            <div style="padding: 10px; text-align: center; background: #fafafa; border-radius: 4px;">
+                <FluentLabel Typo="Typography.Body">No matching Business Partner found.</FluentLabel>
+                <FluentButton Appearance="Appearance.Outline" Style="margin-top: 10px;">
+                    Search Sage X3
+                </FluentButton>
+            </div>
+        }
+        else
+        {
+            @foreach (var client in Clients)
+            {
+                <div style="background: white; border: 1px solid #edebe9; border-radius: 4px; padding: 10px; margin-top: 5px;">
+                    <FluentStack Orientation="FluentOrientation.Horizontal" Justify="JustifyContent.SpaceBetween">
+                        <FluentStack Orientation="FluentOrientation.Vertical" Spacing="0">
+                            <FluentLabel Typo="Typography.Body"><strong>@client.Name</strong></FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="font-size: 0.75rem; color: gray;">
+                                ID: @client.Id | Category: @client.Category
+                            </FluentLabel>
+                        </FluentStack>
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      IconStart="@(new Icons.Regular.Size16.Open())"
+                                      Title="View in Sage X3" />
+                    </FluentStack>
 
-        <div class="client-card" @onclick="() => OnOpenClient.InvokeAsync(Client)">
-            <p><b>@Client.Name</b></p>
-            <p>@Client.Email</p>
-            <p>@Client.PhoneNumber</p>
-        </div>
-    </div>
-}
+                    <FluentDivider Style="margin: 8px 0;" />
+
+                    <FluentStack Orientation="FluentOrientation.Horizontal" Spacing="2">
+                        <FluentBadge Appearance="Appearance.Neutral">@client.Currency</FluentBadge>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 0.75rem;">
+                            Balance: <strong>@client.Balance.ToString("C")</strong>
+                        </FluentLabel>
+                    </FluentStack>
+                </div>
+            }
+        }
+    </FluentStack>
+</FluentCard>
 
 @code {
-    [Parameter] public ClientDto? Client { get; set; }
-    [Parameter] public bool IsLoading { get; set; }
-
-    [Parameter] public EventCallback<ClientDto> OnOpenClient { get; set; }
-    [Parameter] public EventCallback OnCreateClient { get; set; }
-
-    private async Task CreateClient()
-    {
-        await OnCreateClient.InvokeAsync();
-    }
+    [Parameter] public EmailInsightDto? Email { get; set; }
+    [Parameter] public List<ClientDto>? Clients { get; set; }
 }
-
-<!-- CODE END -->

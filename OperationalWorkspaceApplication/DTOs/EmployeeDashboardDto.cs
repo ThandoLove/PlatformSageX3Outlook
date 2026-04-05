@@ -35,6 +35,10 @@ namespace OperationalWorkspaceApplication.DTOs
 
         // Attachments (optional)
         public List<AttachmentDto> Attachments { get; set; } = new List<AttachmentDto>();
+
+        public int MyTasks { get; set; }
+        public int MyOpenOrders { get; set; }
+        public decimal MySales { get; set; }
     }
     // CODE END
 }

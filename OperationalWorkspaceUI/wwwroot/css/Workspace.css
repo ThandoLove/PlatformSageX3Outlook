@@ -25,4 +25,68 @@
         background-color: #1e293b;
     }
 
+/* ========================================================= */
+/* CODE START: Unified Workspace Styling */
+/* ========================================================= */
+
+.workspace-container {
+    display: flex;
+    height: 100vh;
+    background: #020617;
+    color: #e2e8f0;
+}
+
+/* LEFT PANEL */
+.context-panel {
+    width: 380px;
+    background: #0f172a;
+    border-right: 1px solid #1e293b;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+/* PANEL SECTIONS */
+.panel-section {
+    margin-bottom: 20px;
+}
+
+    .panel-section h3 {
+        font-size: 14px;
+        margin-bottom: 8px;
+        color: #94a3b8;
+    }
+
+/* RIGHT PANEL */
+.main-dashboard {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* KPI ROW */
+.kpi-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* GRID */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+/* CARDS */
+.dashboard-card {
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+/* ========================================================= */
+/* CODE END */
+/* ========================================================= */
+
 /* CODE END */

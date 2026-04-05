@@ -1,0 +1,41 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Orientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
+
+
+@inject NavigationManager NavigationManager
+@inject EmailContextState EmailState
+@inject Radzen.NotificationService NotificationService
+
+
+<FluentCard Style="padding: 10px; margin-top: 10px; background-color: #fafafa;">
+    <FluentStack Orientation="Orientation.Horizontal"
+                 Spacing="3"
+                 HorizontalAlignment="HorizontalAlignment.Center">
+        
+        <FluentButton Appearance="Appearance.Outline"
+                      IconStart="@(new Icons.Regular.Size20.ContactCard())"
+                      OnClick="@(() => NavigationManager.NavigateTo("/forms/create-contact"))">
+            Create Contact
+        </FluentButton>
+
+        <FluentButton Appearance="Appearance.Outline"
+                      IconStart="@(new Icons.Regular.Size20.Link())"
+                      OnClick="@(() => NavigationManager.NavigateTo("/forms/link-record"))">
+            Link to Existing
+        </FluentButton>
+
+        <FluentButton Appearance="Appearance.Accent"
+                      IconStart="@(new Icons.Regular.Size20.Cart())"
+                      OnClick="@(() => NavigationManager.NavigateTo("/forms/create-order"))">
+            Sales Order
+        </FluentButton>
+
+        <FluentButton Appearance="Appearance.Outline"
+                      IconStart="@(new Icons.Regular.Size20.DocumentAdd())"
+                      OnClick="@(() => NavigationManager.NavigateTo("/forms/create-invoice"))">
+            Create Invoice
+        </FluentButton>
+
+    </FluentStack>
+</FluentCard>
