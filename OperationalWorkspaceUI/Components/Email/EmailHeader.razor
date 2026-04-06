@@ -4,15 +4,14 @@
 @using FluentOrientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
 
 <FluentCard Style="margin-bottom: 10px; padding: 12px; border-top: 4px solid #005A9E;">
-    @* FIX 2: Use FluentOrientation instead of Orientation *@
     <FluentStack Orientation="FluentOrientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" Spacing="3">
-        
-        @* FIX 3: Fully qualified Enums to resolve the 'does not exist' error *@
+
+        @* The older Fluent UI package in use doesn't expose PersonaSize/PersonaStatus/StatusSize as top-level enums
+           across all package versions. Use the component's simpler properties (e.g., "Size" as string) or omit
+           the missing enums to avoid compilation errors. *@
         <FluentPersona Name="@(Email?.SenderName ?? "Unknown Sender")"
-                       Status="@Microsoft.FluentUI.AspNetCore.Components.PersonaStatus.Available"
-                       StatusSize="@Microsoft.FluentUI.AspNetCore.Components.StatusSize.Size12"
-                       Size="@Microsoft.FluentUI.AspNetCore.Components.PersonaSize.Size32" />
-        
+                       Size="32" />
+
         <FluentStack Orientation="FluentOrientation.Vertical" Spacing="0">
             <FluentLabel Typo="Typography.Header">@Email?.SenderName</FluentLabel>
             <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: gray;">

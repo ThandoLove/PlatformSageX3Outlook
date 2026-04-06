@@ -1,36 +1,106 @@
-﻿@using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
-@using OperationalWorkspace.UIServices.DashboardUI
+﻿@page "/dashboard"
+@using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
 @using OperationalWorkspaceUI.State
-
-<!-- CODE START: Pages/Dashboard/Dashboard.razor -->
-@inject DashboardUIService DashboardService
 @inject DashboardState State
+@inject IJSRuntime JS
+@inject UIState UIState
 
 <div class="dashboard-grid">
-    @* Using Admin property names from your DashboardState.cs *@
-    <ErpPanel Data="@State.AdminErp" />
-    
-    <CrmPanel Data="@State.AdminCrm" />
-    
-    @* Using AllTasks since Tasks doesn't exist *@
-    <TasksPanel Tasks="@State.AllTasks" />
-    
-    <FinancePanel Data="@State.AdminFinance" />
-    
-    <SystemHealthPanel Status="@State.AdminHealth" />
-    
-    @* Using RecentActivities since RecentActivity doesn't exist *@
-    <RecentActivityPanel Activities="@State.RecentActivities" />
 
-    @* If KnowledgeBase isn't in your State class yet, you can use a placeholder or add it to State *@
-    <KnowledgeBasePanel />
+    <!-- EMAIL CONTEXT -->
+    <div class="email-panel dashboard-panel">
+        <EmailContextPanel Data="@State.EmailContext" />
+    </div>
 
-    <AuditPanel Logs="@State.AuditLogs" />
+    <!-- CRM -->
+    <div class="crm-panel dashboard-panel">
+        <CrmPanel Clients="@State.TopClients" />
+    </div>
+
+    <!-- ERP -->
+    <div class="erp-panel dashboard-panel">
+        <ErpPanel Data="@State.CurrentErp" />
+    </div>
+
+    <!-- TASKS -->
+    <div class="tasks-panel dashboard-panel">
+        <TasksPanel Tasks="@State.CurrentTasks" />
+    </div>
+
+    <!-- FINANCE (Admin only) -->
+    @if (State.CurrentFinance != null)
+    {
+        <div class="finance-panel dashboard-panel">
+            <FinancePanel Data="@State.CurrentFinance" />
+        </div>
+    }
+
+    <!-- SYSTEM HEALTH (Admin only) -->
+    @if (State.CurrentHealth != null)
+    {
+        <div class="system-health-panel dashboard-panel">
+            <SystemHealthPanel Status="@State.CurrentHealth" />
+        </div>
+    }
+
+    <!-- ACTIVITY -->
+    <div class="activity-panel dashboard-panel">
+        <RecentActivityPanel Activities="@State.CurrentActivities" />
+    </div>
+
+    <!-- AUDIT -->
+    <div class="audit-panel dashboard-panel">
+        <AuditPanel Logs="@State.CurrentAuditLogs" />
+    </div>
+
+    <!-- KNOWLEDGE -->
+    <div class="knowledge-panel dashboard-panel">
+        <KnowledgeBasePanel Data="@State.KnowledgeBase" />
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions-panel dashboard-panel">
+        <QuickActionsPanel />
+    </div>
+
+    <!-- LIGHT/DARK MODE TOGGLE -->
+    <div class="dashboard-panel theme-toggle">
+        <label>
+            <input type="checkbox" @bind="IsDarkMode" /> Dark Mode
+        </label>
+    </div>
+
 </div>
 
 @code {
+    private bool IsDarkMode
+    {
+        get => UIState.IsDarkMode;
+        set
+        {
+            // Use the UIState.SetTheme method instead of assigning the read-only IsDarkMode property
+            _ = UIState.SetTheme(value ? "dark-mode" : "light-mode");
+
+            if (value)
+                _ = JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+            else
+                _ = JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        await State.LoadAdminDashboardAsync();
+        // Detect Sage X3 environment (Admin/Employee)
+        string env = await DetectEnvironmentAsync();
+        State.SetEnvironment(env);
+
+        // Load all dashboard data
+        await State.LoadDashboardAsync();
+    }
+
+    private Task<string> DetectEnvironmentAsync()
+    {
+        // TODO: Replace with Sage X3 integration
+        return Task.FromResult("Admin");
     }
 }

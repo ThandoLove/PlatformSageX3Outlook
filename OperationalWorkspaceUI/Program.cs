@@ -9,7 +9,7 @@ using OperationalWorkspaceUI.UIServices.Actions;
 using OperationalWorkspaceUI.UIServices.EmailService;
 using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.Workspace;
-using OperationalWorkspace.UIServices.DashboardUI;
+using OperationalWorkspaceUI.UIServices.DashboardUI;
 
 // FIX: Check your Infrastructure project for these exact namespaces
 using OperationalWorkspaceInfrastructure;

@@ -1,7 +1,7 @@
 ﻿using OperationalWorkspaceUI.State;
 using OperationalWorkspaceApplication.DTOs;
 
-namespace OperationalWorkspace.UIServices.DashboardUI;
+namespace OperationalWorkspaceUI.UIServices.DashboardUI;
 
 public class DashboardUIService
 {

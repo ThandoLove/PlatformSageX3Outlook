@@ -1,30 +1,136 @@
-﻿
-/* CODE START: dashboard.css */
+﻿/* --- Dashboard CSS Optimized --- */
 
+:root {
+    /* Define variables at the top for easy maintenance */
+    --panel-bg-light: #ffffff;
+    --panel-bg-dark: #1f2937;
+    --panel-text-light: #111111;
+    --panel-text-dark: #f3f4f6;
+    --accent-blue: #3b82f6;
+    --accent-blue-hover: #2563eb;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Dashboard Grid Layout */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 16px;
+    /* Default: 1 column for mobile */
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "email" "crm" "erp" "tasks" "finance"
+        "system-health" "activity" "audit" "knowledge" "quick-actions";
 }
 
+/* Desktop Layout: 2 columns */
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "email crm"
+            "erp tasks"
+            "finance system-health"
+            "activity audit"
+            "knowledge quick-actions";
+    }
+}
+
+/* Panel Base Styling */
 .dashboard-panel {
-    background: var(--card);
+    background-color: var(--panel-bg-light);
+    color: var(--panel-text-light);
     padding: 16px;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow);
+    transition: background-color 0.3s ease;
 }
 
-.kpi-widget {
-    display: flex;
-    justify-content: space-between;
-    font-size: 18px;
-    margin: 8px 0;
+/* Specific Panel Assignments */
+.email-panel {
+    grid-area: email;
 }
 
+.crm-panel {
+    grid-area: crm;
+}
+
+.erp-panel {
+    grid-area: erp;
+}
+
+.tasks-panel {
+    grid-area: tasks;
+}
+
+.finance-panel {
+    grid-area: finance;
+}
+
+.system-health-panel {
+    grid-area: system-health;
+}
+
+.activity-panel {
+    grid-area: activity;
+}
+
+.audit-panel {
+    grid-area: audit;
+}
+
+.knowledge-panel {
+    grid-area: knowledge;
+}
+
+.quick-actions-panel {
+    grid-area: quick-actions;
+}
+
+/* Visual emphasis for specific panels */
+.tasks-panel,
+.quick-actions-panel {
+    background-color: var(--panel-bg-dark);
+    color: var(--panel-text-dark);
+}
+
+/* Global Dark Mode Support */
+body.dark-mode .dashboard-panel {
+    background-color: var(--panel-bg-dark);
+    color: var(--panel-text-dark);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Internal Components */
+.kpi-widget,
 .status-badge {
     display: flex;
     justify-content: space-between;
-    padding: 6px;
+    align-items: center;
+    padding: 8px 0;
 }
 
-/* CODE END */
+.kpi-widget {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Quick Action Buttons */
+.quick-actions-panel button {
+    margin: 4px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background-color: var(--accent-blue);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+    .quick-actions-panel button:hover {
+        background-color: var(--accent-blue-hover);
+    }
+
+    .quick-actions-panel button:active {
+        transform: translateY(1px);
+    }
