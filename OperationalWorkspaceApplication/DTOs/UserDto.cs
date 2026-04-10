@@ -14,6 +14,7 @@ namespace OperationalWorkspaceApplication.DTOs
         public string Name { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string Environment { get; set; } = string.Empty;
+
     }
     // CODE END
 }

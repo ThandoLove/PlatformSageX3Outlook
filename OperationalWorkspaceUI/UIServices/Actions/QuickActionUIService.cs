@@ -1,76 +1,90 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// CODE START
+using System.Net.Http.Json;
 using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
+using OperationalWorkspaceUI.Models.Forms;
 
-namespace OperationalWorkspaceUI.UIServices.Actions
+namespace OperationalWorkspaceUI.UIServices.Actions;
+
+public class QuickActionUIService
 {
-    public class QuickActionUIService
+    private readonly HttpClient _http;
+
+    public QuickActionUIService(HttpClient http)
     {
-        private readonly IOrderService _orderService;
-        private readonly ITaskService _taskService;
-        private readonly IKnowledgeService _knowledgeService;
-        private readonly IActivityService _activityService;
+        _http = http;
+    }
 
-        public QuickActionUIService(
-            IOrderService orderService,
-            ITaskService taskService,
-            IKnowledgeService knowledgeService,
-            IActivityService activityService)
+    // ---------------- NEW METHODS REQUIRED BY UI ----------------
+
+    public async Task CreateClientFromEmailAsync()
+    {
+        // Call the API endpoint that creates a client from the selected email
+        var response = await _http.PostAsync("api/clients/from-email", null);
+
+        if (!response.IsSuccessStatusCode)
+            throw new Exception("Failed to create client from email");
+    }
+
+    public async Task OpenClientSearchAsync()
+    {
+        // UI-only logic: open a modal/search window
+        await Task.CompletedTask;
+    }
+
+    // ---------------- EXISTING METHODS ----------------
+
+    public async Task CreateTaskFromEmailAsync(EmailInsightDto email)
+    {
+        var request = new CreateTaskRequest(
+            $"Follow-up: {email.Subject}",
+            email.Message,
+            email.AssignedUserId,
+            DateTime.UtcNow.AddDays(3)
+        );
+
+        var response = await _http.PostAsJsonAsync("api/tasks", request);
+
+        if (!response.IsSuccessStatusCode)
+            throw new Exception("Failed to create task from email");
+
+        await LogActivity("Task Created from Email", email.Subject);
+    }
+
+    public async Task AttachEmailAsync(object model)
+    {
+        var response = await _http.PostAsJsonAsync("api/email/attach", model);
+
+        if (!response.IsSuccessStatusCode)
+            throw new Exception("Failed to attach email");
+
+        await LogActivity("Email Attached", "Email linked");
+    }
+
+    public async Task SendKnowledgeAsync(object model)
+    {
+        var response = await _http.PostAsJsonAsync("api/knowledge/send", model);
+
+        if (!response.IsSuccessStatusCode)
+            throw new Exception("Failed to send knowledge");
+
+        await LogActivity("Knowledge Sent", "Sent to client");
+    }
+
+    public async Task<List<KnowledgeDto>> SearchKnowledgeAsync(string query)
+    {
+        return await _http.GetFromJsonAsync<List<KnowledgeDto>>($"api/knowledge/search?q={query}")
+               ?? new List<KnowledgeDto>();
+    }
+
+    private async Task LogActivity(string action, string description)
+    {
+        await _http.PostAsJsonAsync("api/activity/log", new ActivityDto
         {
-            _orderService = orderService;
-            _taskService = taskService;
-            _knowledgeService = knowledgeService;
-            _activityService = activityService;
-        }
-
-        public async Task CreateClientFromEmailAsync() => await Task.CompletedTask;
-        public async Task OpenClientSearchAsync() => await Task.CompletedTask;
-
-        public async Task CreateTaskFromEmailAsync(EmailInsightDto email)
-        {
-            // FIX: Using the positional constructor required by your CreateTaskRequest
-            var request = new CreateTaskRequest(
-                $"Follow-up: {email.Subject}",
-                email.Message,
-                email.AssignedUserId,
-                DateTime.UtcNow.AddDays(3)
-            );
-
-            await _taskService.CreateAsync(request, CancellationToken.None);
-            await LogActivity("Task Created from Email", email.Subject);
-        }
-
-        public async Task AttachEmailAsync(object model)
-        {
-            await _activityService.AttachEmailAsync(model);
-            await LogActivity("Email Attached", "Email linked");
-        }
-
-        public async Task SendKnowledgeAsync(object model)
-        {
-            await _knowledgeService.SendKnowledgeAsync(model);
-            await LogActivity("Knowledge Sent", "Sent to client");
-        }
-
-        public async Task<List<KnowledgeDto>> SearchKnowledgeAsync(string query)
-        {
-            var results = await _knowledgeService.SearchAsync(query);
-            return results.ToList();
-        }
-
-        private async Task LogActivity(string action, string description)
-        {
-            await _activityService.LogAsync(new ActivityDto
-            {
-                Action = action,
-                Description = description,
-                CreatedAt = DateTime.UtcNow
-            });
-        }
+            Action = action,
+            Description = description,
+            CreatedAt = DateTime.UtcNow
+        });
     }
 }
+// CODE END

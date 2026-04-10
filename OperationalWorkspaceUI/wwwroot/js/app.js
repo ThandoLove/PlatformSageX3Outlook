@@ -31,25 +31,50 @@ window.dashboardCharts = {
 // 2. OFFICE.JS BRIDGE (The "Nervous System")
 window.officeBridge = {
     initialize: function(dotNetHelper) {
-        // Ensure Office.js is actually present
-        if (typeof Office === 'undefined') {
-            console.warn("Office.js not loaded. This is expected if running outside of Outlook.");
+        // If Office.js is present, wire the normal Outlook handlers.
+        if (typeof Office !== 'undefined') {
+            Office.onReady((info) => {
+                if (info.host === Office.HostType.Outlook) {
+                    console.log("Office.js Ready. Outlook Host Detected.");
+
+                    // Initial data pull for the currently open email
+                    this.extractEmailData(dotNetHelper);
+
+                    // Event Listener: Fires when the user clicks a different email
+                    Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
+                        this.extractEmailData(dotNetHelper);
+                    });
+                }
+            });
             return;
         }
 
-        Office.onReady((info) => {
-            if (info.host === Office.HostType.Outlook) {
-                console.log("Office.js Ready. Outlook Host Detected.");
-                
-                // Initial data pull for the currently open email
-                this.extractEmailData(dotNetHelper);
-                
-                // Event Listener: Fires when the user clicks a different email
-                Office.context.mailbox.addHandlerAsync(Office.EventType.ItemChanged, () => {
-                    this.extractEmailData(dotNetHelper);
-                });
+        // If Office.js is not present, poll our TestEmail API so developers can use Postman to send test emails.
+        const pollIntervalMs = 2000; // every 2s
+        let lastMessageId = null;
+        setInterval(async () => {
+            try {
+                const resp = await fetch('/api/testemail/latest');
+                if (!resp.ok) return;
+                const json = await resp.json();
+                if (!json) return;
+                if (json.messageId && json.messageId !== lastMessageId) {
+                    lastMessageId = json.messageId;
+                    // Map to the expected shape in MainLayout.OnEmailReceived
+                    const data = {
+                        SenderName: json.senderName || json.sender || 'Test Sender',
+                        SenderEmail: json.senderEmail || json.sender || 'test@example.com',
+                        Subject: json.subject || 'Test Subject',
+                        MessageId: json.messageId || ''
+                    };
+                    console.log('Polling TestEmail: ', data);
+                    dotNetHelper.invokeMethodAsync('OnEmailReceived', data);
+                }
             }
-        });
+            catch (e) {
+                // ignore network errors when backend is not running
+            }
+        }, pollIntervalMs);
     },
 
     extractEmailData: function(dotNetHelper) {

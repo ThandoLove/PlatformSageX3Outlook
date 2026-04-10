@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OperationalWorkspaceApplication\OperationalWorkspaceApplication.csproj" />
+    <ProjectReference Include="..\OperationalWorkspaceInfrastructure\OperationalWorkspaceInfrastructure.csproj" />
   </ItemGroup>
 
 </Project>

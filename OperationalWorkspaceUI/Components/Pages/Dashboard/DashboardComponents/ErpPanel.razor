@@ -1,25 +1,51 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
+
 @using OperationalWorkspaceUI.State
 @inject DashboardState State
 
-<div class="dashboard-panel erp-panel">
-    <h4>ERP Overview</h4>
-    <div class="panel-content">
+<div class="dashboard-card erp-panel">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h4 style="margin: 0; color: var(--text-muted); font-size: 14px; text-transform: uppercase;">ERP Snapshot</h4>
+        <span class="status-badge linked" style="background: #DFF6DD; color: var(--sage-green); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">Linked</span>
+    </div>
+
+    <div class="kpi-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         @if (IsAdminView)
         {
-            @* Use AdminErp for Admin users *@
-            <KpiWidget Label="Total Orders" Value="@State.AdminErp.TotalOrdersToday" />
-            <KpiWidget Label="Stock Alerts" Value="@State.AdminErp.StockAlerts" Variant="warning" />
+            @* Admin: Focuses on Total Revenue and Stock Health *@
+            <KpiWidget Label="Daily Orders"
+                       Value="@State.AdminErp.TotalOrdersToday.ToString()"
+                       Variant="blue" />
+
+            <KpiWidget Label="Stock Alerts"
+                       Value="@State.AdminErp.StockAlerts.ToString()"
+                       Variant="orange" />
         }
         else
         {
-            @* Use EmployeeErp for Employee users *@
-            <KpiWidget Label="My Open Orders" Value="@State.EmployeeErp.MyOpenOrders" />
-            <KpiWidget Label="Pending Deliveries" Value="@State.EmployeeErp.PendingDeliveries" />
+            @* Employee: Focuses on Personal Open Quotes and Payments *@
+            <KpiWidget Label="Open Quotes"
+                       Value="@($"${State.EmployeeErp.MyOpenOrders:N0}")"
+                       Variant="blue" />
+
+            <KpiWidget Label="Unpaid Invoices"
+                       Value="@($"${State.EmployeeErp.PendingDeliveries:N0}")"
+                       Variant="green" />
         }
     </div>
 </div>
 
 @code {
     [Parameter] public bool IsAdminView { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Ensure UI stays synced with the global DashboardState
+        State.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+    }
 }

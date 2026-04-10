@@ -1,0 +1,25 @@
+﻿.timeline-item {
+    display: flex;
+    gap: 15px;
+    padding: 10px 0;
+    border-left: 2px solid #e2e8f0;
+    margin-left: 10px;
+    position: relative;
+}
+
+.timeline-icon {
+    width: 30px;
+    height: 30px;
+    background: #fff;
+    border: 2px solid #5b5fc7;
+    border-radius: 50%;
+    position: absolute;
+    left: -16px;
+}
+
+.timeline-content {
+    background: #f8fafc;
+    padding: 8px;
+    border-radius: 6px;
+    width: 100%;
+}

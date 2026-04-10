@@ -104,4 +104,23 @@
     border: 1px solid var(--border-color);
 }
 
+.main-layout {
+    display: flex; /* Aligns Sidebar, Content, and RightPanel horizontally */
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main-content {
+    flex: 1; /* Makes the center area expand to fill space */
+    display: flex;
+    flex-direction: column;
+}
+
+.page-container {
+    flex: 1;
+    overflow-y: auto; /* Allows the dashboard to scroll independently */
+    padding: 20px;
+}
+
+
 /* CODE END */

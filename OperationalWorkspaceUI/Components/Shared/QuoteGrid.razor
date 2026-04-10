@@ -1,69 +1,66 @@
-﻿<!-- CODE START: QuoteGrid.razor -->
-@using OperationalWorkspaceApplication.DTOs
+﻿@using OperationalWorkspaceApplication.DTOs
 @using System.Linq
 
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Quote #</th>
-            <th>Client</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Date</th>
-            <th></th>
-        </tr>
-    </thead>
+<div class="dashboard-card quote-container">
+    <div class="panel-header">
+        <h4>Late Shipments / Open Quotes</h4>
+    </div>
 
-    <tbody>
-        @* Using the null-coalescing operator ensures the loop never hits a null value *@
-        @foreach (var q in Items ?? Enumerable.Empty<OpenOrderDto>())
-        {
-            <tr>
-                <td>@q.OrderNumber</td>
-                <td>@q.ClientName</td>
-                <td>@q.TotalAmount.ToString("C")</td>
+    <div class="table-responsive">
+        <table class="table sage-table">
+            <thead>
+                <tr>
+                    <th>Quote #</th>
+                    <th>BP Code</th>
+                    <th>Client</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th class="text-center">Action</th>
+                </tr>
+            </thead>
 
-                <td>
-                    <StatusBadge Status="@q.Status" />
-                </td>
-
-                <td>@q.OrderDate.ToShortDateString()</td>
-
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary"
-                            @onclick="() => OnView.InvokeAsync(q)">
-                        View
-                    </button>
-
-                    <button class="btn btn-sm btn-success"
-                            disabled="@(q.Status != "Draft")"
-                            @onclick="() => OnApprove.InvokeAsync(q)">
-                        Approve
-                    </button>
-
-                    <button class="btn btn-sm btn-warning"
-                            disabled="@(q.Status != "Approved")"
-                            @onclick="() => OnConvert.InvokeAsync(q)">
-                        Convert
-                    </button>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+            <tbody>
+                @if (Items != null && Items.Any())
+                {
+                    @foreach (var q in Items)
+                    {
+                        <tr>
+                            <td class="col-bold">@q.OrderNumber</td>
+                            <td class="col-muted">@q.Id.ToString().Substring(0, 5).ToUpper()</td>
+                            <td>@q.ClientName</td>
+                            <td class="col-price">@q.TotalAmount.ToString("C0")</td>
+                            <td>
+                                <span class="badge-status @q.Status.ToLower()">
+                                    @q.Status
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="action-icons">
+                                    <i class="ms-Icon ms-Icon--RedEye" @onclick="() => OnView.InvokeAsync(q)"></i>
+                                    @if (q.Status == "Draft")
+                                    {
+                                        <i class="ms-Icon ms-Icon--CheckMark" @onclick="() => OnApprove.InvokeAsync(q)"></i>
+                                    }
+                                    <i class="ms-Icon ms-Icon--ChevronRight"></i>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="empty-row">No late shipments found.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
 @code {
-    // FIX: Removed the duplicate property and kept the null-safe initialized version
-    [Parameter]
-    public IEnumerable<OpenOrderDto>? Items { get; set; } = Enumerable.Empty<OpenOrderDto>();
-
-    [Parameter]
-    public EventCallback<OpenOrderDto> OnView { get; set; }
-
-    [Parameter]
-    public EventCallback<OpenOrderDto> OnApprove { get; set; }
-
-    [Parameter]
-    public EventCallback<OpenOrderDto> OnConvert { get; set; }
+    [Parameter] public IEnumerable<OpenOrderDto>? Items { get; set; } = Enumerable.Empty<OpenOrderDto>();
+    [Parameter] public EventCallback<OpenOrderDto> OnView { get; set; }
+    [Parameter] public EventCallback<OpenOrderDto> OnApprove { get; set; }
+    [Parameter] public EventCallback<OpenOrderDto> OnConvert { get; set; }
 }
-<!-- CODE END -->

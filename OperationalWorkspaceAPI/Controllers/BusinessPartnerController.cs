@@ -43,4 +43,11 @@ public sealed class BusinessPartnerController : ApiController
 
         return Success(result);
     }
+
+    [HttpPost("from-email")]
+    public async Task<IActionResult> CreateFromEmail([FromBody] CreateClientFromEmailRequest request)
+    {
+        var result = await _service.CreateFromEmailAsync(request);
+        return Success(result);
+    }
 }

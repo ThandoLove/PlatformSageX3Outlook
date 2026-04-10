@@ -10,6 +10,12 @@ public class BusinessPartner
     // Core Properties
     public string BpCode { get; private set; } = default!;
     public string Company { get; private set; } = default!;
+    // Contact information for lookup
+    public string ContactName { get; set; } = string.Empty;
+    public string ContactEmail { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
+    public string SalesRepName { get; set; } = string.Empty;
     public decimal CreditLimit { get; private set; }
     public decimal OverdueInvoices { get; private set; }
     public DateTime LastContactDate { get; private set; } = DateTime.UtcNow;

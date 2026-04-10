@@ -1,5 +1,5 @@
 ﻿
-namespace OperationalWorkspaceApplication.Abstractions;
+namespace OperationalWorkspaceApplication.IServices;
 
 public interface IUserContext
 {

@@ -1,5 +1,5 @@
 ﻿using OperationalWorkspace.Domain.Entities;
-using OperationalWorkspaceApplication.Abstractions; // Add this using
+using OperationalWorkspaceApplication.IServices; // Add this using
 using OperationalWorkspaceApplication.Audit; // Add this using for AuditLogSearchCriteria
 using Task = System.Threading.Tasks.Task;
 

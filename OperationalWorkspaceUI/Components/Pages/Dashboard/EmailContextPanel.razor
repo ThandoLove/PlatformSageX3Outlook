@@ -1,74 +1,72 @@
-﻿@using Microsoft.FluentUI.AspNetCore.Components
-@using OperationalWorkspaceApplication.DTOs
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.EmailService
-@using OperationalWorkspaceUI.UIServices.System
-@using Orientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
-
+@implements IDisposable
+@inject EmailContextState State
 @inject EmailContextUIService EmailService
-@inject EmailContextState EmailState
-@inject WorkspaceState WorkspaceState
-@inject Radzen.NotificationService NotificationService
-@inject NavigationService NavigationService
 
-<div class="email-context-panel">
-    
-    <!-- 1. THE VISUAL GOAL: AI INSIGHT CARD -->
-    <FluentCard Style="background-color: #f3f2f1; padding: 12px; margin-bottom: 15px; border-left: 4px solid #005A9E;">
-        <FluentStack Orientation="Orientation.Vertical"Spacing="2">
-            <FluentLabel Typo="Typography.Header">Email Insight</FluentLabel>
-            
-            <FluentStack Orientation="Orientation.Horizontal" Justify="JustifyContent.SpaceBetween">
-                <FluentLabel Typo="Typography.Body">
-                    Contact: <strong>@(EmailState.CurrentEmail?.SenderName ?? "Unknown")</strong>
-                </FluentLabel>
-                <FluentBadge Appearance="Appearance.Neutral">
-                    @(EmailState.CurrentEmail != null ? "Linked" : "Unlinked")
-                </FluentBadge>
-            </FluentStack>
-
-            <FluentLabel Typo="Typography.Body">
-                Intent: <span style="color: #0078d4; font-weight: 600;">Analysis Pending...</span>
-            </FluentLabel>
-            
-            <div style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #edebe9; margin-top: 5px;">
-                <FluentLabel Typo="Typography.Body" Style="font-size: 0.75rem; color: gray; font-weight: 600; display: block;">
-                    AI Summary:
-                </FluentLabel>
-                <FluentLabel Typo="Typography.Body" Style="font-size: 0.85rem;">
-                    @if (EmailState.CurrentEmail != null)
-                    {
-                        <span>Reviewing subject: "@EmailState.CurrentEmail.Subject" for Sage X3 matches...</span>
-                    }
-                    else
-                    {
-                        <span>Select an email in Outlook to generate insight.</span>
-                    }
-                </FluentLabel>
-            </div>
-        </FluentStack>
-    </FluentCard>
-
-    <!-- 2. YOUR FUNCTIONAL LOGIC COMPONENTS -->
-    <EmailHeader Email="@EmailState.CurrentEmail" />
-
-    <EmailDetails Email="@EmailState.CurrentEmail" />
-
-    <div class="email-actions" style="margin: 10px 0;">
-        <QuickActionsPanel EmailId="@(EmailState.CurrentEmail?.Id.ToString())" />
+<div class="dashboard-card email-insight-card">
+    <div class="panel-header">
+        <h4>Email Insight</h4>
+        @* Status badge updates based on whether a Sage X3 client match was found *@
+        <span class="status-badge @(State.MatchedClient != null ? "linked" : "unlinked")">
+            @(State.MatchedClient != null ? "Linked" : "Unlinked")
+        </span>
     </div>
 
-    <EmailClientMatch Email="@EmailState.CurrentEmail" Clients="@WorkspaceState.Clients" />
+    <div class="insight-content">
+        <div class="contact-info">
+            <div class="avatar-circle">
+                @((!string.IsNullOrEmpty(State.CurrentEmail?.SenderName)) ? State.CurrentEmail.SenderName.Substring(0, 1) : "?")
+            </div>
+            <div class="text-group">
+                <span class="label">Contact</span>
+                <span class="contact-name">@(State.CurrentEmail?.SenderName ?? "Select an Email")</span>
+            </div>
+        </div>
 
-    <EmailTaskSummary Tasks="@EmailState.LinkedTasks" />
+        <div class="intent-section">
+            <span class="label">Intent</span>
+            <div class="intent-badge">
+                <i class="ms-Icon ms-Icon--LightningBolt"></i>
+                @* This displays the intent/subject identified in the image *@
+                <span>@(State.CurrentEmail?.Subject ?? "Analyzing Context...")</span>
+            </div>
+        </div>
+
+        <div class="ai-summary-box">
+            <span class="summary-label">AI SUMMARY</span>
+            <p class="summary-text">
+                @if (State.CurrentEmail != null)
+                {
+                    @((!string.IsNullOrEmpty(State.CurrentEmail.Message)) ? State.CurrentEmail.Message : "Reviewing email for Sage X3 matches...")
+                }
+                else
+                {
+                    <span>Waiting for email selection to generate Sage X3 insights...</span>
+                }
+            </p>
+        </div>
+    </div>
 </div>
 
 @code {
-    protected override async Task OnParametersSetAsync()
+    protected override void OnInitialized()
     {
-        if (EmailState.CurrentEmail != null)
-        {
-            // This triggers your actual backend logic to fetch real data
-            await EmailService.LoadEmailContextAsync(EmailState.CurrentEmail.MessageId, EmailState, WorkspaceState);
-        }
+        // IMPORTANT: Subscribe to the state change event
+        // This ensures the panel refreshes when officeBridge.js sends new email data
+        State.OnChange += HandleStateChanged;
+    }
+
+    private void HandleStateChanged()
+    {
+        // Trigger a re-render of this specific component
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        // Prevent memory leaks by unsubscribing when the component is destroyed
+        State.OnChange -= HandleStateChanged;
     }
 }

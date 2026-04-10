@@ -1,128 +1,84 @@
-﻿@using Microsoft.FluentUI.AspNetCore.Components
-@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
-@using OperationalWorkspaceUI.UIServices.Actions
-@using OperationalWorkspaceUI.UIServices.System
-@using Radzen
-@using FluentOrientation = Microsoft.FluentUI.AspNetCore.Components.Orientation
-
-@* Radzen types are referenced explicitly to avoid enum conflicts with Fluent UI *@
-
-@inject QuickActionUIService ActionService
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 @inject EmailContextState EmailState
 @inject WorkspaceState WorkspaceState
-@inject Radzen.NotificationService RadzenNotify
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 
-<FluentCard Style="margin-bottom: 10px; padding: 12px; border-bottom: 4px solid #f2c94c;">
-    <FluentStack Orientation="FluentOrientation.Vertical" Spacing="3">
-        <FluentLabel Typo="Typography.Header">Quick Actions</FluentLabel>
+<div class="dashboard-card quick-actions-panel">
+    <div class="panel-header">
+        <h4>Quick Actions</h4>
+    </div>
 
-        <FluentGrid Spacing="2">
-            <!-- CREATE ORDER -->
-            <FluentGridItem xs="6">
-                <FluentButton Appearance="Appearance.Accent"
-                              Style="width: 100%;"
-                              IconStart="@(new Icons.Regular.Size20.Cart())"
-                              OnClick="CreateOrder">
-                    Create Order
-                </FluentButton>
-            </FluentGridItem>
+    <div class="actions-grid">
+        <!-- ADD PARTNER / CREATE CONTACT -->
+        <button class="action-item" @onclick="CreatePartner">
+            <div class="action-icon icon-blue">
+                <i class="ms-Icon ms-Icon--AddFriend"></i>
+            </div>
+            <span>Add Partner</span>
+        </button>
 
-            <!-- CREATE TASK -->
-            <FluentGridItem xs="6">
-                <FluentButton Appearance="Appearance.Outline"
-                              Style="width: 100%;"
-                              IconStart="@(new Icons.Regular.Size20.TaskListLtr())"
-                              OnClick="CreateTask">
-                    Create Task
-                </FluentButton>
-            </FluentGridItem>
+        <!-- CREATE QUOTE -->
+        <button class="action-item" @onclick="CreateQuote">
+            <div class="action-icon icon-orange">
+                <i class="ms-Icon ms-Icon--PageAdd"></i>
+            </div>
+            <span>Create Quote</span>
+        </button>
 
-            <!-- ATTACH EMAIL -->
-            <FluentGridItem xs="6">
-                <FluentButton Appearance="Appearance.Outline"
-                              Style="width: 100%;"
-                              IconStart="@(new Icons.Regular.Size20.Attach())"
-                              OnClick="AttachEmail">
-                    Attach Email
-                </FluentButton>
-            </FluentGridItem>
+        <!-- ADD SALES ORDER -->
+        <button class="action-item" @onclick="CreateOrder">
+            <div class="action-icon icon-blue">
+                <i class="ms-Icon ms-Icon--ShoppingCart"></i>
+            </div>
+            <span>Add Sales</span>
+        </button>
 
-            <!-- SEND KNOWLEDGE -->
-            <FluentGridItem xs="6">
-                <FluentButton Appearance="Appearance.Outline"
-                              Style="width: 100%;"
-                              IconStart="@(new Icons.Regular.Size20.BookInformation())"
-                              OnClick="SendKnowledge">
-                    Knowledge
-                </FluentButton>
-            </FluentGridItem>
-        </FluentGrid>
-    </FluentStack>
-</FluentCard>
+        <!-- ATTACH EMAIL -->
+        <button class="action-item" @onclick="AttachEmail">
+            <div class="action-icon icon-green">
+                <i class="ms-Icon ms-Icon--Attach"></i>
+            </div>
+            <span>Attach Email</span>
+        </button>
+
+        <!-- ADD TASK -->
+        <button class="action-item" @onclick="CreateTask">
+            <div class="action-icon icon-blue">
+                <i class="ms-Icon ms-Icon--CheckMark"></i>
+            </div>
+            <span>Add Task</span>
+        </button>
+
+        <!-- KNOWLEDGE BASE -->
+        <button class="action-item" @onclick="SendKnowledge">
+            <div class="action-icon icon-orange">
+                <i class="ms-Icon ms-Icon--KnowledgeArticle"></i>
+            </div>
+            <span>Knowledge</span>
+        </button>
+    </div>
+</div>
 
 @code {
-    [Parameter] public string? EmailId { get; set; }
+    private async Task CreatePartner() => await ExecuteAction("/forms/create-partner");
+    private async Task CreateQuote() => await ExecuteAction("/forms/create-quote");
+    private async Task CreateOrder() => await ExecuteAction("/forms/create-order");
+    private async Task CreateTask() => await ExecuteAction("/forms/create-task");
+    private async Task AttachEmail() => await ExecuteAction("/forms/attach-email");
+    private async Task SendKnowledge() => await ExecuteAction("/forms/send-knowledge");
 
-    private void CreateOrder()
+    private async Task ExecuteAction(string route)
     {
         if (EmailState.CurrentEmail != null)
         {
-            WorkspaceState.PreFillOrderFromEmail(EmailState.CurrentEmail);
-            NavigationManager.NavigateTo("/forms/create-order");
+            NavigationManager.NavigateTo(route);
         }
         else
         {
-            ShowNoEmailError();
+            await JS.InvokeVoidAsync("showToast", "Please select an email first.");
         }
-    }
-
-    private void CreateTask()
-    {
-        if (EmailState.CurrentEmail != null)
-        {
-            WorkspaceState.PreFillTaskFromEmail(EmailState.CurrentEmail);
-            NavigationManager.NavigateTo("/forms/create-task");
-        }
-        else
-        {
-            ShowNoEmailError();
-        }
-    }
-
-    private void AttachEmail()
-    {
-        if (EmailState.CurrentEmail != null)
-        {
-            NavigationManager.NavigateTo($"/forms/attach-email?emailId={EmailState.CurrentEmail.MessageId}");
-        }
-        else
-        {
-            ShowNoEmailError();
-        }
-    }
-
-    private void SendKnowledge()
-    {
-        if (EmailState.CurrentEmail != null)
-        {
-            NavigationManager.NavigateTo($"/forms/send-knowledge?emailId={EmailState.CurrentEmail.MessageId}");
-        }
-        else
-        {
-            ShowNoEmailError();
-        }
-    }
-
-    private void ShowNoEmailError()
-    {
-        RadzenNotify.Notify(new NotificationMessage
-        {
-            Style = "position: absolute; z-index: 9999;",
-            Severity = NotificationSeverity.Error,
-            Summary = "Action Required",
-            Detail = "Please select an email in Outlook first.",
-            Duration = 4000
-        });
     }
 }

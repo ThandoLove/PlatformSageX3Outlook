@@ -46,4 +46,5 @@ public sealed class AuditLogEntry
     // ===== Timestamp =====
     public DateTime OccurredAtUtc { get; init; } = DateTime.UtcNow;
     public string EntityType { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }

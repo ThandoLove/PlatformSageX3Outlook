@@ -1,7 +1,8 @@
-﻿using OperationalWorkspaceInfrastructure.Caching;
+﻿using Microsoft.Extensions.Options;
+using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.Configuration;
-using OperationalWorkspaceInfrastructure.Http;
 using OperationalWorkspaceInfrastructure.Exceptions;
+using OperationalWorkspaceInfrastructure.Http;
 using System.Net.Http.Json;
 
 
@@ -19,14 +20,16 @@ public class SageAuthService : ISageAuthService
     private readonly ISageHttpClient _httpClient;
     private const string CacheKey = "SageX3AccessToken";
 
-    public SageAuthService(SageSecurityOptions options,
-                            IDistributedTokenCacheService cache,
-                            ISageHttpClient httpClient)
+    public SageAuthService(
+    IOptions<SageSecurityOptions> options,
+    IDistributedTokenCacheService cache,
+    ISageHttpClient httpClient)
     {
-        _options = options;
+        _options = options.Value;
         _cache = cache;
         _httpClient = httpClient;
     }
+
 
     public async Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {

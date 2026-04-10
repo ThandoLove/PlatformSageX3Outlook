@@ -1,20 +1,67 @@
-﻿@inject DashboardState State
+﻿@using System.Linq
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspace.Domain.Enums
 
-<div class="dashboard-panel tasks-panel">
-    <h4>Tasks</h4>
-    @* 1. Change State.Tasks to State.AllTasks (or State.MyTasks) *@
-    @if (State.AllTasks != null && State.AllTasks.Any())
-    {
-        <ul>
-            @foreach (var task in State.AllTasks)
+@using OperationalWorkspaceUI.State
+@inject DashboardState State
+
+<div class="dashboard-card tasks-panel">
+    <div class="panel-header">
+        <div class="header-main">
+            <h4>My Tasks</h4>
+            <span class="task-count">@Tasks.Count(t => t.Status != "Completed") Pending</span>
+        </div>
+        <button class="btn-add-task">View All</button>
+    </div>
+
+    <div class="task-list">
+        @if (Tasks != null && Tasks.Any())
+        {
+            @foreach (var task in Tasks)
             {
-                @* 2. Ensure TaskDto has Title and Status properties *@
-                <li>@task.Title (@task.Status)</li>
+                <div class="task-item @(task.Status.ToLower() == "completed" ? "is-done" : "")">
+                    <div class="task-checkbox">
+                        @if (task.Status.ToLower() == "completed")
+                        {
+                            <i class="ms-Icon ms-Icon--CompletedSolid"></i>
+                        }
+                        else
+                        {
+                            <i class="ms-Icon ms-Icon--CircleRing"></i>
+                        }
+                    </div>
+                    <div class="task-info">
+                        <span class="task-title">@task.Title</span>
+                        @if (task.Priority != default(TaskPriority))
+                        {
+                            <span class="task-priority @(task.Priority.ToString().ToLower())">@task.Priority</span>
+                        }
+                    </div>
+                    <div class="task-actions">
+                        <i class="ms-Icon ms-Icon--More"></i>
+                    </div>
+                </div>
             }
-        </ul>
-    }
-    else
-    {
-        <EmptyState Message="No tasks available." />
-    }
+        }
+        else
+        {
+            <div class="empty-task-state">
+                <i class="ms-Icon ms-Icon--CheckMark"></i>
+                <p>All caught up!</p>
+            </div>
+        }
+    </div>
 </div>
+
+@code {
+    [Parameter] public List<TaskDto> Tasks { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        // Auto-subscribe to state changes if tasks aren't passed as a parameter
+        if (Tasks == null || !Tasks.Any())
+        {
+            Tasks = State.CurrentTasks;
+        }
+    }
+}

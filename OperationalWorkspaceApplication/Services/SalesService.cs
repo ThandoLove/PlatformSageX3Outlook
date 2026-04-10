@@ -5,7 +5,7 @@ using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceApplication.Abstractions;
+using OperationalWorkspaceApplication.IServices;
 
 namespace OperationalWorkspace.Application.Services;
 

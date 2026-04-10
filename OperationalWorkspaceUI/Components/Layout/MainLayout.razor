@@ -1,41 +1,97 @@
 ﻿@inherits LayoutComponentBase
-@inject OperationalWorkspaceUI.State.UIState UIState
+@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.Models.Email
+@using Microsoft.JSInterop
+@implements IDisposable
+@inject UIState UIState
+@inject DashboardState DashboardState
+@inject IJSRuntime JS
 
-<div class="main-layout @(UIState.CurrentTheme)">
+<div class="main-layout @UIState.CurrentTheme @(UIState.IsGlassMode ? "glass-mode" : "")">
 
-    <!-- LEFT -->
+    <!-- LEFT (Navigation) -->
     <Sidebar />
 
-    <!-- CENTER -->
+    <!-- CENTER (Main View) -->
     <div class="main-content">
         <Topbar />
 
         <div class="page-container">
-            @Body
+            @if (UIState.IsLoading)
+            {
+                <LoadingSpinner />
+            }
+            else
+            {
+                @Body
+            }
         </div>
     </div>
 
-    <!-- RIGHT -->
+    <!-- RIGHT (Sage X3 Contextual Workspace) -->
     <RightPanel />
 </div>
 
 <!-- GLOBAL COMPONENTS -->
-<!-- GLOBAL COMPONENTS -->
 <ErrorBanner Message="@UIState.ErrorMessage"
              IsVisible="@UIState.ShowError"
-             @* FIX: Wrap the method in a lambda so it can be invoked correctly *@
              OnDismiss="@(() => UIState.ClearError())" />
 
-
-<GlassModeToggle /> <!-- button-based theme switcher -->
 <ToastNotification />
 <Modal />
-<LoadingSpinner />
 
 @code {
+    private DotNetObjectReference<MainLayout>? _objRef;
+
     protected override async Task OnInitializedAsync()
     {
-        // Load persisted theme from localStorage
+        // Subscribe to state changes to ensure the UI refreshes when data arrives
+        UIState.OnChange += StateHasChanged;
+        DashboardState.OnChange += StateHasChanged;
+
         await UIState.LoadThemeFromLocalStorage();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Create a reference to this layout to pass to the officeBridge.js
+            _objRef = DotNetObjectReference.Create(this);
+
+            // Initialize the Outlook Nervous System
+            await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
+        }
+    }
+
+    /// <summary>
+    /// This method is triggered by officeBridge.js when an email is selected in Outlook.
+    /// It drives the "$310,250 Open Quotes" logic for Sarah Johnson.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnEmailReceived(EmailContextDTO emailData)
+    {
+        // 1. Update Global Page Title
+        UIState.CurrentPageTitle = $"Insights: {emailData.SenderName}";
+        
+        // 2. Map Email data to the Dashboard State
+        DashboardState.EmailContext = emailData;
+
+        // 3. Automatically load Sage X3 ERP data for this specific contact
+        await DashboardState.LoadDashboardAsync();
+
+        // 4. Re-render the Layout
+        StateHasChanged();
+
+        // 5. Visual Notification
+        await JS.InvokeVoidAsync("showToast", $"Workspace Context Updated: {emailData.SenderName}");
+    }
+
+    public void Dispose()
+    {
+        // Cleanup to prevent memory leaks
+        UIState.OnChange -= StateHasChanged;
+        DashboardState.OnChange -= StateHasChanged;
+        _objRef?.Dispose();
     }
 }

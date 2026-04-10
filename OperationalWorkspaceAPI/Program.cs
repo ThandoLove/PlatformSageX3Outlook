@@ -1,4 +1,3 @@
-
 using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
@@ -8,25 +7,43 @@ using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
 using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
-
+using OperationalWorkspaceAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SAGE X3 CONFIGURATION ---
 var sageConfig = builder.Configuration.GetSection("SageX3");
-builder.Services.AddHttpClient<ISageRestService, SageRestService>(client => {
-    // This uses the "RestBaseUrl" you added to appsettings.json
-    client.BaseAddress = new Uri(sageConfig["RestBaseUrl"] ?? "https://localhost");
-});
-// -----------------------------
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<ISageRestService, MockSageRestService>();
+}
+else
+{
+    builder.Services.AddHttpClient<ISageRestService, SageRestService>(client => {
+        client.BaseAddress = new Uri(sageConfig["RestBaseUrl"] ?? "https://localhost");
+    });
+}
 
 // 1. SERVICES CONFIGURATION
 builder.Services.AddApiLayer();
-builder.Services.AddWorkspaceSwagger(); // Defined in SwaggerExtensions.cs
+builder.Services.AddWorkspaceSwagger();
+builder.Services.AddDistributedMemoryCache();
 
-// CORS: allow the Blazor UI (taskpane) to call this API during development.
-// The add-in taskpane is hosted from OperationalWorkspaceUI (https://localhost:7173)
-// and may also be served over http during development (http://localhost:5065).
+// FIX 1: Map the SageSecurityOptions required by SageAuthService
+builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.SageSecurityOptions>(
+    builder.Configuration.GetSection("SageSecurityOptions"));
+
+// FIX 2: Explicitly provide the string required by SageX3AttachmentService constructor
+// This pulls from SageX3:AttachmentPath in your appsettings.json
+var attachmentPath = builder.Configuration["SageX3:AttachmentPath"] ?? "C:\\Temp\\SageAttachments";
+builder.Services.AddSingleton(attachmentPath);
+
+// REGISTER INFRASTRUCTURE
+// This call now has access to the Options and the Path string registered above
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// CORS Policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OutlookAddInPolicy", policy =>
@@ -51,27 +68,12 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
-    //real implementations for these services, even in development, since they don't depend on a database
-
-
     builder.Services.AddScoped<IUserContextService, UserContextService>();
     builder.Services.AddScoped<IIntegrationService, IntegrationService>();
-    
-   
-
-
-    // Also register the Audit Repo for testing
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-}
-else
-{
-    // Real Infrastructure (Database, SQL Server, etc.)
-    // This call lives in InfrastructureServiceRegistration.cs
-    builder.Services.AddInfrastructureServices(builder.Configuration);
 }
 
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
-
 builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
 
 var app = builder.Build();
@@ -82,13 +84,11 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    // Defined in SwaggerExtensions.cs
     app.UseWorkspaceSwagger();
 }
 
 app.UseHttpsRedirection();
 app.UseCors("OutlookAddInPolicy");
-
 app.UseAuthentication();
 app.UseAuthorization();
 

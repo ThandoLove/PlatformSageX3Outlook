@@ -4,7 +4,7 @@ using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspace.Domain.Enums;
-using OperationalWorkspaceApplication.Abstractions;
+using OperationalWorkspaceApplication.IServices;
 
 namespace OperationalWorkspaceApplication.Services;
 

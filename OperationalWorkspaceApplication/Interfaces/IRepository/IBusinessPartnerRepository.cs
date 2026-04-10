@@ -1,4 +1,5 @@
 ﻿using OperationalWorkspace.Domain.Entities;
+using System.Threading;
 
 namespace OperationalWorkspaceApplication.Interfaces.IRepository;
 
@@ -6,6 +7,7 @@ namespace OperationalWorkspaceApplication.Interfaces.IRepository;
 public interface IBusinessPartnerRepository
 {
     Task<BusinessPartner?> GetByCodeAsync(string code, CancellationToken ct);
+    Task<BusinessPartner?> GetByEmailAsync(string email, CancellationToken ct);
     System.Threading.Tasks.Task UpdateAsync(BusinessPartner partner, CancellationToken ct);
 
     // Dashboard & Stats methods

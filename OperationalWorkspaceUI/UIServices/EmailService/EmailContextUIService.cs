@@ -1,47 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq; // This will light up once the code below is pasted
-using System.Threading.Tasks;
+﻿// CODE START
+
+using System.Net.Http.Json;
 using OperationalWorkspaceUI.State;
 using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceApplication.Interfaces.IServices;
 
 namespace OperationalWorkspaceUI.UIServices.EmailService;
 
 public class EmailContextUIService
 {
-    private readonly IEmailService _emailService;
+    private readonly HttpClient _http;
 
-    public EmailContextUIService(IEmailService emailService)
+    public EmailContextUIService(HttpClient http)
     {
-        _emailService = emailService;
+        _http = http;
     }
 
     public async Task LoadEmailContextAsync(string emailId, EmailContextState state, WorkspaceState workspaceState)
     {
-        // 1. Fetch email
-        state.CurrentEmail = await _emailService.GetEmailByIdAsync(emailId);
+        // 1. Email
+        state.CurrentEmail =
+            await _http.GetFromJsonAsync<EmailInsightDto>($"api/email/{emailId}");
 
-        // 2. Fetch the "Open" orders (Returns List<OpenOrderDto>)
-        var openOrders = await _emailService.GetLinkedOrdersAsync(emailId);
+        // 2. Orders
+        var orders =
+            await _http.GetFromJsonAsync<List<OrderDto>>($"api/email/{emailId}/orders");
 
-        // 3. FIX: Manually map OpenOrderDto to OrderDto to satisfy the State property type
-        // This is what makes "using System.Linq" active
-        state.LinkedOrders = openOrders.Select(o => new OrderDto
-        {
-            Id = o.Id,
-            OrderNumber = o.OrderNumber,
-            OrderDate = o.OrderDate,
-            TotalAmount = o.TotalAmount,
-            Status = o.Status,
-            ClientId = Guid.Empty,
-            Description = "Linked via email context"
-        }).ToList();
+        state.LinkedOrders = orders ?? new List<OrderDto>();
 
-        // 4. Preload linked tasks
-        state.LinkedTasks = await _emailService.GetLinkedTasksAsync(emailId);
+        // 3. Tasks
+        state.LinkedTasks =
+            await _http.GetFromJsonAsync<List<TaskDto>>($"api/email/{emailId}/tasks")
+            ?? new List<TaskDto>();
 
-        // 5. Match clients automatically
+        // 4. Match client
         if (state.CurrentEmail != null && workspaceState.Clients != null)
         {
             state.MatchedClient = workspaceState.Clients
@@ -49,3 +40,5 @@ public class EmailContextUIService
         }
     }
 }
+
+// CODE END

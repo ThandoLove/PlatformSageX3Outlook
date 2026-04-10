@@ -91,3 +91,58 @@ body, html {
 .glass-mode .panel {
     box-shadow: 0 4px 30px rgba(0,0,0,0.3);
 }
+
+/* Container for the entire application */
+.main-layout {
+    display: flex;
+    height: 100vh; /* Lock height to viewport */
+    width: 100vw;
+    overflow: hidden; /* Prevent the whole app from scrolling */
+}
+
+/* LEFT: Fixed Sidebar */
+.sidebar {
+    width: 60px; /* Slim icon-only sidebar like the image */
+    background-color: #020617; /* Deep Sage Purple/Dark */
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    z-index: 100;
+}
+
+/* CENTER: Main Content Wrapper */
+.main-content {
+    flex: 1; /* Take up remaining horizontal space */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* TOP: Fixed Topbar */
+.topbar {
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0; /* Prevent topbar from shrinking */
+}
+
+/* SCROLLABLE AREA: Where @Body lives */
+.page-container {
+    flex: 1;
+    overflow-y: auto; /* Only this area scrolls! */
+    padding: 20px;
+    background-color: #f8fafc;
+}
+
+/* RIGHT: Contextual Panel */
+.right-panel {
+    width: 320px;
+    border-left: 1px solid #e2e8f0;
+    background: #ffffff;
+    flex-shrink: 0;
+    overflow-y: auto;
+}

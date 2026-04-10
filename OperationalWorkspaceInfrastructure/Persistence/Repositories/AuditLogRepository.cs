@@ -2,7 +2,7 @@
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.Audit;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
-using OperationalWorkspaceApplication.Abstractions;
+using OperationalWorkspaceApplication.IServices;
 using Task = System.Threading.Tasks.Task;
 
 namespace OperationalWorkspaceInfrastructure.Persistence.Repositories;

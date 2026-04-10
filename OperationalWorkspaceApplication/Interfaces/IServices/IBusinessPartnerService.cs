@@ -1,4 +1,5 @@
 ﻿using OperationalWorkspace.Domain.Entities;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 
@@ -18,11 +19,14 @@ public interface IBusinessPartnerService
         GetBusinessPartnerSnapshotRequest request,
         CancellationToken cancellationToken);
     Task<string?> GetTopCustomerAsync(string userId);
+    Task<BusinessPartnerSnapshotDto?> GetPartnerByEmailAsync(string? email, CancellationToken ct = default);
     Task<UpdateCreditLimitResponse> UpdateCreditLimitAsync(
         UpdateCreditLimitRequest request,
         CancellationToken cancellationToken);
+    Task<CreateClientFromEmailResponse> CreateFromEmailAsync(
+    CreateClientFromEmailRequest request,
+    CancellationToken ct = default);
 
-    
 
 }
 

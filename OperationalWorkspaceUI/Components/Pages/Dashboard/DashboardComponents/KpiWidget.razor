@@ -1,38 +1,46 @@
-﻿<!-- CODE START: KpiWidget.razor -->
-
-<div class="kpi-widget @Variant">
-    
+﻿<div class="kpi-widget @VariantClass">
     <div class="kpi-header">
         <span class="kpi-label">@Label</span>
     </div>
 
-    <div class="kpi-value">
-        @Prefix@FormattedValue
+    <div class="kpi-content">
+        <span class="kpi-value">
+            @Prefix@FormattedValue
+        </span>
     </div>
 
     @if (!string.IsNullOrEmpty(Trend))
     {
-        <div class="kpi-trend">
+        <div class="kpi-trend @TrendClass">
             @Trend
         </div>
     }
-
 </div>
 
 @code {
-    [Parameter] public string? Label { get; set; }
+    [Parameter] public string Label { get; set; } = "Metric";
     [Parameter] public object? Value { get; set; }
     [Parameter] public string Prefix { get; set; } = "";
-    [Parameter] public string? Trend { get; set; } // e.g. "+12%"
-    [Parameter] public string Variant { get; set; } = "default"; // success, warning, etc
+    [Parameter] public string? Trend { get; set; }
+    [Parameter] public string Variant { get; set; } = "blue"; // blue, orange, green, success, warning
 
     private string FormattedValue => Value switch
     {
         null => "-",
         decimal d => d.ToString("N2"),
         int i => i.ToString("N0"),
-        _ => Value?.ToString() ?? "-" // FIX: Added null-safe operator
+        _ => Value?.ToString() ?? "-"
     };
-}
 
-<!-- CODE END -->
+    private string VariantClass => Variant.ToLower() switch
+    {
+        "blue" => "variant-blue",     // --sage-blue
+        "orange" => "variant-orange", // --sage-orange
+        "green" => "variant-green",   // --sage-green
+        "success" => "variant-success",
+        "warning" => "variant-warning",
+        _ => "variant-default"
+    };
+
+    private string TrendClass => Trend?.StartsWith("+") == true ? "positive" : "negative";
+}

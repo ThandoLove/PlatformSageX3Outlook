@@ -21,6 +21,9 @@ public class BusinessPartnerRepository : IBusinessPartnerRepository
         await _db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<BusinessPartner?> GetByEmailAsync(string email, CancellationToken cancellationToken)
+        => await _db.BusinessPartners.FirstOrDefaultAsync(bp => bp.ContactEmail == email, cancellationToken);
+
     // ============================================================
     // FIX: Implementation of Dashboard & Stats methods
     // ============================================================

@@ -1,0 +1,89 @@
+﻿.tasks-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.header-main h4 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+
+.task-count {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Task Item Row */
+.task-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--border-color);
+}
+
+    .task-item:hover {
+        background-color: #f8fafc;
+    }
+
+.task-checkbox {
+    margin-right: 12px;
+    color: var(--sage-blue);
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.task-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.task-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.is-done .task-title {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+/* Priority Badges */
+.task-priority {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    width: fit-content;
+    margin-top: 4px;
+}
+
+    .task-priority.high {
+        color: #ef4444;
+    }
+
+    .task-priority.normal {
+        color: var(--sage-blue);
+    }
+
+.btn-add-task {
+    background: none;
+    border: none;
+    color: var(--sage-blue);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}

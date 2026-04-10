@@ -1,12 +1,11 @@
-﻿using System.Linq;
-using OperationalWorkspaceApplication.Abstractions;
-using OperationalWorkspace.Domain.Entities; 
+﻿using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using Task = System.Threading.Tasks.Task;
+using System.Linq;
 
 namespace OperationalWorkspace.Application.Services;
 
@@ -15,24 +14,23 @@ public sealed class InventoryService : IInventoryService
     private readonly IInventoryRepository _inventoryRepository;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IUserContext _userContext;
+    private readonly IUserContextService _userContextService;
     private readonly IClock _clock;
 
     public InventoryService(
         IInventoryRepository inventoryRepository,
         IAuditLogRepository auditRepository,
         IUnitOfWork unitOfWork,
-        IUserContext userContext,
+        IUserContextService userContextService,
         IClock clock)
     {
         _inventoryRepository = inventoryRepository;
         _auditLogRepository = auditRepository;
         _unitOfWork = unitOfWork;
-        _userContext = userContext;
+        _userContextService = userContextService;
         _clock = clock;
     }
 
-    // RESTORED: GetItemAsync
     public async Task<InventoryItemDto?> GetItemAsync(Guid inventoryItemId, CancellationToken ct)
     {
         var item = await _inventoryRepository.GetByIdAsync(inventoryItemId, ct);
@@ -51,7 +49,6 @@ public sealed class InventoryService : IInventoryService
         };
     }
 
-    // RESTORED: GetWarehouseInventoryAsync
     public async Task<IReadOnlyList<InventoryItemDto>> GetWarehouseInventoryAsync(string warehouseCode, CancellationToken ct)
     {
         var items = await _inventoryRepository.GetByWarehouseAsync(warehouseCode, ct);
@@ -92,18 +89,23 @@ public sealed class InventoryService : IInventoryService
 
     public async Task<StockAdjustmentDto> GetAdjustmentDetailsAsync(StockAdjustmentRequest request, CancellationToken ct)
     {
+        // 1. Get the current user from your existing context service
+        var currentUser = await _userContextService.GetCurrentUserAsync();
+
         var item = await _inventoryRepository.GetByIdAsync(request.InventoryItemId, ct);
-        if (item == null) throw new InvalidOperationException("Not found");
+        if (item == null) throw new InvalidOperationException("Inventory item not found");
 
         var previousQuantity = item.QuantityOnHand;
         item.AdjustQuantity(request.QuantityChange, request.AdjustmentType, _clock.UtcNow);
 
         await _inventoryRepository.UpdateAsync(item, ct);
 
+        // 2. Log the audit entry using the user's name
         await _auditLogRepository.AddAsync(new AuditLogEntry
         {
             EventType = "Adjustment",
-            Description = $"Adjusted {item.ItemCode}"
+            Description = $"Item {item.ItemCode} adjusted by {currentUser.Name}. Change: {request.QuantityChange}",
+            CreatedAt = _clock.UtcNow
         }, ct);
 
         await _unitOfWork.SaveChangesAsync(ct);
@@ -120,12 +122,10 @@ public sealed class InventoryService : IInventoryService
             ReasonCode = request.ReasonCode,
             AdjustedAtUtc = _clock.UtcNow
         };
-
     }
 
     public async Task<int> CountStockAlertsAsync()
     {
-        // Pass a default token or wire it through if needed
         return await _inventoryRepository.GetStockAlertCountAsync();
     }
 }

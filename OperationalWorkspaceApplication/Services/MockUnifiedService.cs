@@ -93,6 +93,35 @@ public sealed class MockUnifiedService :
         new BusinessPartnersResponse(new BusinessPartnerSnapshotDto("C1000", "Mock Corp", 500m, 5000m, 2, 1, 15000m, DateTime.UtcNow));
     public async System.Threading.Tasks.Task<UpdateCreditLimitResponse> UpdateCreditLimitAsync(UpdateCreditLimitRequest req, CancellationToken ct) => new UpdateCreditLimitResponse(true);
 
+    // Implementation for GetPartnerByEmailAsync required by IBusinessPartnerService
+    public async System.Threading.Tasks.Task<BusinessPartnerSnapshotDto?> GetPartnerByEmailAsync(string? email, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return await System.Threading.Tasks.Task.FromResult<BusinessPartnerSnapshotDto?>(null);
+
+        var normalized = email!.Trim();
+
+        if (normalized.Equals("sarah.johnson@techinnovate.com", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("test@example.com", StringComparison.OrdinalIgnoreCase))
+        {
+            var dto = new BusinessPartnerSnapshotDto("C1000", "Tech Innovations Inc.", 10000m, 2500m, 3, 1, 1500m, DateTime.UtcNow)
+            {
+                FullName = "Sarah Johnson",
+                IsLinkedToSage = true,
+                Location = "Los Angeles, CA",
+                AssignedRep = "John Smith",
+                Timeline = new List<ActivityDto>
+                {
+                    new ActivityDto { Title = "Email", Action = "Quote Request", Timestamp = DateTime.UtcNow.AddDays(-2) },
+                    new ActivityDto { Title = "Call", Action = "Follow-up", Timestamp = DateTime.UtcNow.AddDays(-5) }
+                }
+            };
+
+            return await System.Threading.Tasks.Task.FromResult(dto);
+        }
+
+        return await System.Threading.Tasks.Task.FromResult<BusinessPartnerSnapshotDto?>(null);
+    }
+
     // --- ITaskService ---
     public async System.Threading.Tasks.Task<TaskResponse> CreateAsync(CreateTaskRequest req, CancellationToken ct) => new TaskResponse { Id = Guid.NewGuid() };
     public async System.Threading.Tasks.Task<CompleteTaskResponse> CompleteAsync(CompleteTaskRequest req, CancellationToken ct) => new CompleteTaskResponse(true, "Mock Done");
@@ -109,4 +138,24 @@ public sealed class MockUnifiedService :
     public async System.Threading.Tasks.Task<CreateSalesOrderResponse> CreateOrderAsync(CreateSalesOrderRequest req, CancellationToken ct) => new CreateSalesOrderResponse(Guid.NewGuid());
     public async System.Threading.Tasks.Task<SalesOrderDetailsResponse?> GetOrderAsync(GetSalesOrderRequest req, CancellationToken ct) =>
         new SalesOrderDetailsResponse(new SalesOrderDto { Id = Guid.NewGuid(), OrderNumber = "MOCK-101", TotalAmount = 1500m, OrderDate = DateTime.UtcNow, OrderStatus = "Open" });
+    // ADD THIS INSIDE MockUnifiedService
+
+    public async System.Threading.Tasks.Task<CreateClientFromEmailResponse> CreateFromEmailAsync(
+        CreateClientFromEmailRequest request,
+        CancellationToken ct = default)
+    {
+        // Minimal mock logic (DO NOT OVERTHINK)
+
+        if (string.IsNullOrWhiteSpace(request.Email))
+            throw new ArgumentException("Email is required");
+
+        return await System.Threading.Tasks.Task.FromResult(
+            new CreateClientFromEmailResponse
+            {
+                Id = Guid.NewGuid(),
+                Code = $"MOCK-{request.Email}"
+            });
+    }
+
+
 }
