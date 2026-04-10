@@ -146,3 +146,24 @@ body, html {
     flex-shrink: 0;
     overflow-y: auto;
 }
+
+.error-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #dc2626;
+    color: white;
+    padding: 10px 16px;
+    z-index: 9999;
+}
+
+.error-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.error-message {
+    font-weight: 500;
+}

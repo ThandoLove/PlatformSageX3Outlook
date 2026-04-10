@@ -1,5 +1,54 @@
-﻿<h3>ErrorBanner</h3>
+﻿@if (Visible)
+{
+    <div class="banner @CssClass">
+        <div class="banner-content">
+            <span class="banner-icon">@Icon</span>
+            <span class="banner-message">@Message</span>
+        </div>
+
+        @if (Dismissible)
+        {
+            <button class="banner-close" @onclick="Close">×</button>
+        }
+    </div>
+}
 
 @code {
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public bool Dismissible { get; set; } = true;
+    [Parameter] public BannerType Type { get; set; } = BannerType.Error;
 
+    private string CssClass => Type switch
+    {
+        BannerType.Success => "banner-success",
+        BannerType.Warning => "banner-warning",
+        BannerType.Info => "banner-info",
+        _ => "banner-error"
+    };
+
+    private string Icon => Type switch
+    {
+        BannerType.Success => "✔",
+        BannerType.Warning => "⚠",
+        BannerType.Info => "ℹ",
+        _ => "✖"
+    };
+
+    private async Task Close()
+    {
+        Visible = false;
+
+        if (OnClose.HasDelegate)
+            await OnClose.InvokeAsync();
+    }
+
+    public enum BannerType
+    {
+        Error,
+        Success,
+        Warning,
+        Info
+    }
 }
