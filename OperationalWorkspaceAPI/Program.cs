@@ -48,7 +48,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("OutlookAddInPolicy", policy =>
     {
-        policy.WithOrigins("https://localhost:7173", "http://localhost:5065")
+        policy.WithOrigins("https://localhost:7123", "http://localhost:5065")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

@@ -22,27 +22,49 @@ namespace OperationalWorkspaceUI.State
         public async Task SetTheme(string theme)
         {
             CurrentTheme = theme;
-            await _js.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+            try
+            {
+                await _js.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+            }
+            catch (InvalidOperationException)
+            {
+                /* Sink error if called during prerender */
+            }
             NotifyStateChanged();
         }
 
         public async Task LoadThemeFromLocalStorage()
         {
-            var theme = await _js.InvokeAsync<string>("localStorage.getItem", "theme");
-            if (!string.IsNullOrEmpty(theme))
-                CurrentTheme = theme;
+            try
+            {
+                // SAFE CHECK: This will fail during prerendering, 
+                // so we catch it to prevent the "Red Bar" crash.
+                var theme = await _js.InvokeAsync<string>("localStorage.getItem", "theme");
 
-            NotifyStateChanged();
+                if (!string.IsNullOrEmpty(theme))
+                {
+                    CurrentTheme = theme;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // Prerendering phase: JS is not yet available.
+                // We do nothing; the component will call this again 
+                // in OnAfterRender once the browser is ready.
+            }
+            finally
+            {
+                NotifyStateChanged();
+            }
         }
 
-        // 👇 ADD THIS (for toggle compatibility)
         public async Task ToggleGlassMode(bool value)
         {
             await SetTheme(value ? "glass-mode" : "light-mode");
         }
 
         // =========================
-        // PAGE STATE (YOU LOST THIS)
+        // PAGE STATE
         // =========================
         public string CurrentPage { get; set; } = "Dashboard";
         public string CurrentPageTitle { get; set; } = "Dashboard";

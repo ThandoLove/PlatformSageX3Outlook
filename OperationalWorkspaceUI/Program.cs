@@ -10,6 +10,9 @@ using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.Workspace;
 using Radzen;
 
+using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Services; // IMPORTANT
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ------------------ 1. SYSTEM ------------------
@@ -41,7 +44,7 @@ builder.Services.AddHttpClient("ApiClient", client =>
 builder.Services.AddScoped(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
 
-// ------------------ 5. UI SERVICES ONLY ------------------
+// ------------------ 5. UI SERVICES ------------------
 builder.Services.AddScoped<DashboardUIService>();
 builder.Services.AddScoped<EmailContextUIService>();
 builder.Services.AddScoped<QuickActionUIService>();
@@ -53,9 +56,19 @@ builder.Services.AddScoped<NavigationService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailSyncService>();
 
+// ------------------ 6. 🔥 BACKEND SERVICES (FIX) ------------------
+builder.Services.AddScoped<IActivityService, MockUnifiedService>();
+builder.Services.AddScoped<IEmailService, MockUnifiedService>();
+builder.Services.AddScoped<IKnowledgeService, MockUnifiedService>();
+builder.Services.AddScoped<ISalesService, MockUnifiedService>();
+builder.Services.AddScoped<IBusinessPartnerService, MockUnifiedService>(); // 🔥 THIS FIXES YOUR ERROR
+builder.Services.AddScoped<IInventoryService, MockUnifiedService>();
+builder.Services.AddScoped<ITaskService, MockUnifiedService>();
+builder.Services.AddScoped<IInvoiceService, MockUnifiedService>();
+
 var app = builder.Build();
 
-// ------------------ 6. PIPELINE ------------------
+// ------------------ 7. PIPELINE ------------------
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
