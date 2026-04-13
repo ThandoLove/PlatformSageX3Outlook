@@ -1,5 +1,4 @@
-﻿
-namespace OperationalWorkspaceAPI.Middleware;
+﻿namespace OperationalWorkspaceAPI.Middleware;
 
 public sealed class RbacMiddleware
 {
@@ -14,12 +13,36 @@ public sealed class RbacMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (context.User.Identity?.IsAuthenticated == true)
+        // 1. Skip check for non-protected paths (like Health Checks)
+        if (context.Request.Path.StartsWithSegments("/health"))
         {
-            var roles = context.User.FindAll(System.Security.Claims.ClaimTypes.Role);
-            _logger.LogInformation("User {User} accessing with roles: {Roles}",
-                context.User.Identity.Name, string.Join(",", roles));
+            await _next(context);
+            return;
         }
+
+        // 2. Identification check
+        if (context.User.Identity?.IsAuthenticated != true)
+        {
+            _logger.LogWarning("ACCESS DENIED: Unauthenticated request to {Path}", context.Request.Path);
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("Authentication Required.");
+            return;
+        }
+
+        // 3. Role Enforcement logic (Example: Admin required for DELETE/POST)
+        var roles = context.User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(r => r.Value);
+        var method = context.Request.Method;
+
+        if ((method == "DELETE" || method == "POST") && !roles.Contains("Admin"))
+        {
+            _logger.LogWarning("FORBIDDEN: User {User} attempted {Method} without Admin role.",
+                context.User.Identity.Name, method);
+
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            await context.Response.WriteAsync("Access Denied: Admin Role Required.");
+            return;
+        }
+
         await _next(context);
     }
 }

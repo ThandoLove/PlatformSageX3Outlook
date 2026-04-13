@@ -1,7 +1,11 @@
 // CODE START
 
 using Microsoft.FluentUI.AspNetCore.Components;
+using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Services; // IMPORTANT
 using OperationalWorkspaceUI.Components;
+
+using Majorsoft.Blazor.Extensions.BrowserStorage;
 using OperationalWorkspaceUI.State;
 using OperationalWorkspaceUI.UIServices.Actions;
 using OperationalWorkspaceUI.UIServices.DashboardUI;
@@ -9,9 +13,6 @@ using OperationalWorkspaceUI.UIServices.EmailService;
 using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.Workspace;
 using Radzen;
-
-using OperationalWorkspaceApplication.Interfaces.IServices;
-using OperationalWorkspaceApplication.Services; // IMPORTANT
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,8 @@ builder.Services.AddFluentUIComponents();
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<Radzen.NotificationService>();
 builder.Services.AddScoped<Radzen.DialogService>();
+// Add this to your builder.Services
+builder.Services.AddBrowserStorage();
 
 // ------------------ 3. STATE ------------------
 builder.Services.AddScoped<DashboardState>();
@@ -83,5 +86,9 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+
+
+
 
 // CODE END

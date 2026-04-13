@@ -1,37 +1,41 @@
-﻿using OperationalWorkspaceApplication.DTOs;
+﻿using Microsoft.AspNetCore.Http;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
-namespace OperationalWorkspaceApplication.Services
+public class UserContextService : IUserContextService
 {
- 
-     // CODE START
-    public class UserContextService : IUserContextService
-    {
-        public Task<UserDto> GetCurrentUserAsync()
-        {
-            // Replace later with real auth (JWT / SSO)
-            return Task.FromResult(new UserDto
-            {
-                Id = "1",
-                Name = "Admin User",
-                Role = "Admin",
-                Environment = "Production"
-            });
-        }
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public Task<UserDto> GetUserAsync(string userId)
-        {
-            return Task.FromResult(new UserDto
-            {
-                Id = userId,
-                Name = "Employee User",
-                Role = "Employee",
-                Environment = "Production"
-            });
-        }
+    public UserContextService(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
     }
-    // CODE END
+
+    public Task<UserDto> GetCurrentUserAsync()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+
+        return Task.FromResult(new UserDto
+        {
+            Id = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0",
+            Name = user?.Identity?.Name ?? "Anonymous",
+            Role = user?.FindFirst(ClaimTypes.Role)?.Value ?? "None",
+            Environment = "Production"
+        });
+    }
+
+    // FIX: Added the missing interface member
+    public Task<UserDto> GetUserAsync(string userId)
+    {
+        // For now, return a placeholder or implement your DB lookup logic here
+        return Task.FromResult(new UserDto
+        {
+            Id = userId,
+            Name = "System Looked-up User",
+            Role = "User",
+            Environment = "Production"
+        });
+    }
 }

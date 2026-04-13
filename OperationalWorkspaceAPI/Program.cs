@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
@@ -11,7 +14,37 @@ using OperationalWorkspaceAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- SAGE X3 CONFIGURATION ---
+// --- 1. CORE INFRASTRUCTURE ---
+builder.Services.AddApiLayer();
+builder.Services.AddWorkspaceSwagger();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddControllers();
+
+// --- 2. JWT AUTHENTICATION (PRODUCTION READY) ---
+// This replaces the simple API Key logic with industry-standard security
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "fallback_secret_key_for_dev_only_32_chars"))
+    };
+});
+
+builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
+
+// --- 3. SAGE X3 & INFRASTRUCTURE SERVICES ---
 var sageConfig = builder.Configuration.GetSection("SageX3");
 
 if (builder.Environment.IsDevelopment())
@@ -25,25 +58,16 @@ else
     });
 }
 
-// 1. SERVICES CONFIGURATION
-builder.Services.AddApiLayer();
-builder.Services.AddWorkspaceSwagger();
-builder.Services.AddDistributedMemoryCache();
-
-// FIX 1: Map the SageSecurityOptions required by SageAuthService
+// Map SageSecurityOptions and Attachment Paths
 builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.SageSecurityOptions>(
     builder.Configuration.GetSection("SageSecurityOptions"));
 
-// FIX 2: Explicitly provide the string required by SageX3AttachmentService constructor
-// This pulls from SageX3:AttachmentPath in your appsettings.json
 var attachmentPath = builder.Configuration["SageX3:AttachmentPath"] ?? "C:\\Temp\\SageAttachments";
 builder.Services.AddSingleton(attachmentPath);
 
-// REGISTER INFRASTRUCTURE
-// This call now has access to the Options and the Path string registered above
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// CORS Policy
+// --- 4. CORS POLICY ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OutlookAddInPolicy", policy =>
@@ -55,9 +79,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+// --- 5. DEPENDENCY INJECTION (MOCKS & REPOS) ---
 if (builder.Environment.IsDevelopment())
 {
-    // Mock Services for local development
     builder.Services.AddScoped<MockUnifiedService>();
     builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
@@ -71,16 +95,20 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IUserContextService, UserContextService>();
     builder.Services.AddScoped<IIntegrationService, IntegrationService>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+    // Inside Program.cs on the Server
+    builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
 }
 
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
-builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
 
 var app = builder.Build();
 
-// 2. MIDDLEWARE PIPELINE
+// --- 6. MIDDLEWARE PIPELINE (ORDER IS CRITICAL) ---
+
+// A. Infrastructure/Diagnostics first
 app.UseMiddleware<RequestCorrelationMiddleware>();
-app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<PerformanceTrackingMiddleware>(); // Track time for the whole pipeline
 
 if (app.Environment.IsDevelopment())
 {
@@ -89,13 +117,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("OutlookAddInPolicy");
-app.UseAuthentication();
-app.UseAuthorization();
 
-// Advanced Custom Middleware
-app.UseMiddleware<AuditLoggingMiddleware>();
-app.UseMiddleware<PerformanceTrackingMiddleware>();
-app.UseMiddleware<RbacMiddleware>();
+// B. Security Layer (Must come before RBAC and Audit)
+app.UseAuthentication(); // Decodes the JWT
+app.UseAuthorization();  // Checks [Authorize] attributes
+
+// C. Custom Business Middleware (Now has access to User claims from JWT)
+app.UseMiddleware<RbacMiddleware>();        // Checks roles
+app.UseMiddleware<AuditLoggingMiddleware>(); // Logs the identified User
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapControllers();
 

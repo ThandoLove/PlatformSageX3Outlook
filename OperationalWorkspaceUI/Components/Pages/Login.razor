@@ -1,0 +1,97 @@
+﻿@page "/login"
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Security
+@using Microsoft.AspNetCore.Components.Authorization
+@using Majorsoft.Blazor.Extensions.BrowserStorage
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILocalStorageService LocalStorage
+
+<div class="login-container">
+    <div class="card shadow">
+        <div class="card-body">
+            <h3 class="text-center">Sage X3 Portal</h3>
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label>Username</label>
+                    <InputText @bind-Value="loginModel.Username" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label>Password</label>
+                    <InputText @bind-Value="loginModel.Password" type="password" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary w-100" disabled="@isBusy">
+                    @if (isBusy)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span> Logging in...</span>
+                    }
+                    else
+                    {
+                        <span>Login</span>
+                    }
+                </button>
+            </EditForm>
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger mt-3">@error</div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequestDto loginModel = new();
+    private string? error;
+    private bool isBusy;
+
+    private async Task HandleLogin()
+    {
+        isBusy = true;
+        error = null;
+
+        try
+        {
+            // Note: api/v1/Auth matches the route in your AuthController
+            var response = await Http.PostAsJsonAsync("api/v1/Auth/login", loginModel);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                // We use JsonElement to handle your standard 'Success' envelope
+                var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                
+                if (result.TryGetProperty("data", out var data) && data.TryGetProperty("token", out var tokenProp))
+                {
+                    var token = tokenProp.GetString();
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        // FIX: Using Majorsoft Storage
+                        await LocalStorage.SetItemAsync("authToken", token);
+                        
+                        // FIX: Cast to YOUR provider to notify the UI
+                        ((CustomAuthenticationStateProvider)AuthStateProvider).NotifyUserAuthentication(token);
+                        
+                        Nav.NavigateTo("/");
+                    }
+                }
+            }
+            else
+            {
+                error = "Invalid username or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            // Now 'ex' is used for logging so the warning disappears
+            Console.WriteLine($"Login error: {ex.Message}");
+            error = "Could not connect to the server. Please try again later.";
+        }
+
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}
