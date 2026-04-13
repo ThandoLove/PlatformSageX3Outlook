@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
+using OperationalWorkspaceAPI.Services;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
+using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
-using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
-using OperationalWorkspaceAPI.Services;
+using OperationalWorkspaceInfrastructure.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,10 @@ builder.Services.AddApiLayer();
 builder.Services.AddWorkspaceSwagger();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
+
 
 // --- 2. JWT AUTHENTICATION (PRODUCTION READY) ---
 // This replaces the simple API Key logic with industry-standard security
@@ -92,7 +97,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
-    builder.Services.AddScoped<IUserContextService, UserContextService>();
+   
     builder.Services.AddScoped<IIntegrationService, IntegrationService>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
     // Inside Program.cs on the Server

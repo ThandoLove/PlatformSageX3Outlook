@@ -1,8 +1,9 @@
 <Solution>
-  <Project Path="OperationalWorkspace.Addin/OperationalWorkspace.Addin.csproj" />
-  <Project Path="OperationalWorkspace.Domain/OperationalWorkspace.Domain.csproj" />
-  <Project Path="OperationalWorkspaceAPI/OperationalWorkspaceAPI.csproj" Id="557fd167-4f7d-4ba6-bbf6-dbd7f3367cd9" />
-  <Project Path="OperationalWorkspaceApplication/OperationalWorkspaceApplication.csproj" />
-  <Project Path="OperationalWorkspaceInfrastructure/OperationalWorkspaceInfrastructure.csproj" Id="af64a212-60bd-4ea3-a997-e1985674f824" />
-  <Project Path="OperationalWorkspaceUI/OperationalWorkspaceUI.csproj" Id="0de69d71-96eb-4869-a4ec-f1df1d47e81f" />
+  <Project Path="../../../../../../Desktop/NewOutlookSageX3/PlatformSageX3Outlook/OperationalWorkspace.Addin/OperationalWorkspace.Addin.csproj" />
+  <Project Path="../../../../../../Desktop/NewOutlookSageX3/PlatformSageX3Outlook/OperationalWorkspace.Domain/OperationalWorkspace.Domain.csproj" />
+  <Project Path="../../../../../../Desktop/NewOutlookSageX3/PlatformSageX3Outlook/OperationalWorkspaceAPI/OperationalWorkspaceAPI.csproj" Id="557fd167-4f7d-4ba6-bbf6-dbd7f3367cd9" />
+  <Project Path="../../../../../../Desktop/NewOutlookSageX3/PlatformSageX3Outlook/OperationalWorkspaceApplication/OperationalWorkspaceApplication.csproj" />
+  <Project Path="../../../../../../Desktop/NewOutlookSageX3/PlatformSageX3Outlook/OperationalWorkspaceInfrastructure/OperationalWorkspaceInfrastructure.csproj" Id="af64a212-60bd-4ea3-a997-e1985674f824" />
+  <Project Path="../../../../../../Desktop/NewOutlookSageX3/PlatformSageX3Outlook/OperationalWorkspaceUI/OperationalWorkspaceUI.csproj" Id="0de69d71-96eb-4869-a4ec-f1df1d47e81f" />
+  <Project Path="../../../../../../Desktop/NewOutlookSageX3/PlatformSageX3Outlook/SharedProject/OperationalWorkspaceShared.csproj" Id="d66d9951-6d2c-421f-b9c8-c9c0c05d11f3" />
 </Solution>
