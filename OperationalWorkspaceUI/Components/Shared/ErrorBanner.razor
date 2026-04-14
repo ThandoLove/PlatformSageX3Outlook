@@ -1,4 +1,4 @@
-﻿@if (Visible)
+﻿@if (IsVisible)
 {
     <div class="banner @CssClass">
         <div class="banner-content">
@@ -8,15 +8,18 @@
 
         @if (Dismissible)
         {
-            <button class="banner-close" @onclick="Close">×</button>
+            <button type="button" class="banner-close" @onclick="Close">×</button>
         }
     </div>
 }
 
 @code {
     [Parameter] public string Message { get; set; } = string.Empty;
-    [Parameter] public bool Visible { get; set; } = true;
-    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = true;
+
+    // FIX: Renamed from OnClose to OnDismiss to match your parent page
+    [Parameter] public EventCallback OnDismiss { get; set; }
+    
     [Parameter] public bool Dismissible { get; set; } = true;
     [Parameter] public BannerType Type { get; set; } = BannerType.Error;
 
@@ -38,10 +41,11 @@
 
     private async Task Close()
     {
-        Visible = false;
+        IsVisible = false;
 
-        if (OnClose.HasDelegate)
-            await OnClose.InvokeAsync();
+        // FIX: Updated to invoke OnDismiss
+        if (OnDismiss.HasDelegate)
+            await OnDismiss.InvokeAsync();
     }
 
     public enum BannerType

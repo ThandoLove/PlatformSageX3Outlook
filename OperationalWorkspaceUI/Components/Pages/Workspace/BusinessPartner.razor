@@ -35,7 +35,7 @@
         <th class="text-end">Revenue</th>
     </HeaderContent>
     <RowTemplate Context="client">
-        <td><span class="badge bg-light text-dark">@client.ClientCode</span></td>
+        <td><span class="badge bg-light text-dark">@client.CustomerId</span></td>
         <td><strong>@client.Name</strong></td>
         <td>@client.Email</td>
         <td>
@@ -55,7 +55,7 @@
         (WorkspaceState.Clients ?? Enumerable.Empty<ClientDto>())
             .Where(c => string.IsNullOrWhiteSpace(SearchQuery)
                      || c.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)
-                     || c.ClientCode.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+                     || c.CustomerId.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {

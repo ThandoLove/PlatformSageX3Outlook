@@ -1,6 +1,5 @@
 ﻿namespace OperationalWorkspaceApplication.DTOs;
 
-// 1. Add this NEW class above your ClientDto in the same file
 public class CustomerDto
 {
     public string CustomerId { get; set; } = string.Empty;
@@ -8,12 +7,8 @@ public class CustomerDto
     public decimal CreditLimit { get; set; }
 }
 
-// 2. MODIFY your existing ClientDto to add ": CustomerDto"
 public class ClientDto : CustomerDto
 {
-    // REMOVE CustomerId, Email, and CreditLimit from here 
-    // because they are now "inherited" from the class above.
-
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
@@ -22,4 +17,9 @@ public class ClientDto : CustomerDto
     public string Country { get; set; } = string.Empty;
     public string Status { get; set; } = "Active";
     public decimal Balance { get; set; }
+
+    // --- ADD THESE BACK TO FIX THE UI ERRORS ---
+    public string Category { get; set; } = string.Empty; // Fixed: Category error
+    public string Currency { get; set; } = "USD";        // Fixed: Currency error
+    public decimal TotalRevenue { get; set; }           // Fixed: TotalRevenue error
 }

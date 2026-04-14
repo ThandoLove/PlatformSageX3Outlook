@@ -3,40 +3,54 @@
 @using OperationalWorkspaceUI.Security
 @using Microsoft.AspNetCore.Components.Authorization
 @using Majorsoft.Blazor.Extensions.BrowserStorage
+@* FIX 1: Use Accelist instead of Blazored *@
+@using Accelist.FluentValidation.Blazor
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILocalStorageService LocalStorage
 
-<div class="login-container">
-    <div class="card shadow">
-        <div class="card-body">
-            <h3 class="text-center">Sage X3 Portal</h3>
+<div class="login-container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
+        <div class="card-body p-4">
+            <h3 class="text-center mb-4">Sage X3 Portal</h3>
+            
             <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-                <DataAnnotationsValidator />
+                @* FIX 2: This component now works because of the Accelist using above *@
+                <FluentValidator />
+
                 <div class="mb-3">
-                    <label>Username</label>
-                    <InputText @bind-Value="loginModel.Username" class="form-control" />
+                    <label class="form-label">Username</label>
+                    <InputText @bind-Value="loginModel.Username" class="form-control" placeholder="Enter username" />
+                    <ValidationMessage For="@(() => loginModel.Username)" class="text-danger small" />
                 </div>
+
                 <div class="mb-3">
-                    <label>Password</label>
-                    <InputText @bind-Value="loginModel.Password" type="password" class="form-control" />
+                    <label class="form-label">Password</label>
+                    <InputText @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="Enter password" />
+                    <ValidationMessage For="@(() => loginModel.Password)" class="text-danger small" />
                 </div>
-                <button type="submit" class="btn btn-primary w-100" disabled="@isBusy">
-                    @if (isBusy)
-                    {
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        <span> Logging in...</span>
-                    }
-                    else
-                    {
-                        <span>Login</span>
-                    }
-                </button>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary w-100" disabled="@isBusy">
+                        @if (isBusy)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span> Verifying...</span>
+                        }
+                        else
+                        {
+                            <span>Login</span>
+                        }
+                    </button>
+                </div>
             </EditForm>
+
             @if (!string.IsNullOrEmpty(error))
             {
-                <div class="alert alert-danger mt-3">@error</div>
+                <div class="alert alert-danger mt-3 mb-0" role="alert">
+                    <i class="bi bi-exclamation-octagon-fill me-2"></i> @error
+                </div>
             }
         </div>
     </div>
@@ -54,12 +68,10 @@
 
         try
         {
-            // Note: api/v1/Auth matches the route in your AuthController
             var response = await Http.PostAsJsonAsync("api/v1/Auth/login", loginModel);
             
             if (response.IsSuccessStatusCode)
             {
-                // We use JsonElement to handle your standard 'Success' envelope
                 var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
                 
                 if (result.TryGetProperty("data", out var data) && data.TryGetProperty("token", out var tokenProp))
@@ -67,11 +79,10 @@
                     var token = tokenProp.GetString();
                     if (!string.IsNullOrEmpty(token))
                     {
-                        // FIX: Using Majorsoft Storage
                         await LocalStorage.SetItemAsync("authToken", token);
                         
-                        // FIX: Cast to YOUR provider to notify the UI
-                        ((CustomAuthenticationStateProvider)AuthStateProvider).NotifyUserAuthentication(token);
+                        var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+                        customAuthStateProvider.NotifyUserAuthentication(token);
                         
                         Nav.NavigateTo("/");
                     }
@@ -79,16 +90,14 @@
             }
             else
             {
-                error = "Invalid username or password.";
+                error = "Access denied. Please check your credentials.";
             }
         }
         catch (Exception ex)
         {
-            // Now 'ex' is used for logging so the warning disappears
-            Console.WriteLine($"Login error: {ex.Message}");
-            error = "Could not connect to the server. Please try again later.";
+            Console.WriteLine($"[Login Error]: {ex.Message}");
+            error = "Network error: Could not reach the authentication server.";
         }
-
         finally
         {
             isBusy = false;

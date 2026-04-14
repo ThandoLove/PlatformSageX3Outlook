@@ -32,27 +32,31 @@ namespace OperationalWorkspaceApplication.Services
             return await Task.FromResult(client);
         }
 
+      
         public async Task<ClientDto> CreateAsync(ClientDto dto)
         {
-            // Create a new instance and copy properties since ClientDto is a class
             var newClient = new ClientDto
             {
                 Id = Guid.NewGuid(),
                 Name = dto.Name,
-                Email = dto.Email,
+                Email = dto.Email, // Inherited from CustomerDto
                 PhoneNumber = dto.PhoneNumber,
                 Address = dto.Address,
                 City = dto.City,
                 Country = dto.Country,
-                ClientCode = dto.ClientCode,
+                // FIX: Changed ClientCode to CustomerId
+                CustomerId = dto.CustomerId,
                 Status = dto.Status,
-                CreatedAt = DateTime.UtcNow
+                Balance = dto.Balance,
+                CreditLimit = dto.CreditLimit
+                // REMOVED: CreatedAt (Since it's not in your new ClientDto definition)
             };
 
             _mockClients.Add(newClient);
             _logger.LogInformation("Created new client: {Name}", newClient.Name);
             return await Task.FromResult(newClient);
         }
+
 
 
         public async Task<bool> UpdateAsync(ClientDto dto)

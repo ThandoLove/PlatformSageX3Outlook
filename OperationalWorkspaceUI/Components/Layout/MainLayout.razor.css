@@ -1,53 +1,47 @@
-/* CODE START: MainLayout.razor.css */
-
-
-
-
+/* 1. ROOT CONTAINER - Forces the 3-column horizontal split */
 .main-layout {
     display: flex;
+    width: 100vw;
     height: 100vh;
-    background-color: var(--bg);
+    overflow: hidden;
+    background-color: var(--bg-main); /* Uses your :root variable */
 }
 
-    /* LEFT SIDEBAR */
-    .main-layout ::deep .sidebar {
-        width: 240px;
-        background: #020617;
-        border-right: 1px solid #1e293b;
-    }
+/* 2. SIDEBAR - Fixed width on the left */
+.sidebar {
+    width: 220px;
+    background: #020617; /* Deep Navy from your code */
+    flex-shrink: 0;
+    z-index: 100;
+}
 
-/* CENTER */
+/* 3. CENTER COLUMN - Expands to fill middle space */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
-    /* TOPBAR */
-    .main-content ::deep .topbar {
-        height: 60px;
-        border-bottom: 1px solid #1e293b;
-    }
-
-/* PAGE CONTENT */
+/* 4. PAGE CONTAINER - The only scrollable area in the middle */
 .page-container {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
+    padding: 20px;
+    background-color: var(--bg-main);
 }
 
-/* RIGHT PANEL */
-.main-layout ::deep .right-panel {
+/* 5. RIGHT PANEL - Fixed width for Sage Insights */
+.right-panel {
     width: 320px;
-    border-left: 1px solid #1e293b;
-    background: #020617;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border-color);
+    flex-shrink: 0;
+    overflow-y: auto;
 }
 
-/* ERROR UI (keep visible fix) */
-#blazor-error-ui {
-    display: none;
+/* 6. GLASS MODE - Blurs the UI for that modern Look */
+.glass-mode {
+    backdrop-filter: blur(12px);
+    background: rgba(15, 23, 42, 0.6);
 }
-
-
-
-/* CODE END */

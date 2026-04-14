@@ -5,6 +5,7 @@ using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
 using OperationalWorkspaceAPI.Services;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
@@ -15,25 +16,25 @@ using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceShared.Validators;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. CORE INFRASTRUCTURE ---
 builder.Services.AddApiLayer();
 builder.Services.AddWorkspaceSwagger();
 builder.Services.AddDistributedMemoryCache();
+
+// FLUENTVALIDATION: Register validators and enable auto-validation
+
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
 
-// Register FluentValidation validators from the shared project
-
-builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
-
-
-// --- 2. JWT AUTHENTICATION (PRODUCTION READY) ---
-// This replaces the simple API Key logic with industry-standard security
+// --- 2. JWT AUTHENTICATION ---
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -56,7 +57,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
 
-// --- 3. SAGE X3 & INFRASTRUCTURE SERVICES ---
+// --- 3. INFRASTRUCTURE & SAGE X3 ---
 var sageConfig = builder.Configuration.GetSection("SageX3");
 
 if (builder.Environment.IsDevelopment())
@@ -70,28 +71,31 @@ else
     });
 }
 
-// Map SageSecurityOptions and Attachment Paths
 builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.SageSecurityOptions>(
     builder.Configuration.GetSection("SageSecurityOptions"));
 
 var attachmentPath = builder.Configuration["SageX3:AttachmentPath"] ?? "C:\\Temp\\SageAttachments";
 builder.Services.AddSingleton(attachmentPath);
-
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// --- 4. CORS POLICY ---
+// --- 4. CORS POLICY (Corrected Origins) ---
+// Your UI uses ports 5065 (HTTP) and 7173 (HTTPS). These must match exactly.
+// CORS Policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OutlookAddInPolicy", policy =>
     {
-        policy.WithOrigins("https://localhost:7123", "http://localhost:5065")
+        // Changed 7173 to 7123 to match your UI's debugging port
+        policy.WithOrigins("https://localhost:7173", "http://localhost:5065")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-// --- 5. DEPENDENCY INJECTION (MOCKS & REPOS) ---
+
+
+// --- 5. DEPENDENCY INJECTION ---
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<MockUnifiedService>();
@@ -103,24 +107,19 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
-
-   
     builder.Services.AddScoped<IIntegrationService, IntegrationService>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-    // Inside Program.cs on the Server
     builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-
 }
 
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
 var app = builder.Build();
 
-// --- 6. MIDDLEWARE PIPELINE (ORDER IS CRITICAL) ---
-
-// A. Infrastructure/Diagnostics first
+// --- 6. MIDDLEWARE PIPELINE (Order is Critical) ---
+// UseRouting must be before UseCors and UseAuthentication.
 app.UseMiddleware<RequestCorrelationMiddleware>();
-app.UseMiddleware<PerformanceTrackingMiddleware>(); // Track time for the whole pipeline
+app.UseMiddleware<PerformanceTrackingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -128,17 +127,17 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting(); // Essential for proper CORS and Auth mapping
+
 app.UseCors("OutlookAddInPolicy");
 
-// B. Security Layer (Must come before RBAC and Audit)
-app.UseAuthentication(); // Decodes the JWT
-app.UseAuthorization();  // Checks [Authorize] attributes
+app.UseAuthentication(); 
+app.UseAuthorization();  
 
-// C. Custom Business Middleware (Now has access to User claims from JWT)
-app.UseMiddleware<RbacMiddleware>();        // Checks roles
-app.UseMiddleware<AuditLoggingMiddleware>(); // Logs the identified User
+// Custom business middleware that relies on Auth context
+app.UseMiddleware<RbacMiddleware>();        
+app.UseMiddleware<AuditLoggingMiddleware>(); 
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapControllers();
-
 app.Run();
