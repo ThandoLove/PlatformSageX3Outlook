@@ -1,39 +1,25 @@
-﻿
-using System;
+﻿namespace OperationalWorkspaceApplication.DTOs;
 
-namespace OperationalWorkspaceApplication.DTOs
+// 1. Add this NEW class above your ClientDto in the same file
+public class CustomerDto
 {
-    public class ClientDto
-    {
-        public Guid Id { get; set; }
-
-        // BASIC INFO
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PhoneNumber { get; set; } = string.Empty;
-
-        // ADDRESS
-        public string Address { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-
-        // BUSINESS DATA
-        public string ClientCode { get; set; } = string.Empty;
-        public string Status { get; set; } = "Active"; // Active / Inactive
-
-        // ERP specific
-        public string Category { get; set; } = string.Empty;
-        public string Currency { get; set; } = string.Empty;
-        public decimal Balance { get; set; }
-
-        // FINANCIAL SUMMARY (UI-friendly)
-        public decimal TotalOrders { get; set; }
-        public decimal TotalRevenue { get; set; }
-
-        // AUDIT
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-    }
+    public string CustomerId { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public decimal CreditLimit { get; set; }
 }
 
-// CODE END
+// 2. MODIFY your existing ClientDto to add ": CustomerDto"
+public class ClientDto : CustomerDto
+{
+    // REMOVE CustomerId, Email, and CreditLimit from here 
+    // because they are now "inherited" from the class above.
+
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
+    public string Address { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+    public string Status { get; set; } = "Active";
+    public decimal Balance { get; set; }
+}

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SharedProject.Validators
-{
-    internal class LoginRequestValidator
-    using FluentValidation;
+﻿
+using FluentValidation;
 using OperationalWorkspaceApplication.DTOs;
 
-namespace OperationalWorkspace.Shared.Validators;
+namespace OperationalWorkspaceShared.Validators;
 
     public class LoginRequestValidator : AbstractValidator<LoginRequestDto>
     {
@@ -22,4 +16,4 @@ namespace OperationalWorkspace.Shared.Validators;
                 .NotEmpty().WithMessage("Password is required.");
         }
     }
-}
+
