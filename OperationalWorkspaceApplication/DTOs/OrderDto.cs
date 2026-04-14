@@ -9,5 +9,7 @@
         public string Description { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = "Open"; // Grid expects Status
+
+        public List<SalesOrderLineDto> Lines { get; set; } = new();
     }
 }

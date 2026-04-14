@@ -1,3 +1,4 @@
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OperationalWorkspaceAPI.ApiExtensions;
@@ -11,7 +12,9 @@ using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
 using OperationalWorkspaceInfrastructure.Services;
+using OperationalWorkspaceShared.Validators;
 using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,10 @@ builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
+
+// Register FluentValidation validators from the shared project
+
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 
 // --- 2. JWT AUTHENTICATION (PRODUCTION READY) ---
