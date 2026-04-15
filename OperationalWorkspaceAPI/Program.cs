@@ -24,7 +24,6 @@ builder.Services.AddWorkspaceSwagger();
 builder.Services.AddDistributedMemoryCache();
 
 // FLUENTVALIDATION: Register validators and enable auto-validation
-
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 builder.Services.AddControllers();
@@ -79,21 +78,17 @@ builder.Services.AddSingleton(attachmentPath);
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // --- 4. CORS POLICY (Corrected Origins) ---
-// Your UI uses ports 5065 (HTTP) and 7173 (HTTPS). These must match exactly.
-// CORS Policy
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OutlookAddInPolicy", policy =>
     {
-        // Changed 7173 to 7123 to match your UI's debugging port
+        // 7173 matches your UI's HTTPS port from launchsettings
         policy.WithOrigins("https://localhost:7173", "http://localhost:5065")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
-
-
 
 // --- 5. DEPENDENCY INJECTION ---
 if (builder.Environment.IsDevelopment())
@@ -117,27 +112,34 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 var app = builder.Build();
 
 // --- 6. MIDDLEWARE PIPELINE (Order is Critical) ---
-// UseRouting must be before UseCors and UseAuthentication.
 app.UseMiddleware<RequestCorrelationMiddleware>();
 app.UseMiddleware<PerformanceTrackingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseWorkspaceSwagger();
+    app.UseWebAssemblyDebugging(); // Enable debugging for Blazor WASM
 }
 
 app.UseHttpsRedirection();
-app.UseRouting(); // Essential for proper CORS and Auth mapping
+
+// 🔥 CRITICAL: These allow the API to host the Blazor WebAssembly files
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
+
+app.UseRouting();
 
 app.UseCors("OutlookAddInPolicy");
 
-app.UseAuthentication(); 
-app.UseAuthorization();  
+app.UseAuthentication();
+app.UseAuthorization();
 
-// Custom business middleware that relies on Auth context
-app.UseMiddleware<RbacMiddleware>();        
-app.UseMiddleware<AuditLoggingMiddleware>(); 
+app.UseMiddleware<RbacMiddleware>();
+app.UseMiddleware<AuditLoggingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
+// Fallback to the Blazor index.html for any non-API routes
 app.MapControllers();
+app.MapFallbackToFile("index.html");
+
 app.Run();

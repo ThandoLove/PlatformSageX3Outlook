@@ -1,5 +1,4 @@
-﻿
-<!-- CODE START: index.html -->
+﻿<!-- CODE START: index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,20 +7,25 @@
     <base href="/" />
 
     <!-- CSS -->
+    <!-- Match the exact casing from your Solution Explorer -->
     <link href="css/app.css" rel="stylesheet" />
-    <link href="css/dashboard.css" rel="stylesheet" />
-    <link href="css/forms.css" rel="stylesheet" />
-    <link href="css/workspace.css" rel="stylesheet" />
-    <link href="css/components.css" rel="stylesheet" />
-
+    <link href="css/Components.css" rel="stylesheet" /> <!-- Capital C -->
+    <link href="css/Dashboard.css" rel="stylesheet" />  <!-- Capital D -->
+    <link href="css/Forms.css" rel="stylesheet" />      <!-- Capital F -->
+    <link href="css/Workspace.css" rel="stylesheet" />  <!-- Capital W -->
+    <!-- 🔥 CRITICAL: This enables your Sidebar and MainLayout styles -->
+    <link href="OperationalWorkspaceUI.styles.css" rel="stylesheet" />
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div id="app">Loading...</div>
 
-    <script src="_framework/blazor.webassembly.js"></script>
+ <script src="_framework/blazor.webassembly.js"></script>
+
+
     <script src="js/app.js"></script>
 </body>
 </html>
 <!-- CODE END -->
+

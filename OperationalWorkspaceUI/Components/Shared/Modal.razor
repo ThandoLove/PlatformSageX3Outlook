@@ -12,7 +12,6 @@
                 <button type="button" class="btn-close" @onclick="Close" aria-label="Close">×</button>
             </div>
             <div class="modal-body">
-                @@* This now correctly receives the RenderFragment from the Service *@
                 @ChildContent
             </div>
         </div>
@@ -56,7 +55,7 @@
 
     public void Dispose()
     {
-        // Unsubscribe to prevent memory leaks when the layout is disposed
+        // Unsubscribe to prevent memory leaks
         ModalService.OnShow -= HandleShow;
         ModalService.OnClose -= HandleClose;
     }

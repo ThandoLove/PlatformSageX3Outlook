@@ -1,7 +1,56 @@
 ﻿@page "/"
+@layout EmptyLayout
+@inject NavigationManager Nav
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Operational Workspace | Sage X3</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="landing-page">
+    @* --- HERO SECTION --- *@
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="brand-logo">
+                <img src="images/sage-logo.png" alt="Sage X3 Logo" />
+            </div>
+            
+            <h1 class="hero-title">Operational Workspace</h1>
+            <p class="hero-subtitle">
+                Contextual ERP insights delivered directly to your Outlook.
+                Enhance your productivity with seamless Sage X3 integration.
+            </p>
 
-Welcome to your new app.
+            <div class="hero-actions">
+                <button class="btn-primary" @onclick='(() => Nav.NavigateTo("/login"))'>
+                    Get Started
+                </button>
+                <button class="btn-outline" @onclick='(() => Nav.NavigateTo("/about"))'>
+                    Learn More
+                </button>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="dashboard-preview shadow-lg">
+                @* Placeholder for a small graphic of your static dashboard frame *@
+                <div class="preview-bars sidebar-p"></div>
+                <div class="preview-bars topbar-p"></div>
+                <div class="preview-content"></div>
+            </div>
+        </div>
+    </section>
+
+    @* --- QUICK FEATURES --- *@
+    <footer class="landing-footer">
+        <div class="footer-item">
+            <i class="ms-Icon ms-Icon--LightningBolt"></i>
+            <span>Real-time Sync</span>
+        </div>
+        <div class="footer-item">
+            <i class="ms-Icon ms-Icon--Shield"></i>
+            <span>Secure Access</span>
+        </div>
+        <div class="footer-item">
+            <i class="ms-Icon ms-Icon--Insights"></i>
+            <span>ERP Context</span>
+        </div>
+    </footer>
+</div>
