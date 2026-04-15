@@ -1,8 +1,6 @@
 /* =========================
-   THEME VARIABLES
-========================= */
-
-/* Light Mode */
+   1. THEME VARIABLES
+   ========================= */
 :root {
     --bg-main: #f8fafc;
     --bg-card: #ffffff;
@@ -10,9 +8,10 @@
     --text-primary: #111827;
     --text-secondary: #6b7280;
     --border-color: #e5e7eb;
+    --sidebar-bg: #020617; /* Deep Navy from image */
+    --accent-blue: #3b82f6;
 }
 
-/* Dark Mode */
 .dark-mode {
     --bg-main: #0f172a;
     --bg-card: #1e293b;
@@ -22,7 +21,6 @@
     --border-color: #1e293b;
 }
 
-/* Glass Mode */
 .glass-mode {
     --bg-main: rgba(15, 23, 42, 0.6);
     --bg-card: rgba(30, 41, 59, 0.5);
@@ -32,121 +30,112 @@
 }
 
 /* =========================
-   LAYOUT
-========================= */
+   2. CORE LAYOUT (The 3-Column Split)
+   ========================= */
 body, html {
     margin: 0;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden; /* Prevent body scroll, use container scroll */
 }
 
 .main-layout {
     display: flex;
-    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
     background: var(--bg-main);
     color: var(--text-primary);
-    height: 100vh;
 }
 
-.main-content {
-    flex: 1;
+/* LEFT: Fixed Slim Sidebar */
+.sidebar {
+    width: 60px; /* Slim icon-only strip matching your image */
+    background-color: var(--sidebar-bg);
     display: flex;
     flex-direction: column;
-}
-
-.page-container {
-    padding: 16px;
-    overflow-y: auto;
-}
-
-/* COMPONENTS */
-.kpi-widget,
-.panel,
-.summary-panel,
-.form-section,
-.table,
-.modal-content {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 16px;
-}
-
-.form-control {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-}
-
-.sidebar {
-    background: var(--bg-panel);
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 100;
     border-right: 1px solid var(--border-color);
 }
 
-.topbar {
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.glass-mode .kpi-widget,
-.glass-mode .panel {
-    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
-}
-
-/* Container for the entire application */
-.main-layout {
-    display: flex;
-    height: 100vh; /* Lock height to viewport */
-    width: 100vw;
-    overflow: hidden; /* Prevent the whole app from scrolling */
-}
-
-/* LEFT: Fixed Sidebar */
-.sidebar {
-    width: 60px; /* Slim icon-only sidebar like the image */
-    background-color: #020617; /* Deep Sage Purple/Dark */
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0; /* Prevent sidebar from shrinking */
-    z-index: 100;
-}
-
-/* CENTER: Main Content Wrapper */
+/* CENTER: Navigation & Content */
 .main-content {
-    flex: 1; /* Take up remaining horizontal space */
+    flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden; /* Center column logic */
 }
 
-/* TOP: Fixed Topbar */
+/* TOPBAR: Fixed Context Header */
 .topbar {
     height: 60px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
-    justify-content: space-between;
     align-items: center;
     padding: 0 20px;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    flex-shrink: 0; /* Prevent topbar from shrinking */
+    flex-shrink: 0;
 }
 
-/* SCROLLABLE AREA: Where @Body lives */
+/* PAGE CONTAINER: The scrollable dashboard area */
 .page-container {
     flex: 1;
-    overflow-y: auto; /* Only this area scrolls! */
+    overflow-y: auto;
     padding: 20px;
-    background-color: #f8fafc;
+    background-color: var(--bg-main);
 }
 
-/* RIGHT: Contextual Panel */
+/* RIGHT: Contextual Panel (Sage Insights) */
 .right-panel {
     width: 320px;
-    border-left: 1px solid #e2e8f0;
-    background: #ffffff;
+    background: var(--bg-card);
+    border-left: 1px solid var(--border-color);
     flex-shrink: 0;
     overflow-y: auto;
 }
 
+/* =========================
+   3. COMPONENTS (Modals & UI)
+   ========================= */
+.kpi-widget, .panel, .summary-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.glass-mode .kpi-widget, .glass-mode .panel {
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+
+/* Modal System */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1040;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 90%;
+    background: var(--bg-card);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+/* Error UI */
 .error-banner {
     position: fixed;
     top: 0;
@@ -158,61 +147,9 @@ body, html {
     z-index: 9999;
 }
 
-.error-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.error-message {
-    font-weight: 500;
-}
-
-/* The dark background */
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px); /* Professional touch: blurs the background */
-    z-index: 1040;
-    animation: fadeIn 0.2s ease-out;
-}
-
-/* The actual white popup box */
-.modal-window {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-    max-width: 90%;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    z-index: 1050;
-    animation: slideUp 0.3s ease-out;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-header {
-    padding: 1rem;
-    border-bottom: 1px solid #dee2e6;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-body {
-    padding: 1.5rem;
-    overflow-y: auto;
-    max-height: 70vh;
-}
-
-/* Animations */
+/* =========================
+   4. ANIMATIONS
+   ========================= */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -233,4 +170,27 @@ body, html {
         transform: translate(-50%, -50%);
         opacity: 1;
     }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 1rem;
+    border-radius: 8px;
+    animation: slideInRight 0.3s ease-out;
+    background: var(--accent-blue);
+    color: white;
 }

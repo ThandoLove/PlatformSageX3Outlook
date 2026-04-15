@@ -1,14 +1,18 @@
-﻿@if (IsVisible)
+﻿@using OperationalWorkspaceUI.UIServices.System
+@implements IDisposable
+@inject ModalService ModalService
+
+@if (IsVisible)
 {
-    @* We wrap everything in a div that catches key presses *@
-    <div @onkeydown="HandleKeyDown" tabindex="0" autofocus>
+    <div @onkeydown="HandleKeyDown" tabindex="0" autofocus class="modal-wrapper">
         <div class="modal-backdrop" @onclick="Close"></div>
         <div class="modal-window" role="dialog" aria-modal="true">
             <div class="modal-header">
                 <h5 class="m-0">@Title</h5>
-                <button type="button" class="btn-close" @onclick="Close" aria-label="Close"></button>
+                <button type="button" class="btn-close" @onclick="Close" aria-label="Close">×</button>
             </div>
             <div class="modal-body">
+                @@* This now correctly receives the RenderFragment from the Service *@
                 @ChildContent
             </div>
         </div>
@@ -16,24 +20,44 @@
 }
 
 @code {
-    [Parameter] public string Title { get; set; } = "Modal Title";
-    [Parameter] public bool IsVisible { get; set; }
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public EventCallback OnClose { get; set; }
+    private bool IsVisible;
+    private string Title = "Action Required";
+    private RenderFragment? ChildContent;
 
-    // Close on ESC key
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    protected override void OnInitialized()
     {
-        if (e.Key == "Escape")
-        {
-            await Close();
-        }
+        // Subscribe to the Service events
+        ModalService.OnShow += HandleShow;
+        ModalService.OnClose += HandleClose;
     }
 
-    private async Task Close()
+    private Task HandleShow(string title, RenderFragment content)
+    {
+        Title = title;
+        ChildContent = content;
+        IsVisible = true;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleClose()
     {
         IsVisible = false;
-        if (OnClose.HasDelegate)
-            await OnClose.InvokeAsync(null);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") await Close();
+    }
+
+    private async Task Close() => await ModalService.CloseModal();
+
+    public void Dispose()
+    {
+        // Unsubscribe to prevent memory leaks when the layout is disposed
+        ModalService.OnShow -= HandleShow;
+        ModalService.OnClose -= HandleClose;
     }
 }

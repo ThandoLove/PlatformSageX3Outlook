@@ -1,134 +1,59 @@
-﻿/* CODE START: components.css */
-
-.sidebar {
-    width: 220px;
-    background: #020617;
-    padding: 16px;
-}
-
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-    }
-
-    .sidebar li {
-        padding: 10px;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-        .sidebar li:hover {
-            background: var(--primary);
-        }
-
-.topbar {
-    padding: 10px 16px;
-    background: #020617;
-    border-bottom: 1px solid #1e293b;
-}
-
-.right-panel {
-    width: 300px;
-    background: #020617;
-    padding: 10px;
-}
-
-/* Modal */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-}
-
-.modal-window {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--card);
-    padding: 20px;
-    border-radius: 10px;
-}
-
-/* Toast */
-.toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 12px;
-    border-radius: 6px;
-    color: white;
-}
-
-    .toast.success {
-        background: var(--success);
-    }
-
-    .toast.error {
-        background: var(--danger);
-    }
-
-/* Spinner */
-.loading-spinner {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-}
-
-.table {
-    background: var(--bg-card);
-    color: var(--text-primary);
-}
-
-    .table thead {
-        background: rgba(255,255,255,0.05);
-    }
-
-    .table tr:hover {
-        background: rgba(255,255,255,0.05);
-    }
-
-.sidebar {
-    background: var(--bg-panel);
-    border-right: 1px solid var(--border-color);
-}
-
-.topbar {
-    background: var(--bg-panel);
-    border-bottom: 1px solid var(--border-color);
-}
-
-.modal-content {
-    background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-color);
-}
-
+﻿/* =========================
+   1. GLOBAL LAYOUT (3-COLUMNS)
+   ========================= */
 .main-layout {
-    display: flex; /* Aligns Sidebar, Content, and RightPanel horizontally */
+    display: flex;
+    width: 100vw;
     height: 100vh;
     overflow: hidden;
+    background: var(--bg-main);
 }
 
 .main-content {
-    flex: 1; /* Makes the center area expand to fill space */
+    flex: 1;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .page-container {
     flex: 1;
-    overflow-y: auto; /* Allows the dashboard to scroll independently */
+    overflow-y: auto; /* Only the center scrolls */
     padding: 20px;
 }
 
+/* RIGHT PANEL (SAGE INSIGHTS) */
+.right-panel {
+    width: 320px;
+    background: #020617; /* Deep Navy */
+    padding: 15px;
+    flex-shrink: 0;
+    border-left: 1px solid #1e293b;
+    overflow-y: auto;
+}
+
+/* =========================
+   2. SYSTEM COMPONENTS
+   ========================= */
+
+/* Topbar Context Area */
+.topbar {
+    height: 60px;
+    padding: 0 20px;
+    background: #020617;
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Modal System */
 .modal-backdrop {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     z-index: 1000;
-    /* Use your fadeIn animation */
     animation: fadeIn 0.3s ease-out forwards;
 }
 
@@ -136,12 +61,45 @@
     position: fixed;
     top: 50%;
     left: 50%;
+    transform: translate(-50%, -50%);
     background: var(--bg-card);
     border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    z-index: 1001;
-    /* Use your slideUp animation */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    z-index: 1050;
     animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Toast & Animations */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 1rem;
+    border-radius: 8px;
+    z-index: 2000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translate(-50%, -40%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+    }
 }
 
 @keyframes slideInRight {
@@ -155,16 +113,3 @@
         opacity: 1;
     }
 }
-
-.toast {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 1rem;
-    border-radius: 8px;
-    animation: slideInRight 0.3s ease-out;
-}
-
-
-
-/* CODE END */

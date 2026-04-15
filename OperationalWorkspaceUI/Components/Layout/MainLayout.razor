@@ -1,95 +1,113 @@
 ﻿@inherits LayoutComponentBase
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.Models.Email
+@using OperationalWorkspaceUI.UIServices.System
 @using Microsoft.JSInterop
 @implements IDisposable
 @inject UIState UIState
 @inject DashboardState DashboardState
 @inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject ModalService ModalService
 
 <div class="main-layout @UIState.CurrentTheme @(UIState.IsGlassMode ? "glass-mode" : "")">
 
-    <!-- LEFT (Navigation) -->
-    <Sidebar />
+    @if (IsAppPage)
+    {
+        <!-- LEFT: STATIC SIDEBAR (60px icon-only) -->
+        <Sidebar />
 
-    <!-- CENTER (Main View) -->
-    <div class="main-content">
-        <Topbar />
-
-        <div class="page-container">
-            @if (UIState.IsLoading)
-            {
-                <LoadingSpinner />
-            }
-            else
-            {
-                @Body
-            }
+        <!-- CENTER: MAIN AREA (Topbar + Dynamic Content) -->
+        <div class="main-content">
+            <Topbar />
+            <div class="page-container">
+                @if (UIState.IsLoading)
+                {
+                    <LoadingSpinner />
+                }
+                else
+                {
+                    @Body
+                }
+            </div>
         </div>
-    </div>
 
-    <!-- RIGHT (Sage X3 Contextual Workspace) -->
-    <RightPanel />
+        <!-- RIGHT: SAGE X3 INSIGHTS (Static context panel) -->
+        <RightPanel />
+    }
+    else
+    {
+        <!-- HOME/LOGIN: Clean view without navigation bars -->
+        <div class="landing-frame">
+            @Body
+        </div>
+    }
 </div>
 
-<!-- GLOBAL COMPONENTS -->
-<ErrorBanner Message="@UIState.ErrorMessage"
-             IsVisible="@UIState.ShowError"
-             OnDismiss="@(() => UIState.ClearError())" />
+@if (IsAppPage)
+{
+    @* --- GLOBAL OVERLAYS --- *@
+    
+    <ErrorBanner Message="@UIState.ErrorMessage"
+                 IsVisible="@UIState.ShowError"
+                 OnDismiss="@(() => UIState.ClearError())" />
 
-<ToastNotification />
-<Modal />
+    <ToastNotification />
+
+    @* --- BUSINESS ACTION MODAL (New Orders, Create Contact, etc.) --- *@
+    <Modal @ref="GlobalModal" />
+}
 
 @code {
     private DotNetObjectReference<MainLayout>? _objRef;
+    private Modal? GlobalModal;
+
+    // Logic: True if NOT on Home ("/") and NOT on Login ("/login")
+    private bool IsAppPage => !Nav.Uri.EndsWith("/login") && Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
 
     protected override async Task OnInitializedAsync()
     {
-        // Subscribe to state changes to ensure the UI refreshes when data arrives
+        // 1. Subscribe to Global State changes
+        Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
         DashboardState.OnChange += StateHasChanged;
-
+        
+        // 2. Load persistent settings
         await UIState.LoadThemeFromLocalStorage();
     }
 
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && IsAppPage)
         {
-            // Create a reference to this layout to pass to the officeBridge.js
+            // 3. Initialize the Outlook "Nervous System" Bridge
             _objRef = DotNetObjectReference.Create(this);
-
-            // Initialize the Outlook Nervous System
             await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
         }
     }
 
     /// <summary>
-    /// This method is triggered by officeBridge.js when an email is selected in Outlook.
-    /// It drives the "$310,250 Open Quotes" logic for Sarah Johnson.
+    /// Triggered by officeBridge.js when an email is selected in Outlook.
+    /// Updates the static workspace frame with Sage X3 insights.
     /// </summary>
     [JSInvokable]
     public async Task OnEmailReceived(EmailContextDTO emailData)
     {
-        // 1. Update Global Page Title
         UIState.CurrentPageTitle = $"Insights: {emailData.SenderName}";
-        
-        // 2. Map Email data to the Dashboard State
         DashboardState.EmailContext = emailData;
 
-        // 3. Automatically load Sage X3 ERP data for this specific contact
+        // Auto-load Sage ERP data for the static sidebar/dashboard
         await DashboardState.LoadDashboardAsync();
 
-        // 4. Re-render the Layout
         StateHasChanged();
-
-        // 5. Visual Notification
-        await JS.InvokeVoidAsync("showToast", $"Workspace Context Updated: {emailData.SenderName}");
+        await JS.InvokeVoidAsync("showToast", $"Workspace Updated: {emailData.SenderName}");
     }
 
     public void Dispose()
     {
-        // Cleanup to prevent memory leaks
+        Nav.LocationChanged -= HandleLocationChanged;
         UIState.OnChange -= StateHasChanged;
         DashboardState.OnChange -= StateHasChanged;
         _objRef?.Dispose();

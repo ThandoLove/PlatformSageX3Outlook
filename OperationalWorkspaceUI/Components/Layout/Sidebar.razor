@@ -1,14 +1,84 @@
-﻿@using OperationalWorkspaceUI.UIServices.System
-<!-- CODE START: Components/Layout/Sidebar.razor -->
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.UIServices.System
+@implements IDisposable
+@inject NavigationManager Nav
 @inject NavigationService NavService
+@inject DashboardState DashboardState
 
 <nav class="sidebar">
-    <ul>
-        <li @onclick="@(() => NavService.NavigateTo("/dashboard"))">Dashboard</li>
-        <li @onclick="@(() => NavService.NavigateTo("/workspace/businesspartners"))">Clients</li>
-        <li @onclick="@(() => NavService.NavigateTo("/workspace/orders"))">Orders</li>
-        <li @onclick="@(() => NavService.NavigateTo("/workspace/tasks"))">Tasks</li>
-        <li @onclick="@(() => NavService.NavigateTo("/workspace/knowledge"))">Knowledge Base</li>
-    </ul>
+    <div class="sidebar-menu">
+        @* DASHBOARD *@
+        <div class="nav-item @GetActiveClass("/dashboard")"
+             @onclick='@(() => NavService.NavigateTo("/dashboard"))'
+             title="Dashboard">
+            <i class="ms-Icon ms-Icon--BIDashboard"></i>
+        </div>
+        
+        @* BUSINESS PARTNERS / CLIENTS *@
+        <div class="nav-item @GetActiveClass("/workspace/businesspartners")"
+             @onclick='@(() => NavService.NavigateTo("/workspace/businesspartners"))'
+             title="Business Partners">
+            <i class="ms-Icon ms-Icon--ConnectContacts"></i>
+        </div>
+
+        @* SALES ORDERS + LATE SHIPMENTS BADGE (The "48" in your image) *@
+        <div class="nav-item @GetActiveClass("/workspace/orders")"
+             @onclick='@(() => NavService.NavigateTo("/workspace/orders"))'
+             title="Sales Orders">
+            <i class="ms-Icon ms-Icon--AllApps"></i>
+            @if (DashboardState.LateShipmentsCount > 0)
+            {
+                <span class="sidebar-badge">@DashboardState.LateShipmentsCount</span>
+            }
+        </div>
+
+        @* TASKS + OVERDUE BADGE *@
+        <div class="nav-item @GetActiveClass("/workspace/tasks")"
+             @onclick='@(() => NavService.NavigateTo("/workspace/tasks"))'
+             title="Tasks">
+            <i class="ms-Icon ms-Icon--CheckList"></i>
+            @if (DashboardState.OverdueTasksCount > 0)
+            {
+                <span class="sidebar-badge danger">@DashboardState.OverdueTasksCount</span>
+            }
+        </div>
+
+        @* KNOWLEDGE BASE *@
+        <div class="nav-item @GetActiveClass("/workspace/knowledge")"
+             @onclick='@(() => NavService.NavigateTo("/workspace/knowledge"))'
+             title="Knowledge Base">
+            <i class="ms-Icon ms-Icon--ReadingMode"></i>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="nav-item" title="Settings">
+            <i class="ms-Icon ms-Icon--Settings"></i>
+        </div>
+    </div>
 </nav>
-<!-- CODE END -->
+
+@code {
+    private string GetActiveClass(string pageRoute)
+    {
+        var relativeUri = Nav.ToBaseRelativePath(Nav.Uri);
+        // Handle home/dashboard default path
+        if (string.IsNullOrEmpty(relativeUri) && pageRoute == "/dashboard") return "active";
+        return relativeUri.Contains(pageRoute.TrimStart('/')) ? "active" : "";
+    }
+
+    protected override void OnInitialized()
+    {
+        // Refresh UI when navigating or when Sage X3 data updates via State
+        Nav.LocationChanged += HandleLocationChanged;
+        DashboardState.OnChange += StateHasChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= HandleLocationChanged;
+        DashboardState.OnChange -= StateHasChanged;
+    }
+}

@@ -3,44 +3,47 @@
 @using OperationalWorkspaceUI.Security
 @using Microsoft.AspNetCore.Components.Authorization
 @using Majorsoft.Blazor.Extensions.BrowserStorage
-@* FIX 1: Use Accelist instead of Blazored *@
 @using Accelist.FluentValidation.Blazor
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ILocalStorageService LocalStorage
 
-<div class="login-container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
-    <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
-        <div class="card-body p-4">
-            <h3 class="text-center mb-4">Sage X3 Portal</h3>
+<div class="login-container d-flex align-items-center justify-content-center" style="min-height: 100vh; background-color: var(--bg-main);">
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 400px; border-radius: 12px;">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                @* Replace with your actual logo path *@
+                <img src="images/sage-logo.png" alt="Sage X3" style="height: 50px;" />
+                <h3 class="mt-3 fw-bold">Sage X3 Portal</h3>
+                <p class="text-muted">Enter your credentials to access the workspace</p>
+            </div>
             
             <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-                @* FIX 2: This component now works because of the Accelist using above *@
                 <FluentValidator />
 
                 <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <InputText @bind-Value="loginModel.Username" class="form-control" placeholder="Enter username" />
+                    <label class="form-label fw-semibold">Username</label>
+                    <InputText @bind-Value="loginModel.Username" class="form-control form-control-lg" placeholder="e.g. admin" />
                     <ValidationMessage For="@(() => loginModel.Username)" class="text-danger small" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <InputText @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="Enter password" />
+                    <label class="form-label fw-semibold">Password</label>
+                    <InputText @bind-Value="loginModel.Password" type="password" class="form-control form-control-lg" placeholder="••••••••" />
                     <ValidationMessage For="@(() => loginModel.Password)" class="text-danger small" />
                 </div>
 
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary w-100" disabled="@isBusy">
+                    <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm" disabled="@isBusy">
                         @if (isBusy)
                         {
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span> Verifying...</span>
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <span>Verifying Context...</span>
                         }
                         else
                         {
-                            <span>Login</span>
+                            <span>Login to Dashboard</span>
                         }
                     </button>
                 </div>
@@ -48,8 +51,9 @@
 
             @if (!string.IsNullOrEmpty(error))
             {
-                <div class="alert alert-danger mt-3 mb-0" role="alert">
-                    <i class="bi bi-exclamation-octagon-fill me-2"></i> @error
+                <div class="alert alert-danger d-flex align-items-center mt-4 mb-0 border-0" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>@error</div>
                 </div>
             }
         </div>
@@ -68,35 +72,40 @@
 
         try
         {
+            // Note: Matches your API versioning
             var response = await Http.PostAsJsonAsync("api/v1/Auth/login", loginModel);
             
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
                 
+                // Parsing the wrapper "data: { token: '...' }" structure
                 if (result.TryGetProperty("data", out var data) && data.TryGetProperty("token", out var tokenProp))
                 {
                     var token = tokenProp.GetString();
                     if (!string.IsNullOrEmpty(token))
                     {
+                        // 1. Store token for API Client interceptors
                         await LocalStorage.SetItemAsync("authToken", token);
                         
+                        // 2. Update Auth State so MainLayout reveals the static bars
                         var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
                         customAuthStateProvider.NotifyUserAuthentication(token);
                         
-                        Nav.NavigateTo("/");
+                        // 3. IMPORTANT: Redirect to /dashboard to trigger the IsAppPage logic in MainLayout
+                        Nav.NavigateTo("/dashboard");
                     }
                 }
             }
             else
             {
-                error = "Access denied. Please check your credentials.";
+                error = "Access denied. Invalid username, password, or environment context.";
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Login Error]: {ex.Message}");
-            error = "Network error: Could not reach the authentication server.";
+            Console.WriteLine($"[Auth Failure]: {ex.Message}");
+            error = "Server connection failed. Please ensure the API is running on port 7123.";
         }
         finally
         {
