@@ -1,14 +1,12 @@
-﻿// CODE START
-
-using OperationalWorkspaceApplication.IServices;
+﻿using OperationalWorkspaceApplication.IServices;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
+using System.Text.Json;
+using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace OperationalWorkspace.Application.Services;
 
@@ -19,24 +17,72 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
     private readonly ISalesOrderRepository _salesRepo;
     private readonly IUnitOfWork _uow;
     private readonly IClock _clock;
+    private readonly HttpClient _httpClient;
+    private readonly IConfiguration _config;
 
     public BusinessPartnerService(
         IBusinessPartnerRepository partnerRepo,
         IInvoiceRepository invoiceRepo,
         ISalesOrderRepository salesRepo,
         IUnitOfWork uow,
-        IClock clock)
+        IClock clock,
+        HttpClient httpClient,
+        IConfiguration config)
     {
         _partnerRepo = partnerRepo;
         _invoiceRepo = invoiceRepo;
         _salesRepo = salesRepo;
         _uow = uow;
         _clock = clock;
+        _httpClient = httpClient;
+        _config = config;
     }
 
-    // =========================
-    // 🔥 FIX: IMPLEMENT MISSING METHOD
-    // =========================
+    // ==========================================
+    // 🚀 NEW: CREATE CONTACT IN SAGE X3
+    // ==========================================
+    public async Task<bool> CreateContactAsync(ContactCreateDto contact)
+    {
+        try
+        {
+            var baseUrl = _config["SageX3:BaseUrl"];
+            var endpoint = _config["SageX3:Endpoint"];
+            var url = $"{baseUrl}/api1/x3/erp/{endpoint}/CONTACT?representation=CONTACT.$create";
+
+            // Map the expanded DTO to Sage X3 fields
+            var payload = new
+            {
+                CNPFNA = contact.FullName, // First Name
+                CNPLNA = contact.FullName, // Last Name (X3 often needs both)
+                WEB = contact.Email,
+                TEL = contact.Phone,
+                MOB = contact.Mobile,
+                BPRNUM = contact.Company,   // Linked BP Code
+                BPCAT = contact.Category,   // Category
+
+                // Address Mapping (If your representation includes BPAADD)
+                ADDRESS1 = contact.Street,
+                CITY = contact.City,
+                ZIP = contact.ZipCode,
+                CRY = contact.Country
+            };
+
+            var jsonPayload = JsonSerializer.Serialize(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(url, content);
+            return response.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+
+    // ==========================================
+    // 📧 CREATE CLIENT FROM EMAIL
+    // ==========================================
     public async Task<CreateClientFromEmailResponse> CreateFromEmailAsync(
         CreateClientFromEmailRequest request,
         CancellationToken ct = default)
@@ -44,7 +90,6 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         if (string.IsNullOrWhiteSpace(request.Email))
             throw new ArgumentException("Email is required");
 
-        // Check existing
         var existing = await _partnerRepo.GetByEmailAsync(request.Email, ct);
 
         if (existing != null)
@@ -56,7 +101,6 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             };
         }
 
-        // ⚠️ TEMP SAFE RESPONSE (NO DOMAIN VIOLATION)
         return new CreateClientFromEmailResponse
         {
             Id = Guid.NewGuid(),
@@ -64,9 +108,9 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         };
     }
 
-    /// <summary>
-    /// Detects email sender and returns the Snapshot DTO with extra UI metadata.
-    /// </summary>
+    // ==========================================
+    // 🔍 SNAPSHOTS & DATA RETRIEVAL
+    // ==========================================
     public async Task<BusinessPartnerSnapshotDto?> GetPartnerByEmailAsync(string? email, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(email)) return null;
@@ -134,17 +178,13 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         return new BusinessPartnersResponse(dto);
     }
 
-    public async Task<int> CountActiveCustomersAsync()
-        => await _partnerRepo.GetActiveCountAsync();
-
-    public async Task<int> CountNewLeadsTodayAsync()
-        => await _partnerRepo.GetLeadsCreatedAfterAsync(_clock.UtcNow.Date);
-
-    public async Task<int> CountOpenOpportunitiesAsync(string userId)
-        => await _partnerRepo.GetOpenOpportunitiesCountAsync(userId);
-
-    public async Task<int> CountOpenOpportunitiesAsync()
-        => await _partnerRepo.GetOpenOpportunitiesCountAsync();
+    // ==========================================
+    // 📊 DASHBOARD KPI METHODS
+    // ==========================================
+    public async Task<int> CountActiveCustomersAsync() => await _partnerRepo.GetActiveCountAsync();
+    public async Task<int> CountNewLeadsTodayAsync() => await _partnerRepo.GetLeadsCreatedAfterAsync(_clock.UtcNow.Date);
+    public async Task<int> CountOpenOpportunitiesAsync(string userId) => await _partnerRepo.GetOpenOpportunitiesCountAsync(userId);
+    public async Task<int> CountOpenOpportunitiesAsync() => await _partnerRepo.GetOpenOpportunitiesCountAsync();
 
     public async Task<string> GetRecentInteractionAsync(string userId)
     {
@@ -158,9 +198,7 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         return partner?.Company;
     }
 
-    public async Task<UpdateCreditLimitResponse> UpdateCreditLimitAsync(
-        UpdateCreditLimitRequest request,
-        CancellationToken ct)
+    public async Task<UpdateCreditLimitResponse> UpdateCreditLimitAsync(UpdateCreditLimitRequest request, CancellationToken ct)
     {
         var partner = await _partnerRepo.GetByCodeAsync(request.BpCode, ct);
         if (partner is null) return new UpdateCreditLimitResponse(false);
@@ -172,5 +210,3 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         return new UpdateCreditLimitResponse(true);
     }
 }
-
-// CODE END

@@ -2,6 +2,7 @@
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.Models.Email
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.Components.Pages.Forms @* Ensure this matches your NewContactForm location *@
 @using Microsoft.JSInterop
 @implements IDisposable
 @inject UIState UIState
@@ -55,12 +56,11 @@
     <ToastNotification />
 
     @* --- BUSINESS ACTION MODAL (New Orders, Create Contact, etc.) --- *@
-    <Modal @ref="GlobalModal" />
+    <Modal />
 }
 
 @code {
     private DotNetObjectReference<MainLayout>? _objRef;
-    private Modal? GlobalModal;
 
     // Logic: True if NOT on Home ("/") and NOT on Login ("/login")
     private bool IsAppPage => !Nav.Uri.EndsWith("/login") && Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
@@ -90,17 +90,39 @@
 
     /// <summary>
     /// Triggered by officeBridge.js when an email is selected in Outlook.
-    /// Updates the static workspace frame with Sage X3 insights.
+    /// Drives the core "fucking logic" of the contextual workspace.
     /// </summary>
     [JSInvokable]
     public async Task OnEmailReceived(EmailContextDTO emailData)
     {
+        // Ensure we have valid data before proceeding
+        if (emailData == null || string.IsNullOrEmpty(emailData.SenderEmail)) return;
+
+        // 1. Update Global Page Context
         UIState.CurrentPageTitle = $"Insights: {emailData.SenderName}";
         DashboardState.EmailContext = emailData;
 
-        // Auto-load Sage ERP data for the static sidebar/dashboard
+        // 2. Auto-load Sage ERP data (Quotes, Orders, etc.)
         await DashboardState.LoadDashboardAsync();
 
+        // 3. SECURE CONTEXT CHECK: Does this partner exist in Sage X3?
+        bool contactExists = await DashboardState.CheckContactExists(emailData.SenderEmail);
+        
+
+
+        if (!contactExists)
+        {
+            // 4. TRIGGER POPUP: If unknown, pop the "New Contact" form immediately
+            await ModalService.ShowModal($"Create Sage X3 Contact: {emailData.SenderName}", builder =>
+            {
+                builder.OpenComponent<NewContactForm>(0);
+                builder.AddAttribute(1, "Email", emailData.SenderEmail);
+                builder.AddAttribute(2, "FullName", emailData.SenderName);
+                builder.CloseComponent();
+            });
+        }
+
+        // 5. Finalize UI Refresh
         StateHasChanged();
         await JS.InvokeVoidAsync("showToast", $"Workspace Updated: {emailData.SenderName}");
     }

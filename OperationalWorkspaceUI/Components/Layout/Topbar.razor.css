@@ -1,0 +1,77 @@
+﻿/* ========================================================= 
+   TOPBAR COMPONENT STYLING (Internal Content)
+   ========================================================= */
+
+.topbar {
+    /* Background and Height are inherited from MainLayout skeleton */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    width: 100%;
+}
+
+    /* THE FIX: Force content to be readable against Deep Navy */
+    .topbar h2 {
+        font-size: 1.1rem;
+        margin: 0;
+        font-weight: 600;
+        color: #ffffff; /* Forced white to stay visible on Navy */
+    }
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Topbar Icons/Buttons */
+.topbar-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8; /* Muted blue-grey */
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+    .topbar-btn:hover {
+        color: var(--sage-blue); /* Light blue pop on hover */
+    }
+
+/* Search Bar inside Topbar */
+.topbar-search {
+    position: relative;
+    width: 300px;
+}
+
+    .topbar-search input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05); /* Subtle glass look */
+        border: 1px solid #1e293b;
+        border-radius: 6px;
+        padding: 6px 12px;
+        color: white;
+        font-size: 13px;
+    }
+
+        .topbar-search input::placeholder {
+            color: #475569;
+        }
+
+/* Profile Section */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 15px;
+    border-left: 1px solid #1e293b;
+}
+
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #f1f5f9;
+}

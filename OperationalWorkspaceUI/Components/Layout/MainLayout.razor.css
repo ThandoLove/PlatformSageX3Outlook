@@ -1,67 +1,59 @@
-/* ROOT CONTAINER - Forces the 3-column horizontal split */
+/* ROOT CONTAINER - The 3-column split */
 .main-layout {
     display: flex;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background-color: var(--bg-main, #f8fafc);
+    background-color: #f1f5f9; /* Light blue workspace */
 }
 
-/* SIDEBAR - Fixed width on the left */
+/* SIDEBAR SKELETON - Deep Navy */
 ::deep .sidebar {
-    width: 220px;
-    background: #020617; /* Deep Navy */
+    width: 60px; /* Standard icon width */
     height: 100vh;
     flex-shrink: 0;
+    background-color: #020617; /* Deep Navy Frame */
+    border-right: 1px solid #1e293b;
     z-index: 100;
 }
 
-/* CENTER COLUMN - Expands to fill middle space */
+/* CENTER COLUMN */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-width: 0; /* Prevents flex items from overflowing */
+    min-width: 0;
 }
 
-/* TOPBAR - Pins to top of center column */
+/* TOPBAR SKELETON - Deep Navy */
 ::deep .topbar {
     height: 60px;
     flex-shrink: 0;
-    background: var(--bg-card, #ffffff);
-    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    background-color: #020617; /* Matches Sidebar */
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    color: #ffffff;
+
+   
 }
 
-/* PAGE CONTAINER - The only scrollable area in the middle */
+/* PAGE CONTAINER - Scrollable middle */
 .page-container {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
 }
 
-/* RIGHT PANEL - Fixed width for Sage Insights */
+/* RIGHT PANEL - Sage Insights */
 ::deep .right-panel {
     width: 320px;
-    background: var(--bg-card, #ffffff);
-    border-left: 1px solid var(--border-color, #e2e8f0);
+    background: #ffffff;
+    border-left: 1px solid #e2e8f0;
     flex-shrink: 0;
     height: 100vh;
     overflow-y: auto;
-}
-
-/* LANDING VIEW - Full screen center for Login */
-.landing-frame {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--bg-main);
-}
-
-/* GLASS MODE */
-.glass-mode {
-    backdrop-filter: blur(12px);
-    background: rgba(15, 23, 42, 0.6) !important;
 }

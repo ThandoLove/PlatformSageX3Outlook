@@ -1,6 +1,7 @@
 ﻿@page "/"
 @layout EmptyLayout
 @inject NavigationManager Nav
+@rendermode InteractiveServer
 
 <PageTitle>Operational Workspace | Sage X3</PageTitle>
 
@@ -9,7 +10,7 @@
     <section class="hero-section">
         <div class="hero-content">
             <div class="brand-logo">
-                <img src="images/sage-logo.png" alt="Sage X3 Logo" />
+                <img src="images/sage-logo.png" alt="Sage X3 Logo" class="sage-logo" />
             </div>
             
             <h1 class="hero-title">Operational Workspace</h1>
@@ -19,26 +20,34 @@
             </p>
 
             <div class="hero-actions">
-                <button class="btn-primary" @onclick='(() => Nav.NavigateTo("/login"))'>
+                <button class="btn-primary" @onclick="GoToLogin">
                     Get Started
                 </button>
-                <button class="btn-outline" @onclick='(() => Nav.NavigateTo("/about"))'>
+                <button class="btn-outline">
                     Learn More
                 </button>
             </div>
         </div>
 
+        @* --- RIGHT SIDE: DASHBOARD PREVIEW MOCKUP --- *@
         <div class="hero-visual">
-            <div class="dashboard-preview shadow-lg">
-                @* Placeholder for a small graphic of your static dashboard frame *@
-                <div class="preview-bars sidebar-p"></div>
-                <div class="preview-bars topbar-p"></div>
-                <div class="preview-content"></div>
+            <div class="dashboard-preview">
+                @* Miniature Sidebar *@
+                <div class="preview-sidebar"></div>
+                
+                @* Miniature Main Area *@
+                <div class="preview-main">
+                    <div class="preview-top"></div>
+                    <div class="preview-body">
+                        <div class="preview-card"></div>
+                        <div class="preview-card"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    @* --- QUICK FEATURES --- *@
+    @* --- QUICK FEATURES (Footer) --- *@
     <footer class="landing-footer">
         <div class="footer-item">
             <i class="ms-Icon ms-Icon--LightningBolt"></i>
@@ -54,3 +63,11 @@
         </div>
     </footer>
 </div>
+
+@code {
+    private void GoToLogin()
+    {
+        // 1. Send user to Login Page
+        Nav.NavigateTo("/login");
+    }
+}

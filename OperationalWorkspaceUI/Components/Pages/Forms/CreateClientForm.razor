@@ -2,19 +2,18 @@
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceApplication.DTOs
-
 @inject OperationalWorkspaceUI.UIServices.Workspace.BusinessPartnerUIService BPService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
-@* Fix 1: Use explicit namespace for the injection *@
 @inject Radzen.NotificationService NotificationService
 @inject NavigationService NavigationService
 
 <h3>Create Client</h3>
 
-<FormStepper Steps="@Steps" OnCompleted="SaveClientAsync" />
+<div class="form-container">
+    <FormStepper Steps="@Steps" OnCompleted="SaveClientAsync" />
+</div>
 
 @code {
-
     private ClientDto NewClient = new();
 
     private List<FormStepper.FormStep> Steps => new()
@@ -28,7 +27,6 @@
                        </FormSection>,
             Validate = async () => !string.IsNullOrWhiteSpace(NewClient.Name)
         },
-
         new()
         {
             Title = "Contact",
@@ -42,30 +40,30 @@
 
     private async Task SaveClientAsync()
     {
+        // Hits your Sage X3 API
         var success = await BPService.CreateClientAsync(NewClient);
 
         if (success)
         {
-            WorkspaceState.ReloadClients();
+            WorkspaceState.ReloadClients(); // Refreshes the "Clients" sidebar list
             
-            // Fix 2: Use Radzen's Notify method for Success
             NotificationService.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
-                Summary = "Success",
-                Detail = "Client created"
+                Summary = "Sage X3 Updated",
+                Detail = $"{NewClient.Name} has been created."
             });
 
+            // Go back to the business partner list
             NavigationService.NavigateTo("/workspace/businesspartners");
         }
         else
         {
-            // Fix 3: Use Radzen's Notify method for Error
             NotificationService.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Error",
-                Detail = "Failed to create client"
+                Summary = "Sync Error",
+                Detail = "Could not create client in Sage X3."
             });
         }
     }

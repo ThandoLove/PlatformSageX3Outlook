@@ -6,42 +6,72 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <ResourcePreloader />
     
-    <!-- STYLES -->
+    <!-- 1. STYLES -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="OperationalWorkspaceUI.styles.css" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/standard-base.css">
     
-    <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <!-- Fluent UI Icon Font (Essential for footer icons) -->
+    <link rel="stylesheet" href="https://sharepointonline.com" />
     
-    <!-- Office.js - Required for Outlook Context -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <!-- 2. HISTORY CACHE (Must be BEFORE Office.js) -->
+    <script type="text/javascript">
+            // Office.js nullifies history functions by design.
+            // We cache them here to restore them for browser testing.
+            window._historyCache = {
+                replaceState: window.history.replaceState,
+                pushState: window.history.pushState
+            };
+    </script>
+    
+    <!-- 3. OFFICE.JS -->
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     
-    <HeadOutlet />
+    <!-- 4. HISTORY RESTORATION (Must be AFTER Office.js) -->
+    <script type="text/javascript">
+        // Restore history API immediately after Office.js loads
+        // to prevent "pushState is not a function" errors in Blazor routing.
+        window.history.replaceState = window._historyCache.replaceState;
+        window.history.pushState = window._historyCache.pushState;
+    </script>
+
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
-    <!-- RADZEN COMPONENTS (Required for Notifications/Dialogs) -->
     <RadzenComponents />
-
-    <!-- FLUENT UI PROVIDER (Required for Icons and Design System) -->
     <FluentDesignTheme />
 
-    <Routes />
+    <Routes @rendermode="InteractiveServer" />
+    
     <ReconnectModal />
 
-    <!-- SCRIPTS -->
+    <!-- 5. SCRIPTS -->
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/officeBridge.js"></script> <!-- Your Outlook Bridge -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="js/officeBridge.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- 6. THE HYBRID FIXER SCRIPT -->
+    <script>
+        Office.onReady(function (info) {
+        if (info.host === Office.HostType.Outlook) {
+        console.log("Status: Running inside Outlook.");
+        } else {
+        console.log("Status: Running in Browser. Ensuring Navigation is active...");
+        // Secondary check to ensure functions aren't missing
+        window.history.pushState = window.history.pushState || function() {};
+        window.history.replaceState = window.history.replaceState || function() {};
+        }
+        });
+    </script>
 </body>
 
 </html>

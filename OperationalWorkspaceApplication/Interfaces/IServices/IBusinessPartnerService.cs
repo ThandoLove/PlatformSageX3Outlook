@@ -23,9 +23,13 @@ public interface IBusinessPartnerService
     Task<UpdateCreditLimitResponse> UpdateCreditLimitAsync(
         UpdateCreditLimitRequest request,
         CancellationToken cancellationToken);
+    
+
+    Task<bool> CreateContactAsync(ContactCreateDto contact);
+
     Task<CreateClientFromEmailResponse> CreateFromEmailAsync(
-    CreateClientFromEmailRequest request,
-    CancellationToken ct = default);
+        CreateClientFromEmailRequest request,
+        CancellationToken ct = default);
 
 
 }

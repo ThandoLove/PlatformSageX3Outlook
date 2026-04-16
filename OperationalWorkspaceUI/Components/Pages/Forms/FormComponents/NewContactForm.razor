@@ -1,0 +1,114 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Interfaces.IServices
+@using OperationalWorkspaceUI.UIServices.System
+@inject IBusinessPartnerService BPService
+@inject ModalService ModalService
+@inject IJSRuntime JS
+
+<div class="new-contact-container">
+    <div class="form-header">
+        <i class="fas fa-user-plus text-primary me-2"></i>
+        <h5>Create Sage X3 Contact</h5>
+    </div>
+
+    <EditForm Model="contactModel" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        
+        <!-- SECTION 1: IDENTITY -->
+        <div class="form-group-section">
+            <label class="section-label">Identity</label>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label>Full Name</label>
+                    <InputText @bind-Value="contactModel.FullName" class="form-control" placeholder="John Doe" />
+                    <ValidationMessage For="@(() => contactModel.FullName)" class="text-danger small" />
+                </div>
+                <div class="col-md-6">
+                    <label>Linked Company (BPR)</label>
+                    <InputText @bind-Value="contactModel.Company" class="form-control" placeholder="Company Code" />
+                    <ValidationMessage For="@(() => contactModel.Company)" class="text-danger small" />
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: CONTACT DETAILS -->
+        <div class="form-group-section mt-4">
+            <label class="section-label">Contact Info</label>
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label>Email Address</label>
+                    <InputText @bind-Value="contactModel.Email" class="form-control" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label>Phone</label>
+                    <InputText @bind-Value="contactModel.Phone" class="form-control" placeholder="+1..." />
+                </div>
+                <div class="col-md-6">
+                    <label>Mobile</label>
+                    <InputText @bind-Value="contactModel.Mobile" class="form-control" placeholder="+1..." />
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: LOCATION -->
+        <div class="form-group-section mt-4">
+            <label class="section-label">Location</label>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label>Street Address</label>
+                    <InputText @bind-Value="contactModel.Street" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label>City</label>
+                    <InputText @bind-Value="contactModel.City" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label>Zip</label>
+                    <InputText @bind-Value="contactModel.ZipCode" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label>Country</label>
+                    <InputText @bind-Value="contactModel.Country" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-footer d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-secondary" @onclick="(() => ModalService.CloseModal())">Cancel</button>
+            <button type="submit" class="btn-create">
+                <i class="fas fa-cloud-upload-alt me-2"></i> Create in Sage X3
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public string Email { get; set; } = "";
+    [Parameter] public string FullName { get; set; } = "";
+
+    // This defines the object the form is bound to
+    private ContactCreateDto contactModel = new();
+
+    protected override void OnInitialized()
+    {
+        // Pre-fill the model with parameters from the Outlook context
+        contactModel.Email = Email;
+        contactModel.FullName = FullName;
+    }
+
+    // This handles the "Create in Sage X3" button click
+    private async Task HandleSubmit()
+    {
+        var success = await BPService.CreateContactAsync(contactModel);
+        
+        if (success)
+        {
+            await JS.InvokeVoidAsync("showToast", "Success: Contact Created in Sage X3");
+            await ModalService.CloseModal();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("showToast", "Error: Could not connect to Sage X3");
+        }
+    }
+}

@@ -36,6 +36,7 @@ builder.Services.AddScoped<Radzen.DialogService>();
 // Add this to your builder.Services
 builder.Services.AddBrowserStorage();
 
+
 // ------------------ 3. STATE ------------------
 builder.Services.AddScoped<DashboardState>();
 builder.Services.AddScoped<WorkspaceState>();

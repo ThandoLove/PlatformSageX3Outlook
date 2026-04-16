@@ -1,9 +1,9 @@
-﻿@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.State
-@using Microsoft.FluentUI.AspNetCore.Components
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.Components.Pages.Forms
+
 @inject EmailContextState EmailState
-@inject WorkspaceState WorkspaceState
-@inject NavigationManager NavigationManager
+@inject ModalService ModalService
 @inject IJSRuntime JS
 
 <div class="dashboard-card quick-actions-panel">
@@ -12,48 +12,48 @@
     </div>
 
     <div class="actions-grid">
-        <!-- ADD PARTNER / CREATE CONTACT -->
-        <button class="action-item" @onclick="CreatePartner">
+        @* ADD PARTNER *@
+        <button class="action-item" @onclick='() => OpenModal<NewContactForm>("Add Business Partner")'>
             <div class="action-icon icon-blue">
                 <i class="ms-Icon ms-Icon--AddFriend"></i>
             </div>
             <span>Add Partner</span>
         </button>
 
-        <!-- CREATE QUOTE -->
-        <button class="action-item" @onclick="CreateQuote">
+        @* CREATE QUOTE *@
+        <button class="action-item" @onclick='() => OpenModal<CreateQuoteForm>("Create Sage Quote")'>
             <div class="action-icon icon-orange">
                 <i class="ms-Icon ms-Icon--PageAdd"></i>
             </div>
             <span>Create Quote</span>
         </button>
 
-        <!-- ADD SALES ORDER -->
-        <button class="action-item" @onclick="CreateOrder">
+        @* ADD SALES *@
+        <button class="action-item" @onclick='() => OpenModal<AddSalesOrderForm>("New Sales Order")'>
             <div class="action-icon icon-blue">
                 <i class="ms-Icon ms-Icon--ShoppingCart"></i>
             </div>
             <span>Add Sales</span>
         </button>
 
-        <!-- ATTACH EMAIL -->
-        <button class="action-item" @onclick="AttachEmail">
+        @* ATTACH EMAIL *@
+        <button class="action-item" @onclick='() => OpenModal<AttachEmailForm>("Attach Email to Sage")'>
             <div class="action-icon icon-green">
                 <i class="ms-Icon ms-Icon--Attach"></i>
             </div>
             <span>Attach Email</span>
         </button>
 
-        <!-- ADD TASK -->
-        <button class="action-item" @onclick="CreateTask">
+        @* ADD TASK *@
+        <button class="action-item" @onclick='() => OpenModal<CreateTaskForm>("Assign New Task")'>
             <div class="action-icon icon-blue">
                 <i class="ms-Icon ms-Icon--CheckMark"></i>
             </div>
             <span>Add Task</span>
         </button>
 
-        <!-- KNOWLEDGE BASE -->
-        <button class="action-item" @onclick="SendKnowledge">
+        @* KNOWLEDGE *@
+        <button class="action-item" @onclick='() => OpenModal<SendKnowledgeForm>("Sage Knowledge Base")'>
             <div class="action-icon icon-orange">
                 <i class="ms-Icon ms-Icon--KnowledgeArticle"></i>
             </div>
@@ -63,22 +63,24 @@
 </div>
 
 @code {
-    private async Task CreatePartner() => await ExecuteAction("/forms/create-partner");
-    private async Task CreateQuote() => await ExecuteAction("/forms/create-quote");
-    private async Task CreateOrder() => await ExecuteAction("/forms/create-order");
-    private async Task CreateTask() => await ExecuteAction("/forms/create-task");
-    private async Task AttachEmail() => await ExecuteAction("/forms/attach-email");
-    private async Task SendKnowledge() => await ExecuteAction("/forms/send-knowledge");
-
-    private async Task ExecuteAction(string route)
+    private async Task OpenModal<TComponent>(string title) where TComponent : IComponent
     {
-        if (EmailState.CurrentEmail != null)
-        {
-            NavigationManager.NavigateTo(route);
-        }
-        else
+        if (EmailState.CurrentEmail == null)
         {
             await JS.InvokeVoidAsync("showToast", "Please select an email first.");
+            return;
         }
+
+        // Opens the specific form component inside the Modal
+        await ModalService.ShowModal(title, builder =>
+        {
+            builder.OpenComponent<TComponent>(0);
+            
+            // Passes Outlook context to the form parameters
+            builder.AddAttribute(1, "Email", EmailState.CurrentEmail.SenderEmail);
+            builder.AddAttribute(2, "FullName", EmailState.CurrentEmail.SenderName);
+            
+            builder.CloseComponent();
+        });
     }
 }

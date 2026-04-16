@@ -1,17 +1,8 @@
-﻿/* --- Dashboard CSS Optimized --- */
+﻿/* ========================================================= 
+   DASHBOARD GRID & PANELS (Cleaned & Optimized)
+   ========================================================= */
 
-:root {
-    /* Define variables at the top for easy maintenance */
-    --panel-bg-light: #ffffff;
-    --panel-bg-dark: #1f2937;
-    --panel-text-light: #111111;
-    --panel-text-dark: #f3f4f6;
-    --accent-blue: #3b82f6;
-    --accent-blue-hover: #2563eb;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Dashboard Grid Layout */
+/* 1. GRID LAYOUT - Using grid areas for precise control */
 .dashboard-grid {
     display: grid;
     gap: 16px;
@@ -35,17 +26,18 @@
     }
 }
 
-/* Panel Base Styling */
+/* 2. PANEL BASE STYLING - Uses Unified Variables from app.css */
 .dashboard-panel {
-    background-color: var(--panel-bg-light);
-    color: var(--panel-text-light);
+    background-color: var(--bg-card); /* Master variable */
+    color: var(--text-primary); /* Master variable */
     padding: 16px;
     border-radius: 10px;
+    border: 1px solid var(--border-color);
     box-shadow: var(--shadow);
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Specific Panel Assignments */
+/* 3. SPECIFIC PANEL ASSIGNMENTS */
 .email-panel {
     grid-area: email;
 }
@@ -86,21 +78,15 @@
     grid-area: quick-actions;
 }
 
-/* Visual emphasis for specific panels */
+/* 4. VISUAL EMPHASIS - Hardcoded dark contrast panels */
 .tasks-panel,
 .quick-actions-panel {
-    background-color: var(--panel-bg-dark);
-    color: var(--panel-text-dark);
+    background-color: #1f2937; /* Dark Slate to contrast with white cards */
+    color: #f3f4f6;
+    border-color: #374151;
 }
 
-/* Global Dark Mode Support */
-body.dark-mode .dashboard-panel {
-    background-color: var(--panel-bg-dark);
-    color: var(--panel-text-dark);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Internal Components */
+/* 5. INTERNAL COMPONENTS */
 .kpi-widget,
 .status-badge {
     display: flex;
@@ -112,14 +98,15 @@ body.dark-mode .dashboard-panel {
 .kpi-widget {
     font-size: 18px;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
-/* Quick Action Buttons */
+/* 6. QUICK ACTION BUTTONS */
 .quick-actions-panel button {
     margin: 4px;
     padding: 8px 16px;
     border-radius: 6px;
-    background-color: var(--accent-blue);
+    background-color: var(--accent-blue); /* Master Brand Color */
     color: #fff;
     border: none;
     cursor: pointer;
@@ -134,3 +121,10 @@ body.dark-mode .dashboard-panel {
     .quick-actions-panel button:active {
         transform: translateY(1px);
     }
+
+/* 7. DARK MODE SUPPORT (Scoped) */
+body.dark-mode .dashboard-panel {
+    background-color: var(--bg-card); /* Inherits #1e293b from app.css */
+    color: var(--text-primary); /* Inherits #ffffff from app.css */
+    border-color: var(--border-color);
+}

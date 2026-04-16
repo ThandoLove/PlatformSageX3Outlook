@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using OperationalWorkspace.Application.Services;
 using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
@@ -14,6 +15,7 @@ using OperationalWorkspaceInfrastructure.DependencyInjection;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
 using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceShared.Validators;
+using System.Net.Http.Headers;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +25,7 @@ builder.Services.AddApiLayer();
 builder.Services.AddWorkspaceSwagger();
 builder.Services.AddDistributedMemoryCache();
 
-// FLUENTVALIDATION: Register validators and enable auto-validation
+// FLUENTVALIDATION
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 builder.Services.AddControllers();
@@ -56,8 +58,31 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
 
-// --- 3. INFRASTRUCTURE & SAGE X3 ---
+// --- 3. INFRASTRUCTURE & SAGE X3 (FIXED & INTEGRATED) ---
+// --- 3. INFRASTRUCTURE & SAGE X3 (SYNCED WITH APPSETTINGS) ---
 var sageConfig = builder.Configuration.GetSection("SageX3");
+
+builder.Services.AddHttpClient<IBusinessPartnerService, BusinessPartnerService>(client =>
+{
+    // Fix: Pulling 'RestBaseUrl' instead of 'BaseUrl' to match your json
+    var restUrl = sageConfig["RestBaseUrl"] ?? "https://localhost";
+    client.BaseAddress = new Uri(restUrl);
+
+    // Auth logic: Pulling from the new User/Password fields
+    var user = sageConfig["User"];
+    var pass = sageConfig["Password"];
+
+    if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(pass))
+    {
+        var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{user}:{pass}"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+    }
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+});
+
 
 if (builder.Environment.IsDevelopment())
 {
@@ -65,7 +90,8 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
-    builder.Services.AddHttpClient<ISageRestService, SageRestService>(client => {
+    builder.Services.AddHttpClient<ISageRestService, SageRestService>(client =>
+    {
         client.BaseAddress = new Uri(sageConfig["RestBaseUrl"] ?? "https://localhost");
     });
 }
@@ -75,15 +101,15 @@ builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.Sage
 
 var attachmentPath = builder.Configuration["SageX3:AttachmentPath"] ?? "C:\\Temp\\SageAttachments";
 builder.Services.AddSingleton(attachmentPath);
+
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// --- 4. CORS POLICY (Corrected Origins) ---
+// --- 4. CORS ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OutlookAddInPolicy", policy =>
     {
-        // 7173 matches your UI's HTTPS port from launchsettings
-        policy.WithOrigins("https://localhost:7173", "http://localhost:5065")
+        policy.WithOrigins("https://localhost:7173")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -94,14 +120,16 @@ builder.Services.AddCors(options =>
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<MockUnifiedService>();
+
     builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    // NOTE: IBusinessPartnerService is now registered via AddHttpClient above
     builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
+
     builder.Services.AddScoped<IIntegrationService, IntegrationService>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
     builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -111,26 +139,18 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
 var app = builder.Build();
 
-// --- 6. MIDDLEWARE PIPELINE (Order is Critical) ---
+// --- 6. MIDDLEWARE PIPELINE ---
 app.UseMiddleware<RequestCorrelationMiddleware>();
 app.UseMiddleware<PerformanceTrackingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseWorkspaceSwagger();
-    app.UseWebAssemblyDebugging(); // Enable debugging for Blazor WASM
 }
 
 app.UseHttpsRedirection();
-
-// 🔥 CRITICAL: These allow the API to host the Blazor WebAssembly files
-app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseCors("OutlookAddInPolicy");
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -138,8 +158,6 @@ app.UseMiddleware<RbacMiddleware>();
 app.UseMiddleware<AuditLoggingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 
-// Fallback to the Blazor index.html for any non-API routes
 app.MapControllers();
-app.MapFallbackToFile("index.html");
 
 app.Run();
