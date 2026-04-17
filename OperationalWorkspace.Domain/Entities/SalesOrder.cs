@@ -11,7 +11,6 @@ public class SalesOrder
     public string BpCode { get; private set; } = default!;
     public Guid BusinessPartnerId { get; private set; }
 
-    // FIX: Change 'object' to 'DateTime' and initialize it
     public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
     public DateTime CreatedDate { get; init; } = DateTime.UtcNow;
 
@@ -35,7 +34,7 @@ public class SalesOrder
     }
 
     // Methods
-    public void AddLine(string itemCode, int quantity, Money unitPrice)
+    public void AddLine(string itemCode, decimal quantity, Money unitPrice)
     {
         if (Status != SalesOrderStatus.Draft)
             throw new InvalidOperationException("Cannot modify confirmed order.");
@@ -43,13 +42,19 @@ public class SalesOrder
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be positive.");
 
+        // This calls the automatically generated constructor of the record
         _lines.Add(new SalesOrderLine(itemCode, quantity, unitPrice));
     }
 
     public void Confirm() => Status = SalesOrderStatus.Confirmed;
 }
 
-public record SalesOrderLine(string ItemCode, int Quantity, Money UnitPrice)
+/// <summary>
+/// Represents an individual line item in a sales order.
+/// Using a Record with a Primary Constructor automatically handles properties and the constructor.
+/// </summary>
+public record SalesOrderLine(string ItemCode, decimal Quantity, Money UnitPrice)
 {
+    // The properties ItemCode, Quantity, and UnitPrice are generated automatically.
     public decimal LineTotal => Quantity * UnitPrice.Amount;
 }

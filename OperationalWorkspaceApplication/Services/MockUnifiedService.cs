@@ -125,6 +125,15 @@ public sealed class MockUnifiedService :
             Code = $"MOCK-{request.Email}"
         };
     }
+        // Add this method inside the MockUnifiedService class
+        public async Task<bool> CreateContactAsync(ContactCreateDto contact)
+    {
+        // This is a mock, so we just simulate a successful save
+        await Task.Delay(500); // Simulate a tiny bit of network lag
+        return true;
+    }
+
+    
 
     // ---------------- TASK ----------------
     public async Task<TaskResponse> CreateAsync(CreateTaskRequest req, CancellationToken ct) =>

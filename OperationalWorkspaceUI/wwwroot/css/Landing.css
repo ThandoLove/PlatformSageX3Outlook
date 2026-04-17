@@ -1,0 +1,291 @@
+﻿/* =========================================================
+   GLOBAL VARIABLES
+========================================================= */
+:root {
+    --sage-green: #00c853;
+    --panel-bg-dark: #0f172a;
+    --panel-text-dark: #e5e7eb;
+    --accent-blue: #2563eb;
+    --bg-dark: #020617;
+}
+
+/* LIGHT MODE */
+body.light-mode {
+    --bg-dark: #f8fafc;
+    --panel-bg-dark: #ffffff;
+    --panel-text-dark: #111827;
+    --accent-blue: #2563eb;
+}
+
+/* DARK MODE (default fallback) */
+body.dark-mode {
+    --bg-dark: #020617;
+    --panel-bg-dark: #0f172a;
+    --panel-text-dark: #e5e7eb;
+}
+
+/* =========================================================
+   LANDING PAGE ROOT
+========================================================= */
+.landing-page {
+    min-height: 100vh;
+    background: var(--bg-dark);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* =========================================================
+   HERO SECTION LAYOUT
+========================================================= */
+.hero-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 60px 80px;
+    gap: 60px;
+}
+
+/* LEFT SIDE */
+.hero-content {
+    max-width: 520px;
+}
+
+.hero-title {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hero-subtitle {
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+/* =========================================================
+   HERO BUTTONS (SAFE - WILL NOT DISAPPEAR)
+========================================================= */
+.hero-actions {
+    display: flex;
+    gap: 16px;
+}
+
+    /* PRIMARY BUTTON */
+    .hero-actions .btn-primary {
+        background: var(--sage-green);
+        color: #020617;
+        padding: 12px 32px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    /* OUTLINE BUTTON */
+    .hero-actions .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.25);
+        color: white;
+        padding: 12px 32px;
+        border-radius: 8px;
+    }
+
+/* =========================================================
+   HERO VISUAL CONTAINER
+========================================================= */
+.hero-visual {
+    width: 420px;
+    height: 260px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.45);
+}
+
+/* =========================================================
+   LIVE ERP PREVIEW (ANIMATED FAKE DASHBOARD)
+========================================================= */
+.dashboard-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    background: var(--panel-bg-dark);
+}
+
+/* SIDEBAR */
+.preview-sidebar {
+    width: 60px;
+    background: #0a0f1a;
+    position: relative;
+}
+
+    /* blinking indicator */
+    .preview-sidebar::after {
+        content: "";
+        position: absolute;
+        top: 20px;
+        left: 12px;
+        width: 6px;
+        height: 6px;
+        background: #00c853;
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+    }
+
+/* MAIN */
+.preview-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+}
+
+/* TOP BAR */
+.preview-top {
+    height: 38px;
+    background: var(--panel-bg-dark);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* moving search shimmer */
+    .preview-top::after {
+        content: "";
+        position: absolute;
+        top: 14px;
+        left: -40%;
+        width: 40%;
+        height: 8px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        animation: shimmer 2.5s infinite;
+    }
+
+/* GRID */
+.preview-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* KPI CARD */
+.preview-card {
+    background: var(--panel-bg-dark);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* TITLE LINE */
+    .preview-card::before {
+        content: "";
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 55%;
+        height: 6px;
+        background: rgba(255,255,255,0.08);
+        border-radius: 4px;
+    }
+
+    /* LIVE VALUE LINE */
+    .preview-card::after {
+        content: "";
+        position: absolute;
+        top: 28px;
+        left: 12px;
+        width: 65%;
+        height: 8px;
+        background: rgba(0, 200, 83, 0.5);
+        border-radius: 4px;
+        animation: pulse 1.8s infinite;
+    }
+
+/* MINI CHART (IMPORTANT REALISTIC TOUCH) */
+.preview-chart {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    right: 10px;
+    height: 30px;
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+}
+
+    .preview-chart div {
+        width: 100%;
+        background: rgba(59,130,246,0.6);
+        animation: chartGrow 1.6s infinite ease-in-out;
+    }
+
+        .preview-chart div:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .preview-chart div:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .preview-chart div:nth-child(4) {
+            animation-delay: 0.6s;
+        }
+
+        .preview-chart div:nth-child(5) {
+            animation-delay: 0.8s;
+        }
+
+/* =========================================================
+   FOOTER
+========================================================= */
+.landing-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 20px;
+    color: #94a3b8;
+}
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+@keyframes pulse {
+    0% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        left: -40%;
+    }
+
+    100% {
+        left: 120%;
+    }
+}
+
+@keyframes chartGrow {
+    0%, 100% {
+        height: 25%;
+    }
+
+    50% {
+        height: 100%;
+    }
+}

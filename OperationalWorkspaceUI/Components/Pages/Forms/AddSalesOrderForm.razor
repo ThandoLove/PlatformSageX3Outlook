@@ -4,6 +4,7 @@
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
 
+@using OperationalWorkspaceApplication.Requests
 @using OperationalWorkspaceUI.UIServices.System
 @inject ISalesService SalesService
 @inject ModalService ModalService
@@ -83,44 +84,54 @@
 </div>
 
 @code {
-    @code {
-    // --- ADD THESE TWO LINES HERE ---
     [Parameter] public string Email { get; set; } = "";
     [Parameter] public string FullName { get; set; } = "";
-    // --------------------------------
 
     private SalesOrderCreateDto orderModel = new();
 
     protected override void OnInitialized()
     {
-        // Optional: Use the passed FullName to search for the CustomerCode automatically
-        if (!orderModel.Lines.Any())
-        {
-            AddLine();
-        }
+        if (!orderModel.Lines.Any()) { AddLine(); }
     }
 
     private void AddLine()
     {
-        orderModel.Lines.Add(new OrderLineDto());
+        // FIX: Match the list type (SalesOrderLineCreateDto)
+        orderModel.Lines.Add(new SalesOrderLineCreateDto());
     }
 
     private async Task HandleSubmit()
     {
-        var success = await SalesService.CreateOrderAsync(orderModel);
-        
-        if (success)
+        // 1. Map to the request.
+        // Based on your error, it expects: (BpCode, CustomerRef, SOME_DECIMAL, Lines)
+        // If you don't have a total yet, we pass 0 or orderModel.Total if you added that.
+        var request = new CreateSalesOrderRequest(
+            orderModel.CustomerCode,
+            orderModel.CustomerRef,
+            0m, // This matches the 3rd decimal parameter the error is complaining about
+            orderModel.Lines.Select(l => new CreateSalesOrderLineRequest(
+                l.ProductCode,
+                l.Quantity,
+                l.UnitPrice
+            )).ToList()
+        );
+
+        // 2. Capture the Response object
+        var response = await SalesService.CreateOrderAsync(request, default);
+    
+        // 3. Check if the response contains a valid Order ID
+        if (response != null && response.OrderId != Guid.Empty)
         {
             await JS.InvokeVoidAsync("showToast", "Success: Sales Order Created");
             await ModalService.CloseModal();
         }
         else
         {
-            await JS.InvokeVoidAsync("showToast", "Error: Failed to create order in Sage X3");
+            await JS.InvokeVoidAsync("showToast", "Error: Failed to create order");
         }
     }
-}
 
 
-}
+    }
+
 

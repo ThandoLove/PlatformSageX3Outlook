@@ -1,22 +1,28 @@
 ﻿@page "/"
 @layout EmptyLayout
 @inject NavigationManager Nav
-@rendermode InteractiveServer
+@inject IJSRuntime JS
 
 <PageTitle>Operational Workspace | Sage X3</PageTitle>
 
 <div class="landing-page">
-    @* --- HERO SECTION --- *@
+
+    <!-- THEME TOGGLE -->
+    <button class="btn-outline" @onclick="ToggleTheme">
+        Toggle Theme
+    </button>
+
+    <!-- HERO -->
     <section class="hero-section">
         <div class="hero-content">
             <div class="brand-logo">
-                <img src="images/sage-logo.png" alt="Sage X3 Logo" class="sage-logo" />
+                <img src="https://dummyimage.com/200x80/00c853/ffffff&text=Sage+X3" />
             </div>
             
             <h1 class="hero-title">Operational Workspace</h1>
+
             <p class="hero-subtitle">
                 Contextual ERP insights delivered directly to your Outlook.
-                Enhance your productivity with seamless Sage X3 integration.
             </p>
 
             <div class="hero-actions">
@@ -29,15 +35,14 @@
             </div>
         </div>
 
-        @* --- RIGHT SIDE: DASHBOARD PREVIEW MOCKUP --- *@
+        <!-- DASHBOARD PREVIEW -->
         <div class="hero-visual">
             <div class="dashboard-preview">
-                @* Miniature Sidebar *@
                 <div class="preview-sidebar"></div>
                 
-                @* Miniature Main Area *@
                 <div class="preview-main">
                     <div class="preview-top"></div>
+
                     <div class="preview-body">
                         <div class="preview-card"></div>
                         <div class="preview-card"></div>
@@ -47,27 +52,43 @@
         </div>
     </section>
 
-    @* --- QUICK FEATURES (Footer) --- *@
+    <!-- FOOTER -->
     <footer class="landing-footer">
         <div class="footer-item">
-            <i class="ms-Icon ms-Icon--LightningBolt"></i>
             <span>Real-time Sync</span>
         </div>
         <div class="footer-item">
-            <i class="ms-Icon ms-Icon--Shield"></i>
             <span>Secure Access</span>
         </div>
         <div class="footer-item">
-            <i class="ms-Icon ms-Icon--Insights"></i>
             <span>ERP Context</span>
         </div>
     </footer>
+
 </div>
 
 @code {
+
+    private bool isDark = true;
+
     private void GoToLogin()
     {
-        // 1. Send user to Login Page
         Nav.NavigateTo("/login");
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDark = !isDark;
+
+        if (isDark)
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "light-mode");
+            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+            await JS.InvokeVoidAsync("document.body.classList.add", "light-mode");
+        }
     }
 }
