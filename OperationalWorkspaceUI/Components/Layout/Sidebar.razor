@@ -1,84 +1,43 @@
 ﻿@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
+@using static Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20
 @implements IDisposable
 @inject NavigationManager Nav
 @inject NavigationService NavService
 @inject DashboardState DashboardState
 
-<nav class="sidebar">
-    <div class="sidebar-menu">
-        @* DASHBOARD *@
-        <div class="nav-item @GetActiveClass("/dashboard")"
-             @onclick='@(() => NavService.NavigateTo("/dashboard"))'
-             title="Dashboard">
-            <i class="ms-Icon ms-Icon--BIDashboard"></i>
-        </div>
-        
-        @* BUSINESS PARTNERS / CLIENTS *@
-        <div class="nav-item @GetActiveClass("/workspace/businesspartners")"
-             @onclick='@(() => NavService.NavigateTo("/workspace/businesspartners"))'
-             title="Business Partners">
-            <i class="ms-Icon ms-Icon--ConnectContacts"></i>
-        </div>
-
-        @* SALES ORDERS + LATE SHIPMENTS BADGE (The "48" in your image) *@
-        <div class="nav-item @GetActiveClass("/workspace/orders")"
-             @onclick='@(() => NavService.NavigateTo("/workspace/orders"))'
-             title="Sales Orders">
-            <i class="ms-Icon ms-Icon--AllApps"></i>
-            @if (DashboardState.LateShipmentsCount > 0)
-            {
-                <span class="sidebar-badge">@DashboardState.LateShipmentsCount</span>
-            }
-        </div>
-
-        @* TASKS + OVERDUE BADGE *@
-        <div class="nav-item @GetActiveClass("/workspace/tasks")"
-             @onclick='@(() => NavService.NavigateTo("/workspace/tasks"))'
-             title="Tasks">
-            <i class="ms-Icon ms-Icon--CheckList"></i>
-            @if (DashboardState.OverdueTasksCount > 0)
-            {
-                <span class="sidebar-badge danger">@DashboardState.OverdueTasksCount</span>
-            }
-        </div>
-
-        @* KNOWLEDGE BASE *@
-        <div class="nav-item @GetActiveClass("/workspace/knowledge")"
-             @onclick='@(() => NavService.NavigateTo("/workspace/knowledge"))'
-             title="Knowledge Base">
-            <i class="ms-Icon ms-Icon--ReadingMode"></i>
-        </div>
+<div class="sage-sidebar">
+    <div class="sidebar-header">
+        <FluentIcon Value="@(new Icons.Regular.Size24.LineHorizontal3())" Color="Color.White" />
+        <span class="brand-text">Sage X3 Contextual Workspace</span>
     </div>
+
+    <nav class="nav-menu">
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Board())" Title="Dashboard" Selected="true" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Person())" Title="Contacts" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Building())" Title="Accounts" />
+        
+        @* Replaced Items *@
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Ticket())" Title="Tickets" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Pulse())" Title="Activities" />
+        
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Cart())" Title="Sales Orders" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.DocumentQuote())" Title="Quotes" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Receipt())" Title="Invoices" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Briefcase())" Title="Cases" />
+        
+        <div class="sidebar-divider"></div>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Attach())" Title="Attach Documents" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Library())" Title="Knowledge Base" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.AddSquare())" Title="Create Task (Admin)" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.CheckmarkCircle())" Title="My Tasks" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Poll())" Title="Reports" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Settings())" Title="Admin" />
+    </nav>
 
     <div class="sidebar-footer">
-        <div class="nav-item" title="Settings">
-            <i class="ms-Icon ms-Icon--Settings"></i>
-        </div>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Settings())" Title="Settings" />
     </div>
-</nav>
+</div>
 
-@code {
-    private string GetActiveClass(string pageRoute)
-    {
-        var relativeUri = Nav.ToBaseRelativePath(Nav.Uri);
-        // Handle home/dashboard default path
-        if (string.IsNullOrEmpty(relativeUri) && pageRoute == "/dashboard") return "active";
-        return relativeUri.Contains(pageRoute.TrimStart('/')) ? "active" : "";
-    }
-
-    protected override void OnInitialized()
-    {
-        // Refresh UI when navigating or when Sage X3 data updates via State
-        Nav.LocationChanged += HandleLocationChanged;
-        DashboardState.OnChange += StateHasChanged;
-    }
-
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
-
-    public void Dispose()
-    {
-        Nav.LocationChanged -= HandleLocationChanged;
-        DashboardState.OnChange -= StateHasChanged;
-    }
-}

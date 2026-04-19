@@ -1,66 +1,70 @@
 ﻿@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.Components.Pages.Forms
-
 @inject EmailContextState EmailState
 @inject ModalService ModalService
 @inject IJSRuntime JS
 
-<div class="dashboard-card quick-actions-panel">
-    <div class="panel-header">
-        <h4>Quick Actions</h4>
+<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px;">
+    @* Panel Header *@
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Quick Actions</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="Color.Neutral" />
     </div>
 
-    <div class="actions-grid">
-        @* ADD PARTNER *@
-        <button class="action-item" @onclick='() => OpenModal<NewContactForm>("Add Business Partner")'>
-            <div class="action-icon icon-blue">
-                <i class="ms-Icon ms-Icon--AddFriend"></i>
+    @* Icons Container (Exactly like the image) *@
+    <div class="actions-container" style="display: flex; justify-content: space-around; align-items: flex-start; text-align: center;">
+        
+        @* Add Partner (Create Contact) *@
+        <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<NewContactForm>("Add Business Partner")'>
+            <div class="icon-circle circle-blue">
+                <FluentIcon Value="@(new Icons.Regular.Size24.PersonAdd())" Color="Color.Custom" CustomColor="white" />
             </div>
-            <span>Add Partner</span>
-        </button>
+            <div class="action-label">Add Partner</div>
+        </div>
 
-        @* CREATE QUOTE *@
-        <button class="action-item" @onclick='() => OpenModal<CreateQuoteForm>("Create Sage Quote")'>
-            <div class="action-icon icon-orange">
-                <i class="ms-Icon ms-Icon--PageAdd"></i>
+        @* Link to Existing *@
+        <div class="action-item" style="cursor:pointer;" @onclick='() => NavigateToSage("GESBPR", "LINK")'>
+            <div class="icon-circle circle-teal">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Link())" Color="Color.Custom" CustomColor="white" />
             </div>
-            <span>Create Quote</span>
-        </button>
+            <div class="action-label">Link Existing</div>
+        </div>
 
-        @* ADD SALES *@
-        <button class="action-item" @onclick='() => OpenModal<AddSalesOrderForm>("New Sales Order")'>
-            <div class="action-icon icon-blue">
-                <i class="ms-Icon ms-Icon--ShoppingCart"></i>
+        @* Create Quote (Orange Icon in image) *@
+        <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<CreateQuoteForm>("Create Sage Quote")'>
+            <div class="icon-circle circle-orange">
+                <FluentIcon Value="@(new Icons.Regular.Size24.DocumentAdd())" Color="Color.Custom" CustomColor="white" />
             </div>
-            <span>Add Sales</span>
-        </button>
+            <div class="action-label">Create Quote</div>
+        </div>
 
-        @* ATTACH EMAIL *@
-        <button class="action-item" @onclick='() => OpenModal<AttachEmailForm>("Attach Email to Sage")'>
-            <div class="action-icon icon-green">
-                <i class="ms-Icon ms-Icon--Attach"></i>
+        @* Add Sales (Sales Order) *@
+        <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<AddSalesOrderForm>("New Sales Order")'>
+            <div class="icon-circle circle-indigo">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Cart())" Color="Color.Custom" CustomColor="white" />
             </div>
-            <span>Attach Email</span>
-        </button>
+            <div class="action-label">Add Sales</div>
+        </div>
 
-        @* ADD TASK *@
-        <button class="action-item" @onclick='() => OpenModal<CreateTaskForm>("Assign New Task")'>
-            <div class="action-icon icon-blue">
-                <i class="ms-Icon ms-Icon--CheckMark"></i>
+        @* Create Invoice *@
+        <div class="action-item" style="cursor:pointer;" @onclick='() => NavigateToSage("GESPNH", "NEW")'>
+            <div class="icon-circle circle-blue-dark">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Document())" Color="Color.Custom" CustomColor="white" />
             </div>
-            <span>Add Task</span>
-        </button>
+            <div class="action-label">Create Invoice</div>
+        </div>
 
-        @* KNOWLEDGE *@
-        <button class="action-item" @onclick='() => OpenModal<SendKnowledgeForm>("Sage Knowledge Base")'>
-            <div class="action-icon icon-orange">
-                <i class="ms-Icon ms-Icon--KnowledgeArticle"></i>
+        @* Attach Email (Green Icon matching your workspace logic) *@
+        <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<AttachEmailForm>("Attach Email to Sage")'>
+            <div class="icon-circle circle-green">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Attach())" Color="Color.Custom" CustomColor="white" />
             </div>
-            <span>Knowledge</span>
-        </button>
+            <div class="action-label">Attach Email</div>
+        </div>
+
     </div>
-</div>
+</FluentCard>
 
 @code {
     private async Task OpenModal<TComponent>(string title) where TComponent : IComponent
@@ -71,16 +75,18 @@
             return;
         }
 
-        // Opens the specific form component inside the Modal
         await ModalService.ShowModal(title, builder =>
         {
             builder.OpenComponent<TComponent>(0);
-            
-            // Passes Outlook context to the form parameters
             builder.AddAttribute(1, "Email", EmailState.CurrentEmail.SenderEmail);
             builder.AddAttribute(2, "FullName", EmailState.CurrentEmail.SenderName);
-            
             builder.CloseComponent();
         });
+    }
+
+    private async Task NavigateToSage(string functionCode, string action)
+    {
+        // LOGIC: Direct Sage X3 navigation via your officebridge.js
+        await JS.InvokeVoidAsync("officeBridge.openSageRecord", functionCode, action);
     }
 }

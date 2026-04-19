@@ -1,6 +1,6 @@
 ﻿namespace OperationalWorkspace.Domain.Entities;
 
-public class Task
+public class TaskEntity
 {
     public Guid Id { get; set; } = Guid.NewGuid(); // Changed from TaskId string to Guid Id
     public string Title { get; set; } = string.Empty;

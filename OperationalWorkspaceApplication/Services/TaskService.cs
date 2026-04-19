@@ -5,7 +5,7 @@ using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 // Using aliases to resolve the Task vs System.Threading.Tasks.Task conflict
-using DomainTask = OperationalWorkspace.Domain.Entities.Task;
+using DomainTask = OperationalWorkspace.Domain.Entities.TaskEntity;
 using DomainStatus = OperationalWorkspace.Domain.Enums.TaskStatus;
 
 namespace OperationalWorkspaceApplication.Services;

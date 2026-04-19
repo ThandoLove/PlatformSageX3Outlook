@@ -4,86 +4,92 @@
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @implements IAsyncDisposable
 
-<div class="right-panel">
+<div class="right-panel-container" style="padding: 16px; background-color: #f4f7f9; height: 100%;">
     @if (IsLoading)
     {
-        <div class="loading-container">
-            <LoadingSpinner />
-            <p>Checking Sage X3...</p>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px;">
+            <FluentProgressRing />
+            <p style="margin-top: 10px; color: #64748b;">Checking Sage X3...</p>
         </div>
     }
     else if (EmailState.CurrentEmail == null)
     {
-        <div class="empty-state">
-            <i class="ms-Icon ms-Icon--Mail"></i>
-            <p>Select an email to view Sage X3 insights.</p>
-        </div>
-    }
-    else if (CurrentPartner != null && CurrentPartner.IsLinkedToSage)
-    {
-        <!-- UI: SAGE X3 LINKED VIEW -->
-        <div class="panel-header">
-            <div class="profile-section">
-                <div class="avatar">@CurrentPartner.FullName[0]</div>
-                <div class="header-text">
-                    <h3>@CurrentPartner.FullName</h3>
-                    <span class="status-badge linked">Linked to Sage X3</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="details-list">
-            <div class="detail-item"><strong>📧 Email:</strong> @EmailState.CurrentEmail.SenderEmail</div>
-            <div class="detail-item"><strong>🏢 Company:</strong> @CurrentPartner.Company</div>
-            <div class="detail-item"><strong>📍 Location:</strong> @CurrentPartner.Location</div>
-            <div class="detail-item"><strong>👤 Rep:</strong> @CurrentPartner.AssignedRep</div>
-        </div>
-
-        <div class="action-links">
-            <button class="btn-action">📎 Add Attachment</button>
-            <button class="btn-action">📚 Add Knowledge Article</button>
-        </div>
-
-        <div class="timeline-container">
-            <h4>Activity Timeline</h4>
-            <ActivityGrid Data="@CurrentPartner.Timeline" />
-        </div>
+        <FluentCard Style="padding: 20px; text-align: center;">
+            <FluentIcon Value="@(new Icons.Regular.Size32.Mail())" Color="Color.Accent" />
+            <p style="color: #64748b;">Select an email to view Sage X3 insights.</p>
+        </FluentCard>
     }
     else
     {
-        <!-- UI: CREATE CONTACT FORM -->
-        <div class="panel-header">
-            <h3>Create Contact</h3>
-            <span class="info-tag">PRE-FILLED FROM OUTLOOK</span>
-        </div>
-
-        <EditForm Model="@NewContact" OnValidSubmit="HandleCreateContact">
-            <DataAnnotationsValidator />
-            
-            <div class="form-group">
-                <label>Full Name</label>
-                <InputText @bind-Value="NewContact.FullName" class="form-control" />
+        @* EMAIL INSIGHT CARD (Exact match to image) *@
+        <FluentCard Style="width: 100%; padding: 16px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Email Insight</h3>
+                <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="Color.Neutral" />
             </div>
 
-            <div class="form-group">
-                <label>Email</label>
-                <InputText @bind-Value="NewContact.Email" class="form-control" readonly />
-            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #64748b; min-width: 70px;">Contact:</span>
+                    <span style="font-weight: 500; color: #1e293b;">@EmailState.CurrentEmail.SenderName</span>
+                    @if (CurrentPartner != null && CurrentPartner.IsLinkedToSage)
+                    {
+                        <div style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; padding: 1px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: auto;">Linked</div>
+                    }
+                </div>
 
-            <div class="form-group">
-                <label>Company</label>
-                <InputText @bind-Value="NewContact.Company" class="form-control" />
-            </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #64748b; min-width: 70px;">Company:</span>
+                    <span style="font-weight: 500; color: #1e293b;">@(CurrentPartner?.Company ?? "Unknown")</span>
+                </div>
 
-            <div class="form-group">
-                <label>Phone</label>
-                <InputText @bind-Value="NewContact.Phone" class="form-control" />
-            </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #64748b; min-width: 70px;">Intent:</span>
+                    <span style="font-weight: 500; color: #3b82f6;">Quote Request</span>
+                </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn-create">Create Contact in Sage</button>
+                @* AI Summary Box from Image *@
+                <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px; margin-top: 8px; border-radius: 0 4px 4px 0;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 4px;">AI Summary:</div>
+                    <div style="font-size: 0.9rem; color: #475569; line-height: 1.4;">
+                        Customer is inquiring about pricing for 50 units.
+                    </div>
+                </div>
             </div>
-        </EditForm>
+        </FluentCard>
+
+        @if (CurrentPartner == null || !CurrentPartner.IsLinkedToSage)
+        {
+            @* CREATE CONTACT FORM (If not in Sage) *@
+            <FluentCard Style="width: 100%; padding: 16px;">
+                <h4 style="margin-top: 0;">Create Sage X3 Contact</h4>
+                <FluentStack Orientation="Orientation.Vertical" Spacing="3">
+                    <FluentTextField @bind-Value="NewContact.FullName" Label="Full Name" Style="width: 100%;" />
+                    <FluentTextField @bind-Value="NewContact.Email" Label="Email" ReadOnly="true" Style="width: 100%;" />
+                    <FluentTextField @bind-Value="NewContact.Company" Label="Company" Style="width: 100%;" />
+                    <FluentButton Appearance="Appearance.Accent" OnClick="HandleCreateContact" Style="width: 100%;">Create in Sage</FluentButton>
+                </FluentStack>
+            </FluentCard>
+        }
+        else
+        {
+            @* ACTIVITY TIMELINE (As seen in lower part of the right stack) *@
+            <div style="margin-top: 20px;">
+                <h4 style="font-size: 1rem; color: #333; margin-bottom: 12px;">Recent Activities</h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    @foreach (var activity in CurrentPartner.Timeline)
+                    {
+                        <div style="display: flex; gap: 12px; align-items: flex-start;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; margin-top: 6px;"></div>
+                            <div>
+                                <div style="font-size: 0.85rem; font-weight: 500;">@activity.Action</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">@activity.Timestamp.ToShortDateString()</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
     }
 </div>
 
@@ -112,34 +118,26 @@
         IsLoading = true;
         StateHasChanged();
 
-        // 1. Update basic email state (EmailContextState.CurrentEmail)
         EmailState.CurrentEmail = new EmailInsightDto
         {
             SenderEmail = context.SenderEmail ?? string.Empty,
             SenderName = context.SenderName ?? string.Empty,
             Subject = context.Subject ?? string.Empty,
-            MessageId = Guid.NewGuid().ToString(),
             ReceivedAt = DateTime.UtcNow
         };
 
-        // 2. Perform Sage X3 Lookup using your updated BusinessPartnerService
-        if (string.IsNullOrWhiteSpace(context.SenderEmail))
-        {
-            CurrentPartner = null; // cannot lookup empty email
-        }
-        else
+        if (!string.IsNullOrWhiteSpace(context.SenderEmail))
         {
             CurrentPartner = await BPService.GetPartnerByEmailAsync(context.SenderEmail);
         }
 
-        // 3. If not found, prepare the "Create Contact" DTO
         if (CurrentPartner == null)
         {
             NewContact = new ContactCreateDto
             {
                 FullName = context.SenderName ?? "",
                 Email = context.SenderEmail ?? "",
-                Company = "" // User fills this
+                Company = ""
             };
         }
 
@@ -149,9 +147,7 @@
 
     private async Task HandleCreateContact()
     {
-        // Logic to POST NewContact to your API
-        await JS.InvokeVoidAsync("showToast", "Contact Created in Sage X3!");
-        // Refresh lookup
+        await JS.InvokeVoidAsync("officeBridge.showToast", "Contact Created in Sage X3!");
         CurrentPartner = await BPService.GetPartnerByEmailAsync(NewContact.Email ?? string.Empty);
         StateHasChanged();
     }

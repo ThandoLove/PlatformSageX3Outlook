@@ -1,236 +1,120 @@
-/* =========================
-   VARIABLES (REQUIRED)
-========================= */
-
+/*======================== GLOBAL VARIABLES ========================= */ 
 :root {
     --sage-green: #00c853;
-    --panel-bg-dark: #0f172a;
-    --panel-text-dark: #e5e7eb;
-    --accent-blue: #2563eb;
+    --bg-dark: #020617;
+    --bg-light: #f8fafc;
+    --panel-dark: #0f172a;
+    --panel-light: #ffffff;
+    --text-dark: #e5e7eb;
+    --text-light: #111827;
+}
+/* ========================= BODY THEMING ========================= */
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-dark);
 }
 
-
-/* =========================
-   PAGE ROOT
-========================= */
+    body.light-mode {
+        background: var(--bg-light);
+        color: var(--text-light);
+    }
+/* ========================= LANDING ========================= */
 
 .landing-page {
     min-height: 100vh;
-    background: #020617;
-    color: white;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
 }
-
-
-/* =========================
-   HERO SECTION
-========================= */
+/* ========================= HERO ========================= */
 
 .hero-section {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 60px;
-    width: 100%;
-    flex: 1 0 auto;
     padding: 60px 80px;
-    box-sizing: border-box;
+    gap: 60px;
+}
+/* ========================= BUTTONS ========================= */
+
+.btn-primary {
+    background: var(--sage-green);
+    color: #020617;
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: none;
 }
 
-
-/* LEFT SIDE */
-
-.hero-content {
-    flex: 1;
-    max-width: 520px;
-}
-
-.hero-title {
-    font-size: 48px;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-
-.hero-subtitle {
-    font-size: 18px;
-    color: #94a3b8;
-    margin-bottom: 30px;
-}
-
-
-/* =========================
-   BUTTONS
-========================= */
-
-.hero-actions {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-}
-
-    /* PRIMARY BUTTON (SAFE OVERRIDE) */
-    .hero-actions button.btn-primary {
-        background-color: var(--sage-green) !important;
-        color: #020617 !important;
-        border: none !important;
-        padding: 12px 32px !important;
-        font-weight: bold !important;
-        border-radius: 8px !important;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-        .hero-actions button.btn-primary:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-
-/* OUTLINE BUTTON */
-.landing-page .btn-outline {
-    background: transparent !important;
-    color: white !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.25);
+    color: inherit;
     padding: 12px 32px;
     border-radius: 8px;
 }
-
-
-/* =========================
-   HERO VISUAL (RIGHT SIDE)
-========================= */
+/* ========================= DASHBOARD PREVIEW (IMPORTANT) ========================= */
 
 .hero-visual {
-    flex: 0 0 420px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 420px;
+    height: 260px;
+    border-radius: 14px;
+    overflow: hidden;
 }
-
-
-/* =========================
-   DASHBOARD PREVIEW
-========================= */
 
 .dashboard-preview {
-    width: 400px;
-    height: 250px;
-    background: #0f172a;
-    border-radius: 12px;
+    width: 100%;
+    height: 100%;
     display: flex;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--panel-dark);
 }
+/* LIGHT MODE */
 
-/* LEFT SIDEBAR */
+body.light-mode .dashboard-preview {
+    background: var(--panel-light);
+}
+/* SIDEBAR */
+
 .preview-sidebar {
     width: 60px;
     background: #020617;
-    flex-shrink: 0;
 }
+/* MAIN */
 
-/* RIGHT MAIN */
 .preview-main {
     flex: 1;
-    display: flex;
-    flex-direction: column;
     padding: 10px;
-    gap: 10px;
 }
+/* TOP */
 
-/* TOP BAR */
 .preview-top {
-    height: 40px;
-    background: #1e293b;
+    height: 38px;
+    background: rgba(255,255,255,0.06);
     border-radius: 6px;
-    flex-shrink: 0;
 }
-
 /* BODY */
+
 .preview-body {
-    flex: 1;
     display: flex;
     gap: 10px;
 }
-
 /* CARDS */
+
 .preview-card {
     flex: 1;
-    background: #1e293b;
+    height: 80px;
+    background: rgba(255,255,255,0.08);
     border-radius: 6px;
 }
+/* LIGHT MODE CARDS */
 
-
-/* =========================
-   FOOTER
-========================= */
+body.light-mode .preview-card {
+    background: #e2e8f0;
+}
+/* FOOTER */
 
 .landing-footer {
+    margin-top: auto;
     display: flex;
     justify-content: center;
     gap: 40px;
     padding: 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    flex-shrink: 0;
-    margin-top: auto;
 }
-
-.footer-item {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    color: #94a3b8;
-}
-
-
-/* =========================
-   DASHBOARD GRID (SAFE)
-========================= */
-
-@media (min-width: 768px) {
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        grid-template-areas:
-            "email crm"
-            "erp tasks"
-            "finance system-health"
-            "activity audit"
-            "knowledge quick-actions";
-    }
-}
-
-
-/* =========================
-   PANELS
-========================= */
-
-.tasks-panel,
-.quick-actions-panel {
-    background-color: var(--panel-bg-dark) !important;
-    color: var(--panel-text-dark) !important;
-}
-
-    .tasks-panel h4,
-    .quick-actions-panel h4 {
-        color: #ffffff;
-    }
-
-
-    /* =========================
-   QUICK ACTION BUTTONS
-========================= */
-
-    .quick-actions-panel button {
-        background-color: var(--accent-blue);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        padding: 10px;
-        font-weight: 500;
-    }

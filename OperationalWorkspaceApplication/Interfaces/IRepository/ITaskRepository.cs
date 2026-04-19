@@ -11,15 +11,15 @@ public interface ITaskRepository
 {
     // Use System.Threading.Tasks.Task for the return type
     // Use OperationalWorkspace.Domain.Entities.Task for the parameter
-    System.Threading.Tasks.Task AddAsync(OperationalWorkspace.Domain.Entities.Task task, CancellationToken ct);
+    System.Threading.Tasks.Task AddAsync(OperationalWorkspace.Domain.Entities.TaskEntity task, CancellationToken ct);
 
-    System.Threading.Tasks.Task<OperationalWorkspace.Domain.Entities.Task?> GetByIdAsync(Guid id, CancellationToken ct);
+    System.Threading.Tasks.Task<OperationalWorkspace.Domain.Entities.TaskEntity?> GetByIdAsync(Guid id, CancellationToken ct);
 
-    System.Threading.Tasks.Task UpdateAsync(OperationalWorkspace.Domain.Entities.Task task, CancellationToken ct);
+    System.Threading.Tasks.Task UpdateAsync(OperationalWorkspace.Domain.Entities.TaskEntity task, CancellationToken ct);
 
-    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.Task>> GetByUserAsync(string userId, CancellationToken ct);
+    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.TaskEntity>> GetByUserAsync(string userId, CancellationToken ct);
 
     // NEW: Retrieval methods for extended service functionality
-    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.Task>> GetAllAsync(CancellationToken ct);
-    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.Task>> GetPendingApprovalsAsync(string? userId, CancellationToken ct);
+    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.TaskEntity>> GetAllAsync(CancellationToken ct);
+    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.TaskEntity>> GetPendingApprovalsAsync(string? userId, CancellationToken ct);
 }

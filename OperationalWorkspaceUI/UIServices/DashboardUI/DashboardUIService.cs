@@ -15,17 +15,18 @@ public class DashboardUIService
 
     public async Task LoadDashboardAsync(DashboardState state)
     {
-        // 1. Identify the user and their role (Admin vs Employee)
-        // In a real scenario, this comes from your AuthService/JWT claims
         string userRole = state.IsAdminEnvironment ? "Admin" : "Employee";
 
         try
         {
-            // 2. Fetch Shared Data (Available to everyone)
+            // 1. Fetch Shared Data
             state.AllTasks = await FetchTasksAsync(userRole);
             state.RecentActivities = await FetchActivitiesAsync();
 
-            // 3. SECURE GATE: Only fetch Admin data if the environment/role matches
+            // 2. TICKETS REPLACEMENT: Fetching Tickets instead of Opportunities
+            state.AllTickets = await FetchTicketsAsync(userRole);
+
+            // 3. SECURE GATE: Load Role-Specific Data
             if (state.IsAdminEnvironment)
             {
                 await LoadAdminData(state);
@@ -37,21 +38,24 @@ public class DashboardUIService
         }
         catch (Exception ex)
         {
-            // Log error and notify UI State
             Console.WriteLine($"Error loading Sage X3 data: {ex.Message}");
         }
     }
 
     private async Task LoadAdminData(DashboardState state)
     {
-        // REAL API CALL: Fetching sensitive financial/system data from Syracuse
-        // var response = await _httpClient.GetFromJsonAsync<AdminErpDto>("api/sage/admin/erp-summary");
-
         state.AdminErp = new AdminErpDto
         {
             TotalOrdersToday = 42,
-            InvoicesGenerated = 15, // Sensitive data
+            InvoicesGenerated = 15,
             StockAlerts = 3
+        };
+
+        // Exact match for the $12,500 in the original image
+        state.AdminFinance = new AdminFinanceDto
+        {
+            TotalRevenue = 450000.00m,
+            OverdueAmount = 12500.00m
         };
 
         state.AdminHealth = new AdminSystemHealthDto
@@ -60,42 +64,46 @@ public class DashboardUIService
             APIHealthStatus = "Healthy"
         };
 
-        // Populate Audit Logs only for Admins
         state.AuditLogs = await FetchAuditLogsAsync();
     }
 
     private async Task LoadEmployeeData(DashboardState state)
     {
-        // REAL API CALL: Fetching only what the specific employee is allowed to see
         state.EmployeeErp = new EmployeeErpDto
         {
             MyOpenOrders = 5,
             PendingDeliveries = 2
         };
 
-        // Explicitly clear sensitive admin data to ensure security in the UI state
-        // Assign new empty instances instead of null to satisfy nullable reference rules
+        // Reset Admin-only collections
         state.AdminErp = new AdminErpDto();
         state.AdminHealth = new AdminSystemHealthDto();
         state.AuditLogs = new List<AuditLogDto>();
+        state.AdminFinance = new AdminFinanceDto();
     }
 
-    // --- Data Fetching Methods (Simulated API endpoints) ---
+    // --- Data Fetching Methods (Updated for Tickets) ---
 
-    private async Task<List<TaskDto>> FetchTasksAsync(string role)
+    private async Task<List<TicketDto>> FetchTicketsAsync(string role)
     {
-        // Logic: Admins see all tasks, Employees see assigned tasks
-        return new List<TaskDto>
+        // Mocking Sage X3 Ticket Data
+        return new List<TicketDto>
         {
-            new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Report", Status = "Pending", AssignedTo = "Admin" },
-            new TaskDto { Id = Guid.NewGuid(), Title = "Update Client Contact", Status = "Open", AssignedTo = "CurrentUser" }
+            new TicketDto { Id = 1, Title = "Login Issue - Syracuse", Status = "Open", AssignedTo = "CurrentUser" },
+            new TicketDto { Id = 2, Title = "Invoice Sync Error", Status = "In Progress", AssignedTo = "CurrentUser" }
         };
     }
 
+    private async Task<List<TaskDto>> FetchTasksAsync(string role) => new()
+    {
+        new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Report", Status = "Pending", AssignedTo = "Admin" },
+        new TaskDto { Id = Guid.NewGuid(), Title = "Update Client Contact", Status = "Open", AssignedTo = "CurrentUser" }
+    };
+
     private async Task<List<ActivityDto>> FetchActivitiesAsync() => new()
     {
-        new ActivityDto { Title = "New Order", Action = "Created", Timestamp = DateTime.Now },
-        new ActivityDto { Title = "Inventory", Action = "Updated", Timestamp = DateTime.Now.AddHours(-1) }
+        new ActivityDto { Title = "Sales Order Created", Action = "Created", Timestamp = DateTime.Now },
+        new ActivityDto { Title = "Ticket #101", Action = "Updated", Timestamp = DateTime.Now.AddHours(-1) }
     };
 
     private async Task<List<AuditLogDto>> FetchAuditLogsAsync() => new()

@@ -2,7 +2,7 @@
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.Models.Email
 @using OperationalWorkspaceUI.UIServices.System
-@using OperationalWorkspaceUI.Components.Pages.Forms @* Ensure this matches your NewContactForm location *@
+@using OperationalWorkspaceUI.Components.Pages.Forms
 @using Microsoft.JSInterop
 @implements IDisposable
 @inject UIState UIState
@@ -15,13 +15,16 @@
 
     @if (IsAppPage)
     {
-        <!-- LEFT: STATIC SIDEBAR (60px icon-only) -->
+        <!-- LEFT: FIXED SIDEBAR (16 Items - Tickets & Activities Enabled) -->
         <Sidebar />
 
-        <!-- CENTER: MAIN AREA (Topbar + Dynamic Content) -->
-        <div class="main-content">
+        <!-- CENTER: MAIN AREA -->
+        <main class="main-content">
+            <!-- TOPBAR: Connection Status & User Profile -->
             <Topbar />
-            <div class="page-container">
+
+            <!-- CONTENT BODY: Scrollable Dashboard Area -->
+            <div class="content-body">
                 @if (UIState.IsLoading)
                 {
                     <LoadingSpinner />
@@ -31,89 +34,108 @@
                     @Body
                 }
             </div>
-        </div>
 
-        <!-- RIGHT: SAGE X3 INSIGHTS (Static context panel) -->
+            @* GLOBAL NOTIFICATIONS: Positioned exactly for Blazor Server *@
+            <FluentToastProvider MaxToastCount="5" @rendermode="InteractiveServer" />
+        </main>
+
+        <!-- RIGHT: SAGE X3 CONTEXTUAL INSIGHTS (Email Summary, etc.) -->
         <RightPanel />
     }
     else
     {
-        <!-- HOME/LOGIN: Clean view without navigation bars -->
+        <!-- CLEAN FRAME: For Login / Landing Pages -->
         <div class="landing-frame">
             @Body
         </div>
     }
 </div>
 
-@if (IsAppPage)
+@* --- MODAL OVERLAY: For Sage Forms & Auto-Triggered Contact Forms --- *@
+@if (_showModal && IsAppPage)
 {
-    @* --- GLOBAL OVERLAYS --- *@
-    
-    <ErrorBanner Message="@UIState.ErrorMessage"
-                 IsVisible="@UIState.ShowError"
-                 OnDismiss="@(() => UIState.ClearError())" />
-
-    <ToastNotification />
-
-    @* --- BUSINESS ACTION MODAL (New Orders, Create Contact, etc.) --- *@
-    <Modal />
+    <div class="modal-backdrop" @onclick="CloseModal">
+        <div class="modal-container" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h3>@_modalTitle</h3>
+                <button class="close-btn" @onclick="CloseModal">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Dismiss())" />
+                </button>
+            </div>
+            <div class="modal-body">
+                @_modalContent
+            </div>
+        </div>
+    </div>
 }
 
 @code {
     private DotNetObjectReference<MainLayout>? _objRef;
+    private bool _showModal;
+    private string _modalTitle = "";
+    private RenderFragment? _modalContent;
 
-    // Logic: True if NOT on Home ("/") and NOT on Login ("/login")
+    // Detection logic for App Pages vs. Login
     private bool IsAppPage => !Nav.Uri.EndsWith("/login") && Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
 
     protected override async Task OnInitializedAsync()
     {
-        // 1. Subscribe to Global State changes
+        // 1. Event Subscriptions
         Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
         DashboardState.OnChange += StateHasChanged;
-        
-        // 2. Load persistent settings
+        ModalService.OnShow += HandleShowModal;
+        ModalService.OnClose += HandleCloseModal;
+
+        // 2. Persistent Theme Loading
         await UIState.LoadThemeFromLocalStorage();
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
 
+    // --- MODAL HANDLERS ---
+    private async Task HandleShowModal(string title, RenderFragment content)
+    {
+        _modalTitle = title;
+        _modalContent = content;
+        _showModal = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleCloseModal()
+    {
+        _showModal = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CloseModal() => ModalService.CloseModal();
+
+    // --- OUTLOOK BRIDGE (The "Nervous System") ---
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && IsAppPage)
         {
-            // 3. Initialize the Outlook "Nervous System" Bridge
             _objRef = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
         }
     }
 
-    /// <summary>
-    /// Triggered by officeBridge.js when an email is selected in Outlook.
-    /// Drives the core "fucking logic" of the contextual workspace.
-    /// </summary>
     [JSInvokable]
     public async Task OnEmailReceived(EmailContextDTO emailData)
     {
-        // Ensure we have valid data before proceeding
         if (emailData == null || string.IsNullOrEmpty(emailData.SenderEmail)) return;
 
-        // 1. Update Global Page Context
-        UIState.CurrentPageTitle = $"Insights: {emailData.SenderName}";
+        // Sync State
         DashboardState.EmailContext = emailData;
-
-        // 2. Auto-load Sage ERP data (Quotes, Orders, etc.)
         await DashboardState.LoadDashboardAsync();
 
-        // 3. SECURE CONTEXT CHECK: Does this partner exist in Sage X3?
+        // Contact Lookup Logic
         bool contactExists = await DashboardState.CheckContactExists(emailData.SenderEmail);
-        
-
 
         if (!contactExists)
         {
-            // 4. TRIGGER POPUP: If unknown, pop the "New Contact" form immediately
-            await ModalService.ShowModal($"Create Sage X3 Contact: {emailData.SenderName}", builder =>
+            // Auto-popup for new contacts
+            await ModalService.ShowModal($"New Sage X3 Contact: {emailData.SenderName}", builder =>
             {
                 builder.OpenComponent<NewContactForm>(0);
                 builder.AddAttribute(1, "Email", emailData.SenderEmail);
@@ -122,9 +144,8 @@
             });
         }
 
-        // 5. Finalize UI Refresh
         StateHasChanged();
-        await JS.InvokeVoidAsync("showToast", $"Workspace Updated: {emailData.SenderName}");
+        await JS.InvokeVoidAsync("showToast", $"Workspace Synced: {emailData.SenderName}");
     }
 
     public void Dispose()
@@ -132,6 +153,8 @@
         Nav.LocationChanged -= HandleLocationChanged;
         UIState.OnChange -= StateHasChanged;
         DashboardState.OnChange -= StateHasChanged;
+        ModalService.OnShow -= HandleShowModal;
+        ModalService.OnClose -= HandleCloseModal;
         _objRef?.Dispose();
     }
 }

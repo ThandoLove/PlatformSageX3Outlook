@@ -21,20 +21,15 @@ namespace OperationalWorkspaceUI.State
         }
 
         // --- CONTACT LOGIC ---
-        public int LateShipmentsCount { get; set; } = 48; // Mock value for Sidebar Badge
-        public int OverdueTasksCount { get; set; } = 5;  // Mock value for Sidebar Badge
+        public int LateShipmentsCount { get; set; } = 48;
+        public int OverdueTasksCount { get; set; } = 5;
 
-        /// <summary>
-        /// Checks if a contact exists in Sage X3. This drives the "New Contact" modal logic in MainLayout.
-        /// </summary>
         public async Task<bool> CheckContactExists(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
-
             try
             {
                 var partner = await _bpService.GetPartnerByEmailAsync(email);
-                // Return true only if partner exists and is explicitly linked to Sage X3
                 return partner != null && partner.IsLinkedToSage;
             }
             catch (Exception ex)
@@ -46,6 +41,10 @@ namespace OperationalWorkspaceUI.State
 
         // Environment flag
         public bool IsAdminEnvironment { get; private set; }
+
+        // --- TICKETS (Replacing Opportunities) ---
+        public List<TicketDto> AllTickets { get; set; } = new();
+        public List<TicketDto> MyTickets { get; set; } = new();
 
         // --- ADMIN DATA ---
         public AdminErpDto AdminErp { get; set; } = new();
@@ -65,15 +64,18 @@ namespace OperationalWorkspaceUI.State
         public List<ActivityDto> RecentActivities { get; set; } = new();
         public List<TaskDto> AllTasks { get; set; } = new();
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
-
         public EmailContextDTO EmailContext { get; set; } = new();
 
-        // --- CURRENT ENVIRONMENT DATA (read-only for UI binding) ---
+        // --- CURRENT ENVIRONMENT DATA (Bound to UI) ---
         public AdminErpDto? CurrentErp => IsAdminEnvironment ? AdminErp : null;
+
+        // Replaced Opportunities logic with Tickets in the CRM return
         public object CurrentCrm => IsAdminEnvironment ? AdminCrm : EmployeeCrm;
+
         public object CurrentFinance => IsAdminEnvironment ? AdminFinance : EmployeeFinance;
         public AdminSystemHealthDto? CurrentHealth => IsAdminEnvironment ? AdminHealth : null;
         public List<TaskDto> CurrentTasks => IsAdminEnvironment ? AllTasks : MyTasks;
+        public List<TicketDto> CurrentTickets => IsAdminEnvironment ? AllTickets : MyTickets;
         public List<ActivityDto> CurrentActivities => RecentActivities;
         public List<AuditLogDto> CurrentAuditLogs => AuditLogs;
 
@@ -92,7 +94,11 @@ namespace OperationalWorkspaceUI.State
         public async Task LoadDashboardAsync()
         {
             await _dashboardService.LoadDashboardAsync(this);
+
+            // Filter Tasks and Tickets for the current user session
             MyTasks = AllTasks.Where(t => t.AssignedTo == "CurrentUser" && t.Status != "Completed").ToList();
+            MyTickets = AllTickets.Where(t => t.AssignedTo == "CurrentUser").ToList();
+
             NotifyStateChanged();
         }
 
@@ -108,6 +114,7 @@ namespace OperationalWorkspaceUI.State
             IsAdminEnvironment = false;
             await _dashboardService.LoadDashboardAsync(this);
             MyTasks = AllTasks.Where(t => t.AssignedTo == "CurrentUser" && t.Status != "Completed").ToList();
+            MyTickets = AllTickets.Where(t => t.AssignedTo == "CurrentUser").ToList();
             NotifyStateChanged();
         }
     }

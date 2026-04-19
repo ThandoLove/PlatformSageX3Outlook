@@ -1,9 +1,17 @@
 ﻿@using OperationalWorkspaceUI.State
+@using static Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20
 @inject UIState UIState
 
-<div class="topbar">
-    <h2>@UIState.CurrentPageTitle</h2>
+<div class="sage-topbar">
+    <div class="connection-status">
+        <FluentIcon Value="@(new Icons.Filled.Size16.CheckmarkCircle())" Color="Color.Success" />
+        <span>Connected to Sage X3</span>
+    </div>
 
-    <GlassModeToggle IsGlass="@UIState.IsGlassMode"
-                     OnChanged="UIState.ToggleGlassMode" />
+    <div class="user-info">
+        <FluentPersona Name="John Smith"
+                       SecondaryText="Sales Rep"
+                       Status="PersonaStatus.Available"
+                       AvatarSize="32" />
+    </div>
 </div>
