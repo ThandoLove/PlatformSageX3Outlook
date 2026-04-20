@@ -1,39 +1,56 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
 
-@if (IsLoading)
-{
-    <LoadingSpinner />
-}
-else if (Data == null || !Data.Any())
-{
-    <EmptyState Message="No activity found." />
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Action</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var act in Data)
-            {
-                <tr>
-                    @* FIX 1: Change UserName to CreatedBy *@
-                    <td>@act.CreatedBy</td>
-                    <td>@act.Action</td>
-                    <td>@act.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<div class="timeline-container">
+    @if (Data != null && Data.Any())
+    {
+        @foreach (var act in Data.OrderByDescending(a => a.Timestamp))
+        {
+            <div class="timeline-item">
+                @* The Marker (Circle) positioned exactly on the vertical line *@
+                <div class="timeline-marker @GetColorClass(act.Action)">
+                    <FluentIcon Value="@GetIcon(act.Action)" Color="Color.Custom" CustomColor="currentColor" />
+                </div>
+
+                @* The Content Box (Zebra/Grey style from image) *@
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <span class="activity-title">@act.Title</span>
+                        <span class="activity-time">@act.Timestamp.ToString("MMM dd, HH:mm")</span>
+                    </div>
+                    <p class="activity-desc" style="margin: 0; font-size: 0.85rem; color: #475569;">
+                        <strong style="color: #003366;">@act.Action</strong> by @act.CreatedBy
+                    </p>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div style="padding: 20px; color: #94a3b8; text-align: center;">
+            No recent activity found.
+        </div>
+    }
+</div>
 
 @code {
-    // FIX 2: Initialize with an empty list and use '!' to satisfy the non-nullable warning
     [Parameter] public List<ActivityDto> Data { get; set; } = new();
-    [Parameter] public bool IsLoading { get; set; }
+
+    private string GetColorClass(string action) => action.ToLower() switch
+    {
+        "created" or "email" or "new" => "icon-blue",
+        "invoice" or "resolved" or "success" => "icon-green",
+        "meeting" or "scheduled" or "demo" => "icon-orange",
+        _ => "icon-grey"
+    };
+
+    private Icon GetIcon(string action) => action.ToLower() switch
+    {
+        "call" => new Icons.Regular.Size16.Call(),
+        "email" => new Icons.Regular.Size16.Mail(),
+        "invoice" => new Icons.Regular.Size16.Money(),
+        "meeting" or "scheduled" => new Icons.Regular.Size16.CalendarLtr(),
+        "created" or "new" => new Icons.Regular.Size16.AddSquare(),
+        _ => new Icons.Regular.Size16.Circle()
+    };
 }

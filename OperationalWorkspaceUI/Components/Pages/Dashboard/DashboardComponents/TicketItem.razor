@@ -1,0 +1,51 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.UIServices.System
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<div class="ticket-row"
+     style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; gap: 12px; cursor: pointer;"
+     @onclick="OpenTicketDetail">
+    
+    @* Priority Indicator (Color bar exactly like Sage UI) *@
+    <div style="width: 4px; height: 32px; border-radius: 2px; background-color: @GetPriorityColor(Ticket.Priority);"></div>
+
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600; font-size: 0.95rem; color: #1e293b;">@Ticket.Title</span>
+            <span style="font-size: 0.75rem; color: #94a3b8;">@Ticket.CreatedAt.ToString("MMM dd")</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.8rem; color: #64748b;">#@Ticket.Id</span>
+            @* Status badge using CSS classes defined in dashboard.css *@
+            <div class="status-badge @Ticket.Status.ToLower().Replace(" ", "-")">
+                @Ticket.Status
+            </div>
+        </div>
+    </div>
+
+    <FluentIcon Value="@(new Icons.Regular.Size16.ChevronRight())" Color="Color.Neutral" />
+</div>
+
+@code {
+    [Parameter] public TicketDto Ticket { get; set; } = new();
+    
+    [Inject] private ModalService ModalService { get; set; } = default!;
+
+    private async Task OpenTicketDetail()
+    {
+        // LOGIC: Open the Detail Form inside the Sage Global Modal
+        await ModalService.ShowModal($"Edit Ticket: {Ticket.Title}", builder =>
+        {
+            builder.OpenComponent<TicketDetailForm>(0);
+            builder.AddAttribute(1, "Ticket", Ticket);
+            builder.CloseComponent();
+        });
+    }
+
+    private string GetPriorityColor(int priority) => priority switch
+    {
+        >= 5 => "#ef4444", // Critical (Red)
+        >= 3 => "#f59e0b", // Medium (Orange)
+        _ => "#3b82f6"     // Low (Blue)
+    };
+}

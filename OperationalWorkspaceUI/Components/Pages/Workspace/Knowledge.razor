@@ -1,44 +1,61 @@
 ﻿@page "/workspace/knowledge"
-
-<!-- CODE START: Knowledge.razor -->
 @using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
-@inject WorkspaceState WorkspaceState
+@using OperationalWorkspaceUI.State
+@implements IDisposable
+
+@inject DashboardState DashboardState
 @inject NavigationService NavigationService
-@inject WorkspaceState WorkspaceState
 @inject OperationalWorkspaceUI.UIServices.Workspace.KnowledgeUIService KBService
 
+<div class="workspace-container" style="padding: 20px; background-color: #f4f7f9; min-height: 100vh;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+            <h2 style="margin: 0; color: #003366; font-weight: 600;">Knowledge Base</h2>
+            <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Sage X3 Central Documentation & Articles</p>
+        </div>
+        <FluentButton Appearance="Appearance.Accent"
+                      IconStart="@(new Icons.Regular.Size20.Add())"
+                      OnClick="Create">
+            New Article
+        </FluentButton>
+    </div>
 
-<h3>Knowledge Base</h3>
-
-<WorkspaceHeader Title="Knowledge Base" Subtitle="Articles and documentation" />
-
-<WorkspaceToolbar>
-    <button class="btn btn-primary" @onclick="Create">+ New Article</button>
-</WorkspaceToolbar>
-
-@if (WorkspaceState.Knowledge == null)
-{
-    <LoadingSpinner />
-}
-else if (!WorkspaceState.Knowledge.Any())
-{
-    <EmptyState Message="No articles found." />
-}
-else
-{
-    <KnowledgeGrid Items="WorkspaceState.Knowledge" />
-}
+    @if (DashboardState.KnowledgeBase == null)
+    {
+        <div style="display: flex; justify-content: center; padding: 50px;">
+            <FluentProgressRing />
+        </div>
+    }
+    else if (!DashboardState.KnowledgeBase.Any())
+    {
+        <FluentCard Style="padding: 40px; text-align: center;">
+            <FluentIcon Value="@(new Icons.Regular.Size32.DocumentSearch())" Color="Color.Neutral" />
+            <p>No knowledge articles found in Sage X3.</p>
+        </FluentCard>
+    }
+    else
+    {
+        @* Integration: Passing State data to the Grid *@
+        <KnowledgeGrid Data="DashboardState.KnowledgeBase" />
+    }
+</div>
 
 @code {
     private void Create() => NavigationService.NavigateTo("/forms/send-knowledge");
 
     protected override async Task OnInitializedAsync()
     {
+        DashboardState.OnChange += StateHasChanged;
+        
+        // Fetch fresh articles from the Sage Service
         var articles = await KBService.GetArticlesAsync();
-        WorkspaceState.ReloadKnowledge(articles);
+        DashboardState.KnowledgeBase = articles;
     }
-  
-}
 
-<!-- CODE END -->
+    public void Dispose()
+    {
+        DashboardState.OnChange -= StateHasChanged;
+    }
+}

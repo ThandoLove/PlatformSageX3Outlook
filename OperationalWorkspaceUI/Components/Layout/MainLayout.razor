@@ -2,11 +2,13 @@
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.Models.Email
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using Microsoft.JSInterop
 @implements IDisposable
 @inject UIState UIState
 @inject DashboardState DashboardState
+@inject ActivityUIService ActivityService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject ModalService ModalService
@@ -120,16 +122,26 @@
         }
     }
 
+    /// <summary>
+    /// Triggered by officeBridge.js. Synchronizes Sage X3 context and logs activity.
+    /// </summary>
     [JSInvokable]
     public async Task OnEmailReceived(EmailContextDTO emailData)
     {
         if (emailData == null || string.IsNullOrEmpty(emailData.SenderEmail)) return;
 
-        // Sync State
+        // 1. Log the Interaction to the Activity Timeline
+        await ActivityService.LogActivityAsync(
+            title: $"Email from {emailData.SenderName}",
+            action: "Email",
+            createdBy: "System"
+        );
+
+        // 2. Sync Dashboard State
         DashboardState.EmailContext = emailData;
         await DashboardState.LoadDashboardAsync();
 
-        // Contact Lookup Logic
+        // 3. Contact Lookup Logic
         bool contactExists = await DashboardState.CheckContactExists(emailData.SenderEmail);
 
         if (!contactExists)

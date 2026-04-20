@@ -5,68 +5,99 @@
 @inject EmailContextState State
 @inject EmailContextUIService EmailService
 
-<div class="dashboard-card email-insight-card">
-    <div class="panel-header">
-        <h4>Email Insight</h4>
-        @* Status badge updates based on whether a Sage X3 client match was found *@
-        <span class="status-badge @(State.MatchedClient != null ? "linked" : "unlinked")">
-            @(State.MatchedClient != null ? "Linked" : "Unlinked")
-        </span>
+<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-height: 350px;">
+    @* Panel Header *@
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Email Insight</h3>
+        
+        @if (State.IsLoading)
+        {
+            @* Small header spinner during active bridge lookup *@
+            <FluentProgressRing Style="width: 16px; height: 16px;" />
+        }
+        else if (State.MatchedClient != null)
+        {
+            @* Linked Badge exactly like the image *@
+            <div style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Linked</div>
+        }
+        else
+        {
+            <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="Color.Neutral" />
+        }
     </div>
 
-    <div class="insight-content">
-        <div class="contact-info">
-            <div class="avatar-circle">
-                @((!string.IsNullOrEmpty(State.CurrentEmail?.SenderName)) ? State.CurrentEmail.SenderName.Substring(0, 1) : "?")
-            </div>
-            <div class="text-group">
-                <span class="label">Contact</span>
-                <span class="contact-name">@(State.CurrentEmail?.SenderName ?? "Select an Email")</span>
-            </div>
+    @if (State.IsLoading)
+    {
+        @* FULL PANEL LOADING STATE *@
+        <div class="loading-overlay" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 250px;">
+            <div class="sage-spinner"></div>
+            <span class="analyzing-text">Sage X3 AI is analyzing...</span>
         </div>
+    }
+    else
+    {
+        <div class="insight-content" style="display: flex; flex-direction: column; gap: 12px;">
+            
+            @* Contact Row *@
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #475569; font-size: 0.8rem;">
+                    @((!string.IsNullOrEmpty(State.CurrentEmail?.SenderName)) ? State.CurrentEmail.SenderName.Substring(0, 1) : "?")
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;">Contact</span>
+                    <span style="font-weight: 600; color: #1e293b;">@(State.CurrentEmail?.SenderName ?? "Select an Email")</span>
+                </div>
+            </div>
 
-        <div class="intent-section">
-            <span class="label">Intent</span>
-            <div class="intent-badge">
-                <i class="ms-Icon ms-Icon--LightningBolt"></i>
-                @* This displays the intent/subject identified in the image *@
-                <span>@(State.CurrentEmail?.Subject ?? "Analyzing Context...")</span>
+            @* Company Row *@
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;">Company</span>
+                <span style="font-weight: 500; color: #1e293b;">@(State.MatchedClient?.CompanyName ?? "Unknown Entity")</span>
+            </div>
+
+            @* Intent Section *@
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase;">Intent</span>
+                <div style="display: flex; align-items: center; gap: 6px; color: #3b82f6; font-weight: 600;">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Flash())" Color="Color.Accent" />
+                    <span>@(State.CurrentEmail?.Subject ?? "Analyzing Context...")</span>
+                </div>
+            </div>
+
+            @* AI SUMMARY BOX *@
+            <div class="ai-summary-box" style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px; margin-top: 8px; border-radius: 0 4px 4px 0;">
+                <span style="font-weight: 700; font-size: 0.75rem; color: #334155; display: block; margin-bottom: 4px; letter-spacing: 0.05em;">AI SUMMARY</span>
+                <p style="margin: 0; font-size: 0.9rem; color: #475569; line-height: 1.5;">
+                    @if (State.CurrentEmail != null)
+                    {
+                        @((!string.IsNullOrEmpty(State.CurrentEmail.Message)) ? State.CurrentEmail.Message : "Reviewing email for Sage X3 matches...")
+                    }
+                    else
+                    {
+                        <span>Waiting for email selection to generate Sage X3 insights...</span>
+                    }
+                </p>
             </div>
         </div>
-
-        <div class="ai-summary-box">
-            <span class="summary-label">AI SUMMARY</span>
-            <p class="summary-text">
-                @if (State.CurrentEmail != null)
-                {
-                    @((!string.IsNullOrEmpty(State.CurrentEmail.Message)) ? State.CurrentEmail.Message : "Reviewing email for Sage X3 matches...")
-                }
-                else
-                {
-                    <span>Waiting for email selection to generate Sage X3 insights...</span>
-                }
-            </p>
-        </div>
-    </div>
-</div>
+    }
+</FluentCard>
 
 @code {
     protected override void OnInitialized()
     {
-        // IMPORTANT: Subscribe to the state change event
-        // This ensures the panel refreshes when officeBridge.js sends new email data
+        // Subscribe to state changes from the Outlook Bridge
         State.OnChange += HandleStateChanged;
     }
 
     private void HandleStateChanged()
     {
-        // Trigger a re-render of this specific component
+        // Use InvokeAsync to ensure UI thread update from JS interop
         InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        // Prevent memory leaks by unsubscribing when the component is destroyed
+        // Clean up subscription
         State.OnChange -= HandleStateChanged;
     }
 }

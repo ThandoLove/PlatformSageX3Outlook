@@ -1,35 +1,43 @@
-﻿@page "/forms/send-knowledge"
-@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+﻿@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.System
 
 @inject KnowledgeUIService KBService
-@* Fix 1: Use explicit namespace to resolve ambiguity *@
 @inject Radzen.NotificationService Notifications
-@inject NavigationService Navigation
+@inject ModalService ModalService
 
-<h3>Send Knowledge</h3>
-
-<FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
+<div class="sage-form-content">
+    @* We remove the H3 header here because the ModalService provides the header *@
+    <FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
+</div>
 
 @code {
-    // Fix 2: Use the model from the UIServices namespace to match the method signature
+    // Shared model logic
     private OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel Model = new();
 
     private List<FormStepper.FormStep> Steps => new()
     {
         new() {
             Title = "Search",
-            Content = @<FormSection Title="Search">
-                            <FormField Label="Search" @bind-Value="Model.SearchQuery" />
-                       </FormSection>,
+            @* Using Fluent UI for exact visual match with the dashboard *@
+            Content = @<div style="display: flex; flex-direction: column; gap: 10px; padding: 5px;">
+                            <FluentTextField Label="Search Sage X3 Knowledge" 
+                                             @bind-Value="Model.SearchQuery" 
+                                             Placeholder="Enter keywords..."
+                                             Style="width: 100%;" 
+                                             Required="true" />
+                       </div>,
             Validate = async () => !string.IsNullOrWhiteSpace(Model.SearchQuery)
         },
         new() {
             Title = "Message",
-            Content = @<FormSection Title="Message">
-                            <FormField Label="Message" Type="textarea" @bind-Value="Model.Message" />
-                       </FormSection>,
+            Content = @<div style="display: flex; flex-direction: column; gap: 10px; padding: 5px;">
+                            <FluentTextArea Label="Note to Recipient" 
+                                            @bind-Value="Model.Message" 
+                                            Placeholder="Add context for this article..."
+                                            Style="width: 100%;" 
+                                            Rows="4" />
+                       </div>,
             Validate = async () => true
         }
     };
@@ -38,28 +46,26 @@
     {
         try 
         {
-            // Now the types match perfectly
             await KBService.SendKnowledgeAsync(Model);
             
-            // Fix 3: Use Radzen's Notify syntax (no await)
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
-                Summary = "Success",
-                Detail = "Sent successfully"
+                Summary = "Knowledge Sent",
+                Detail = "Article transmitted to recipient."
             });
             
-            Navigation.NavigateTo("/workspace/knowledge");
+            // CRITICAL: Close the dashboard modal on success
+            await ModalService.CloseModal();
         }
-        catch 
+        catch (Exception ex)
         {
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Error,
                 Summary = "Error",
-                Detail = "Failed to send"
+                Detail = "Failed to send: " + ex.Message
             });
         }
     }
-    
 }

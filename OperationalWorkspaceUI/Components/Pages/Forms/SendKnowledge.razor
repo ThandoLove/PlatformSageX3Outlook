@@ -1,67 +1,79 @@
-﻿@page "/forms/send-knowledge-main"
+﻿@page "/forms/send-knowledge"
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
-@using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceUI.UIServices.System
 
 @inject KnowledgeUIService KBService
 @inject Radzen.NotificationService Notifications
-@inject NavigationManager Navigation
+@inject NavigationService Navigation
+@inject ModalService ModalService
 
-<h3>Send Knowledge</h3>
+<div class="sage-form-container" style="padding: 10px;">
+    <h3 style="margin-bottom: 20px; color: #003366;">Send Knowledge Article</h3>
 
-<FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
+    <FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
+</div>
 
 @code {
-    private SendKnowledgeModel Model = new();
+    // FIX: Using the explicit namespace ensures the model matches the Service signature
+    private OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel Model = new();
 
     private List<FormStepper.FormStep> Steps => new()
     {
-        new()
-        {
+        new() {
             Title = "Search",
-            Content = @<FormSection Title="Search">
-                            <FormField Label="Search" @bind-Value="Model.SearchQuery" />
-                       </FormSection>,
+            Content = @<div style="display: flex; flex-direction: column; gap: 15px;">
+                            <p style="font-size: 0.9rem; color: #64748b;">Search the Sage X3 Knowledge Base for an article to send.</p>
+                            <FluentTextField Label="Search Article" 
+                                             @bind-Value="Model.SearchQuery" 
+                                             Style="width: 100%;" 
+                                             Required="true" />
+                       </div>,
             Validate = async () => !string.IsNullOrWhiteSpace(Model.SearchQuery)
         },
-        new()
-        {
+        new() {
             Title = "Message",
-            Content = @<FormSection Title="Message">
-                            <FormField Label="Message" Type="textarea" @bind-Value="Model.Message" />
-                       </FormSection>,
+            Content = @<div style="display: flex; flex-direction: column; gap: 15px;">
+                            <p style="font-size: 0.9rem; color: #64748b;">Add a personal note for the recipient.</p>
+                            <FluentTextArea Label="Personal Message" 
+                                            @bind-Value="Model.Message" 
+                                            Style="width: 100%;" 
+                                            Rows="5" />
+                       </div>,
             Validate = async () => true
         }
     };
 
     private async Task HandleSubmit()
     {
-        try
+        try 
         {
-            // Call the service
+            // Logic: Types now match perfectly with the UIService
             await KBService.SendKnowledgeAsync(Model);
             
-            // FIX: Use Radzen's Notify method (no await)
+            // Radzen Notification (Synchronous call)
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
-                Summary = "Success",
-                Detail = "Knowledge sent successfully",
+                Summary = "Sage X3 Update",
+                Detail = "Knowledge article sent successfully.",
                 Duration = 4000
             });
             
-            // Go back to the main knowledge page
+            // Close the Modal if this is being hosted in the Quick Actions popup
+            await ModalService.CloseModal();
+
+            // Navigate back to the Knowledge Workspace
             Navigation.NavigateTo("/workspace/knowledge");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Error",
-                Detail = "Failed to send knowledge base article"
+                Summary = "Delivery Failed",
+                Detail = "Could not transmit knowledge article: " + ex.Message
             });
         }
     }
-
 }

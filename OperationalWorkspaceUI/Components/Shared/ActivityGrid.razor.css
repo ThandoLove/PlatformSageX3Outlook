@@ -1,25 +1,90 @@
-﻿.timeline-item {
+﻿/* Container for the whole timeline grid */
+.timeline-container {
+    position: relative;
+    padding-left: 20px;
+    margin-left: 15px;
+    /* This creates the vertical line through all items */
+    border-left: 2px solid #e2e8f0;
+    padding-top: 10px;
+}
+
+.timeline-item {
     display: flex;
     gap: 15px;
-    padding: 10px 0;
-    border-left: 2px solid #e2e8f0;
-    margin-left: 10px;
+    padding-bottom: 24px; /* Spacing between items */
     position: relative;
+    width: 100%;
 }
 
-.timeline-icon {
-    width: 30px;
-    height: 30px;
+/* The circular icon/marker - Positioned EXACTLY on the line */
+.timeline-marker {
+    width: 32px;
+    height: 32px;
     background: #fff;
-    border: 2px solid #5b5fc7;
+    border: 2px solid #e2e8f0; /* Default border color */
     border-radius: 50%;
     position: absolute;
-    left: -16px;
+    left: -37px; /* Centers the 32px circle exactly on the 2px border-left */
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
+/* The content box matching the Sage UI grey/blue look */
 .timeline-content {
     background: #f8fafc;
-    padding: 8px;
-    border-radius: 6px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
     width: 100%;
+    margin-left: 10px;
+    transition: transform 0.2s ease;
+}
+
+    .timeline-content:hover {
+        transform: translateX(5px);
+        background: #f1f5f9;
+    }
+
+/* Specific Action Colors to match the Sage Dashboard image */
+.icon-blue {
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+/* Created/Email */
+.icon-green {
+    border-color: #22c55e;
+    color: #22c55e;
+}
+/* Invoice/Success */
+.icon-orange {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+/* Meeting/Scheduled */
+.icon-grey {
+    border-color: #64748b;
+    color: #64748b;
+}
+/* Default */
+
+/* Utility for the header inside content */
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.activity-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.activity-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
 }

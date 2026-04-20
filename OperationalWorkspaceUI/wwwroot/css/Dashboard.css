@@ -128,3 +128,66 @@ body.dark-mode .dashboard-panel {
     color: var(--text-primary); /* Inherits #ffffff from app.css */
     border-color: var(--border-color);
 }
+
+/* Container for the loading state */
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    height: 100%;
+    min-height: 150px;
+}
+
+/* The Spinner - Sage Blue */
+.sage-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(59, 130, 246, 0.2);
+    border-radius: 50%;
+    border-top-color: #3b82f6; /* Sage Blue */
+    animation: sage-spin 0.8s linear infinite;
+    margin-bottom: 12px;
+}
+
+/* Pulse animation for the "Analyzing..." text */
+.analyzing-text {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    animation: sage-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes sage-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes sage-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Transitions for when data populates */
+.insight-content {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using OperationalWorkspaceUI.UIServices.DashboardUI;
+using OperationalWorkspaceUI.UIServices.Workspace;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceUI.Models.Email;
 using OperationalWorkspaceApplication.Interfaces.IServices;
@@ -13,11 +14,16 @@ namespace OperationalWorkspaceUI.State
     {
         private readonly DashboardUIService _dashboardService;
         private readonly IBusinessPartnerService _bpService;
+        private readonly ActivityUIService _activityService;
 
-        public DashboardState(DashboardUIService dashboardService, IBusinessPartnerService bpService)
+        public DashboardState(
+            DashboardUIService dashboardService,
+            IBusinessPartnerService bpService,
+            ActivityUIService activityService)
         {
             _dashboardService = dashboardService;
             _bpService = bpService;
+            _activityService = activityService;
         }
 
         // --- CONTACT LOGIC ---
@@ -42,9 +48,12 @@ namespace OperationalWorkspaceUI.State
         // Environment flag
         public bool IsAdminEnvironment { get; private set; }
 
-        // --- TICKETS (Replacing Opportunities) ---
+        // --- TICKETS (Replacing Opportunities globally) ---
         public List<TicketDto> AllTickets { get; set; } = new();
         public List<TicketDto> MyTickets { get; set; } = new();
+
+        // --- REPORTS LOGIC ---
+        public List<ReportDto> AvailableReports { get; set; } = new();
 
         // --- ADMIN DATA ---
         public AdminErpDto AdminErp { get; set; } = new();
@@ -68,10 +77,7 @@ namespace OperationalWorkspaceUI.State
 
         // --- CURRENT ENVIRONMENT DATA (Bound to UI) ---
         public AdminErpDto? CurrentErp => IsAdminEnvironment ? AdminErp : null;
-
-        // Replaced Opportunities logic with Tickets in the CRM return
         public object CurrentCrm => IsAdminEnvironment ? AdminCrm : EmployeeCrm;
-
         public object CurrentFinance => IsAdminEnvironment ? AdminFinance : EmployeeFinance;
         public AdminSystemHealthDto? CurrentHealth => IsAdminEnvironment ? AdminHealth : null;
         public List<TaskDto> CurrentTasks => IsAdminEnvironment ? AllTasks : MyTasks;
@@ -91,11 +97,33 @@ namespace OperationalWorkspaceUI.State
             NotifyStateChanged();
         }
 
+        /// <summary>
+        /// Main Dashboard Load logic merging Sage X3 DTOs, Activities, and Reports
+        /// </summary>
         public async Task LoadDashboardAsync()
         {
+            // 1. Fetch DTO data from DashboardUIService (ERP, Finance, CRM)
             await _dashboardService.LoadDashboardAsync(this);
 
-            // Filter Tasks and Tickets for the current user session
+            // 2. Fetch structured Activities from ActivityUIService
+            RecentActivities = await _activityService.GetActivitiesAsync();
+
+            // 3. Seed data if testing with empty results
+            if (!RecentActivities.Any())
+            {
+                _activityService.SeedInitialData();
+                RecentActivities = await _activityService.GetActivitiesAsync();
+            }
+
+            // 4. Initialize Reports for the Dashboard
+            AvailableReports = new List<ReportDto>
+            {
+                new() { Code = "INV_LIST", Name = "Aged Receivables (Invoices)" },
+                new() { Code = "TK_SUM", Name = "Open Tickets Summary" },
+                new() { Code = "SOH_LOG", Name = "Daily Sales Order Log" }
+            };
+
+            // 5. Filter Shared Tasks and Tickets for the current user view
             MyTasks = AllTasks.Where(t => t.AssignedTo == "CurrentUser" && t.Status != "Completed").ToList();
             MyTickets = AllTickets.Where(t => t.AssignedTo == "CurrentUser").ToList();
 
@@ -105,17 +133,13 @@ namespace OperationalWorkspaceUI.State
         public async Task LoadAdminDashboardAsync()
         {
             IsAdminEnvironment = true;
-            await _dashboardService.LoadDashboardAsync(this);
-            NotifyStateChanged();
+            await LoadDashboardAsync();
         }
 
         public async Task LoadEmployeeDashboardAsync()
         {
             IsAdminEnvironment = false;
-            await _dashboardService.LoadDashboardAsync(this);
-            MyTasks = AllTasks.Where(t => t.AssignedTo == "CurrentUser" && t.Status != "Completed").ToList();
-            MyTickets = AllTickets.Where(t => t.AssignedTo == "CurrentUser").ToList();
-            NotifyStateChanged();
+            await LoadDashboardAsync();
         }
     }
 }

@@ -1,39 +1,33 @@
-﻿<!-- CODE START: KnowledgeGrid.razor -->
-@using OperationalWorkspaceApplication.DTOs
+﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
 
-@if (IsLoading)
-{
-    <LoadingSpinner />
-}
-else if (Data == null || !Data.Any())
-{
-    <EmptyState Message="No knowledge articles found." />
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Summary</th> @* Changed from Created to Summary *@
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var kb in Data)
-            {
-                <tr @onclick="() => OnRowClick.InvokeAsync(kb)" style="cursor:pointer">
-                    <td>@kb.Title</td>
-                    <td>@kb.Category</td>
-                    <td>@kb.Summary</td> @* Removed .CreatedDate and used .Summary *@
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<div class="sage-grid-wrapper" style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
+    <FluentDataGrid Items="@Data.AsQueryable()"
+                    ResizableColumns="true"
+                    TGridItem="KnowledgeDto"
+                    OnRowClick="@((FluentDataGridRow<KnowledgeDto> row) => OnRowClick.InvokeAsync(row.Item))"
+                    Style="width: 100%;">
+        
+        <PropertyColumn Property="@(p => p.Title)" Title="Article Title" Sortable="true" />
+        
+        <PropertyColumn Property="@(p => p.Category)" Title="Category" Sortable="true">
+            <ColumnOptions>
+                <div style="padding: 10px; font-weight: 600; color: #003366;">Filter by Category</div>
+            </ColumnOptions>
+        </PropertyColumn>
+        
+        <PropertyColumn Property="@(p => p.Summary)" Title="Summary" />
+
+        <TemplateColumn Title="Actions" Align="Align.End">
+            <FluentButton Appearance="Appearance.Lightweight"
+                          IconStart="@(new Icons.Regular.Size16.Open())"
+                          OnClick="@(() => OnRowClick.InvokeAsync(context))" />
+        </TemplateColumn>
+
+    </FluentDataGrid>
+</div>
 
 @code {
-    [Parameter] public List<KnowledgeDto>? Data { get; set; }
-    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public List<KnowledgeDto> Data { get; set; } = new();
     [Parameter] public EventCallback<KnowledgeDto> OnRowClick { get; set; }
 }

@@ -16,6 +16,12 @@
 
         <FluentDivider Role="DividerRole.Presentation" />
 
+        @* Updated count logic for CrmSnapshot.razor *@
+        <FluentLabel Typo="Typography.Body">
+            <strong>@State.CurrentTickets.Count(t => t.Status != "Resolved") Active</strong>
+        </FluentLabel>
+
+
         @* Data Grid *@
         <FluentGrid Spacing="3">
             @* TICKETS REPLACEMENT *@

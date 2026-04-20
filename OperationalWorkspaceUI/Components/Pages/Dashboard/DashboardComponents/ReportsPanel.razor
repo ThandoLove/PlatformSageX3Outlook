@@ -1,0 +1,61 @@
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.Services @* Ensure this matches your ToastService namespace *@
+@inject DashboardState State
+@inject ToastService Toast
+@inject IJSRuntime JS
+
+<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Sage X3 Reports</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.Poll())" Color="Color.Accent" />
+    </div>
+
+    <div class="report-list" style="display: flex; flex-direction: column; gap: 12px;">
+        @* Logic: Map to the entities you have (Invoices, Tickets, Sales Orders) *@
+        @{
+            var reportNames = new[] { "Aged Receivables (Invoices)", "Open Tickets Summary", "Daily Sales Order Log" };
+        }
+
+        @foreach (var report in reportNames)
+        {
+            <div class="report-card" style="border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; background: white;">
+                <div style="font-weight: 600; margin-bottom: 10px; color: #1e293b; font-size: 0.9rem;">@report</div>
+                
+                <div style="display: flex; gap: 8px;">
+                    @* PDF Export Button *@
+                    <FluentButton Appearance="Appearance.Outline"
+                                  OnClick="@(() => HandleExport(report, "PDF"))"
+                                  Style="flex: 1; font-size: 0.8rem;">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.DocumentPdf())" Slot="start" Color="Color.Error" />
+                        PDF
+                    </FluentButton>
+                    
+                    @* Excel Export Button *@
+                    <FluentButton Appearance="Appearance.Outline"
+                                  OnClick="@(() => HandleExport(report, "XLSX"))"
+                                  Style="flex: 1; font-size: 0.8rem;">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Table())" Slot="start" Color="Color.Success" />
+                        Excel
+                    </FluentButton>
+                </div>
+            </div>
+        }
+    </div>
+</FluentCard>
+
+@code {
+    private async Task HandleExport(string reportName, string format)
+    {
+        // 1. Visual feedback via your Custom Toast Service
+        Toast.ShowToast($"Sage X3: Generating {reportName}...", ToastLevel.Info);
+
+        // 2. Call the JavaScript bridge (officebridge.js)
+        await JS.InvokeVoidAsync("officeBridge.exportReport", reportName, format);
+
+        // 3. Simulate Sage X3 processing time
+        await Task.Delay(2500);
+
+        // 4. Success notification
+        Toast.ShowToast($"{format} Download Ready", ToastLevel.Success);
+    }
+}

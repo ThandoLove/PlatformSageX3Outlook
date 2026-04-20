@@ -1,28 +1,46 @@
-﻿
-<!-- CODE START: Activity.razor -->
-
-@page "/workspace/activities"
+﻿@page "/workspace/activities"
 @using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
-
-@inject WorkspaceState WorkspaceState
+@using OperationalWorkspaceUI.State
+@inject DashboardState DashboardState
 @inject OperationalWorkspaceUI.UIServices.Workspace.ActivityUIService ActivityService
 
+<div class="workspace-container" style="padding: 20px; background-color: #f4f7f9; min-height: 100vh;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+            <h2 style="margin: 0; color: #003366; font-weight: 600;">Activity Log</h2>
+            <p style="margin: 0; color: #64748b; font-size: 0.9rem;">System-wide activity tracking</p>
+        </div>
+        <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.Refresh())" OnClick="Reload">
+            Refresh
+        </FluentButton>
+    </div>
 
-<h3>Activity</h3>
+    @if (DashboardState.RecentActivities == null)
+    {
+        <FluentProgressRing />
+    }
+    else if (!DashboardState.RecentActivities.Any())
+    {
+        <div style="text-align:center; padding: 40px;">
+            <p>No activity found.</p>
+        </div>
+    }
+    else
+    {
+        @* Using your custom Timeline Grid instead of a table *@
+        <ActivityGrid Data="DashboardState.RecentActivities" />
+    }
+</div>
 
-<WorkspaceHeader Title="Activity Log" Subtitle="System-wide activity tracking" />
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Reload();
+    }
 
-@if (WorkspaceState.ActivityLogs == null)
-{
-    <LoadingSpinner />
+    private async Task Reload()
+    {
+        var logs = await ActivityService.GetActivitiesAsync();
+        DashboardState.RecentActivities = logs;
+    }
 }
-else if (!WorkspaceState.ActivityLogs.Any())
-{
-    <EmptyState Message="No activity found." />
-}
-else
-{
-    <ActivityGrid Items="WorkspaceState.ActivityLogs" />
-}
-
-<!-- CODE END -->

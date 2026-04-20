@@ -1,19 +1,97 @@
-﻿@inject DashboardState State
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@implements IDisposable
+@inject DashboardState State
 
-<div class="dashboard-panel knowledge-base-panel">
-    <h4>Knowledge Base</h4>
-    @if (State.KnowledgeBase != null && State.KnowledgeBase.Any())
-    {
-        <ul>
-            @foreach (var kb in State.KnowledgeBase)
+<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    @* Panel Header *@
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Knowledge Base</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="Color.Neutral" />
+    </div>
+
+    @* Search Bar *@
+    <div style="margin-bottom: 20px;">
+        <FluentSearch Placeholder="Search articles..."
+                      Style="width: 100%;"
+                      @bind-Value="@_searchQuery"
+                      @bind-Value:event="oninput" />
+    </div>
+
+    @* Resource Links Logic *@
+    <div class="kb-links" style="display: flex; flex-direction: column; gap: 4px;">
+        @if (FilteredArticles != null && FilteredArticles.Any())
+        {
+            @foreach (var kb in FilteredArticles)
             {
-                @* Changed kb.Link to kb.Url *@
-                <li><a href="@kb.Url" target="_blank">@kb.Title</a></li>
+                <a href="@kb.Url" target="_blank" style="text-decoration: none; color: inherit;">
+                    <div class="kb-link-item">
+                        @* Logic: Assign icon based on article title keywords or provide default *@
+                        <FluentIcon Value="@GetIcon(kb.Title)" Color="@GetIconColor(kb.Title)" />
+                        
+                        <span class="kb-text" style="flex-grow: 1; margin-left: 12px; font-size: 0.95rem; color: #334155;">
+                            @kb.Title
+                        </span>
+                        
+                        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())"
+                                    Color="Color.Accent"
+                                    Style="opacity: 0.7;" />
+                    </div>
+                </a>
             }
-        </ul>
-    }
-    else
+        }
+        else
+        {
+            <div style="padding: 20px; text-align: center; color: #64748b;">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Info())" Color="Color.Neutral" />
+                <p style="font-size: 0.85rem; margin-top: 8px;">No matching articles found.</p>
+            </div>
+        }
+    </div>
+
+    @* Footer Button *@
+    <div style="margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 12px; text-align: center;">
+        <FluentButton Appearance="Appearance.Lightweight" Style="color: #3b82f6; font-weight: 600;">
+            Open Knowledge Base
+        </FluentButton>
+    </div>
+</FluentCard>
+
+@code {
+    private string? _searchQuery = "";
+
+    protected override void OnInitialized()
     {
-        <EmptyState Message="No knowledge articles." />
+        // Subscribe to state changes so search results update if data loads async
+        State.OnChange += StateHasChanged;
     }
-</div>
+
+    private IEnumerable<KnowledgeDto> FilteredArticles =>
+        string.IsNullOrWhiteSpace(_searchQuery)
+            ? State.KnowledgeBase
+            : State.KnowledgeBase.Where(a => a.Title.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+
+    // LOGIC: Map Icons to Titles exactly like the image
+    private Icon GetIcon(string title) => title.ToLower() switch
+    {
+        var t when t.Contains("pricing") => new Icons.Filled.Size20.Table(),
+        var t when t.Contains("document") => new Icons.Filled.Size20.Document(),
+        var t when t.Contains("case") => new Icons.Filled.Size20.Video(),
+        var t when t.Contains("faq") => new Icons.Filled.Size20.Chat(),
+        _ => new Icons.Filled.Size20.Document()
+    };
+
+    private Color GetIconColor(string title) => title.ToLower() switch
+    {
+        var t when t.Contains("pricing") => Color.Success,
+        var t when t.Contains("document") => Color.Warning,
+        var t when t.Contains("case") => Color.Accent,
+        var t when t.Contains("faq") => Color.Warning,
+        _ => Color.Neutral
+    };
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+    }
+}

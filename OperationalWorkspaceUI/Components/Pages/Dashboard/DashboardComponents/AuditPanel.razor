@@ -1,21 +1,73 @@
-﻿
-
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@implements IDisposable
 @inject DashboardState State
 
-<div class="dashboard-panel audit-panel">
-    <h4>Audit Logs</h4>
-    @if (State.AuditLogs != null && State.AuditLogs.Any())
-    {
-        <ul>
-            @foreach (var log in State.AuditLogs)
+<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    @* Panel Header *@
+    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">System Audit Logs</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ShieldCheckmark())" Color="Color.Accent" />
+    </div>
+
+    <div class="audit-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto;">
+        @if (State.CurrentAuditLogs != null && State.CurrentAuditLogs.Any())
+        {
+            @foreach (var log in State.CurrentAuditLogs.OrderByDescending(l => l.Timestamp))
             {
-                @* Changed Time to Timestamp and Event to Action *@
-                <li>@log.Timestamp.ToShortTimeString(): @log.User - @log.Action (@log.Entity)</li>
+                <div class="audit-item" style="display: flex; gap: 12px; align-items: flex-start; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
+                    @* Action Icon based on Entity type *@
+                    <div style="margin-top: 2px;">
+                        <FluentIcon Value="@GetAuditIcon(log.Entity)" Size="@IconSize.Size16" Color="Color.Neutral" />
+                    </div>
+
+                    <div class="audit-details" style="flex-grow: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.9rem; font-weight: 600; color: #1e293b;">@log.Action</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8;">@log.Timestamp.ToString("HH:mm")</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #64748b;">
+                            <strong>@log.User</strong> affected <strong>@log.Entity</strong>
+                        </div>
+                    </div>
+                </div>
             }
-        </ul>
-    }
-    else
+        }
+        else
+        {
+            <div style="padding: 20px; text-align: center; color: #94a3b8;">
+                <FluentIcon Value="@(new Icons.Regular.Size24.History())" Color="Color.Neutral" />
+                <p style="font-size: 0.85rem; margin-top: 8px;">No audit events recorded.</p>
+            </div>
+        }
+    </div>
+
+    @* Footer Link *@
+    <div style="margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 12px; text-align: center;">
+        <FluentAnchor Appearance="Appearance.Lightweight" Href="#" Style="color: #3b82f6; font-weight: 600;">
+            View Full Audit Trail →
+        </FluentAnchor>
+    </div>
+</FluentCard>
+
+@code {
+    protected override void OnInitialized()
     {
-        <EmptyState Message="No audit events." />
+        // Subscribe to state changes so the logs update live
+        State.OnChange += StateHasChanged;
     }
-</div>
+
+    private Icon GetAuditIcon(string entity) => entity?.ToLower() switch
+    {
+        "auth" => new Icons.Regular.Size16.LockClosed(),
+        "invoice" => new Icons.Regular.Size16.Money(),
+        "ticket" => new Icons.Regular.Size16.Ticket(),
+        "report" => new Icons.Regular.Size16.Poll(),
+        _ => new Icons.Regular.Size16.History()
+    };
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+    }
+}
