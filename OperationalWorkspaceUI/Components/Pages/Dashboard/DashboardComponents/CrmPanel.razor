@@ -1,5 +1,6 @@
 ﻿@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 @inject DashboardState State
 
@@ -7,21 +8,23 @@
     @* Header *@
     <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">CRM Snapshot</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="Color.Neutral" />
+        @* FIX: Fully qualified Icon path *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
     </div>
 
     @* Company Selector *@
     <div class="company-selector" style="display: flex; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-        <FluentIcon Value="@(new Icons.Regular.Size20.Building())" Color="Color.Success" Style="margin-right: 12px;" />
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Building())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" Style="margin-right: 12px;" />
         <span style="flex-grow: 1; font-weight: 600; color: #1e293b;">Tech Innovations Inc.</span>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" />
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())" />
     </div>
 
     @* Stats Grid *@
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px;">
         <div>
             <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 4px;">Open Tickets</div>
-            @* LOGIC: This count now updates live when State.LoadDashboardAsync completes *@
             <div style="font-size: 1.25rem; font-weight: 600; color: #1e293b;">@State.CurrentTickets.Count Active</div>
         </div>
         <div>
@@ -37,7 +40,7 @@
         <div>
             <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">Credit Limit</div>
             <div style="color: #107c10; font-weight: 600; margin-bottom: 6px;">$50,000</div>
-            <FluentProgress Min="0" Max="50000" Value="37500" Color="#107c10" Style="height: 6px; border-radius: 3px;" />
+            <FluentProgress Min="0" Max="50000" Value="37500" Style="height: 6px; border-radius: 3px;" />
         </div>
         <div>
             <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 4px;">Last Contact</div>
@@ -49,27 +52,22 @@
 @code {
     protected override void OnInitialized()
     {
-        // THE LOGIC: Subscribe to the state change event.
-        // This tells Blazor: "When DashboardState says it changed, run StateHasChanged() here."
         State.OnChange += StateHasChanged;
     }
 
     private string GetOverdueAmount()
     {
-        // LOGIC: Check environment to decide which DTO to use
         if (State.IsAdminEnvironment && State.AdminFinance != null)
         {
-            return State.AdminFinance.OverdueAmount.ToString("N0");
+            // FIX: Changed from OverdueAmount to TotalOutstandingReceivables to match your DTO
+            return State.AdminFinance.TotalOutstandingReceivables.ToString("N0");
         }
         
-        // Fallback for employee view or initial load
         return "12,500";
     }
 
     public void Dispose()
     {
-        // THE LOGIC: Unsubscribe when the component is destroyed.
-        // Critical to prevent memory leaks in Blazor Server!
         State.OnChange -= StateHasChanged;
     }
 }

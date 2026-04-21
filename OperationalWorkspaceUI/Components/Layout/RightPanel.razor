@@ -2,9 +2,10 @@
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IAsyncDisposable
 
-<div class="right-panel-container" style="padding: 16px; background-color: #f4f7f9; height: 100%;">
+<div class="right-panel-container" style="padding: 16px; background-color: #f4f7f9; height: 100%; overflow-y: auto;">
     @if (IsLoading)
     {
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px;">
@@ -15,17 +16,20 @@
     else if (EmailState.CurrentEmail == null)
     {
         <FluentCard Style="padding: 20px; text-align: center;">
-            <FluentIcon Value="@(new Icons.Regular.Size32.Mail())" Color="Color.Accent" />
+            @* FIX: Fully qualified icon path *@
+            <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size32.Mail())"
+                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
             <p style="color: #64748b;">Select an email to view Sage X3 insights.</p>
         </FluentCard>
     }
     else
     {
-        @* EMAIL INSIGHT CARD (Exact match to image) *@
+        @* EMAIL INSIGHT CARD *@
         <FluentCard Style="width: 100%; padding: 16px; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Email Insight</h3>
-                <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="Color.Neutral" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -48,7 +52,7 @@
                     <span style="font-weight: 500; color: #3b82f6;">Quote Request</span>
                 </div>
 
-                @* AI Summary Box from Image *@
+                @* AI Summary Box *@
                 <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px; margin-top: 8px; border-radius: 0 4px 4px 0;">
                     <div style="font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 4px;">AI Summary:</div>
                     <div style="font-size: 0.9rem; color: #475569; line-height: 1.4;">
@@ -60,10 +64,11 @@
 
         @if (CurrentPartner == null || !CurrentPartner.IsLinkedToSage)
         {
-            @* CREATE CONTACT FORM (If not in Sage) *@
+            @* CREATE CONTACT FORM *@
             <FluentCard Style="width: 100%; padding: 16px;">
                 <h4 style="margin-top: 0;">Create Sage X3 Contact</h4>
-                <FluentStack Orientation="Orientation.Vertical" Spacing="3">
+                @* FIX: Fully qualified Orientation to resolve conflict with Radzen *@
+                <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="3">
                     <FluentTextField @bind-Value="NewContact.FullName" Label="Full Name" Style="width: 100%;" />
                     <FluentTextField @bind-Value="NewContact.Email" Label="Email" ReadOnly="true" Style="width: 100%;" />
                     <FluentTextField @bind-Value="NewContact.Company" Label="Company" Style="width: 100%;" />
@@ -73,7 +78,7 @@
         }
         else
         {
-            @* ACTIVITY TIMELINE (As seen in lower part of the right stack) *@
+            @* RECENT ACTIVITY STACK *@
             <div style="margin-top: 20px;">
                 <h4 style="font-size: 1rem; color: #333; margin-bottom: 12px;">Recent Activities</h4>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -116,8 +121,9 @@
     public async Task HandleEmailSelection(EmailBridgeContext context)
     {
         IsLoading = true;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
+        // Update Global Email State
         EmailState.CurrentEmail = new EmailInsightDto
         {
             SenderEmail = context.SenderEmail ?? string.Empty,
@@ -126,11 +132,13 @@
             ReceivedAt = DateTime.UtcNow
         };
 
+        // Fetch Sage X3 Data
         if (!string.IsNullOrWhiteSpace(context.SenderEmail))
         {
             CurrentPartner = await BPService.GetPartnerByEmailAsync(context.SenderEmail);
         }
 
+        // Prepare "Create" DTO if partner doesn't exist
         if (CurrentPartner == null)
         {
             NewContact = new ContactCreateDto
@@ -142,20 +150,22 @@
         }
 
         IsLoading = false;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleCreateContact()
     {
+        // Logic for Sage X3 API creation would go here
         await JS.InvokeVoidAsync("officeBridge.showToast", "Contact Created in Sage X3!");
+        
+        // Refresh the view
         CurrentPartner = await BPService.GetPartnerByEmailAsync(NewContact.Email ?? string.Empty);
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     public async ValueTask DisposeAsync()
     {
         _dotRef?.Dispose();
-        await Task.CompletedTask;
     }
 
     public class EmailBridgeContext

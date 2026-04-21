@@ -22,4 +22,7 @@ public class ClientDto : CustomerDto
     public string Category { get; set; } = string.Empty; // Fixed: Category error
     public string Currency { get; set; } = "USD";        // Fixed: Currency error
     public decimal TotalRevenue { get; set; }           // Fixed: TotalRevenue error
+                                                        // This property fixes the UI but is invisible to the Database/API
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string CompanyName => Name;
 }

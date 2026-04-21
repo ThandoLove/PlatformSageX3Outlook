@@ -1,7 +1,7 @@
 ﻿using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspace.Domain.Enums;
-// Use a global alias to bypass any namespace confusion
-using Timer = System.Timers.Timer;
+// Fix 1: Use global:: to force the compiler to find the real .NET System.Timers
+using Timer = global::System.Timers.Timer;
 
 namespace OperationalWorkspaceUI.UIServices.ToastUIService
 {
@@ -10,7 +10,6 @@ namespace OperationalWorkspaceUI.UIServices.ToastUIService
         public event Action<string, ToastLevel>? OnShow;
         public event Action? OnHide;
 
-        // Use the alias here
         private Timer? _countdown;
 
         public void ShowToast(string message, ToastLevel level = ToastLevel.Info)
@@ -27,8 +26,8 @@ namespace OperationalWorkspaceUI.UIServices.ToastUIService
         {
             if (_countdown == null)
             {
-                // Explicitly use System.Timers to avoid the "System" namespace conflict
-                _countdown = new System.Timers.Timer(5000);
+                // Fix 2: Again, use global:: here to be absolutely safe
+                _countdown = new global::System.Timers.Timer(5000);
                 _countdown.Elapsed += (s, e) => OnHide?.Invoke();
                 _countdown.AutoReset = false;
             }

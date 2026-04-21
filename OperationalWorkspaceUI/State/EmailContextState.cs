@@ -5,6 +5,14 @@ namespace OperationalWorkspaceUI.State
    
     public class EmailContextState
     {
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set { _isLoading = value; NotifyStateChanged(); }
+        }
+
+
         private EmailInsightDto? _currentEmail;
         private ClientDto? _matchedClient;
         private List<OrderDto> _linkedOrders = new();

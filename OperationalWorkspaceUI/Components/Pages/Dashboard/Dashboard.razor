@@ -6,51 +6,71 @@
 @inject UIState UIState
 
 <div class="dashboard-wrapper @(UIState.IsDarkMode ? "dark-mode" : "")">
-
-    @* TOP ROW: Email Insight and CRM Snapshot *@
-    <div class="dashboard-row top-row">
-        <div class="widget-container">
-            <EmailContextPanel Data="@State.EmailContext" />
-        </div>
-        <div class="widget-container">
-            @* Replacing CRM Snapshot with your Tickets-enabled CrmPanel *@
-            <CrmPanel Clients="@State.TopClients" />
-        </div>
-    </div>
-
-    @* MIDDLE ROW: Quick Actions (Full Width) *@
-    <div class="dashboard-row middle-row">
-        <QuickActionsPanel />
-    </div>
-
-    @* BOTTOM ROW: Two Stacks for Tasks and Activity *@
-    <div class="dashboard-row bottom-row">
-        <div class="left-stack">
-            <KnowledgeBasePanel Data="@State.KnowledgeBase" />
-            <TasksPanel Tasks="@State.CurrentTasks" />
+    
+    <div class="dashboard-grid">
+        
+        @* COLUMN 1: Context, Knowledge & Admin Health *@
+        <div class="grid-column">
+            <div class="widget-wrapper">
+                <EmailContextPanel Data="@State.EmailContext" />
+            </div>
             
-            @* ERP Panel and Finance added based on your file list *@
-            <ErpPanel Data="@State.CurrentErp" />
-            @if (State.CurrentFinance != null)
-            {
-                <FinancePanel Data="@State.CurrentFinance" />
-            }
-        </div>
+            <div class="widget-wrapper">
+                <KnowledgeBasePanel Data="@State.KnowledgeBase" />
+            </div>
 
-        <div class="right-stack">
-            @* Admin Only Section *@
             @if (State.CurrentHealth != null)
             {
-                <SystemHealthPanel Status="@State.CurrentHealth" />
+                <div class="widget-wrapper">
+                    <SystemHealthPanel Status="@State.CurrentHealth" />
+                </div>
             }
-            
-            <RecentActivityPanel Activities="@State.CurrentActivities" />
-            <AuditPanel Logs="@State.CurrentAuditLogs" />
 
-            @* THEME TOGGLE (Floating or bottom of right stack) *@
-            <div class="dashboard-panel theme-toggle">
+            <div class="widget-wrapper">
+                <ErpPanel Data="@State.CurrentErp" />
+            </div>
+
+            @if (State.CurrentFinance != null)
+            {
+                <div class="widget-wrapper">
+                    <FinancePanel Data="@State.CurrentFinance" />
+                </div>
+            }
+        </div>
+
+        @* COLUMN 2: Operations, Tasks & Activity *@
+        <div class="grid-column">
+            <div class="widget-wrapper">
+                @* Exact Image Reference: Tickets-enabled CRM Snapshot *@
+                <CrmPanel Clients="@State.TopClients" />
+            </div>
+
+            <div class="widget-wrapper">
+                @* Custom Create Task Panel (Admin Section in image) *@
+                <CreateTaskPanel />
+            </div>
+
+            <div class="widget-wrapper">
+                <TasksPanel Tasks="@State.CurrentTasks" />
+            </div>
+
+            <div class="widget-wrapper">
+                <RecentActivityPanel Activities="@State.CurrentActivities" />
+            </div>
+
+            <div class="widget-wrapper">
+                <AuditPanel Logs="@State.CurrentAuditLogs" />
+            </div>
+            
+            @* THEME TOGGLE *@
+            <div class="widget-wrapper theme-toggle-card">
                 <FluentSwitch @bind-Value="IsDarkMode" Label="Dark Mode Appearance" />
             </div>
+        </div>
+
+        @* MIDDLE ROW: Quick Actions (Full Width across columns) *@
+        <div class="full-width-row">
+            <QuickActionsPanel />
         </div>
     </div>
 </div>
@@ -68,7 +88,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Detect Sage X3 environment and load the specific Workspace data
+        // Sage X3 Logic: Detect environment and load relevant workspace data
         string env = await DetectEnvironmentAsync();
         State.SetEnvironment(env);
         await State.LoadDashboardAsync();
@@ -76,7 +96,6 @@
 
     private Task<string> DetectEnvironmentAsync()
     {
-        // Integration point for your CustomAuthenticationStateProvider
         return Task.FromResult("Admin");
     }
 }

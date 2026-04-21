@@ -1,0 +1,120 @@
+﻿:root {
+    --sage-blue: #003366;
+    --sage-light-blue: #3b82f6;
+    --sage-green: #22c55e;
+    --sage-orange: #f59e0b;
+    --border-color: #e2e8f0;
+    --bg-light: #f3f4f6;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+}
+
+/* THE GRID SYSTEM */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Exact 2-column split from image */
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--bg-light);
+    align-items: start;
+}
+
+/* WIDGET WRAPPERS */
+.widget-wrapper {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    padding: 1.25rem;
+}
+
+/* THE QUICK ACTIONS BAR (Matches the full-width row in image) */
+.full-width-row {
+    grid-column: 1 / span 2;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* PANEL HEADERS (Matching the Chevrons/Dropdown arrows) */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+    .panel-header::after {
+        content: 'expand_more'; /* This adds the "v" icon seen in the image */
+        font-family: 'Material Icons';
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+
+/* EMAIL INSIGHT & AI SUMMARY (Blue accent on left) */
+.ai-summary {
+    background: #f8fafc;
+    border-left: 4px solid var(--sage-light-blue);
+    padding: 12px;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+}
+
+/* CRM SNAPSHOT COLORS (Red overdue / Green limit) */
+.snapshot-red {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+.snapshot-green {
+    color: var(--sage-green);
+    font-weight: 700;
+}
+
+/* QUICK ACTIONS GRID */
+.quick-actions-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+}
+
+/* TIMELINE STYLING (The vertical line and dots) */
+.timeline-container {
+    position: relative;
+    padding-left: 20px;
+    margin-left: 20px;
+    border-left: 2px solid var(--border-color);
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -37px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--border-color);
+}
+
+/* DARK MODE OVERRIDES */
+.dark-mode {
+    --bg-light: #0f172a;
+    --text-dark: #f8fafc;
+    --border-color: #334155;
+}
+
+    .dark-mode .widget-wrapper, .dark-mode .full-width-row {
+        background: #1e293b;
+    }
