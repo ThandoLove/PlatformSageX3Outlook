@@ -4,6 +4,7 @@
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.Components.Pages.Forms
+@using OperationalWorkspaceUI.Components.Shared
 @using Microsoft.JSInterop
 @implements IDisposable
 @inject UIState UIState
@@ -12,20 +13,19 @@
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject ModalService ModalService
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
 
 <div class="main-layout @UIState.CurrentTheme @(UIState.IsGlassMode ? "glass-mode" : "")">
 
     @if (IsAppPage)
     {
-        <!-- LEFT: FIXED SIDEBAR (16 Items - Tickets & Activities Enabled) -->
+        <!-- LEFT: FIXED SIDEBAR -->
         <Sidebar />
 
         <!-- CENTER: MAIN AREA -->
         <main class="main-content">
-            <!-- TOPBAR: Connection Status & User Profile -->
             <Topbar />
 
-            <!-- CONTENT BODY: Scrollable Dashboard Area -->
             <div class="content-body">
                 @if (UIState.IsLoading)
                 {
@@ -37,23 +37,25 @@
                 }
             </div>
 
-            @* GLOBAL NOTIFICATIONS: Positioned exactly for Blazor Server *@
-            <FluentToastProvider MaxToastCount="5" @rendermode="InteractiveServer" />
+            @* 
+               GLOBAL NOTIFICATIONS: 
+               Replaced FluentToastProvider with your custom Sage-style container.
+            *@
+            <ToastContainer />
         </main>
 
-        <!-- RIGHT: SAGE X3 CONTEXTUAL INSIGHTS (Email Summary, etc.) -->
+        <!-- RIGHT: SAGE X3 CONTEXTUAL INSIGHTS -->
         <RightPanel />
     }
     else
     {
-        <!-- CLEAN FRAME: For Login / Landing Pages -->
         <div class="landing-frame">
             @Body
         </div>
     }
 </div>
 
-@* --- MODAL OVERLAY: For Sage Forms & Auto-Triggered Contact Forms --- *@
+@* --- MODAL OVERLAY --- *@
 @if (_showModal && IsAppPage)
 {
     <div class="modal-backdrop" @onclick="CloseModal">
@@ -61,7 +63,8 @@
             <div class="modal-header">
                 <h3>@_modalTitle</h3>
                 <button class="close-btn" @onclick="CloseModal">
-                    <FluentIcon Value="@(new Icons.Regular.Size20.Dismiss())" />
+                    @* FIX: Use fully qualified icon path *@
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Dismiss())" />
                 </button>
             </div>
             <div class="modal-body">
@@ -77,25 +80,21 @@
     private string _modalTitle = "";
     private RenderFragment? _modalContent;
 
-    // Detection logic for App Pages vs. Login
     private bool IsAppPage => !Nav.Uri.EndsWith("/login") && Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
 
     protected override async Task OnInitializedAsync()
     {
-        // 1. Event Subscriptions
         Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
         DashboardState.OnChange += StateHasChanged;
         ModalService.OnShow += HandleShowModal;
         ModalService.OnClose += HandleCloseModal;
 
-        // 2. Persistent Theme Loading
         await UIState.LoadThemeFromLocalStorage();
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
 
-    // --- MODAL HANDLERS ---
     private async Task HandleShowModal(string title, RenderFragment content)
     {
         _modalTitle = title;
@@ -112,7 +111,6 @@
 
     private void CloseModal() => ModalService.CloseModal();
 
-    // --- OUTLOOK BRIDGE (The "Nervous System") ---
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && IsAppPage)
@@ -122,31 +120,24 @@
         }
     }
 
-    /// <summary>
-    /// Triggered by officeBridge.js. Synchronizes Sage X3 context and logs activity.
-    /// </summary>
     [JSInvokable]
     public async Task OnEmailReceived(EmailContextDTO emailData)
     {
         if (emailData == null || string.IsNullOrEmpty(emailData.SenderEmail)) return;
 
-        // 1. Log the Interaction to the Activity Timeline
         await ActivityService.LogActivityAsync(
             title: $"Email from {emailData.SenderName}",
             action: "Email",
             createdBy: "System"
         );
 
-        // 2. Sync Dashboard State
         DashboardState.EmailContext = emailData;
         await DashboardState.LoadDashboardAsync();
 
-        // 3. Contact Lookup Logic
         bool contactExists = await DashboardState.CheckContactExists(emailData.SenderEmail);
 
         if (!contactExists)
         {
-            // Auto-popup for new contacts
             await ModalService.ShowModal($"New Sage X3 Contact: {emailData.SenderName}", builder =>
             {
                 builder.OpenComponent<NewContactForm>(0);
@@ -157,7 +148,9 @@
         }
 
         StateHasChanged();
-        await JS.InvokeVoidAsync("showToast", $"Workspace Synced: {emailData.SenderName}");
+        
+        // FIX: Replaced old JS toast with your new service logic
+        ToastService.ShowInfo($"Workspace Synced: {emailData.SenderName}");
     }
 
     public void Dispose()

@@ -1,17 +1,21 @@
 ﻿@using OperationalWorkspaceUI.State
-@using static Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20
+@using Microsoft.FluentUI.AspNetCore.Components
+@* Removed the static using that was breaking Icon paths *@
 @inject UIState UIState
 
 <div class="sage-topbar">
     <div class="connection-status">
-        <FluentIcon Value="@(new Icons.Filled.Size16.CheckmarkCircle())" Color="Color.Success" />
+        @* Fix 1: Full path for Icon and Color *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size16.CheckmarkCircle())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
         <span>Connected to Sage X3</span>
     </div>
 
     <div class="user-info">
+        @* Fix 2: Use fully qualified PersonaStatus enum *@
         <FluentPersona Name="John Smith"
                        SecondaryText="Sales Rep"
-                       Status="PersonaStatus.Available"
+                       Status="@Microsoft.FluentUI.AspNetCore.Components.PresenceStatus.Available"
                        AvatarSize="32" />
     </div>
 </div>

@@ -1,15 +1,21 @@
 ﻿@using OperationalWorkspaceUI.State
-@using OperationalWorkspaceUI.Services
 @using OperationalWorkspaceUI.UIServices.System
+@using Microsoft.FluentUI.AspNetCore.Components
+@* Fix: Add Icon namespace *@
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
+@* Fix: Add ToastLevel namespace *@
+@using OperationalWorkspace.Domain.Enums
 @inject DashboardState State
-@inject ToastService Toast
+@* Fix: Explicitly inject YOUR ToastService to avoid FluentUI conflict *@
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 @inject ModalService ModalService
 @inject IJSRuntime JS
 
 <FluentCard Style="width: 100%; max-width: 450px; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none;">
     <div class="panel-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b;">Attach Documents from Sage X3</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size20.Attach())" Color="Color.Accent" />
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Attach())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
     </div>
 
     @* Search Bar *@
@@ -21,13 +27,13 @@
                           Style="width: 100%;" />
         </div>
         <FluentButton Appearance="Appearance.Stealth">
-            <FluentIcon Value="@(new Icons.Regular.Size20.Filter())" Color="Color.Neutral" />
+            <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Filter())"
+                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
         </FluentButton>
     </div>
 
     @* Document List *@
     <div class="document-list" style="display: flex; flex-direction: column; max-height: 350px; overflow-y: auto;">
-        
         @foreach (var doc in FilteredDocuments)
         {
             <div class="doc-item" style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; gap: 12px;">
@@ -49,12 +55,11 @@
         }
     </div>
 
-    @* Footer: Primary Sage Action *@
     <div style="margin-top: 16px;">
         <FluentButton Appearance="Appearance.Outline"
                       Style="width: 100%; border-radius: 8px; color: #005fb8; font-weight: 600; background: #f0f7ff; border-color: #d0e7ff;"
                       OnClick="@(() => BrowseSage())">
-            Browse Sage X3 &nbsp; <FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" />
+            Browse Sage X3 &nbsp; <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ArrowRight())" />
         </FluentButton>
     </div>
 </FluentCard>
@@ -62,7 +67,6 @@
 @code {
     private string _searchQuery = "";
 
-    // Mock document data - in production, pull this from State or a Service
     private List<DocumentStub> _documents = new()
     {
         new("Product Catalog.pdf", "PDF", "PDF", "1.2 MB"),
@@ -78,16 +82,11 @@
 
     private async Task Attach(string fileName)
     {
-        // 1. Sage Activity Log
-        // await ActivityService.LogActivityAsync($"Attached {fileName}", "Attach", "CurrentUser");
-        
-        // 2. OfficeBridge Trigger
         await JS.InvokeVoidAsync("officeBridge.attachDocument", "GENERAL", fileName);
         
-        // 3. UI Feedback
-        Toast.ShowToast($"{fileName} attached successfully", ToastLevel.Success);
+        // Fix: Use your custom service and helper methods for clean logic
+        CustomToastService.ShowSuccess($"{fileName} attached successfully");
         
-        // 4. Close Modal
         await ModalService.CloseModal();
     }
 
@@ -96,18 +95,20 @@
         await JS.InvokeVoidAsync("officeBridge.navigateToSageFunction", "ATTACH", "BROWSE");
     }
 
-    private Icon GetFileIcon(string name) => name.ToLower() switch
+    // Fix: Full path for Icon return types
+    private Microsoft.FluentUI.AspNetCore.Components.Icon GetFileIcon(string name) => name.ToLower() switch
     {
-        var n when n.EndsWith(".pdf") => new Icons.Filled.Size24.DocumentPdf(),
-        var n when n.EndsWith(".xlsx") => new Icons.Filled.Size24.Table(),
-        _ => new Icons.Filled.Size24.DocumentBulletList()
+        var n when n.EndsWith(".pdf") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size24.DocumentPdf(),
+        var n when n.EndsWith(".xlsx") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size24.Table(),
+        _ => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size24.DocumentBulletList()
     };
 
-    private Color GetIconColor(string name) => name.ToLower() switch
+    // Fix: Full path for Color return types to avoid Radzen conflict
+    private Microsoft.FluentUI.AspNetCore.Components.Color GetIconColor(string name) => name.ToLower() switch
     {
-        var n when n.EndsWith(".pdf") => Color.Error,
-        var n when n.EndsWith(".xlsx") => Color.Success,
-        _ => Color.Accent
+        var n when n.EndsWith(".pdf") => Microsoft.FluentUI.AspNetCore.Components.Color.Error,
+        var n when n.EndsWith(".xlsx") => Microsoft.FluentUI.AspNetCore.Components.Color.Success,
+        _ => Microsoft.FluentUI.AspNetCore.Components.Color.Accent
     };
 
     public record DocumentStub(string Name, string Type, string Ext, string Size);

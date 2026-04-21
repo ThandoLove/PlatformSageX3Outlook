@@ -2,6 +2,8 @@
 @using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 
 @inject DashboardState DashboardState
@@ -16,7 +18,7 @@
             <p style="margin: 0; color: #64748b; font-size: 0.9rem;">Sage X3 Central Documentation & Articles</p>
         </div>
         <FluentButton Appearance="Appearance.Accent"
-                      IconStart="@(new Icons.Regular.Size20.Add())"
+                      IconStart="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Add())"
                       OnClick="Create">
             New Article
         </FluentButton>
@@ -31,13 +33,14 @@
     else if (!DashboardState.KnowledgeBase.Any())
     {
         <FluentCard Style="padding: 40px; text-align: center;">
-            <FluentIcon Value="@(new Icons.Regular.Size32.DocumentSearch())" Color="Color.Neutral" />
+            <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size32.DocumentSearch())"
+                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
             <p>No knowledge articles found in Sage X3.</p>
         </FluentCard>
     }
     else
     {
-        @* Integration: Passing State data to the Grid *@
+        @* Passing the mapped DTO list to the grid component *@
         <KnowledgeGrid Data="DashboardState.KnowledgeBase" />
     }
 </div>
@@ -47,15 +50,28 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // 1. Subscribe to state changes
         DashboardState.OnChange += StateHasChanged;
         
-        // Fetch fresh articles from the Sage Service
-        var articles = await KBService.GetArticlesAsync();
-        DashboardState.KnowledgeBase = articles;
+        // 2. Fetch the raw strings from the Sage service
+        var result = await KBService.GetArticlesAsync();
+        
+        // 3. Map strings to the Positional Record KnowledgeDto
+        // Since KnowledgeDto is a record(Guid, string, string, string, string, string)
+        // we must pass all arguments in order.
+        DashboardState.KnowledgeBase = result.Select(title => new KnowledgeDto(
+            Guid.NewGuid(),      // Id
+            title,               // Title
+            "",                  // Content
+            "General",           // Category
+            "Sage X3 Article",   // Summary
+            ""                   // Url
+        )).ToList();
     }
 
     public void Dispose()
     {
+        // Unsubscribe to avoid memory leaks
         DashboardState.OnChange -= StateHasChanged;
     }
 }

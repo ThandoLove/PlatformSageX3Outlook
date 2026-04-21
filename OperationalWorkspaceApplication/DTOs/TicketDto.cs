@@ -1,26 +1,26 @@
-﻿
-    using System;
+﻿using System;
 
-    namespace OperationalWorkspaceApplication.DTOs;
+namespace OperationalWorkspaceApplication.DTOs;
 
-    public class TicketDto
-    {
-        public int Id { get; set; }
+public class TicketDto
+{
+    public int Id { get; set; }
 
-        // BASIC INFO
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+    // BASIC INFO
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
 
-        // STATUS & PRIORITY
-        public string Status { get; set; } = "Open"; // Open, In Progress, Resolved, Closed
-        public int Priority { get; set; } // 1 (Low) to 5 (Critical)
+    // STATUS & PRIORITY
+    public string Status { get; set; } = "Open";
+    public int Priority { get; set; }
 
-        // SAGE X3 LINK
-        public string? CustomerId { get; set; } // Link this ticket to a Sage Customer
+    // ASSIGNMENT (Fixes the State error)
+    public string AssignedTo { get; set; } = string.Empty; // Added this line
 
-        // AUDIT
-        public string CreatedBy { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
+    // SAGE X3 LINK
+    public string? CustomerId { get; set; }
 
-
+    // AUDIT
+    public string CreatedBy { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}

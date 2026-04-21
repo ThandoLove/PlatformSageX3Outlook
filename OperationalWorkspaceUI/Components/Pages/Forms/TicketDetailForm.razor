@@ -1,51 +1,51 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
+@using Microsoft.FluentUI.AspNetCore.Components
 @inject DashboardState State
 @inject ModalService ModalService
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
 
 <div class="sage-form-container" style="padding: 5px;">
-    <FluentStack Orientation="Orientation.Vertical" Spacing="4">
+    @* Fix 1: Use fully qualified name for Orientation to avoid Radzen conflict *@
+    <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="4">
         
-        @* Ticket Header Info *@
         <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">TICKET #@Ticket.Id</div>
             <div style="font-size: 1.1rem; font-weight: 600; color: #1e293b;">@Ticket.Title</div>
         </div>
 
-        @* Status & Priority Row *@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <FluentSelect Label="Current Status" @bind-Value="Ticket.Status" Style="width: 100%;">
-                <FluentSelectOption Value="Open">Open</FluentSelectOption>
-                <FluentSelectOption Value="In Progress">In Progress</FluentSelectOption>
-                <FluentSelectOption Value="Resolved">Resolved</FluentSelectOption>
-                <FluentSelectOption Value="Closed">Closed</FluentSelectOption>
+            @* Fix 2: Specify TOption="string" for FluentSelect and FluentOption *@
+            <FluentSelect TOption="string" Label="Current Status" @bind-Value="Ticket.Status" Style="width: 100%;">
+                <FluentOption TOption="string" Value="@("Open")">Open</FluentOption>
+                <FluentOption TOption="string" Value="@("In Progress")">In Progress</FluentOption>
+                <FluentOption TOption="string" Value="@("Resolved")">Resolved</FluentOption>
+                <FluentOption TOption="string" Value="@("Closed")">Closed</FluentOption>
             </FluentSelect>
 
-            <FluentSelect Label="Priority" @bind-Value="@_priorityString" Style="width: 100%;">
-                <FluentSelectOption Value="1">Low</FluentSelectOption>
-                <FluentSelectOption Value="3">Medium</FluentSelectOption>
-                <FluentSelectOption Value="5">Critical</FluentSelectOption>
+            <FluentSelect TOption="string" Label="Priority" @bind-Value="@_priorityString" Style="width: 100%;">
+                <FluentOption TOption="string" Value="@("1")">Low</FluentOption>
+                <FluentOption TOption="string" Value="@("3")">Medium</FluentOption>
+                <FluentOption TOption="string" Value="@("5")">Critical</FluentOption>
             </FluentSelect>
         </div>
 
-        @* Description / Notes *@
-        <FluentTextArea Label="Resolution Notes" 
-                        @bind-Value="Ticket.Description" 
-                        Rows="5" 
-                        Placeholder="Enter updates for Sage X3..." 
+        <FluentTextArea Label="Resolution Notes"
+                        @bind-Value="Ticket.Description"
+                        Rows="5"
+                        Placeholder="Enter updates for Sage X3..."
                         Style="width: 100%;" />
 
-        @* Action Buttons *@
         <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <FluentButton Appearance="Appearance.Accent" 
-                          OnClick="HandleUpdate" 
+            <FluentButton Appearance="Appearance.Accent"
+                          OnClick="HandleUpdate"
                           Style="flex: 1; background-color: #005fb8;">
                 Update Sage X3
             </FluentButton>
-            <FluentButton Appearance="Appearance.Outline" 
-                          OnClick="@(() => ModalService.CloseModal())" 
+            <FluentButton Appearance="Appearance.Outline"
+                          OnClick="@(() => ModalService.CloseModal())"
                           Style="flex: 1;">
                 Cancel
             </FluentButton>
@@ -56,7 +56,7 @@
 @code {
     [Parameter] public TicketDto Ticket { get; set; } = new();
 
-    private string _priorityString 
+    private string _priorityString
     {
         get => Ticket.Priority.ToString();
         set => Ticket.Priority = int.Parse(value);
@@ -64,7 +64,6 @@
 
     private async Task HandleUpdate()
     {
-        // 1. Logic: Update the local state
         var existing = State.AllTickets.FirstOrDefault(t => t.Id == Ticket.Id);
         if (existing != null)
         {
@@ -73,10 +72,9 @@
             existing.Description = Ticket.Description;
         }
 
-        // 2. JS Interop: Tell the officeBridge to log the action
-        await JS.InvokeVoidAsync("officeBridge.showToast", $"Ticket #{Ticket.Id} Updated Successfully");
+        // Updated to use your new ToastService instead of the JS bridge
+        ToastService.ShowSuccess($"Ticket #{Ticket.Id} Updated Successfully");
 
-        // 3. UI: Close modal and refresh dashboard
         await ModalService.CloseModal();
         await State.LoadDashboardAsync();
     }

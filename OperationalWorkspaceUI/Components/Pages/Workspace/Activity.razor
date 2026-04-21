@@ -1,6 +1,7 @@
 ﻿@page "/workspace/activities"
 @using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 @inject DashboardState DashboardState
 @inject OperationalWorkspaceUI.UIServices.Workspace.ActivityUIService ActivityService
 
@@ -10,14 +11,19 @@
             <h2 style="margin: 0; color: #003366; font-weight: 600;">Activity Log</h2>
             <p style="margin: 0; color: #64748b; font-size: 0.9rem;">System-wide activity tracking</p>
         </div>
-        <FluentButton Appearance="Appearance.Outline" IconStart="@(new Icons.Regular.Size20.Refresh())" OnClick="Reload">
+        <FluentButton Appearance="Appearance.Outline"
+                      @* FIX: Use ArrowClockwise which is the standard Size20 Refresh icon *@
+                      IconStart="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.ArrowClockwise())"
+                      OnClick="Reload">
             Refresh
         </FluentButton>
     </div>
 
     @if (DashboardState.RecentActivities == null)
     {
-        <FluentProgressRing />
+        <div style="display: flex; justify-content: center; padding: 50px;">
+            <FluentProgressRing />
+        </div>
     }
     else if (!DashboardState.RecentActivities.Any())
     {
@@ -27,7 +33,6 @@
     }
     else
     {
-        @* Using your custom Timeline Grid instead of a table *@
         <ActivityGrid Data="DashboardState.RecentActivities" />
     }
 </div>
@@ -42,5 +47,6 @@
     {
         var logs = await ActivityService.GetActivitiesAsync();
         DashboardState.RecentActivities = logs;
+        StateHasChanged();
     }
 }

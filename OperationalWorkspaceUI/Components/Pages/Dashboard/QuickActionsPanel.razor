@@ -1,24 +1,29 @@
 ﻿@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.Components.Pages.Forms
+@using Microsoft.FluentUI.AspNetCore.Components
 @inject EmailContextState EmailState
 @inject ModalService ModalService
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
 
 <FluentCard Style="width: 100%; padding: 16px; border-radius: 8px;">
     @* Panel Header *@
     <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Quick Actions</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="Color.Neutral" />
+        @* Fix: Full path for Header Icon *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
     </div>
 
-    @* Icons Container (Exactly like the image) *@
+    @* Icons Container *@
     <div class="actions-container" style="display: flex; justify-content: space-around; align-items: flex-start; text-align: center;">
         
-        @* Add Partner (Create Contact) *@
+        @* Add Partner *@
         <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<NewContactForm>("Add Business Partner")'>
             <div class="icon-circle circle-blue">
-                <FluentIcon Value="@(new Icons.Regular.Size24.PersonAdd())" Color="Color.Custom" CustomColor="white" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.PersonAdd())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
             </div>
             <div class="action-label">Add Partner</div>
         </div>
@@ -26,23 +31,26 @@
         @* Link to Existing *@
         <div class="action-item" style="cursor:pointer;" @onclick='() => NavigateToSage("GESBPR", "LINK")'>
             <div class="icon-circle circle-teal">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Link())" Color="Color.Custom" CustomColor="white" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Link())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
             </div>
             <div class="action-label">Link Existing</div>
         </div>
 
-        @* Create Quote (Orange Icon in image) *@
+        @* Create Quote *@
         <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<CreateQuoteForm>("Create Sage Quote")'>
             <div class="icon-circle circle-orange">
-                <FluentIcon Value="@(new Icons.Regular.Size24.DocumentAdd())" Color="Color.Custom" CustomColor="white" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.DocumentAdd())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
             </div>
             <div class="action-label">Create Quote</div>
         </div>
 
-        @* Add Sales (Sales Order) *@
+        @* Add Sales *@
         <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<AddSalesOrderForm>("New Sales Order")'>
             <div class="icon-circle circle-indigo">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Cart())" Color="Color.Custom" CustomColor="white" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Cart())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
             </div>
             <div class="action-label">Add Sales</div>
         </div>
@@ -50,15 +58,17 @@
         @* Create Invoice *@
         <div class="action-item" style="cursor:pointer;" @onclick='() => NavigateToSage("GESPNH", "NEW")'>
             <div class="icon-circle circle-blue-dark">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Document())" Color="Color.Custom" CustomColor="white" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Document())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
             </div>
             <div class="action-label">Create Invoice</div>
         </div>
 
-        @* Attach Email (Green Icon matching your workspace logic) *@
+        @* Attach Email *@
         <div class="action-item" style="cursor:pointer;" @onclick='() => OpenModal<AttachEmailForm>("Attach Email to Sage")'>
             <div class="icon-circle circle-green">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Attach())" Color="Color.Custom" CustomColor="white" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Attach())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="white" />
             </div>
             <div class="action-label">Attach Email</div>
         </div>
@@ -71,7 +81,8 @@
     {
         if (EmailState.CurrentEmail == null)
         {
-            await JS.InvokeVoidAsync("showToast", "Please select an email first.");
+            // Fix: Replaced JS bridge with your custom Toast Service
+            ToastService.ShowError("Please select an email first.");
             return;
         }
 
@@ -86,7 +97,6 @@
 
     private async Task NavigateToSage(string functionCode, string action)
     {
-        // LOGIC: Direct Sage X3 navigation via your officebridge.js
         await JS.InvokeVoidAsync("officeBridge.openSageRecord", functionCode, action);
     }
 }

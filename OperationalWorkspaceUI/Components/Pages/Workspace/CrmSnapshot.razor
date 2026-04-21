@@ -1,52 +1,49 @@
 ﻿@page "/crm-snapshot"
 @using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 @inject DashboardState State
 
 <FluentCard Style="width: 100%; padding: 16px; border-radius: 12px; border-left: 4px solid #005A9E;">
-    <FluentStack Orientation="Orientation.Vertical" Spacing="3">
+    @* Fix 1: Fully qualified Orientation to resolve conflict with Radzen *@
+    <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="3">
+        
         @* Header Section *@
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <FluentLabel Typo="Typography.Header" Style="font-size: 1.1rem; font-weight: 600;">CRM Snapshot</FluentLabel>
-            <FluentIcon Value="@(new Icons.Regular.Size20.ChevronDown())" Color="Color.Neutral" />
+            @* Fix 2: Fully qualified Icon path *@
+            <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.ChevronDown())"
+                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
         </div>
 
-        @* Company Label *@
         <FluentLabel Typo="Typography.Body"><strong>Tech Innovations Inc.</strong></FluentLabel>
 
         <FluentDivider Role="DividerRole.Presentation" />
 
-        @* Updated count logic for CrmSnapshot.razor *@
         <FluentLabel Typo="Typography.Body">
             <strong>@State.CurrentTickets.Count(t => t.Status != "Resolved") Active</strong>
         </FluentLabel>
 
-
-        @* Data Grid *@
         <FluentGrid Spacing="3">
-            @* TICKETS REPLACEMENT *@
             <FluentGridItem xs="6">
                 <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: #64748b;">Open Tickets</FluentLabel>
                 <FluentLabel Typo="Typography.Body"><strong>@State.CurrentTickets.Count Active</strong></FluentLabel>
             </FluentGridItem>
 
-            @* OVERDUE INVOICES *@
             <FluentGridItem xs="6">
                 <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: #d83b01;">Overdue Invoices</FluentLabel>
                 <FluentLabel Typo="Typography.Body" Style="color: #d83b01;">
-                    @* Logic to pull from Admin DTO or fallback to Employee DTO/Mock *@
                     <strong>$ @GetOverdueAmount()</strong>
                 </FluentLabel>
             </FluentGridItem>
 
-            @* CREDIT LIMIT WITH PROGRESS BAR *@
             <FluentGridItem xs="6">
                 <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: #64748b;">Credit Limit</FluentLabel>
                 <FluentLabel Typo="Typography.Body" Style="color: #107c10; margin-bottom: 4px;"><strong>$50,000</strong></FluentLabel>
-                <FluentProgress Min="0" Max="50000" Value="37500" Color="#107c10" Style="height: 4px;" />
+                @* Note: Ensure FluentProgress uses valid hex or DesignToken *@
+                <FluentProgress Min="0" Max="50000" Value="37500" Style="height: 4px;" />
             </FluentGridItem>
 
-            @* LAST CONTACT *@
             <FluentGridItem xs="6">
                 <FluentLabel Typo="Typography.Body" Style="font-size: 0.8rem; color: #64748b;">Last Contact</FluentLabel>
                 <FluentLabel Typo="Typography.Body"><strong>3 days ago</strong></FluentLabel>
@@ -58,26 +55,22 @@
 @code {
     protected override void OnInitialized()
     {
-        // LOGIC: Subscribe to the State event so the UI refreshes
-        // when LoadDashboardAsync completes in the background.
         State.OnChange += StateHasChanged;
     }
 
     private string GetOverdueAmount()
     {
-        // LOGIC: Determine which DTO to pull from based on the environment flag
-        if (State.IsAdminEnvironment)
+        if (State.IsAdminEnvironment && State.AdminFinance != null)
         {
-            return State.AdminFinance.OverdueAmount.ToString("N0");
+            @* Fix 3: Updated property name. Ensure this matches your Finance DTO (e.g., TotalOverdue) *@
+            return State.AdminFinance.TotalOverdue.ToString("N0");
         }
         
-        // Fallback for Employee view or mock data
         return "12,500";
     }
 
     public void Dispose()
     {
-        // LOGIC: Unsubscribe to prevent memory leaks
         State.OnChange -= StateHasChanged;
     }
 }

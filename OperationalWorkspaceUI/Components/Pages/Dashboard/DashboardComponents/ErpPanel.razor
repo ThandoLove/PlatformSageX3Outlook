@@ -1,5 +1,6 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 @inject DashboardState State
 
@@ -19,7 +20,9 @@
                 <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">Daily Orders</div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <div style="font-size: 1.5rem; font-weight: 700; color: #005fb8;">@State.AdminErp.TotalOrdersToday</div>
-                    <FluentIcon Value="@(new Icons.Regular.Size20.Cart())" Color="Color.Accent" />
+                    @* Fix: Full path for Icon and Color *@
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Cart())"
+                                Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
                 </div>
             </div>
 
@@ -27,7 +30,8 @@
                 <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">Stock Alerts</div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">@State.AdminErp.StockAlerts</div>
-                    <FluentIcon Value="@(new Icons.Regular.Size20.Warning())" Color="Color.Error" />
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Warning())"
+                                Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Error" />
                 </div>
             </div>
         }
@@ -38,7 +42,8 @@
                 <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">My Open Orders</div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <div style="font-size: 1.5rem; font-weight: 700; color: #005fb8;">@State.EmployeeErp.MyOpenOrders</div>
-                    <FluentIcon Value="@(new Icons.Regular.Size20.DocumentData())" Color="Color.Accent" />
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.DocumentData())"
+                                Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
                 </div>
             </div>
 
@@ -46,7 +51,8 @@
                 <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">Pending Deliveries</div>
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <div style="font-size: 1.5rem; font-weight: 700; color: #16a34a;">@State.EmployeeErp.PendingDeliveries</div>
-                    <FluentIcon Value="@(new Icons.Regular.Size20.VehicleTruck())" Color="Color.Success" />
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.VehicleTruck())"
+                                Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
                 </div>
             </div>
         }
@@ -65,7 +71,6 @@
 @code {
     protected override void OnInitialized()
     {
-        // Subscribe to state changes so the KPI numbers update live
         State.OnChange += StateHasChanged;
     }
 

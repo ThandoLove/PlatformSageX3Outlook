@@ -1,5 +1,6 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 @inject DashboardState State
 
@@ -7,13 +8,14 @@
     @* Panel Header *@
     <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Activity Timeline</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="Color.Neutral" />
+        @* Fix 1: Full path for Header Icon *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronUp())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
     </div>
 
     <div class="timeline-container" style="display: flex; flex-direction: column; gap: 20px; min-height: 250px;">
         @if (Activities != null && Activities.Any())
         {
-            @* LOGIC: Group activities by Date (Today, Yesterday, etc.) exactly like the image *@
             @foreach (var group in Activities.OrderByDescending(a => a.Timestamp).GroupBy(a => a.Timestamp.Date))
             {
                 <div class="timeline-group" style="display: flex; flex-direction: column; gap: 8px;">
@@ -24,9 +26,11 @@
                     @foreach (var activity in group)
                     {
                         <div class="timeline-item" style="display: flex; align-items: center; gap: 12px;">
-                            @* Icon Background based on Action Type *@
                             <div style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background-color: @GetActivityColor(activity.Action);">
-                                <FluentIcon Value="@GetActivityIcon(activity.Action)" Color="Color.Custom" CustomColor="white" />
+                                @* Fix 2: Using Microsoft.FluentUI Color.Custom *@
+                                <FluentIcon Value="@GetActivityIcon(activity.Action)"
+                                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
+                                            CustomColor="white" />
                             </div>
                             
                             <div class="timeline-content">
@@ -50,7 +54,6 @@
         }
     </div>
 
-    @* Footer Link *@
     <div style="margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 12px; text-align: center;">
         <FluentAnchor Appearance="Appearance.Lightweight" Href="#" Style="color: #3b82f6; font-weight: 600;">
             View Full Timeline →
@@ -77,20 +80,21 @@
         return date.ToString("MMM dd");
     }
 
-    private Icon GetActivityIcon(string action) => action.ToLower() switch
+    @* Fix 3: Full path for Return Type and Icon constructors *@
+    private Microsoft.FluentUI.AspNetCore.Components.Icon GetActivityIcon(string action) => action.ToLower() switch
     {
-        "email" or "created" => new Icons.Regular.Size16.AddSquare(),
-        "call" or "contacted" => new Icons.Regular.Size16.Call(),
-        "meeting" or "scheduled" => new Icons.Regular.Size16.CalendarLtr(),
-        _ => new Icons.Regular.Size16.CheckmarkCircle()
+        "email" or "created" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.AddSquare(),
+        "call" or "contacted" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Call(),
+        "meeting" or "scheduled" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.CalendarLtr(),
+        _ => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.CheckmarkCircle()
     };
 
     private string GetActivityColor(string action) => action.ToLower() switch
     {
-        "email" or "created" => "#22c55e", // Green from image
-        "call" or "contacted" => "#14b8a6", // Teal from image
-        "meeting" or "scheduled" => "#f59e0b", // Orange from image
-        _ => "#64748b" // Grey fallback
+        "email" or "created" => "#22c55e",
+        "call" or "contacted" => "#14b8a6",
+        "meeting" or "scheduled" => "#f59e0b",
+        _ => "#64748b"
     };
 
     public void Dispose()

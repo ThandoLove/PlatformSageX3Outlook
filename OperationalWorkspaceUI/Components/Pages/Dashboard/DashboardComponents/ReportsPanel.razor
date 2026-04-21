@@ -1,17 +1,22 @@
 ﻿@using OperationalWorkspaceUI.State
-@using OperationalWorkspaceUI.Services @* Ensure this matches your ToastService namespace *@
+@using OperationalWorkspaceUI.UIServices.ToastUIService @* Fix 1: Corrected namespace path *@
+@using OperationalWorkspace.Domain.Enums @* Fix 2: Added for ToastLevel enum *@
+@using Microsoft.FluentUI.AspNetCore.Components
 @inject DashboardState State
-@inject ToastService Toast
+@* Fix 3: Explicitly inject YOUR service to avoid FluentUI conflict *@
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToast
+
 @inject IJSRuntime JS
 
 <FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
     <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Sage X3 Reports</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size16.Poll())" Color="Color.Accent" />
+        @* Fix 4: Fully qualified icon path *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Poll())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
     </div>
 
     <div class="report-list" style="display: flex; flex-direction: column; gap: 12px;">
-        @* Logic: Map to the entities you have (Invoices, Tickets, Sales Orders) *@
         @{
             var reportNames = new[] { "Aged Receivables (Invoices)", "Open Tickets Summary", "Daily Sales Order Log" };
         }
@@ -22,19 +27,21 @@
                 <div style="font-weight: 600; margin-bottom: 10px; color: #1e293b; font-size: 0.9rem;">@report</div>
                 
                 <div style="display: flex; gap: 8px;">
-                    @* PDF Export Button *@
                     <FluentButton Appearance="Appearance.Outline"
                                   OnClick="@(() => HandleExport(report, "PDF"))"
                                   Style="flex: 1; font-size: 0.8rem;">
-                        <FluentIcon Value="@(new Icons.Regular.Size16.DocumentPdf())" Slot="start" Color="Color.Error" />
+                        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.DocumentPdf())"
+                                    Slot="start"
+                                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Error" />
                         PDF
                     </FluentButton>
                     
-                    @* Excel Export Button *@
                     <FluentButton Appearance="Appearance.Outline"
                                   OnClick="@(() => HandleExport(report, "XLSX"))"
                                   Style="flex: 1; font-size: 0.8rem;">
-                        <FluentIcon Value="@(new Icons.Regular.Size16.Table())" Slot="start" Color="Color.Success" />
+                        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Table())"
+                                    Slot="start"
+                                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
                         Excel
                     </FluentButton>
                 </div>
@@ -46,16 +53,13 @@
 @code {
     private async Task HandleExport(string reportName, string format)
     {
-        // 1. Visual feedback via your Custom Toast Service
-        Toast.ShowToast($"Sage X3: Generating {reportName}...", ToastLevel.Info);
+        // Fix 5: Use helper methods (ShowInfo/ShowSuccess) to avoid ToastIntent/string errors
+        CustomToast.ShowInfo($"Sage X3: Generating {reportName}...");
 
-        // 2. Call the JavaScript bridge (officebridge.js)
         await JS.InvokeVoidAsync("officeBridge.exportReport", reportName, format);
 
-        // 3. Simulate Sage X3 processing time
         await Task.Delay(2500);
 
-        // 4. Success notification
-        Toast.ShowToast($"{format} Download Ready", ToastLevel.Success);
+        CustomToast.ShowSuccess($"{format} Download Ready");
     }
 }

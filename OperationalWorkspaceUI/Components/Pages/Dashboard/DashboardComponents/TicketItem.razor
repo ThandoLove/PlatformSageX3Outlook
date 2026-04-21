@@ -1,6 +1,8 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.System
 @using Microsoft.FluentUI.AspNetCore.Components
+@* Fix 1: Ensure Icons namespace is explicitly referenced *@
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
 
 <div class="ticket-row"
      style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; gap: 12px; cursor: pointer;"
@@ -16,14 +18,15 @@
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.8rem; color: #64748b;">#@Ticket.Id</span>
-            @* Status badge using CSS classes defined in dashboard.css *@
             <div class="status-badge @Ticket.Status.ToLower().Replace(" ", "-")">
                 @Ticket.Status
             </div>
         </div>
     </div>
 
-    <FluentIcon Value="@(new Icons.Regular.Size16.ChevronRight())" Color="Color.Neutral" />
+    @* Fix 2: Full path for Icon and Color to resolve conflict with Radzen *@
+    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronRight())"
+                Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
 </div>
 
 @code {
@@ -33,7 +36,6 @@
 
     private async Task OpenTicketDetail()
     {
-        // LOGIC: Open the Detail Form inside the Sage Global Modal
         await ModalService.ShowModal($"Edit Ticket: {Ticket.Title}", builder =>
         {
             builder.OpenComponent<TicketDetailForm>(0);

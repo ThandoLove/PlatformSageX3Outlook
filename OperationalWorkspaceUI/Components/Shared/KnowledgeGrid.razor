@@ -1,10 +1,13 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using Microsoft.FluentUI.AspNetCore.Components
+@* Fix: Add Icon namespace *@
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
 
 <div class="sage-grid-wrapper" style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
     <FluentDataGrid Items="@Data.AsQueryable()"
                     ResizableColumns="true"
                     TGridItem="KnowledgeDto"
+                    @* FIX: Use FluentDataGridRow<KnowledgeDto> as the parameter *@
                     OnRowClick="@((FluentDataGridRow<KnowledgeDto> row) => OnRowClick.InvokeAsync(row.Item))"
                     Style="width: 100%;">
         
@@ -20,7 +23,8 @@
 
         <TemplateColumn Title="Actions" Align="Align.End">
             <FluentButton Appearance="Appearance.Lightweight"
-                          IconStart="@(new Icons.Regular.Size16.Open())"
+                          @* Fix: Use fully qualified icon path *@
+                          IconStart="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Open())"
                           OnClick="@(() => OnRowClick.InvokeAsync(context))" />
         </TemplateColumn>
 

@@ -17,6 +17,7 @@ using FluentValidation;
 
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ------------------ 1. SYSTEM ------------------
@@ -65,6 +66,10 @@ builder.Services.AddScoped<ModalService>();
 builder.Services.AddScoped<NavigationService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailSyncService>();
+
+
+builder.Services.AddScoped<IToastService, ToastService>();
+
 
 // ------------------ 6. 🔥 BACKEND SERVICES (FIX) ------------------
 builder.Services.AddScoped<IActivityService, MockUnifiedService>();

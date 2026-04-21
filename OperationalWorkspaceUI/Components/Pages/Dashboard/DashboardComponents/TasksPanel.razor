@@ -1,5 +1,7 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspace.Domain.Enums @* Fix 1: Added for TaskPriority enum *@
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 @inject DashboardState State
 
@@ -7,18 +9,20 @@
     @* Panel Header *@
     <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">My Tasks</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="Color.Neutral" />
+        @* Fix 2: Fully qualified icon path *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronUp())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
     </div>
 
-    @* Tab Section (Exactly like image) *@
+    @* Tab Section *@
     <div class="task-tabs" style="display: flex; border-bottom: 2px solid #f1f5f9; margin-bottom: 16px;">
-        <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")" @onclick='() => SetTab("Pending")'>
+        <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")" @onclick='() => SetTab("Pending")' style="cursor:pointer; padding: 8px 12px;">
             Pending (@State.CurrentTasks.Count(t => t.Status != "Completed"))
         </div>
-        <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SetTab("Overdue")'>
+        <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SetTab("Overdue")' style="cursor:pointer; padding: 8px 12px;">
             Overdue (@State.CurrentTasks.Count(t => t.DueDate < DateTime.Now && t.Status != "Completed"))
         </div>
-        <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SetTab("Completed")'>
+        <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SetTab("Completed")' style="cursor:pointer; padding: 8px 12px;">
             Completed
         </div>
     </div>
@@ -42,11 +46,11 @@
                         </div>
                     </div>
 
-                    @* Priority Badge matching your TaskDto logic *@
                     <div style="margin-left: auto;">
-                        @if (task.Priority > 3)
+                        @* Fix 3: Compare Enum to Enum, not int. Fix 4: Appearance.Accent with Fill color *@
+                        @if (task.Priority == TaskPriority.High)
                         {
-                            <FluentBadge Appearance="Appearance.Danger">High</FluentBadge>
+                            <FluentBadge BackgroundColor="#ef4444" Color="white">High</FluentBadge>
                         }
                     </div>
                 </div>
@@ -55,7 +59,8 @@
         else
         {
             <div style="text-align:center; padding: 20px; color: #94a3b8;">
-                <FluentIcon Value="@(new Icons.Regular.Size24.CheckmarkCircle())" Color="Color.Success" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.CheckmarkCircle())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
                 <p style="font-size: 0.85rem; margin-top: 8px;">No tasks in this category.</p>
             </div>
         }
@@ -97,7 +102,6 @@
     private async Task HandleStatusChange(TaskDto task, bool isCompleted)
     {
         task.Status = isCompleted ? "Completed" : "Open";
-        // Logic to sync with Sage X3 would be called here via TaskService
         StateHasChanged();
     }
 

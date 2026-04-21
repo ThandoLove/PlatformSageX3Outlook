@@ -1,23 +1,26 @@
 ﻿@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+@* Fix 1: Ensure Icons namespace is explicitly referenced *@
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
 @implements IDisposable
 @inject DashboardState State
 @inject IJSRuntime JS
 
 <FluentCard Style="width: 100%; padding: 16px; height: 340px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-    @* Panel Header with "Live" indicator to match your request *@
+    @* Panel Header *@
     <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <div style="display: flex; align-items: center; gap: 8px;">
             <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Sales History (Last 6 Months)</h3>
             <FluentBadge Appearance="Appearance.Accent" Style="background-color: #3b82f6;">Live</FluentBadge>
         </div>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowClockwise())"
-                    Color="Color.Neutral"
+        @* Fix 2: Use fully qualified icon path *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ArrowClockwise())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral"
                     Style="cursor: pointer;"
                     @onclick="RefreshChart" />
     </div>
     
-    @* The Chart Canvas exactly as required for Chart.js *@
     <div style="position: relative; height: 240px; width: 100%;">
         <canvas id="salesHistoryChart"></canvas>
     </div>
@@ -25,15 +28,13 @@
 
 @code {
     private System.Timers.Timer? _timer;
+    private bool _disposed;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Initial render
             await RefreshChart();
-            
-            // Start the 10-second polling logic
             StartPolling();
         }
     }
@@ -41,32 +42,34 @@
     private void StartPolling()
     {
         _timer = new System.Timers.Timer(10000);
-        _timer.Elapsed += async (s, e) => await RefreshChart();
+        _timer.Elapsed += async (s, e) =>
+        {
+            if (!_disposed) await RefreshChart();
+        };
         _timer.AutoReset = true;
         _timer.Enabled = true;
     }
 
     private async Task RefreshChart()
     {
-        // LOGIC: Map the 6-month labels to Sage X3 Sales Order data
         var labels = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun" };
-        
-        // This pulls from your Admin or Employee ERP DTOs in the State
         var data = GetSalesDataFromState();
 
-        await InvokeAsync(async () =>
+        try
         {
-            // Calls the function in your charts.js file
-            await JS.InvokeVoidAsync("sageCharts.renderSalesHistory", "salesHistoryChart", labels, data);
-        });
+            await InvokeAsync(async () =>
+            {
+                // Ensure JS is still available (handles circuit disconnects)
+                await JS.InvokeVoidAsync("sageCharts.renderSalesHistory", "salesHistoryChart", labels, data);
+            });
+        }
+        catch { /* Handle background thread JS isolation errors */ }
     }
 
     private decimal[] GetSalesDataFromState()
     {
-        // LOGIC: If Admin, show global history; else show personal sales history
         if (State.IsAdminEnvironment)
         {
-            // Example data based on the $12,500 scale in your image
             return new decimal[] { 12000, 15000, 9500, 12500, 18200, 14000 };
         }
         
@@ -75,7 +78,8 @@
 
     public void Dispose()
     {
-        // CRITICAL: Cleanup the timer to prevent memory leaks in Blazor Server
+        _disposed = true;
+        _timer?.Stop();
         _timer?.Dispose();
     }
 }

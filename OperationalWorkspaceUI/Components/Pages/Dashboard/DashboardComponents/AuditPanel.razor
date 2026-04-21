@@ -1,5 +1,6 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 @inject DashboardState State
 
@@ -7,7 +8,9 @@
     @* Panel Header *@
     <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">System Audit Logs</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ShieldCheckmark())" Color="Color.Accent" />
+        @* Fix 1: Full path for Icon and Color *@
+        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ShieldCheckmark())"
+                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
     </div>
 
     <div class="audit-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto;">
@@ -16,9 +19,11 @@
             @foreach (var log in State.CurrentAuditLogs.OrderByDescending(l => l.Timestamp))
             {
                 <div class="audit-item" style="display: flex; gap: 12px; align-items: flex-start; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
-                    @* Action Icon based on Entity type *@
                     <div style="margin-top: 2px;">
-                        <FluentIcon Value="@GetAuditIcon(log.Entity)" Size="@IconSize.Size16" Color="Color.Neutral" />
+                        @* Fix 2: Explicit Color and IconSize *@
+                        <FluentIcon Value="@GetAuditIcon(log.Entity)"
+                                    Size="@Microsoft.FluentUI.AspNetCore.Components.IconSize.Size16"
+                                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
                     </div>
 
                     <div class="audit-details" style="flex-grow: 1;">
@@ -36,13 +41,13 @@
         else
         {
             <div style="padding: 20px; text-align: center; color: #94a3b8;">
-                <FluentIcon Value="@(new Icons.Regular.Size24.History())" Color="Color.Neutral" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.History())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
                 <p style="font-size: 0.85rem; margin-top: 8px;">No audit events recorded.</p>
             </div>
         }
     </div>
 
-    @* Footer Link *@
     <div style="margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 12px; text-align: center;">
         <FluentAnchor Appearance="Appearance.Lightweight" Href="#" Style="color: #3b82f6; font-weight: 600;">
             View Full Audit Trail →
@@ -53,17 +58,17 @@
 @code {
     protected override void OnInitialized()
     {
-        // Subscribe to state changes so the logs update live
         State.OnChange += StateHasChanged;
     }
 
-    private Icon GetAuditIcon(string entity) => entity?.ToLower() switch
+    // Fix 3: Full path for Return Type 'Icon'
+    private Microsoft.FluentUI.AspNetCore.Components.Icon GetAuditIcon(string entity) => entity?.ToLower() switch
     {
-        "auth" => new Icons.Regular.Size16.LockClosed(),
-        "invoice" => new Icons.Regular.Size16.Money(),
-        "ticket" => new Icons.Regular.Size16.Ticket(),
-        "report" => new Icons.Regular.Size16.Poll(),
-        _ => new Icons.Regular.Size16.History()
+        "auth" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.LockClosed(),
+        "invoice" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Money(),
+        "ticket" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.TicketDiagonal(),
+        "report" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Poll(),
+        _ => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.History()
     };
 
     public void Dispose()

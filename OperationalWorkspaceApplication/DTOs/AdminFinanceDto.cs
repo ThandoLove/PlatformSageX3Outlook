@@ -12,6 +12,7 @@ namespace OperationalWorkspaceApplication.DTOs
 
         public decimal TotalOutstandingReceivables { get; set; }
         public decimal TotalSalesThisMonth { get; set; }
+        public decimal TotalOverdue { get; set; }
 
     }
     // CODE END

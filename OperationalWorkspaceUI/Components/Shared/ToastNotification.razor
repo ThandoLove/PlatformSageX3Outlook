@@ -1,25 +1,29 @@
-﻿@using OperationalWorkspaceUI.Services
+﻿@using OperationalWorkspaceUI.UIServices.ToastUIService
+@using OperationalWorkspace.Domain.Enums
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
 @implements IDisposable
-@inject ToastService ToastService
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 
 @if (_isVisible)
 {
-    @* The container class uses the logic-driven level (success, info, etc) *@
     <div class="custom-toast @_levelClass">
-        
-        @* Icon Section matching Sage system status *@
         <div style="margin-right: 12px; display: flex; align-items: center;">
             @if (_levelClass == "toast-success")
             {
-                <FluentIcon Value="@(new Icons.Filled.Size20.CheckmarkCircle())" Color="Color.Success" />
+                @* Use full path for Value and Microsoft.FluentUI.AspNetCore.Components.Color for the enum *@
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.CheckmarkCircle())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
             }
             else if (_levelClass == "toast-error")
             {
-                <FluentIcon Value="@(new Icons.Filled.Size20.DismissCircle())" Color="Color.Error" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.DismissCircle())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Error" />
             }
             else
             {
-                <FluentIcon Value="@(new Icons.Filled.Size20.Info())" Color="Color.Accent" />
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.Info())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
             }
         </div>
 
@@ -36,9 +40,8 @@
 
     protected override void OnInitialized()
     {
-        // Subscribe to the global ToastService events
-        ToastService.OnShow += HandleShow;
-        ToastService.OnHide += HandleHide;
+        CustomToastService.OnShow += HandleShow;
+        CustomToastService.OnHide += HandleHide;
     }
 
     private void HandleShow(string message, ToastLevel level)
@@ -46,8 +49,6 @@
         _message = message;
         _levelClass = $"toast-{level.ToString().ToLower()}";
         _isVisible = true;
-        
-        // InvokeAsync is required for Blazor Server thread safety
         InvokeAsync(StateHasChanged);
     }
 
@@ -59,8 +60,7 @@
 
     public void Dispose()
     {
-        // Unsubscribe to prevent memory leaks in the background
-        ToastService.OnShow -= HandleShow;
-        ToastService.OnHide -= HandleHide;
+        CustomToastService.OnShow -= HandleShow;
+        CustomToastService.OnHide -= HandleHide;
     }
 }
