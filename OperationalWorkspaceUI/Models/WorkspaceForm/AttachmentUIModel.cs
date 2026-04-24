@@ -1,6 +1,6 @@
 ﻿namespace OperationalWorkspaceUI.Models.WorkspaceForm
 {
-    public class AttachmentUiDTO
+    public class AttachmentUIModel
     
     {
         public string FileName { get; set; } = string.Empty;

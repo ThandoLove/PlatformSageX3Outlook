@@ -1,7 +1,7 @@
 ﻿namespace OperationalWorkspaceUI.Models.WorkspaceForm
 {
     // CODE START
-    public class QuoteDTO
+    public class QuoteModel
     {
         public string QuoteNumber { get; set; }= string.Empty;
         public decimal Amount { get; set; }

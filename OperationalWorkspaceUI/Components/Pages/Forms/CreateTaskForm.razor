@@ -4,15 +4,16 @@
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.Models.Forms
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.TasksUIService TaskService
 @inject WorkspaceState WorkspaceState
 @inject Radzen.NotificationService NotificationService
 @inject NavigationManager NavManager
 
-<FormSection Title="Create New Task" 
-             SubmitLabel="Save Task" 
-             OnSubmit="SaveTaskAsync" 
+<FormSection Title="Create New Task"
+             SubmitLabel="Save Task"
+             OnSubmit="SaveTaskAsync"
              OnCancel="HandleCancel">
 
     <EditForm Model="NewTask" OnValidSubmit="SaveTaskAsync">
@@ -20,8 +21,8 @@
 
         @* SECTION 1: BASIC INFO *@
         <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">BASIC INFO</FluentLabel>
-            <FluentTextField Label="Title" @bind-Value="NewTask.Title" FullWidth="true" Placeholder="Enter task summary..." />
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">BASIC INFO</FluentLabel>
+            <FluentTextField Label="Title" @bind-Value="NewTask.Title" FullWidth="true" />
             <ValidationMessage For="@(() => NewTask.Title)" />
             
             <FluentTextArea Label="Description" @bind-Value="NewTask.StatusDescription" Rows="3" FullWidth="true" Style="margin-top: 12px;" />
@@ -29,31 +30,31 @@
 
         @* SECTION 2: ASSIGNMENT *@
         <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">ASSIGNMENT</FluentLabel>
-            <FluentSelect Label="Assigned To" 
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">ASSIGNMENT</FluentLabel>
+            
+            <FluentSelect Label="Assigned To"
                           TOption="string"
-                          @bind-Value="NewTask.AssignedTo" 
+                          @bind-Value="NewTask.AssignedTo"
                           Style="width: 100%;">
-                <FluentOption Value="">Select a user...</FluentOption>
+                <FluentOption TOption="string" Value="">Select a user...</FluentOption>
                 @foreach (var user in WorkspaceState.Users)
                 {
-                    <FluentOption Value="@user.Id.ToString()">👤 @user.Name</FluentOption>
+                    <FluentOption TOption="string" Value="@user.Id.ToString()">👤 @user.Name</FluentOption>
                 }
             </FluentSelect>
-            <ValidationMessage For="@(() => NewTask.AssignedTo)" />
         </div>
 
-        @* SECTION 3: SCHEDULE & PRIORITY *@
+        @* SECTION 3: SCHEDULE *@
         <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">SCHEDULE & PRIORITY</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">SCHEDULE & PRIORITY</FluentLabel>
             <div class="form-grid-2-col">
+                @* FIXED: DatePicker now binds to a nullable DateTime? *@
                 <FluentDatePicker Label="Due Date" @bind-Value="NewTask.DueDate" Style="width: 100%;" />
                 
-                @* Adding a Priority selector to match the Sage professional look *@
-                <FluentSelect Label="Priority" FullWidth="true">
-                    <FluentOption Value="1">Low</FluentOption>
-                    <FluentOption Value="2" Selected="true">Medium</FluentOption>
-                    <FluentOption Value="3">High</FluentOption>
+                <FluentSelect Label="Priority" TOption="string" @bind-Value="PriorityString" FullWidth="true">
+                    <FluentOption TOption="string" Value="1">Low</FluentOption>
+                    <FluentOption TOption="string" Value="2">Medium</FluentOption>
+                    <FluentOption TOption="string" Value="3">High</FluentOption>
                 </FluentSelect>
             </div>
         </div>
@@ -62,7 +63,9 @@
 </FormSection>
 
 @code {
+    // NewTask.DueDate MUST be DateTime? in the DTO class
     private TaskDto NewTask = new() { DueDate = DateTime.Now.AddDays(1) };
+    private string PriorityString = "2";
 
     private async Task SaveTaskAsync()
     {
@@ -71,34 +74,14 @@
         if (success)
         {
             WorkspaceState.ReloadTasks();
-        
-            NotificationService.Notify(new Radzen.NotificationMessage
-            {
-                Severity = Radzen.NotificationSeverity.Success,
-                Summary = "Success",
-                Detail = "Task created successfully in Sage X3",
-                Duration = 4000
-            });
-        
+            NotificationService.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Success", Detail = "Task created" });
             NavManager.NavigateTo("/workspace/tasks");
         }
         else
         {
-            NotificationService.Notify(new Radzen.NotificationMessage
-            {
-                Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Error",
-                Detail = "Failed to create task",
-                Duration = 4000
-            });
+            NotificationService.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Error, Summary = "Error", Detail = "Failed" });
         }
     }
 
-    private void HandleCancel()
-    {
-        NavManager.NavigateTo("/workspace/dashboard");
-    }
+    private void HandleCancel() => NavManager.NavigateTo("/workspace/dashboard");
 }
-
-
-

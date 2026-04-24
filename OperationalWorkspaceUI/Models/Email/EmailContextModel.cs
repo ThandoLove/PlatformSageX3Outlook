@@ -3,17 +3,17 @@
 namespace OperationalWorkspaceUI.Models.Email
 {
     // CODE START
-    public class EmailContextDTO
+    public class EmailContextModel
     {
         public string SenderEmail { get; set; } = string.Empty;
         public string SenderName { get; set; } = string.Empty;
 
         public string Subject { get; set; } = string.Empty;
 
-        public BusinessPartnerLookupDTO BusinessPartner { get; set; } = new BusinessPartnerLookupDTO();
+        public BusinessPartnerLookupModel BusinessPartner { get; set; } = new BusinessPartnerLookupModel();
 
-        public List<OrderSummaryDTO> Orders { get; set; } = new List<OrderSummaryDTO>();
-        public List<TaskItemDTO> Tasks { get; set; } = new List<TaskItemDTO>();
+        public List<OrderSummaryModel> Orders { get; set; } = new List<OrderSummaryModel>();
+        public List<TaskItemModel> Tasks { get; set; } = new List<TaskItemModel>();
     }
     // CODE END
 }

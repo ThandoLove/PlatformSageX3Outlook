@@ -6,7 +6,7 @@ using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus;
 namespace OperationalWorkspaceUI.Models.Dashboard;
 
 // CODE START
-public class TaskItemDTO
+public class TaskItemModel
 {
     public string Title { get; set; } = string.Empty;
     public string Status { get; set; } = TaskStatus.Pending.ToString();

@@ -1,7 +1,7 @@
 ﻿namespace OperationalWorkspaceUI.Models.WorkspaceForm
 {
     // CODE START
-    public class SalesOrderUiDTO
+    public class SalesOrderUIModel
     {
         public string OrderNumber { get; set; } = string.Empty;
         public decimal Amount { get; set; }

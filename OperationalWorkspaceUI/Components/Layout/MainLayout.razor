@@ -121,7 +121,7 @@
     }
 
     [JSInvokable]
-    public async Task OnEmailReceived(EmailContextDTO emailData)
+    public async Task OnEmailReceived(EmailInsightDto emailData)
     {
         if (emailData == null || string.IsNullOrEmpty(emailData.SenderEmail)) return;
 

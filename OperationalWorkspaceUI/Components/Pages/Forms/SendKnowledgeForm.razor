@@ -4,6 +4,7 @@
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.Models.Forms
 
 @inject KnowledgeUIService KBService
 @inject Radzen.NotificationService Notifications
@@ -21,45 +22,47 @@
 
         @* SECTION 1: SEARCH ARTICLE *@
         <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">KNOWLEDGE BASE SEARCH</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">KNOWLEDGE BASE SEARCH</FluentLabel>
             <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">Find a Sage X3 article to transmit to the recipient.</p>
             
             <FluentTextField Label="Search Article Keywords"
                              @bind-Value="Model.SearchQuery"
                              Placeholder="e.g. Invoice Setup, Stock Management..."
                              FullWidth="true"
-                             Required="true" />
+                             MaxLength="100" />
             <ValidationMessage For="@(() => Model.SearchQuery)" />
         </div>
 
         @* SECTION 2: RECIPIENT MESSAGE *@
         <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">PERSONAL MESSAGE</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">PERSONAL MESSAGE</FluentLabel>
             <FluentTextArea Label="Note to Recipient"
                             @bind-Value="Model.Message"
                             Placeholder="Add context for this article..."
                             Rows="6"
-                            FullWidth="true" />
+                            FullWidth="true"
+                            MaxLength="1000" />
+            <ValidationMessage For="@(() => Model.Message)" />
         </div>
 
         @* SECTION 3: DELIVERY OPTIONS *@
         <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentCheckbox Label="Include link to documentation portal" @bind-Value="IncludeLink" />
-            <FluentCheckbox Label="Notify me when article is opened" @bind-Value="TrackOpen" />
+            <FluentCheckbox Label="Include link to documentation portal" @bind-Value="Model.IncludeLink" />
+            <FluentCheckbox Label="Notify me when article is opened" @bind-Value="Model.TrackOpen" />
         </div>
 
     </EditForm>
 </FormSection>
 
 @code {
-    private OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel Model = new();
-    private bool IncludeLink = true;
-    private bool TrackOpen = true;
+    // Points to the new Model we created with advanced validation
+    private SendKnowledgeModel Model = new();
 
     private async Task HandleSubmit()
     {
         try
         {
+            // Map our UI model to the Service model if they differ, or pass directly
             await KBService.SendKnowledgeAsync(Model);
             
             Notifications.Notify(new Radzen.NotificationMessage
@@ -70,10 +73,7 @@
                 Duration = 4000
             });
             
-            // Close modal if open
             await ModalService.CloseModal();
-
-            // Navigate back to workspace
             NavManager.NavigateTo("/workspace/knowledge");
         }
         catch (Exception ex)
@@ -87,9 +87,10 @@
         }
     }
 
-    private void HandleCancel()
+    private async Task HandleCancel()
     {
-        ModalService.CloseModal();
+        await ModalService.CloseModal();
         NavManager.NavigateTo("/workspace/knowledge");
     }
 }
+

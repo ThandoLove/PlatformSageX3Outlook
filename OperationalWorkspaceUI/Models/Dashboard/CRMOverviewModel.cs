@@ -1,7 +1,7 @@
 ﻿namespace OperationalWorkspaceUI.Models.Dashboard
 {
     // CODE START
-    public class CRMOverviewDTO
+    public class CRMOverviewModel
     {
         public int Clients { get; set; }
         public int Opportunities { get; set; }

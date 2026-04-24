@@ -1,10 +1,13 @@
 ﻿@page "/forms/create-quote"
 
 @using Microsoft.FluentUI.AspNetCore.Components
+@* FIXED: Added Icons alias *@
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Models.Forms
 
 @inject EmailContextState EmailState
 @inject OrdersUIService OrderService
@@ -12,10 +15,10 @@
 @inject NavigationManager NavManager
 
 @* Standardized Sage Wrapper *@
-<FormSection Title="Create Quote" 
-             SubmitLabel="Send Quote to Sage" 
+<FormSection Title="Create Quote"
+             SubmitLabel="Send Quote to Sage"
              IsPrefilled="@isPrefilled"
-             OnSubmit="SubmitForm" 
+             OnSubmit="SubmitForm"
              OnCancel="HandleCancel">
 
     <EditForm Model="Model" OnValidSubmit="SubmitForm">
@@ -23,7 +26,8 @@
 
         @* SECTION 1: CLIENT IDENTIFICATION *@
         <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">CLIENT DETAILS</FluentLabel>
+            @* FIXED: Changed Caption to Body *@
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">CLIENT DETAILS</FluentLabel>
             <div class="form-grid-2-col">
                 <FluentTextField Label="Client Email" @bind-Value="Model.ClientEmail" Readonly="true" FullWidth="true" />
                 <FluentTextField Label="Quote Name / Reference" @bind-Value="Model.Name" Placeholder="e.g. QTE-2024-001" FullWidth="true" />
@@ -33,27 +37,32 @@
 
         @* SECTION 2: QUOTE DETAILS *@
         <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">DETAILS & DESCRIPTION</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">DETAILS & DESCRIPTION</FluentLabel>
             <FluentTextArea Label="Description" @bind-Value="Model.Description" Rows="3" FullWidth="true" />
             
             <div class="form-grid-2-col" style="margin-top: 12px;">
-                <FluentNumberField Label="Amount" @bind-Value="Model.Amount" FullWidth="true">
-                    <FluentIcon Value="@(new Icons.Regular.Size16.CurrencyDollar())" Slot="start" />
+                @* FIXED: Added TValue="decimal" *@
+                <FluentNumberField TValue="decimal" Label="Amount" @bind-Value="Model.Amount" FullWidth="true">
+                    @* FIXED: Use Money icon for Size16 compatibility *@
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Money())" Slot="start" />
                 </FluentNumberField>
-                <FluentSelect Label="Payment Terms" FullWidth="true">
-                    <FluentOption Value="Net30">Net 30</FluentOption>
-                    <FluentOption Value="DueOnReceipt">Due on Receipt</FluentOption>
-                    <FluentOption Value="Net60">Net 60</FluentOption>
+                
+                @* FIXED: Added TOption="string" *@
+                <FluentSelect Label="Payment Terms" TOption="string" @bind-Value="Model.PaymentTerms" Style="width: 100%;">
+                    <FluentOption TOption="string" Value="Net30">Net 30</FluentOption>
+                    <FluentOption TOption="string" Value="DueOnReceipt">Due on Receipt</FluentOption>
+                    <FluentOption TOption="string" Value="Net60">Net 60</FluentOption>
                 </FluentSelect>
             </div>
         </div>
 
         @* SECTION 3: VALIDITY *@
         <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">VALIDITY</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">VALIDITY</FluentLabel>
             <div class="form-grid-2-col">
-                <FluentDatePicker Label="Valid Until" Style="width: 100%;" />
-                <FluentNumberField Label="Discount %" FullWidth="true" />
+                <FluentDatePicker Label="Valid Until" @bind-Value="Model.ValidUntil" Style="width: 100%;" />
+                @* FIXED: Added TValue="decimal?" (nullable if needed) *@
+                <FluentNumberField TValue="decimal?" Label="Discount %" FullWidth="true" />
             </div>
         </div>
 
@@ -66,7 +75,6 @@
 
     protected override void OnInitialized()
     {
-        // Automatically pull data from the active email context
         if (EmailState.CurrentEmail != null)
         {
             Model.ClientEmail = EmailState.CurrentEmail.From;
@@ -79,12 +87,11 @@
     {
         try
         {
-            // Map the Quote Model to the Order DTO for the Service
             var dto = new CreateOrderDto
             {
                 OrderNumber = Model.Name ?? "QUOT-NEW",
                 TotalAmount = Model.Amount,
-                // Add logic here for specific Quote-to-Sage mapping
+                OrderDate = DateTime.Today // Ensure your DTO supports this
             };
 
             var success = await OrderService.CreateOrderAsync(dto);
@@ -112,17 +119,7 @@
         }
     }
 
-    private void HandleCancel()
-    {
-        NavManager.NavigateTo("/workspace/dashboard");
-    }
+    private void HandleCancel() => NavManager.NavigateTo("/workspace/dashboard");
 
-    public class CreateQuoteModel
-    {
-        public string ClientEmail { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-    }
+    
 }
-

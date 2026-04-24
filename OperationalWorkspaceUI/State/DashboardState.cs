@@ -73,7 +73,7 @@ namespace OperationalWorkspaceUI.State
         public List<ActivityDto> RecentActivities { get; set; } = new();
         public List<TaskDto> AllTasks { get; set; } = new();
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
-        public EmailContextDTO EmailContext { get; set; } = new();
+        public EmailInsightDto EmailContext { get; set; } = new();
 
         // --- CURRENT ENVIRONMENT DATA (Bound to UI) ---
         public AdminErpDto? CurrentErp => IsAdminEnvironment ? AdminErp : null;
