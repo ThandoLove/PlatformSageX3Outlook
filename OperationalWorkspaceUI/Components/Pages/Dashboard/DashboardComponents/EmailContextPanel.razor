@@ -1,0 +1,80 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.UIServices.EmailService
+@using Microsoft.FluentUI.AspNetCore.Components
+@implements IDisposable
+@inject EmailContextState State
+@inject EmailContextUIService EmailService
+
+<FluentCard Class="email-insight-card">
+    @* Panel Header *@
+    <div class="panel-header">
+        <h3>Email Insight</h3>
+        @if (State.IsLoading)
+        {
+            <FluentProgressRing Style="width: 16px; height: 16px;" />
+        }
+    </div>
+
+    @if (State.IsLoading)
+    {
+        <div class="loading-overlay">
+            <FluentProgressRing />
+            <span>Sage X3 AI is analyzing...</span>
+        </div>
+    }
+    else
+    {
+        <div class="insight-content">
+            <!-- Contact Row -->
+            <div class="detail-row">
+                <div class="avatar">
+                    @((!string.IsNullOrEmpty(State.CurrentEmail?.SenderName)) ? State.CurrentEmail.SenderName.Substring(0, 1) : "?")
+                </div>
+                <div class="text-group">
+                    <span class="label">CONTACT</span>
+                    <div class="value-container">
+                        <span class="value link">@(State.CurrentEmail?.SenderName ?? "Select an Email")</span>
+                        @if (State.MatchedClient != null)
+                        {
+                            <span class="status-badge-linked">Linked</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Row -->
+            <div class="detail-row no-avatar">
+                <div class="text-group">
+                    <span class="label">COMPANY</span>
+                    <span class="value">@(State.MatchedClient?.Name ?? "Unknown Entity")</span>
+                </div>
+            </div>
+
+            <!-- Intent Row -->
+            <div class="detail-row no-avatar">
+                <div class="text-group">
+                    <span class="label">INTENT</span>
+                    <div class="intent-value">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Flash())" Color="@Color.Accent" />
+                        <span>@(State.CurrentEmail?.Subject ?? "Analyzing Context...")</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Summary Box -->
+            <div class="ai-summary-box">
+                <span class="ai-label">AI SUMMARY</span>
+                <p>
+                    @((!string.IsNullOrEmpty(State.CurrentEmail?.Message)) ? State.CurrentEmail.Message : "Waiting for email selection...")
+                </p>
+            </div>
+        </div>
+    }
+</FluentCard>
+
+@code {
+    protected override void OnInitialized() => State.OnChange += HandleStateChanged;
+    private void HandleStateChanged() => InvokeAsync(StateHasChanged);
+    public void Dispose() => State.OnChange -= HandleStateChanged;
+}

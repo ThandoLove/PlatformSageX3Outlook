@@ -1,45 +1,70 @@
-﻿.sidebar-container {
+﻿/* Container & Layout */
+.sage-sidebar {
     display: flex;
     flex-direction: column;
     height: 100vh;
     background-color: #003366; /* Deep Sage Blue */
     color: white;
     width: 260px;
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 
-.sidebar-brand {
+/* Header/Brand Section */
+.sidebar-header {
     display: flex;
     align-items: center;
     padding: 16px;
     gap: 12px;
     background-color: #002b55;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-.sidebar-nav {
+.brand-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Navigation Menu */
+.nav-menu {
     flex-grow: 1;
+    padding: 10px 0;
     overflow-y: auto;
-    padding-top: 8px;
 }
 
-/* Matching the spacing of the sidebar icons in your image */
+/* Targeting FluentNavLink Internals (The "Deep" Fixes) */
 ::deep .fluent-nav-link {
-    height: 40px;
-    margin: 2px 8px;
-    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.8) !important;
+    margin: 2px 8px !important;
+    border-radius: 4px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
-    ::deep .fluent-nav-link[selected] {
-        background-color: #1a4d80;
+    ::deep .fluent-nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
     }
 
-.nav-separator {
+    /* Matches the active/selected state in the image */
+    ::deep .fluent-nav-link[active],
+    ::deep .fluent-nav-link[selected] {
+        background-color: #1a4d80 !important;
+        color: white !important;
+    }
+
+/* Separators/Dividers */
+.sidebar-divider {
     height: 1px;
-    background-color: rgba(255,255,255,0.1);
-    margin: 8px 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 12px 16px;
 }
 
+/* Footer Section */
 .sidebar-footer {
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding: 8px 0;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto; /* Pushes footer to the very bottom */
 }

@@ -12,7 +12,7 @@ public class CreateOrderDto
 
     public Guid ClientId { get; set; }
 
-    public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+    public DateTime? OrderDate { get; set; } = DateTime.UtcNow;
 
     public decimal TotalAmount { get; set; }
 }

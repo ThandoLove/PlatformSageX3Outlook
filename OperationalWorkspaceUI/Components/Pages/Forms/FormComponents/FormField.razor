@@ -1,22 +1,31 @@
-﻿<!-- FormField.razor -->
-<div class="form-field">
-    <label>@Label</label>
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+
+<div style="margin-bottom: 12px; width: 100%;">
     @if (Type == "textarea")
     {
-        <textarea @bind="@Value" class="form-control"></textarea>
+        <FluentTextArea Label="@Label" 
+                        @bind-Value="@Value" 
+                        Rows="4" 
+                        Resize="TextAreaResize.Vertical"
+                        Style="width: 100%;" />
     }
     else if (Type == "select" && Options != null)
     {
-        <select @bind="@Value" class="form-control">
+        <FluentSelect Label="@Label" 
+                      @bind-Value="@Value" 
+                      Style="width: 100%;">
             @foreach (var opt in Options)
             {
-                <option value="@opt.Key">@opt.Value</option>
+                <FluentOption Value="@opt.Key">@opt.Value</FluentOption>
             }
-        </select>
+        </FluentSelect>
     }
     else
     {
-        <input type="@Type" @bind="@Value" class="form-control" />
+        <FluentTextField Label="@Label" 
+                         Type="@GetFluentType(Type)" 
+                         @bind-Value="@Value" 
+                         Style="width: 100%;" />
     }
 </div>
 
@@ -25,4 +34,13 @@
     [Parameter] public string Type { get; set; } = "text";
     [Parameter] public string? Value { get; set; }
     [Parameter] public List<KeyValuePair<string, string>>? Options { get; set; }
+
+    // Maps standard HTML types to Fluent UI types
+    private TextFieldType GetFluentType(string type) => type.ToLower() switch
+    {
+        "password" => TextFieldType.Password,
+        "email" => TextFieldType.Email,
+        "tel" => TextFieldType.Tel,
+        _ => TextFieldType.Text
+    };
 }

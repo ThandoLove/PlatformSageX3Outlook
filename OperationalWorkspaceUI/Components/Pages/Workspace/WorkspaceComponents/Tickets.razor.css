@@ -1,0 +1,64 @@
+﻿.tickets-container {
+    padding: 2rem;
+    background-color: var(--bg-light);
+    min-height: 100vh;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.header-text h2 {
+    margin: 0;
+    color: var(--sage-blue);
+    font-weight: 700;
+}
+
+.header-text p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.grid-card {
+    padding: 0; /* Let the grid touch the edges */
+    overflow: hidden;
+}
+
+/* Badge Styling */
+.prio-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+    .prio-badge.high {
+        background-color: #fee2e2;
+        color: #ef4444;
+    }
+
+    .prio-badge.medium {
+        background-color: #fef9c3;
+        color: #854d0e;
+    }
+
+    .prio-badge.low {
+        background-color: #f0fdf4;
+        color: #16a34a;
+    }
+
+/* Scoped Grid Header Overrides */
+::deep .fluent-data-grid thead {
+    background-color: #f8fafc;
+    border-bottom: 2px solid var(--border-color);
+}
+
+::deep .fluent-data-grid-row:hover {
+    background-color: #f1f5f9 !important;
+    cursor: pointer;
+}

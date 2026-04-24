@@ -1,0 +1,107 @@
+﻿@page "/add-contact"
+@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Interfaces.IServices
+@using OperationalWorkspaceUI.UIServices.System
+@inject IBusinessPartnerService BPService
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+
+@* Wrap in our standardized Sage-style container *@
+<FormSection Title="Create Sage X3 Contact"
+             SubmitLabel="Create in Sage X3"
+             IsPrefilled="@(!string.IsNullOrEmpty(PassedEmail))"
+             OnSubmit="HandleSubmit"
+             OnCancel="HandleCancel">
+
+    <EditForm Model="contactModel" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        
+        @* IDENTITY SECTION *@
+        <div class="sage-form-group">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">IDENTITY</FluentLabel>
+            <div class="form-grid-2-col">
+                <div>
+                    <FluentTextField Label="Full Name" @bind-Value="contactModel.FullName" FullWidth="true" />
+                    <ValidationMessage For="@(() => contactModel.FullName)" />
+                </div>
+                <FluentTextField Label="Linked Company (BPR Code)" @bind-Value="contactModel.Company" FullWidth="true" />
+            </div>
+        </div>
+
+        @* CONTACT INFO SECTION *@
+        <div class="sage-form-group" style="margin-top: 20px;">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
+            <FluentTextField Label="Email Address" @bind-Value="contactModel.Email" Readonly="true" FullWidth="true" />
+            
+            <div class="form-grid-2-col" style="margin-top: 12px;">
+                <FluentTextField Label="Phone" @bind-Value="contactModel.Phone" FullWidth="true" />
+                <FluentTextField Label="Mobile" @bind-Value="contactModel.Mobile" FullWidth="true" />
+            </div>
+        </div>
+
+        @* LOCATION SECTION *@
+        <div class="sage-form-group" style="margin-top: 20px;">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
+            <FluentTextField Label="Street Address" @bind-Value="contactModel.Street" FullWidth="true" />
+            
+            <div class="form-grid-2-col" style="margin-top: 12px;">
+                <FluentTextField Label="City" @bind-Value="contactModel.City" FullWidth="true" />
+                <div style="display: flex; gap: 8px;">
+                    <FluentTextField Label="Zip" @bind-Value="contactModel.ZipCode" Style="width: 80px;" />
+                    <FluentTextField Label="Country" @bind-Value="contactModel.Country" Style="flex: 1;" />
+                </div>
+            </div>
+        </div>
+
+    </EditForm>
+</FormSection>
+
+@code {
+    [Parameter][SupplyParameterFromQuery(Name = "name")] public string? PassedName { get; set; }
+    [Parameter][SupplyParameterFromQuery(Name = "email")] public string? PassedEmail { get; set; }
+
+    private ContactCreateDto contactModel = new();
+
+    protected override void OnInitialized()
+    {
+        // Pre-fill logic exactly as per the "Email Info" badge requirements
+        contactModel.FullName = PassedName;
+        contactModel.Email = PassedEmail;
+    }
+
+    private async Task HandleSubmit()
+    {
+        var success = await BPService.CreateContactAsync(contactModel);
+        
+        if (success)
+        {
+            await JS.InvokeVoidAsync("showToast", "Success: Contact Created in Sage X3");
+            NavManager.NavigateTo("/dashboard");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("showToast", "Error: Connection to Sage X3 failed");
+        }
+    }
+
+    private void HandleCancel()
+    {
+        NavManager.NavigateTo("/dashboard");
+    }
+}
+
+<style>
+    /* Styling to ensure the internal groups look clean inside the FormSection */
+    .sage-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+</style>

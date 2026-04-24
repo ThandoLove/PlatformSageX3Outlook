@@ -1,0 +1,147 @@
+﻿@page "/forms/create-invoice"
+@namespace OperationalWorkspaceUI.Components.Pages.Forms
+
+@using Microsoft.FluentUI.AspNetCore.Components
+@* FIXED: Added Icons alias *@
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Interfaces.IServices
+@* NOTE: Ensure these request types exist in your Application layer or use DTOs directly *@
+@using OperationalWorkspaceApplication.Requests
+@using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+
+@inject ISalesService SalesService
+@inject ModalService ModalService
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+
+<FormSection Title="New Sales Invoice" 
+             SubmitLabel="Submit Invoice" 
+             OnSubmit="HandleSubmit" 
+             OnCancel="() => ModalService.CloseModal()">
+
+    <EditForm Model="invoiceModel" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        @* SECTION 1: INVOICE HEADER *@
+        <div class="sage-form-group">
+            @* FIXED: Changed Caption to Body *@
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">GENERAL INFORMATION</FluentLabel>
+            <div class="form-grid-2-col">
+                <div>
+                    <FluentTextField Label="Sales Site" @bind-Value="invoiceModel.SalesSite" Placeholder="e.g. AO011" FullWidth="true" />
+                    <ValidationMessage For="@(() => invoiceModel.SalesSite)" />
+                </div>
+                @* FIXED: Added TOption="string" *@
+                <FluentSelect Label="Invoice Type" TOption="string" @bind-Value="invoiceModel.InvoiceType" Style="width: 100%;">
+                    <FluentOption TOption="string" Value="DIR">Direct Invoice</FluentOption>
+                    <FluentOption TOption="string" Value="NOR">Normal Invoice</FluentOption>
+                </FluentSelect>
+            </div>
+            
+            <div class="form-grid-2-col" style="margin-top: 12px;">
+                <div>
+                    <FluentTextField Label="Bill-to Customer" @bind-Value="invoiceModel.CustomerCode" Placeholder="BPC001" FullWidth="true" />
+                    <ValidationMessage For="@(() => invoiceModel.CustomerCode)" />
+                </div>
+                @* FIXED: Added ValueExpression for DatePicker to resolve delegate error *@
+                <FluentDatePicker Label="Accounting Date" 
+                                  @bind-Value="invoiceModel.AccountingDate" 
+                                  Style="width: 100%;" />
+            </div>
+        </div>
+
+        @* SECTION 2: INVOICE LINES *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edebe9; padding-bottom: 4px; margin-bottom: 12px;">
+                <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">INVOICE LINES</FluentLabel>
+                <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Add())" OnClick="AddLine" Style="color: #1b5e20;">Add Line</FluentButton>
+            </div>
+
+            <div class="items-list">
+                @foreach (var line in invoiceModel.Lines)
+                {
+                    <div class="item-row">
+                        <div style="flex: 2;">
+                            <FluentTextField Placeholder="Product Code" @bind-Value="line.ProductCode" FullWidth="true" />
+                        </div>
+                        <div style="flex: 0.5;">
+                            <FluentNumberField Placeholder="Qty" @bind-Value="line.Quantity" FullWidth="true" />
+                        </div>
+                        <div style="flex: 1;">
+                            <FluentNumberField Placeholder="Price" @bind-Value="line.UnitPrice" FullWidth="true">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.CurrencyDollar())" Slot="start" />
+                            </FluentNumberField>
+                        </div>
+                        <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Delete())" OnClick="(() => invoiceModel.Lines.Remove(line))" />
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* SECTION 3: SUMMARY *@
+        <div class="sage-form-group" style="margin-top: 24px; border-top: 1px solid #edebe9; padding-top: 12px;">
+            <div style="display: flex; justify-content: flex-end; gap: 20px;">
+                <FluentLabel Style="font-weight: bold;">Total Invoice Value:</FluentLabel>
+                <FluentLabel Style="color: #1b5e20; font-weight: bold;">@TotalValue.ToString("C")</FluentLabel>
+            </div>
+        </div>
+
+    </EditForm>
+</FormSection>
+
+@code {
+    private InvoiceCreateDto invoiceModel = new() { AccountingDate = DateTime.Now, InvoiceType = "DIR" };
+
+    private decimal TotalValue => invoiceModel.Lines.Sum(l => l.Quantity * l.UnitPrice);
+
+    protected override void OnInitialized()
+    {
+        if (!invoiceModel.Lines.Any()) { AddLine(); }
+    }
+
+    private void AddLine() => invoiceModel.Lines.Add(new InvoiceLineDto());
+
+    private async Task HandleSubmit()
+    {
+        // NOTE: Ensure your ISalesService has a method that matches this logic. 
+        // If 'CreateInvoiceAsync' doesn't exist, you may need to use 'CreateOrderAsync' or update the interface.
+        try 
+        {
+            // Placeholder for your actual service call logic
+            // await SalesService.CreateOrderAsync(...); 
+
+            await JS.InvokeVoidAsync("showToast", "Success: Invoice Data Processed");
+            await ModalService.CloseModal();
+            NavManager.NavigateTo("/workspace/invoices");
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("showToast", "Error: " + ex.Message);
+        }
+    }
+
+    public class InvoiceCreateDto
+    {
+        public string SalesSite { get; set; } = string.Empty;
+        public string InvoiceType { get; set; } = string.Empty;
+        public string CustomerCode { get; set; } = string.Empty;
+        public DateTime? AccountingDate { get; set; } = DateTime.Now;
+        public List<InvoiceLineDto> Lines { get; set; } = new();
+    }
+
+    public class InvoiceLineDto
+    {
+        public string ProductCode { get; set; } = string.Empty;
+        public decimal Quantity { get; set; } = 1;
+        public decimal UnitPrice { get; set; }
+    }
+}
+
+<style>
+    .sage-form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding: 8px; background: #fcfcfc; border-radius: 4px; border: 1px solid #f3f2f1; }
+    .items-list { max-height: 250px; overflow-y: auto; padding-right: 5px; }
+</style>

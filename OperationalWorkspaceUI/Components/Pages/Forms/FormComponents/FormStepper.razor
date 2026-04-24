@@ -1,82 +1,83 @@
-﻿<!-- CODE START: FormStepper.razor -->
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.AspNetCore.Authorization
 
-<div class="form-stepper">
+@* Ensure only authorized users can access the forms *@
+@attribute [Authorize]
 
-    <!-- HEADER -->
-    <div class="stepper-header">
-        @for (int i = 0; i < Steps.Count; i++)
-        {
-            var step = Steps[i];
-
-            <div class="step @(i == CurrentStep ? "active" : "") @(i < CurrentStep ? "completed" : "")">
-                <div class="step-index">@(i + 1)</div>
-                <div class="step-title">@step.Title</div>
-            </div>
-        }
+<div class="sage-stepper-container">
+    
+    @* SAGE USER IDENTITY BAR (Top of the sidebar) *@
+    <div class="sage-user-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <FluentPersona Name="John Smith"
+                           Status="PresenceStatus.Available"
+                           Details="Sales Rep"
+                           ImageSize="32px" />
+        </div>
+        <div class="connection-status">
+            Connected to Sage X3 <FluentIcon Value="@(new Icons.Regular.Size12.ChevronDown())" />
+        </div>
     </div>
 
-    <!-- CONTENT -->
-    <div class="stepper-content">
-        @Steps[CurrentStep].Content
+    @* FORM NAVIGATION TABS (Replacing your numeric Step 1, 2, 3) *@
+    <div class="sage-tab-header">
+        <FluentTabs @bind-ActiveTabId="@ActiveFormId" OnTabChange="HandleTabChange">
+            <FluentTab Id="contact" Label="Contact" Icon="@(new Icons.Regular.Size20.ContactCard())" />
+            <FluentTab Id="order" Label="Order" Icon="@(new Icons.Regular.Size20.Cart())" />
+            <FluentTab Id="task" Label="Task" Icon="@(new Icons.Regular.Size20.ClipboardTask())" />
+            <FluentTab Id="quote" Label="Quote" Icon="@(new Icons.Regular.Size20.DocumentTarget())" />
+            <FluentTab Id="kb" Label="Knowledge" Icon="@(new Icons.Regular.Size20.Book())" />
+        </FluentTabs>
     </div>
 
-    <!-- ACTIONS -->
-    <div class="stepper-actions">
-
-        <button class="btn btn-secondary"
-                @onclick="Prev"
-                disabled="@(CurrentStep == 0)">
-            Back
-        </button>
-
-        @if (IsLast)
-        {
-            <button class="btn btn-success" @onclick="Finish">Finish</button>
-        }
-        else
-        {
-            <button class="btn btn-primary" @onclick="Next">Next</button>
-        }
-
+    @* DYNAMIC CONTENT VIEWPORT *@
+    <div class="sage-form-viewport">
+        <div class="form-scroll-container">
+            @switch (ActiveFormId)
+            {
+                case "contact":
+                    <NewContactForm OnCancel="ResetToDashboard" />
+                    break;
+                case "order":
+                    <AddSalesOrderForm OnCancel="ResetToDashboard" />
+                    break;
+                case "task":
+                    <CreateTaskForm OnCancel="ResetToDashboard" />
+                    break;
+                case "quote":
+                    <CreateQuoteForm OnCancel="ResetToDashboard" />
+                    break;
+                case "kb":
+                    <SendKnowledgeForm OnCancel="ResetToDashboard" />
+                    break;
+                default:
+                    <div class="dashboard-placeholder">
+                        <FluentIcon Value="@(new Icons.Regular.Size48.BoxMultiple())" Color="Color.Disabled" />
+                        <p>Select a Quick Action to begin.</p>
+                    </div>
+                    break;
+            }
+        </div>
     </div>
-
 </div>
 
 @code {
+    [Parameter] public string ActiveFormId { get; set; } = "contact";
 
-    [Parameter] public List<FormStep> Steps { get; set; } = new();
-    [Parameter] public EventCallback OnCompleted { get; set; }
-
-    private int CurrentStep = 0;
-    private bool IsLast => CurrentStep == Steps.Count - 1;
-
-    private async Task Next()
+    // This method allows the Toolbar to switch the form
+    public void SetActiveForm(string formId)
     {
-        if (!await Validate()) return;
-        CurrentStep++;
+        ActiveFormId = formId;
+        StateHasChanged();
     }
 
-    private void Prev() => CurrentStep--;
-
-    private async Task Finish()
+    private void HandleTabChange(FluentTab tab)
     {
-        if (!await Validate()) return;
-        await OnCompleted.InvokeAsync();
+        ActiveFormId = tab.Id ?? "contact";
     }
 
-    private async Task<bool> Validate()
+    private void ResetToDashboard()
     {
-        var step = Steps[CurrentStep];
-        if (step.Validate == null) return true;
-        return await step.Validate.Invoke();
-    }
-
-    public class FormStep
-    {
-        public string Title { get; set; } = string.Empty;
-        public RenderFragment? Content { get; set; }
-        public Func<Task<bool>>? Validate { get; set; } 
+        ActiveFormId = "none";
     }
 }
-
-<!-- CODE END -->

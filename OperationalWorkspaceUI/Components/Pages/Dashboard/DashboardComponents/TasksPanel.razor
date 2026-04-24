@@ -1,53 +1,49 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
-@using OperationalWorkspace.Domain.Enums @* Fix 1: Added for TaskPriority enum *@
+@using OperationalWorkspace.Domain.Enums
 @using Microsoft.FluentUI.AspNetCore.Components
 @implements IDisposable
 @inject DashboardState State
 
-<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+<FluentCard Class="tasks-widget-card">
     @* Panel Header *@
-    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">My Tasks</h3>
-        @* Fix 2: Fully qualified icon path *@
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronUp())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
+    <div class="panel-header">
+        <h3>My Tasks</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
-    @* Tab Section *@
-    <div class="task-tabs" style="display: flex; border-bottom: 2px solid #f1f5f9; margin-bottom: 16px;">
-        <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")" @onclick='() => SetTab("Pending")' style="cursor:pointer; padding: 8px 12px;">
+    @* Tab Section (Image Match: Minimalist Tabs) *@
+    <div class="task-tabs">
+        <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")" @onclick='() => SetTab("Pending")'>
             Pending (@State.CurrentTasks.Count(t => t.Status != "Completed"))
         </div>
-        <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SetTab("Overdue")' style="cursor:pointer; padding: 8px 12px;">
+        <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SetTab("Overdue")'>
             Overdue (@State.CurrentTasks.Count(t => t.DueDate < DateTime.Now && t.Status != "Completed"))
         </div>
-        <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SetTab("Completed")' style="cursor:pointer; padding: 8px 12px;">
-            Completed
+        <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SetTab("Completed")'>
+            Done
         </div>
     </div>
 
     @* Task List Content *@
-    <div class="task-list" style="display: flex; flex-direction: column; gap: 16px; min-height: 180px;">
+    <div class="task-list-container">
         @if (FilteredTasks != null && FilteredTasks.Any())
         {
             @foreach (var task in FilteredTasks)
             {
-                <div class="task-item" style="display: flex; align-items: flex-start; gap: 12px;">
+                <div class="task-item @(task.Status == "Completed" ? "task-done" : "")">
                     <FluentCheckbox Value="@(task.Status == "Completed")"
-                                    ValueChanged="@((bool val) => HandleStatusChange(task, val))" />
+                                    ValueChanged="@((bool val) => HandleStatusChange(task, val))"
+                                    Class="task-check" />
                     
-                    <div class="task-details" style="display: flex; flex-direction: column;">
-                        <div class="task-title" style="font-size: 0.95rem; font-weight: 500; color: #1e293b;">
-                            @task.Title
-                        </div>
-                        <div class="task-due" style="font-size: 0.8rem; color: #94a3b8;">
-                            Due: <span style="font-weight: 600; color: #64748b;">@FormatDueDate(task.DueDate)</span>
-                        </div>
+                    <div class="task-details">
+                        <span class="task-title">@task.Title</span>
+                        <span class="task-due">
+                            Due: <span class="date-highlight">@FormatDueDate(task.DueDate)</span>
+                        </span>
                     </div>
 
-                    <div style="margin-left: auto;">
-                        @* Fix 3: Compare Enum to Enum, not int. Fix 4: Appearance.Accent with Fill color *@
+                    <div class="task-prio-tag">
                         @if (task.Priority == TaskPriority.High)
                         {
                             <FluentBadge BackgroundColor="#ef4444" Color="white">High</FluentBadge>
@@ -58,17 +54,16 @@
         }
         else
         {
-            <div style="text-align:center; padding: 20px; color: #94a3b8;">
-                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.CheckmarkCircle())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
-                <p style="font-size: 0.85rem; margin-top: 8px;">No tasks in this category.</p>
+            <div class="task-empty-state">
+                <FluentIcon Value="@(new Icons.Regular.Size24.CheckmarkCircle())" Color="@Color.Success" />
+                <p>No tasks in this category.</p>
             </div>
         }
     </div>
 
     @* Footer Link *@
-    <div style="margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 12px; text-align: center;">
-        <FluentAnchor Appearance="Appearance.Lightweight" Href="/workspace/tasks" Style="color: #3b82f6; font-weight: 600;">
+    <div class="task-footer">
+        <FluentAnchor Appearance="Appearance.Lightweight" Href="/workspace/tasks" Class="footer-link">
             View All My Tasks →
         </FluentAnchor>
     </div>
@@ -77,10 +72,7 @@
 @code {
     private string ActiveTab = "Pending";
 
-    protected override void OnInitialized()
-    {
-        State.OnChange += StateHasChanged;
-    }
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
 
     private void SetTab(string tab) => ActiveTab = tab;
 
@@ -102,11 +94,8 @@
     private async Task HandleStatusChange(TaskDto task, bool isCompleted)
     {
         task.Status = isCompleted ? "Completed" : "Open";
-        StateHasChanged();
+        State.NotifyChanged(); // Use this to update overall Dashboard stats (like Ticket count)
     }
 
-    public void Dispose()
-    {
-        State.OnChange -= StateHasChanged;
-    }
+    public void Dispose() => State.OnChange -= StateHasChanged;
 }

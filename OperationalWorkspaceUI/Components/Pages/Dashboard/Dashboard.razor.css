@@ -118,3 +118,13 @@
     .dark-mode .widget-wrapper, .dark-mode .full-width-row {
         background: #1e293b;
     }
+/* Dashboard.razor.css - Final Polish */
+.dashboard-grid {
+    grid-template-rows: auto auto 1fr; /* Ensures top insights and actions take minimum space */
+}
+
+/* Ensure the CRM Snapshot and Email Insight have equal height */
+.widget-wrapper:nth-child(1),
+.widget-wrapper:nth-child(2) {
+    min-height: 280px;
+}

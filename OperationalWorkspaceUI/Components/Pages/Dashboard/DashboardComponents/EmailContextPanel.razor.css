@@ -1,0 +1,129 @@
+﻿.email-insight-card {
+    --card-padding: 16px;
+    width: 100%;
+    border-radius: 8px;
+    min-height: 350px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+/* Detail Rows */
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.8rem;
+}
+
+.no-avatar {
+    padding-left: 44px; /* Aligns text with the rows that have avatars */
+}
+
+.text-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.value {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+    .value.link {
+        color: var(--sage-light-blue);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+/* Linked Badge */
+.value-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-badge-linked {
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #dcfce7;
+    padding: 1px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+/* Intent & AI Summary */
+.intent-value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--sage-light-blue);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.ai-summary-box {
+    background-color: #f8fafc;
+    border-left: 4px solid var(--sage-light-blue);
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 0 4px 4px 0;
+}
+
+.ai-label {
+    font-weight: 800;
+    font-size: 0.7rem;
+    color: #334155;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.ai-summary-box p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+}
+
+/* Loading State */
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-muted);
+}

@@ -1,0 +1,86 @@
+﻿.create-task-card {
+    width: 100%;
+    padding: 16px;
+    border-radius: 8px;
+    min-height: 350px;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+.task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+/* PRIORITY SELECTOR (The Segmented Look) */
+.priority-selector {
+    display: flex;
+    gap: 4px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.priority-btn {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+    .priority-btn.active {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        color: var(--text-dark);
+    }
+
+    /* Specific Active Colors from Sage UI */
+    .priority-btn.high-btn.active {
+        background-color: #fee2e2;
+        color: #ef4444;
+    }
+
+    .priority-btn.medium-btn.active {
+        background-color: #fef9c3;
+        color: #854d0e;
+    }
+
+    .priority-btn.low-btn.active {
+        background-color: #f0fdf4;
+        color: #16a34a;
+    }
+
+/* Submit Button */
+::deep .submit-task-btn {
+    width: 100%;
+    height: 42px;
+    font-weight: 700 !important;
+    background-color: var(--sage-blue) !important;
+}

@@ -1,78 +1,68 @@
-﻿<!-- CODE START: CreateTaskForm.razor -->
-
-@page "/forms/create-task"
+﻿@page "/forms/create-task"
+@using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.State
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.TasksUIService TaskService
-@inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
+@inject WorkspaceState WorkspaceState
 @inject Radzen.NotificationService NotificationService
-@inject NavigationService NavigationService
+@inject NavigationManager NavManager
 
+<FormSection Title="Create New Task" 
+             SubmitLabel="Save Task" 
+             OnSubmit="SaveTaskAsync" 
+             OnCancel="HandleCancel">
 
+    <EditForm Model="NewTask" OnValidSubmit="SaveTaskAsync">
+        <DataAnnotationsValidator />
 
-<h3>Create Task</h3>
+        @* SECTION 1: BASIC INFO *@
+        <div class="sage-form-group">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">BASIC INFO</FluentLabel>
+            <FluentTextField Label="Title" @bind-Value="NewTask.Title" FullWidth="true" Placeholder="Enter task summary..." />
+            <ValidationMessage For="@(() => NewTask.Title)" />
+            
+            <FluentTextArea Label="Description" @bind-Value="NewTask.StatusDescription" Rows="3" FullWidth="true" Style="margin-top: 12px;" />
+        </div>
 
-<FormStepper Steps="@Steps" OnCompleted="SaveTaskAsync" />
+        @* SECTION 2: ASSIGNMENT *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">ASSIGNMENT</FluentLabel>
+            <FluentSelect Label="Assigned To" 
+                          TOption="string"
+                          @bind-Value="NewTask.AssignedTo" 
+                          Style="width: 100%;">
+                <FluentOption Value="">Select a user...</FluentOption>
+                @foreach (var user in WorkspaceState.Users)
+                {
+                    <FluentOption Value="@user.Id.ToString()">👤 @user.Name</FluentOption>
+                }
+            </FluentSelect>
+            <ValidationMessage For="@(() => NewTask.AssignedTo)" />
+        </div>
+
+        @* SECTION 3: SCHEDULE & PRIORITY *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">SCHEDULE & PRIORITY</FluentLabel>
+            <div class="form-grid-2-col">
+                <FluentDatePicker Label="Due Date" @bind-Value="NewTask.DueDate" Style="width: 100%;" />
+                
+                @* Adding a Priority selector to match the Sage professional look *@
+                <FluentSelect Label="Priority" FullWidth="true">
+                    <FluentOption Value="1">Low</FluentOption>
+                    <FluentOption Value="2" Selected="true">Medium</FluentOption>
+                    <FluentOption Value="3">High</FluentOption>
+                </FluentSelect>
+            </div>
+        </div>
+
+    </EditForm>
+</FormSection>
 
 @code {
-
-    private TaskDto NewTask = new();
-
-    private List<KeyValuePair<string,string>> Users =>
-        WorkspaceState.Users
-            .Select(u => new KeyValuePair<string,string>(u.Id.ToString(), u.Name))
-            .ToList();
-
-    private List<FormStepper.FormStep> Steps => new()
-    {
-        new()
-        {
-            Title = "Basic Info",
-            Content = @<FormSection Title="Task Info">
-                            <FormField Label="Title" @bind-Value="NewTask.Title" />
-                            <FormField Label="Description" Type="textarea"
-                                       @bind-Value="NewTask.StatusDescription" />
-                       </FormSection>,
-            Validate = async () =>
-                !string.IsNullOrWhiteSpace(NewTask.Title)
-        },
-
-        new()
-        {
-            Title = "Assignment",
-            Content = @<FormSection Title="Assignment">
-                            <FormField Label="Assigned To"
-                                       Type="select"
-                                       Options="Users"
-                                       @bind-Value="NewTask.AssignedTo" />
-                       </FormSection>,
-            Validate = async () =>
-                !string.IsNullOrWhiteSpace(NewTask.AssignedTo)
-        },
-
-        new()
-        {
-            Title = "Schedule",
-            Content = @<FormSection Title="Schedule">
-                            <FormField Label="Due Date"
-                                       Type="date"
-                                       @bind-Value="DueDateString" />
-                       </FormSection>,
-            Validate = async () => true
-        }
-    };
-
-    private string DueDateString
-    {
-        get => NewTask.DueDate.ToString("yyyy-MM-dd");
-        set
-        {
-            if (DateTime.TryParse(value, out var date))
-                NewTask.DueDate = date;
-        }
-    }
+    private TaskDto NewTask = new() { DueDate = DateTime.Now.AddDays(1) };
 
     private async Task SaveTaskAsync()
     {
@@ -86,10 +76,11 @@
             {
                 Severity = Radzen.NotificationSeverity.Success,
                 Summary = "Success",
-                Detail = "Task created successfully"
+                Detail = "Task created successfully in Sage X3",
+                Duration = 4000
             });
         
-            NavigationService.NavigateTo("/workspace/tasks");
+            NavManager.NavigateTo("/workspace/tasks");
         }
         else
         {
@@ -97,11 +88,17 @@
             {
                 Severity = Radzen.NotificationSeverity.Error,
                 Summary = "Error",
-                Detail = "Failed to create task"
+                Detail = "Failed to create task",
+                Duration = 4000
             });
         }
     }
 
+    private void HandleCancel()
+    {
+        NavManager.NavigateTo("/workspace/dashboard");
+    }
 }
 
-<!-- CODE END -->
+
+

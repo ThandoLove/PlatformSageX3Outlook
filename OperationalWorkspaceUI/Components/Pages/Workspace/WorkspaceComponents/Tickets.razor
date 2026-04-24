@@ -1,0 +1,63 @@
+﻿@page "/tickets"
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
+@implements IDisposable
+@inject DashboardState State
+@inject NavigationManager NavManager
+
+<div class="tickets-container">
+    <div class="page-header">
+        <div class="header-text">
+            <h2>Service Tickets</h2>
+            <p>Manage and track all customer service requests</p>
+        </div>
+        <FluentButton Appearance="Appearance.Accent"
+                      IconStart="@(new Icons.Regular.Size20.Add())"
+                      OnClick="@(() => NavManager.NavigateTo("/create-ticket"))">
+            New Ticket
+        </FluentButton>
+    </div>
+
+    <FluentCard Class="grid-card">
+        <FluentDataGrid Items="@FilteredTickets" ResizableColumns="true" Pagination="@_pagination" TGridItem="TicketDto">
+            <PropertyColumn Property="@(t => t.TicketNumber)" Title="ID" Sortable="true" />
+            <PropertyColumn Property="@(t => t.Subject)" Title="Subject" Sortable="true" />
+            <PropertyColumn Property="@(t => t.CustomerName)" Title="Customer" Sortable="true" />
+            
+            <TemplateColumn Title="Priority" Sortable="true">
+                <span class="prio-badge @context.Priority.ToLower()">@context.Priority</span>
+            </TemplateColumn>
+
+            <TemplateColumn Title="Status">
+                <FluentBadge Appearance="Appearance.Neutral">@context.Status</FluentBadge>
+            </TemplateColumn>
+
+            <PropertyColumn Property="@(t => t.CreatedAt.ToShortDateString())" Title="Created" Sortable="true" />
+
+            <TemplateColumn Title="Actions" Align="Align.End">
+                <FluentButton Appearance="Appearance.Stealth"
+                              IconStart="@(new Icons.Regular.Size16.Edit())"
+                              OnClick="@(() => EditTicket(context))" />
+            </TemplateColumn>
+        </FluentDataGrid>
+
+        <FluentPaginator State="@_pagination" />
+    </FluentCard>
+</div>
+
+@code {
+    private PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
+    private IQueryable<TicketDto>? FilteredTickets;
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += StateHasChanged;
+        // Mocking IQueryable from your State's list
+        FilteredTickets = State.CurrentTickets.AsQueryable();
+    }
+
+    private void EditTicket(TicketDto ticket) => NavManager.NavigateTo($"/tickets/edit/{ticket.Id}");
+
+    public void Dispose() => State.OnChange -= StateHasChanged;
+}

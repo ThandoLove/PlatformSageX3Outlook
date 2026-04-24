@@ -1,8 +1,95 @@
-﻿<!-- FormToolbar.razor -->
-<div class="form-toolbar">
-    @ChildContent
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+
+<div class="sage-header-top">
+    @* Left Side: Title/Logo *@
+    <div class="sage-logo-section">
+        <span class="sage-title">Sage X3 Contextual Workspace</span>
+    </div>
+
+    @* Center: Quick Action Buttons *@
+    <div class="sage-quick-actions">
+        <FluentButton IconStart="@(new Icons.Regular.Size20.ContactCard())" 
+                      Appearance="Appearance.Stealth"
+                      Style="color: white;"
+                      OnClick="@(() => OnActionSelected.InvokeAsync("contact"))">
+            New Contact
+        </FluentButton>
+        <FluentButton IconStart="@(new Icons.Regular.Size20.Cart())" 
+                      Appearance="Appearance.Stealth"
+                      Style="color: white;"
+                      OnClick="@(() => OnActionSelected.InvokeAsync("order"))">
+            New Order
+        </FluentButton>
+        <FluentButton IconStart="@(new Icons.Regular.Size20.ClipboardTask())" 
+                      Appearance="Appearance.Stealth"
+                      Style="color: white;"
+                      OnClick="@(() => OnActionSelected.InvokeAsync("task"))">
+            New Task
+        </FluentButton>
+    </div>
+    
+    @* Right Side: User Profile & Auth *@
+    <div class="sage-actions">
+        <div class="notification-icon" style="position: relative; margin-right: 10px;">
+            <FluentIcon Value="@(new Icons.Regular.Size24.Alert())" Color="Color.Fill" />
+            <span class="notification-dot"></span>
+        </div>
+
+        <AuthorizeView>
+            <Authorized>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <FluentLabel Style="color: white;">@context.User.Identity?.Name</FluentLabel>
+                    <div class="user-avatar-container">
+                        <img src="user-profile.jpg" alt="User" class="avatar-circle" />
+                    </div>
+                    <FluentButton Appearance="Appearance.Stealth" 
+                                  Style="color: #ff5252; font-weight: bold;" 
+                                  OnClick="HandleSignOut">Sign Out</FluentButton>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                
+                    Sign In
+                </FluentAnchor>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
 </div>
 
+<style>
+    .sage-header-top {
+        background-color: #1a365d; /* Dark Sage Blue */
+        height: 60px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .sage-title { font-size: 1.1rem; font-weight: 500; letter-spacing: 0.5px; }
+    .sage-quick-actions { display: flex; gap: 10px; }
+    .sage-actions { display: flex; align-items: center; gap: 15px; }
+    .avatar-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; }
+    .notification-dot {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 8px;
+        height: 8px;
+        background-color: #ff5252;
+        border-radius: 50%;
+        border: 1px solid #1a365d;
+    }
+</style>
+
 @code {
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback<string> OnActionSelected { get; set; }
+
+    private void HandleSignOut()
+    {
+        // This would typically redirect to your logout endpoint
+        Console.WriteLine("User signing out...");
+    }
 }

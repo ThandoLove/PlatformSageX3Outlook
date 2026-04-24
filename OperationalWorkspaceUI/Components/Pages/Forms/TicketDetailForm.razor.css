@@ -1,0 +1,79 @@
+﻿.form-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 1rem;
+}
+
+    .page-header h2 {
+        margin: 0;
+        color: var(--sage-blue);
+        font-weight: 700;
+    }
+
+.form-section {
+    width: 100%;
+}
+
+.section-title {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+}
+
+.attachment-zone {
+    border: 2px dashed #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #f8fafc;
+}
+
+.upload-drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.file-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.file-chip {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+.form-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 2rem;
+    border-top: 1px solid #f1f5f9;
+}

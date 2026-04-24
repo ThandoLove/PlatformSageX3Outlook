@@ -4,40 +4,35 @@
 @implements IDisposable
 @inject DashboardState State
 
-<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+<FluentCard Class="timeline-card">
     @* Panel Header *@
-    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Activity Timeline</h3>
-        @* Fix 1: Full path for Header Icon *@
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronUp())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
+    <div class="panel-header">
+        <h3>Activity Timeline</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
-    <div class="timeline-container" style="display: flex; flex-direction: column; gap: 20px; min-height: 250px;">
+    <div class="timeline-scroll-area">
         @if (Activities != null && Activities.Any())
         {
             @foreach (var group in Activities.OrderByDescending(a => a.Timestamp).GroupBy(a => a.Timestamp.Date))
             {
-                <div class="timeline-group" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div class="timeline-date" style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.025em;">
-                        @GetDateHeader(group.Key)
-                    </div>
+                <div class="timeline-date-label">@GetDateHeader(group.Key)</div>
 
+                <div class="timeline-group-container">
                     @foreach (var activity in group)
                     {
-                        <div class="timeline-item" style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background-color: @GetActivityColor(activity.Action);">
-                                @* Fix 2: Using Microsoft.FluentUI Color.Custom *@
-                                <FluentIcon Value="@GetActivityIcon(activity.Action)"
-                                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
-                                            CustomColor="white" />
+                        <div class="timeline-item">
+                            <!-- The vertical line marker -->
+                            <div class="timeline-marker" style="background-color: @GetActivityColor(activity.Action);">
+                                <FluentIcon Value="@GetActivityIcon(activity.Action)" Color="@Color.Custom" CustomColor="white" />
                             </div>
                             
                             <div class="timeline-content">
-                                <div class="activity-text" style="font-size: 0.9rem; color: #1e293b; font-weight: 500;">
-                                    @activity.Title
+                                <div class="activity-main">
+                                    <span class="activity-title">@activity.Title</span>
+                                    <span class="activity-time">@activity.Timestamp.ToString("HH:mm")</span>
                                 </div>
-                                <div style="font-size: 0.75rem; color: #94a3b8;">
+                                <div class="activity-sub">
                                     @activity.Action @(string.IsNullOrEmpty(activity.CreatedBy) ? "" : $"by {activity.CreatedBy}")
                                 </div>
                             </div>
@@ -48,14 +43,14 @@
         }
         else
         {
-            <div style="text-align: center; padding: 40px; color: #94a3b8;">
+            <div class="timeline-empty">
                 <p>No recent interactions found.</p>
             </div>
         }
     </div>
 
-    <div style="margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 12px; text-align: center;">
-        <FluentAnchor Appearance="Appearance.Lightweight" Href="#" Style="color: #3b82f6; font-weight: 600;">
+    <div class="timeline-footer">
+        <FluentAnchor Appearance="Appearance.Lightweight" Href="/activities" Class="footer-link">
             View Full Timeline →
         </FluentAnchor>
     </div>
@@ -75,30 +70,26 @@
 
     private string GetDateHeader(DateTime date)
     {
-        if (date.Date == DateTime.Today) return "Today";
-        if (date.Date == DateTime.Today.AddDays(-1)) return "Yesterday";
-        return date.ToString("MMM dd");
+        if (date.Date == DateTime.Today) return "TODAY";
+        if (date.Date == DateTime.Today.AddDays(-1)) return "YESTERDAY";
+        return date.ToString("MMM dd").ToUpper();
     }
 
-    @* Fix 3: Full path for Return Type and Icon constructors *@
-    private Microsoft.FluentUI.AspNetCore.Components.Icon GetActivityIcon(string action) => action.ToLower() switch
+    private Icon GetActivityIcon(string action) => action.ToLower() switch
     {
-        "email" or "created" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.AddSquare(),
-        "call" or "contacted" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Call(),
-        "meeting" or "scheduled" => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.CalendarLtr(),
-        _ => new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.CheckmarkCircle()
+        "email" or "created" => new Icons.Regular.Size16.Mail(),
+        "call" or "contacted" => new Icons.Regular.Size16.Call(),
+        "meeting" or "scheduled" => new Icons.Regular.Size16.CalendarLtr(),
+        _ => new Icons.Regular.Size16.CheckmarkCircle()
     };
 
     private string GetActivityColor(string action) => action.ToLower() switch
     {
-        "email" or "created" => "#22c55e",
-        "call" or "contacted" => "#14b8a6",
-        "meeting" or "scheduled" => "#f59e0b",
+        "email" or "created" => "#3b82f6", // Sage Blue
+        "call" or "contacted" => "#14b8a6", // Teal
+        "meeting" or "scheduled" => "#f59e0b", // Orange
         _ => "#64748b"
     };
 
-    public void Dispose()
-    {
-        State.OnChange -= StateHasChanged;
-    }
+    public void Dispose() => State.OnChange -= StateHasChanged;
 }

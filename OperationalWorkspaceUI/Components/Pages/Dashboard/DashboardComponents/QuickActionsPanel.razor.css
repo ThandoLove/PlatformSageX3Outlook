@@ -1,0 +1,97 @@
+﻿/* Container for the full card */
+.quick-actions-card {
+    width: 100%;
+    padding: 16px;
+    border-radius: 8px;
+    background: white;
+}
+
+/* Header style - Matches the image caps/bold look */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+/* THE IMAGE MATCH: 6 columns across the middle of the dashboard */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    text-align: center;
+}
+
+/* Individual Action Item */
+.action-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    background: none;
+    border: none;
+    padding: 4px;
+}
+
+    .action-item:hover {
+        transform: translateY(-3px);
+    }
+
+/* Text label below the icons */
+.action-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 8px;
+    white-space: nowrap;
+}
+
+/* SOLID COLOR CIRCLES - This replaces your white .action-icon circles */
+.icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* EXACT IMAGE PALETTE */
+.circle-blue {
+    background-color: #3b82f6;
+}
+/* Add Partner */
+.circle-teal {
+    background-color: #14b8a6;
+}
+/* Link Existing */
+.circle-orange {
+    background-color: #f59e0b;
+}
+/* Create Quote */
+.circle-indigo {
+    background-color: #6366f1;
+}
+/* Add Sales */
+.circle-blue-dark {
+    background-color: #2563eb;
+}
+/* Create Invoice */
+.circle-green {
+    background-color: #22c55e;
+}
+/* Attach Email */
+
+/* Ensuring FluentIcons inside stay white */
+::deep .icon-circle fluent-icon {
+    --fill: white !important;
+}

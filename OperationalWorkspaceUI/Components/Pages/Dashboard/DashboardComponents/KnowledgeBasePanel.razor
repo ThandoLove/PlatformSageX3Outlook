@@ -4,17 +4,15 @@
 @implements IDisposable
 @inject DashboardState State
 
-<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+<FluentCard Class="kb-widget-card">
     @* Panel Header *@
-    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Knowledge Base</h3>
-        @* FIX: Fully qualified Icon path *@
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronUp())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
+    <div class="panel-header">
+        <h3>Knowledge Base</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
     @* Search Bar *@
-    <div style="margin-bottom: 20px;">
+    <div class="kb-search-container">
         <FluentSearch Placeholder="Search articles..."
                       Style="width: 100%;"
                       @bind-Value="@_searchQuery"
@@ -22,40 +20,40 @@
     </div>
 
     @* Resource Links *@
-    <div class="kb-links" style="display: flex; flex-direction: column; gap: 4px;">
+    <div class="kb-links-container">
         @if (FilteredArticles != null && FilteredArticles.Any())
         {
             @foreach (var kb in FilteredArticles)
             {
-                <a href="@kb.Url" target="_blank" style="text-decoration: none; color: inherit;">
-                    <div class="kb-link-item" style="display: flex; align-items: center; padding: 8px; border-radius: 4px; transition: background 0.2s;">
+                <a href="@kb.Url" target="_blank" class="kb-link-wrapper">
+                    <div class="kb-link-item">
                         <FluentIcon Value="@GetIcon(kb.Title)" Color="@GetIconColor(kb.Title)" />
                         
-                        <span class="kb-text" style="flex-grow: 1; margin-left: 12px; font-size: 0.95rem; color: #334155;">
-                            @kb.Title
-                        </span>
+                        <div class="kb-text-group">
+                            <span class="kb-title">@kb.Title</span>
+                            <span class="kb-meta">Suggested for this context</span>
+                        </div>
                         
-                        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ArrowRight())"
-                                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent"
-                                    Style="opacity: 0.7;" />
+                        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())"
+                                    Color="@Color.Accent"
+                                    Class="arrow-icon" />
                     </div>
                 </a>
             }
         }
         else
         {
-            <div style="padding: 20px; text-align: center; color: #64748b;">
-                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Info())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
-                <p style="font-size: 0.85rem; margin-top: 8px;">No matching articles found.</p>
+            <div class="kb-empty">
+                <FluentIcon Value="@(new Icons.Regular.Size24.Info())" Color="@Color.Neutral" />
+                <p>No matching articles found.</p>
             </div>
         }
     </div>
 
     @* Footer Button *@
-    <div style="margin-top: 16px; border-top: 1px solid #f1f5f9; padding-top: 12px; text-align: center;">
-        <FluentButton Appearance="Appearance.Lightweight" Style="color: #3b82f6; font-weight: 600;">
-            Open Knowledge Base
+    <div class="kb-footer">
+        <FluentButton Appearance="Appearance.Lightweight" Class="footer-btn">
+            Open Full Knowledge Base
         </FluentButton>
     </div>
 </FluentCard>
@@ -63,38 +61,27 @@
 @code {
     private string? _searchQuery = "";
 
-    protected override void OnInitialized()
-    {
-        State.OnChange += StateHasChanged;
-    }
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
 
     private IEnumerable<KnowledgeDto> FilteredArticles =>
         string.IsNullOrWhiteSpace(_searchQuery)
             ? State.KnowledgeBase
             : State.KnowledgeBase.Where(a => a.Title.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
 
-    // FIX: Fully qualified Return Type and Icon constructors
-    private Microsoft.FluentUI.AspNetCore.Components.Icon GetIcon(string title) => title.ToLower() switch
+    private Icon GetIcon(string title) => title.ToLower() switch
     {
-        var t when t.Contains("pricing") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.Table(),
-        var t when t.Contains("document") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.Document(),
-        var t when t.Contains("case") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.Video(),
-        var t when t.Contains("faq") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.Chat(),
-        _ => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size20.Document()
+        var t when t.Contains("pricing") => new Icons.Filled.Size20.Table(),
+        var t when t.Contains("document") => new Icons.Filled.Size20.Document(),
+        var t when t.Contains("faq") => new Icons.Filled.Size20.Chat(),
+        _ => new Icons.Filled.Size20.Document()
     };
 
-    // FIX: Explicitly use Microsoft.FluentUI Color enum
-    private Microsoft.FluentUI.AspNetCore.Components.Color GetIconColor(string title) => title.ToLower() switch
+    private Color GetIconColor(string title) => title.ToLower() switch
     {
-        var t when t.Contains("pricing") => Microsoft.FluentUI.AspNetCore.Components.Color.Success,
-        var t when t.Contains("document") => Microsoft.FluentUI.AspNetCore.Components.Color.Warning,
-        var t when t.Contains("case") => Microsoft.FluentUI.AspNetCore.Components.Color.Accent,
-        var t when t.Contains("faq") => Microsoft.FluentUI.AspNetCore.Components.Color.Warning,
-        _ => Microsoft.FluentUI.AspNetCore.Components.Color.Neutral
+        var t when t.Contains("pricing") => Color.Success,
+        var t when t.Contains("document") => Color.Warning,
+        _ => Color.Neutral
     };
 
-    public void Dispose()
-    {
-        State.OnChange -= StateHasChanged;
-    }
+    public void Dispose() => State.OnChange -= StateHasChanged;
 }

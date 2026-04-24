@@ -1,112 +1,113 @@
-﻿@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+﻿@page "/forms/attach-email"
+@using Microsoft.FluentUI.AspNetCore.Components
+@* FIXED: Added the Icons alias *@
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Actions
 @using OperationalWorkspaceUI.UIServices.System
-<!-- CODE START: AttachEmailForm.razor -->
 
 @inject EmailContextState EmailState
 @inject QuickActionUIService Actions
 @inject Radzen.NotificationService Notifications
-@inject NavigationService NavigationService
+@inject NavigationManager NavManager
 
-<h3>Attach Email</h3>
+<FormSection Title="Attach Email to Sage Record"
+             SubmitLabel="Attach to Sage X3"
+             IsPrefilled="@(EmailState.CurrentEmail != null)"
+             OnSubmit="HandleSubmit"
+             OnCancel="HandleCancel">
 
-@if (EmailState.CurrentEmail == null)
-{
-    <EmptyState Message="No email selected." />
-}
-else
-{
-    <FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
-}
+    @if (EmailState.CurrentEmail == null)
+    {
+        <div class="dashboard-placeholder">
+            @* FIXED: Swapped MailSettings for Mail, which exists in Size48 *@
+            <FluentIcon Value="@(new Icons.Regular.Size48.Mail())" Color="Color.Disabled" />
+            <p>No email selected. Please select an email to attach.</p>
+            <FluentButton Appearance="Appearance.Outline" OnClick="HandleCancel">Return to Dashboard</FluentButton>
+        </div>
+    }
+
+    else
+    {
+        <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            @* SECTION 1: EMAIL SOURCE INFO *@
+            <div class="sage-form-group">
+                @* FIXED: Changed Typography.Caption to Typography.Body *@
+                <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">SOURCE EMAIL</FluentLabel>
+                <div style="background-color: #f9f9f9; padding: 12px; border-radius: 4px; border: 1px solid #edebe9;">
+                    <FluentTextField Label="Subject" Value="@EmailState.CurrentEmail.Subject" Readonly="true" FullWidth="true" />
+                    <FluentTextField Label="From" Value="@EmailState.CurrentEmail.From" Readonly="true" FullWidth="true" Style="margin-top: 8px;" />
+                </div>
+            </div>
+
+            @* SECTION 2: TARGET RECORD *@
+            <div class="sage-form-group" style="margin-top: 24px;">
+                @* FIXED: Changed Typography.Caption to Typography.Body *@
+                <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">TARGET RECORD</FluentLabel>
+                <div class="form-grid-2-col">
+                    @* FIXED: Added TOption="string" *@
+                    <FluentSelect Label="Entity Type" TOption="string" @bind-Value="Model.EntityType" Style="width: 100%;">
+                        <FluentOption TOption="string" Value="Client">Client / Business Partner</FluentOption>
+                        <FluentOption TOption="string" Value="Order">Sales Order</FluentOption>
+                        <FluentOption TOption="string" Value="Task">Operational Task</FluentOption>
+                        <FluentOption TOption="string" Value="Quote">Sales Quote</FluentOption>
+                    </FluentSelect>
+
+                    <div>
+                        <FluentTextField Label="Record ID / Reference" @bind-Value="Model.RecordId" Placeholder="e.g. SON001234" FullWidth="true" />
+                        <ValidationMessage For="@(() => Model.RecordId)" />
+                    </div>
+                </div>
+            </div>
+
+            @* SECTION 3: OPTIONS *@
+            <div class="sage-form-group" style="margin-top: 20px;">
+                <FluentCheckbox Label="Copy email attachments to Sage" @bind-Value="IncludeAttachments" />
+                <FluentCheckbox Label="Mark as 'Sync Complete' in Outlook" @bind-Value="MarkProcessed" />
+            </div>
+        </EditForm>
+    }
+</FormSection>
 
 @code {
-
     private AttachEmailModel Model = new();
-
-    private List<KeyValuePair<string, string>> EntityOptions = new()
-    {
-        new("Client", "Client"),
-        new("Order", "Order"),
-        new("Task", "Task")
-    };
-
-    private List<FormStepper.FormStep> Steps => new()
-    {
-        new()
-        {
-            Title = "Email",
-            Content = @<FormSection Title="Email Details">
-                            @* Change these lines inside the 'Steps' list *@
-                            <FormField Label="Subject" Value="@EmailState.CurrentEmail!.Subject" />
-                            <FormField Label="From" Value="@EmailState.CurrentEmail!.From" />
-
-                       </FormSection>,
-            Validate = async () => true
-        },
-
-        new()
-        {
-            Title = "Target",
-            Content = @<FormSection Title="Attach To">
-                            <FormField Label="Entity Type"
-                                       Type="select"
-                                       Options="EntityOptions"
-                                       @bind-Value="Model.EntityType" />
-
-                            <FormField Label="Record ID"
-                                       @bind-Value="Model.RecordId" />
-                       </FormSection>,
-            Validate = async () =>
-                !string.IsNullOrWhiteSpace(Model.EntityType) &&
-                !string.IsNullOrWhiteSpace(Model.RecordId)
-        }
-    };
+    private bool IncludeAttachments = true;
+    private bool MarkProcessed = true;
 
     private async Task HandleSubmit()
     {
-        if (EmailState.CurrentEmail == null)
-        {
-            // Fix 1: NotificationService.Error replacement
-            Notifications.Notify(new Radzen.NotificationMessage
-            {
-                Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Error",
-                Detail = "No email context available"
-            });
-            return;
-        }
-
         try
         {
             await Actions.AttachEmailAsync(Model);
             
-            // Fix 2: NotificationService.Success replacement
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
                 Summary = "Success",
-                Detail = "Email attached successfully"
+                Detail = "Email successfully linked to Sage X3 record.",
+                Duration = 4000
             });
             
-            NavigationService.NavigateTo("/dashboard");
+            NavManager.NavigateTo("/dashboard");
         }
-        catch
+        catch (Exception ex)
         {
-            // Fix 3: NotificationService.Error replacement
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Error",
-                Detail = "Failed to attach email"
+                Summary = "Sync Error",
+                Detail = "Failed to attach: " + ex.Message
             });
         }
     }
 
+    private void HandleCancel() => NavManager.NavigateTo("/dashboard");
+
     public class AttachEmailModel
     {
-        public string? EntityType { get; set; }
-        public string? RecordId { get; set; }
+        public string EntityType { get; set; } = "Client";
+        public string RecordId { get; set; } = string.Empty;
     }
 }
-
-<!-- CODE END -->

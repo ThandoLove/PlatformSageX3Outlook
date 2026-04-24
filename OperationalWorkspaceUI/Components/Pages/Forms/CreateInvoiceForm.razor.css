@@ -1,0 +1,29 @@
+﻿.sage-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.item-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 8px;
+    background: #fcfcfc;
+    border-radius: 4px;
+    border: 1px solid #f3f2f1;
+}
+
+.items-list {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+

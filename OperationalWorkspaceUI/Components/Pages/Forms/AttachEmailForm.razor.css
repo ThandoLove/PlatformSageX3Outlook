@@ -1,0 +1,17 @@
+﻿.sage-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.dashboard-placeholder {
+    text-align: center;
+    padding: 40px;
+    color: #a19f9d;
+}

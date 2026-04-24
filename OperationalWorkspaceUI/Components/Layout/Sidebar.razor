@@ -7,49 +7,39 @@
 
 <div class="sage-sidebar">
     <div class="sidebar-header">
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.LineHorizontal3())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Fill" />
+        <FluentIcon Value="@(new Icons.Regular.Size24.LineHorizontal3())" Color="@Color.Fill" />
         <span class="brand-text">Sage X3 Contextual Workspace</span>
     </div>
 
     <nav class="nav-menu">
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Board())" Title="Dashboard" Selected="true" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Person())" Title="Contacts" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Building())" Title="Accounts" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Board())" Href="/dashboard" Match="NavLinkMatch.All">Dashboard</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Person())" Href="/contacts">Contacts</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Building())" Href="/accounts">Accounts</FluentNavLink>
         
-        @* FIX: 'TicketDiagonal' exists in Size20 Regular; 'Ticket' often does not *@
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.TicketDiagonal())" Title="Tickets" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Pulse())" Title="Activities" />
-        
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Cart())" Title="Sales Orders" />
-        @* FIX: 'Document' or 'DocumentText' are the safe bets for Size20 Regular *@
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Document())" Title="Quotes" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Receipt())" Title="Invoices" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Briefcase())" Title="Cases" />
+        @* UPDATED: Tickets & Activities swapped in *@
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.TicketDiagonal())" Href="/tickets">Tickets</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Pulse())" Href="/activities">Activities</FluentNavLink>
         
         <div class="sidebar-divider"></div>
 
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Attach())" Title="Attach Documents" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Library())" Title="Knowledge Base" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.AddSquare())" Title="Create Task (Admin)" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.CheckmarkCircle())" Title="My Tasks" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Poll())" Title="Reports" />
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Settings())" Title="Admin" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Cart())" Href="/sales-orders">Sales Orders</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Document())" Href="/quotes">Quotes</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Receipt())" Href="/invoices">Invoices</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Briefcase())" Href="/cases">Cases</FluentNavLink>
+        
+        <div class="sidebar-divider"></div>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Library())" Href="/kb">Knowledge Base</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.CheckmarkCircle())" Href="/tasks">My Tasks</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Settings())" Href="/admin">Admin</FluentNavLink>
     </nav>
 
     <div class="sidebar-footer">
-        <FluentNavLink Icon="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Settings())" Title="Settings" />
+        <FluentNavLink Icon="@(new Icons.Regular.Size20.Settings())" Href="/settings">Settings</FluentNavLink>
     </div>
 </div>
 
 @code {
-    protected override void OnInitialized()
-    {
-        DashboardState.OnChange += StateHasChanged;
-    }
-
-    public void Dispose()
-    {
-        DashboardState.OnChange -= StateHasChanged;
-    }
+    protected override void OnInitialized() => DashboardState.OnChange += StateHasChanged;
+    public void Dispose() => DashboardState.OnChange -= StateHasChanged;
 }

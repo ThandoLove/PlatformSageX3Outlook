@@ -1,71 +1,95 @@
-﻿@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+﻿@page "/forms/send-knowledge"
+
+@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.System
 
 @inject KnowledgeUIService KBService
 @inject Radzen.NotificationService Notifications
 @inject ModalService ModalService
+@inject NavigationManager NavManager
 
-<div class="sage-form-content">
-    @* We remove the H3 header here because the ModalService provides the header *@
-    <FormStepper Steps="@Steps" OnCompleted="HandleSubmit" />
-</div>
+@* Standardized Sage Wrapper *@
+<FormSection Title="Send Knowledge Article"
+             SubmitLabel="Send Article"
+             OnSubmit="HandleSubmit"
+             OnCancel="HandleCancel">
+
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        @* SECTION 1: SEARCH ARTICLE *@
+        <div class="sage-form-group">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">KNOWLEDGE BASE SEARCH</FluentLabel>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">Find a Sage X3 article to transmit to the recipient.</p>
+            
+            <FluentTextField Label="Search Article Keywords"
+                             @bind-Value="Model.SearchQuery"
+                             Placeholder="e.g. Invoice Setup, Stock Management..."
+                             FullWidth="true"
+                             Required="true" />
+            <ValidationMessage For="@(() => Model.SearchQuery)" />
+        </div>
+
+        @* SECTION 2: RECIPIENT MESSAGE *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">PERSONAL MESSAGE</FluentLabel>
+            <FluentTextArea Label="Note to Recipient"
+                            @bind-Value="Model.Message"
+                            Placeholder="Add context for this article..."
+                            Rows="6"
+                            FullWidth="true" />
+        </div>
+
+        @* SECTION 3: DELIVERY OPTIONS *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentCheckbox Label="Include link to documentation portal" @bind-Value="IncludeLink" />
+            <FluentCheckbox Label="Notify me when article is opened" @bind-Value="TrackOpen" />
+        </div>
+
+    </EditForm>
+</FormSection>
 
 @code {
-    // Shared model logic
     private OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel Model = new();
-
-    private List<FormStepper.FormStep> Steps => new()
-    {
-        new() {
-            Title = "Search",
-            @* Using Fluent UI for exact visual match with the dashboard *@
-            Content = @<div style="display: flex; flex-direction: column; gap: 10px; padding: 5px;">
-                            <FluentTextField Label="Search Sage X3 Knowledge" 
-                                             @bind-Value="Model.SearchQuery" 
-                                             Placeholder="Enter keywords..."
-                                             Style="width: 100%;" 
-                                             Required="true" />
-                       </div>,
-            Validate = async () => !string.IsNullOrWhiteSpace(Model.SearchQuery)
-        },
-        new() {
-            Title = "Message",
-            Content = @<div style="display: flex; flex-direction: column; gap: 10px; padding: 5px;">
-                            <FluentTextArea Label="Note to Recipient" 
-                                            @bind-Value="Model.Message" 
-                                            Placeholder="Add context for this article..."
-                                            Style="width: 100%;" 
-                                            Rows="4" />
-                       </div>,
-            Validate = async () => true
-        }
-    };
+    private bool IncludeLink = true;
+    private bool TrackOpen = true;
 
     private async Task HandleSubmit()
     {
-        try 
+        try
         {
             await KBService.SendKnowledgeAsync(Model);
             
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
-                Summary = "Knowledge Sent",
-                Detail = "Article transmitted to recipient."
+                Summary = "Sage X3 Update",
+                Detail = "Knowledge article sent successfully.",
+                Duration = 4000
             });
             
-            // CRITICAL: Close the dashboard modal on success
+            // Close modal if open
             await ModalService.CloseModal();
+
+            // Navigate back to workspace
+            NavManager.NavigateTo("/workspace/knowledge");
         }
         catch (Exception ex)
         {
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Error",
-                Detail = "Failed to send: " + ex.Message
+                Summary = "Delivery Failed",
+                Detail = "Could not transmit article: " + ex.Message
             });
         }
+    }
+
+    private void HandleCancel()
+    {
+        ModalService.CloseModal();
+        NavManager.NavigateTo("/workspace/knowledge");
     }
 }

@@ -1,76 +1,120 @@
 ﻿@page "/forms/create-quote"
 
+@using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceApplication.DTOs
 
 @inject EmailContextState EmailState
-@* FIX 1: Inject the service that actually has the Create methods *@
 @inject OrdersUIService OrderService
 @inject Radzen.NotificationService Notifications
+@inject NavigationManager NavManager
 
-<h3>Create Quote</h3>
+@* Standardized Sage Wrapper *@
+<FormSection Title="Create Quote" 
+             SubmitLabel="Send Quote to Sage" 
+             IsPrefilled="@isPrefilled"
+             OnSubmit="SubmitForm" 
+             OnCancel="HandleCancel">
 
-@if (Steps != null)
-{
-    <FormStepper Steps="@Steps" OnCompleted="SubmitForm" />
-}
+    <EditForm Model="Model" OnValidSubmit="SubmitForm">
+        <DataAnnotationsValidator />
+
+        @* SECTION 1: CLIENT IDENTIFICATION *@
+        <div class="sage-form-group">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">CLIENT DETAILS</FluentLabel>
+            <div class="form-grid-2-col">
+                <FluentTextField Label="Client Email" @bind-Value="Model.ClientEmail" Readonly="true" FullWidth="true" />
+                <FluentTextField Label="Quote Name / Reference" @bind-Value="Model.Name" Placeholder="e.g. QTE-2024-001" FullWidth="true" />
+            </div>
+            <ValidationMessage For="@(() => Model.Name)" />
+        </div>
+
+        @* SECTION 2: QUOTE DETAILS *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">DETAILS & DESCRIPTION</FluentLabel>
+            <FluentTextArea Label="Description" @bind-Value="Model.Description" Rows="3" FullWidth="true" />
+            
+            <div class="form-grid-2-col" style="margin-top: 12px;">
+                <FluentNumberField Label="Amount" @bind-Value="Model.Amount" FullWidth="true">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.CurrencyDollar())" Slot="start" />
+                </FluentNumberField>
+                <FluentSelect Label="Payment Terms" FullWidth="true">
+                    <FluentOption Value="Net30">Net 30</FluentOption>
+                    <FluentOption Value="DueOnReceipt">Due on Receipt</FluentOption>
+                    <FluentOption Value="Net60">Net 60</FluentOption>
+                </FluentSelect>
+            </div>
+        </div>
+
+        @* SECTION 3: VALIDITY *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">VALIDITY</FluentLabel>
+            <div class="form-grid-2-col">
+                <FluentDatePicker Label="Valid Until" Style="width: 100%;" />
+                <FluentNumberField Label="Discount %" FullWidth="true" />
+            </div>
+        </div>
+
+    </EditForm>
+</FormSection>
 
 @code {
-    private List<FormStepper.FormStep> Steps = default!;
     public CreateQuoteModel Model = new();
+    private bool isPrefilled = false;
 
     protected override void OnInitialized()
     {
+        // Automatically pull data from the active email context
         if (EmailState.CurrentEmail != null)
         {
             Model.ClientEmail = EmailState.CurrentEmail.From;
             Model.Description = EmailState.CurrentEmail.Subject;
+            isPrefilled = true;
         }
-
-        Steps = new()
-        {
-            new FormStepper.FormStep { Title = "Client", Content = b => { /*...*/ }, Validate = async () => !string.IsNullOrWhiteSpace(Model.ClientEmail) },
-            new FormStepper.FormStep { Title = "Details", Content = b => { /*...*/ }, Validate = async () => !string.IsNullOrWhiteSpace(Model.Name) && Model.Amount > 0 }
-        };
     }
 
     private async Task SubmitForm()
     {
         try
         {
-            // FIX 2: Use CreateOrderAsync from OrdersUIService
-            // (You may need to map CreateQuoteModel to CreateOrderDto)
+            // Map the Quote Model to the Order DTO for the Service
             var dto = new CreateOrderDto
             {
                 OrderNumber = Model.Name ?? "QUOT-NEW",
-                TotalAmount = Model.Amount
-                // Add other mappings as needed
+                TotalAmount = Model.Amount,
+                // Add logic here for specific Quote-to-Sage mapping
             };
 
             var success = await OrderService.CreateOrderAsync(dto);
 
             if (success)
             {
-                // FIX 3: Correct Radzen Notify Syntax
                 Notifications.Notify(new Radzen.NotificationMessage
                 {
                     Severity = Radzen.NotificationSeverity.Success,
                     Summary = "Success",
-                    Detail = "Quote/Order created successfully"
+                    Detail = "Quote created successfully in Sage X3",
+                    Duration = 4000
                 });
+                NavManager.NavigateTo("/workspace/quotes");
             }
         }
-        catch
+        catch (Exception ex)
         {
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Error,
                 Summary = "Error",
-                Detail = "Failed to create"
+                Detail = "Failed to create quote: " + ex.Message
             });
         }
+    }
+
+    private void HandleCancel()
+    {
+        NavManager.NavigateTo("/workspace/dashboard");
     }
 
     public class CreateQuoteModel
@@ -81,3 +125,4 @@
         public decimal Amount { get; set; }
     }
 }
+

@@ -1,0 +1,70 @@
+﻿/* Container is now simplified because FormSection.razor handles the Card styling */
+.form-container {
+    width: 100%;
+    background: transparent;
+}
+
+/* Header matches the Sage Blue tone and compact spacing */
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: #1a365d; /* Sage Blue */
+}
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+/* Groups and Sections */
+.sage-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+/* The small, bold uppercase titles like "IDENTITY" */
+.section-title {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #605e5c; /* Muted Sage Gray */
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #edebe9;
+    padding-bottom: 4px;
+}
+
+/* Grid for side-by-side fields (Phone/Mobile, City/Zip) */
+.form-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+    /* Ensuring Fluent components take full width of their grid cell */
+    .form-grid-2-col > div,
+    .form-grid-2-col > fluent-text-field {
+        width: 100%;
+    }
+
+/* Responsive fix: Stack fields on very small screens */
+@media (max-width: 480px) {
+    .form-grid-2-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Footer override to match the specific Green color from Image 1 */
+::deep .fluent-button-submit {
+    background-color: #1b5e20 !important;
+    border-color: #1b5e20 !important;
+}
+
+::deep .fluent-button-cancel {
+    color: #605e5c !important;
+}

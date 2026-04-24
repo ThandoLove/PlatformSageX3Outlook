@@ -1,19 +1,98 @@
 ﻿@using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
+@implements IDisposable
 @inject DashboardState State
 
-<div class="dashboard-panel system-health">
-    <h4>System Health</h4>
-    <div class="panel-content">
-        @* Wrap complex C# in @(...) to fix the attribute error *@
-        <KpiWidget Label="Sage Status"
-                   Value="@(State.AdminHealth.SageX3Connected ? "Connected" : "Disconnected")"
-                   Variant="@(State.AdminHealth.SageX3Connected ? "success" : "danger")" />
-
-        <KpiWidget Label="API Health"
-                   Value="@(State.AdminHealth.APIHealthStatus ?? "Unknown")" />
-
-        <KpiWidget Label="Failed Syncs"
-                   Value="@State.AdminHealth.FailedTransactions"
-                   Variant="warning" />
+<FluentCard Class="health-widget-card">
+    <div class="panel-header">
+        <h3>System Health</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="@Color.Neutral" />
     </div>
-</div>
+
+    <div class="health-content">
+        <!-- Sage X3 ERP Status -->
+        <div class="status-item">
+            <div class="status-info">
+                <span class="status-label">Sage X3 ERP</span>
+                <span class="status-pill @(State.AdminHealth.SageX3Connected ? "status-online" : "status-offline")">
+                    @if (State.AdminHealth.SageX3Connected)
+                    {
+                        <span class="pulse-dot"></span>
+                    }
+                    @(State.AdminHealth.SageX3Connected ? "Connected" : "Disconnected")
+                </span>
+            </div>
+            <div class="status-meta">Primary ERP Endpoint</div>
+        </div>
+
+        <!-- API Gateway Health -->
+        <div class="status-item">
+            <div class="status-info">
+                <span class="status-label">API Gateway</span>
+                <span class="status-pill @(State.AdminHealth.APIHealthStatus == "Healthy" ? "status-online" : "status-warning")">
+                    @State.AdminHealth.APIHealthStatus
+                </span>
+            </div>
+            <div class="status-meta">Gateway Connectivity</div>
+        </div>
+
+        <!-- Transaction Sync Status -->
+        <div class="status-item">
+            <div class="status-info">
+                <span class="status-label">Failed Syncs</span>
+                <span class="status-pill @(State.AdminHealth.FailedTransactions > 0 ? "status-warning" : "status-online")">
+                    @State.AdminHealth.FailedTransactions Errors
+                </span>
+            </div>
+            <div class="status-meta">Pending Retry Queue</div>
+        </div>
+    </div>
+
+    @* UPDATED FOOTER: Timestamp + Refresh Button *@
+    <div class="health-footer">
+        <span class="refresh-label">Last updated: @_lastUpdated</span>
+        <FluentButton Appearance="Appearance.Stealth"
+                      IconStart="@(new Icons.Regular.Size16.ArrowClockwise())"
+                      OnClick="ManualRefresh"
+                      Loading="_isRefreshing"
+                      Title="Refresh Now" />
+    </div>
+</FluentCard>
+
+@code {
+    private System.Threading.Timer? _refreshTimer;
+    private string _lastUpdated = DateTime.Now.ToString("HH:mm:ss");
+    private bool _isRefreshing = false;
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += StateHasChanged;
+
+        // Auto-refresh timer (60s)
+        _refreshTimer = new System.Threading.Timer(async _ =>
+        {
+            await ManualRefresh();
+        }, null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
+    }
+
+    private async Task ManualRefresh()
+    {
+        await InvokeAsync(async () =>
+        {
+            _isRefreshing = true;
+            StateHasChanged();
+
+            await State.LoadDashboardAsync();
+            
+            _lastUpdated = DateTime.Now.ToString("HH:mm:ss");
+            _isRefreshing = false;
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+        _refreshTimer?.Dispose();
+    }
+}

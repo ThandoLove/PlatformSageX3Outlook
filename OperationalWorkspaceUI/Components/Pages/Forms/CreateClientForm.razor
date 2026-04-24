@@ -1,61 +1,88 @@
 ﻿@page "/forms/create-client"
+@using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceApplication.DTOs
+
 @inject OperationalWorkspaceUI.UIServices.Workspace.BusinessPartnerUIService BPService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
 @inject Radzen.NotificationService NotificationService
-@inject NavigationService NavigationService
+@inject NavigationManager NavManager
 
-<h3>Create Client</h3>
+<FormSection Title="Create Sage X3 Client"
+             SubmitLabel="Save Client to Sage"
+             OnSubmit="SaveClientAsync"
+             OnCancel="HandleCancel">
 
-<div class="form-container">
-    <FormStepper Steps="@Steps" OnCompleted="SaveClientAsync" />
-</div>
+    <EditForm Model="NewClient" OnValidSubmit="SaveClientAsync">
+        <DataAnnotationsValidator />
+
+        @* SECTION 1: IDENTITY & CATEGORY *@
+        <div class="sage-form-group">
+            @* FIXED: Changed Typography.Caption to Typography.Body *@
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">BUSINESS IDENTITY</FluentLabel>
+            <div class="form-grid-2-col">
+                <div>
+                    <FluentTextField Label="Client Name" @bind-Value="NewClient.Name" FullWidth="true" />
+                    <ValidationMessage For="@(() => NewClient.Name)" />
+                </div>
+                @* FIXED: Added TOption="string" *@
+                <FluentSelect Label="Client Category" TOption="string" Style="width: 100%;">
+                    <FluentOption TOption="string" Value="DOM">Domestic Customer</FluentOption>
+                    <FluentOption TOption="string" Value="INT">International Customer</FluentOption>
+                    <FluentOption TOption="string" Value="EU">EU Customer</FluentOption>
+                </FluentSelect>
+            </div>
+            <div style="margin-top: 12px;">
+                <FluentTextField Label="Tax / VAT Number" Placeholder="e.g. GB123456789" FullWidth="true" />
+            </div>
+        </div>
+
+        @* SECTION 2: CONTACT INFORMATION *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
+            <FluentTextField Label="Email Address" @bind-Value="NewClient.Email" FullWidth="true" />
+            
+            <div class="form-grid-2-col" style="margin-top: 12px;">
+                <FluentTextField Label="Phone Number" @bind-Value="NewClient.PhoneNumber" FullWidth="true" />
+                <FluentTextField Label="Website" Placeholder="https://" FullWidth="true" />
+            </div>
+        </div>
+
+        @* SECTION 3: ADDRESS *@
+        <div class="sage-form-group" style="margin-top: 24px;">
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
+            <FluentTextArea Label="Full Address" @bind-Value="NewClient.Address" Rows="3" FullWidth="true" />
+            
+            <div class="form-grid-2-col" style="margin-top: 12px;">
+                <FluentTextField Label="City" FullWidth="true" />
+                <FluentTextField Label="Postal Code" FullWidth="true" />
+            </div>
+        </div>
+
+    </EditForm>
+</FormSection>
 
 @code {
     private ClientDto NewClient = new();
 
-    private List<FormStepper.FormStep> Steps => new()
-    {
-        new()
-        {
-            Title = "Basic Info",
-            Content = @<FormSection Title="Client Details">
-                            <FormField Label="Client Name" @bind-Value="NewClient.Name" />
-                            <FormField Label="Email" @bind-Value="NewClient.Email" />
-                       </FormSection>,
-            Validate = async () => !string.IsNullOrWhiteSpace(NewClient.Name)
-        },
-        new()
-        {
-            Title = "Contact",
-            Content = @<FormSection Title="Contact Info">
-                            <FormField Label="Phone" @bind-Value="NewClient.PhoneNumber" />
-                            <FormField Label="Address" @bind-Value="NewClient.Address" />
-                       </FormSection>,
-            Validate = async () => true
-        }
-    };
-
     private async Task SaveClientAsync()
     {
-        // Hits your Sage X3 API
         var success = await BPService.CreateClientAsync(NewClient);
 
         if (success)
         {
-            WorkspaceState.ReloadClients(); // Refreshes the "Clients" sidebar list
+            WorkspaceState.ReloadClients();
             
             NotificationService.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
                 Summary = "Sage X3 Updated",
-                Detail = $"{NewClient.Name} has been created."
+                Detail = $"{NewClient.Name} has been created successfully.",
+                Duration = 4000
             });
 
-            // Go back to the business partner list
-            NavigationService.NavigateTo("/workspace/businesspartners");
+            NavManager.NavigateTo("/workspace/businesspartners");
         }
         else
         {
@@ -66,5 +93,10 @@
                 Detail = "Could not create client in Sage X3."
             });
         }
+    }
+
+    private void HandleCancel()
+    {
+        NavManager.NavigateTo("/workspace/businesspartners");
     }
 }

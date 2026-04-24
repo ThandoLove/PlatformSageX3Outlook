@@ -1,0 +1,100 @@
+﻿/* --- GLOBAL FORM LAYOUT --- */
+
+/* Main container for form groups to ensure consistent vertical spacing */
+.sage-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+/* Standard 2-column grid for side-by-side inputs (e.g., City/Zip or Phone/Mobile) */
+.form-grid-2-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* --- SECTION TYPOGRAPHY --- */
+
+/* The small, bold labels at the top of each section (e.g., IDENTITY, LOCATION) */
+.section-title {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #605e5c; /* Muted Sage Gray */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #edebe9;
+    padding-bottom: 4px;
+}
+
+/* --- PRIORITY SELECTOR COMPONENT --- */
+
+/* The background bar for the priority buttons */
+.priority-selector {
+    display: flex;
+    gap: 4px;
+    background: #f3f2f1; /* Light gray track */
+    padding: 3px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* Basic styling for each priority button */
+.priority-btn {
+    flex: 1;
+    border: none;
+    padding: 6px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 2px;
+    background: transparent;
+    color: #605e5c;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+    /* Active State: Low Priority (Green) */
+    .priority-btn.active.low-btn {
+        background: #dff6dd;
+        color: #107c10;
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Active State: Medium Priority (Yellow/Amber) */
+    .priority-btn.active.medium-btn {
+        background: #fff4ce;
+        color: #797775;
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    /* Active State: High Priority (Red) */
+    .priority-btn.active.high-btn {
+        background: #fde7e9;
+        color: #a4262c;
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+/* --- UTILITIES --- */
+
+/* Responsive: Stack the 2-column grid on small mobile screens */
+@media (max-width: 480px) {
+    .form-grid-2-col {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Custom Scrollbar for form viewports */
+.sage-form-viewport::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sage-form-viewport::-webkit-scrollbar-thumb {
+    background: #c8c6c4;
+    border-radius: 10px;
+}

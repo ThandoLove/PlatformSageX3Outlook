@@ -1,0 +1,149 @@
+﻿.health-widget-card {
+    width: 100%;
+    padding: 16px;
+    border-radius: 8px;
+    background: white;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+.health-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.status-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.status-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.status-meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Status Pills */
+.status-pill {
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+.status-online {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-warning {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.status-offline {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* Pulse Animation for ERP Connection */
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: sage-pulse 1.5s infinite;
+}
+
+@keyframes sage-pulse {
+    0% {
+        transform: scale(0.9);
+        opacity: 1;
+    }
+
+    70% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+}
+
+/* ... Keep existing Status Item and Pulse CSS ... */
+
+.health-footer {
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    /* Updated: Flexbox pushes content to the right while keeping them on one line */
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+}
+
+.refresh-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+    /* Keeps the fade-in effect when the time updates */
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Specific styling for the manual refresh button icon */
+::deep .fluent-button[appearance="stealth"] {
+    --control-corner-radius: 4px;
+    height: 24px;
+    min-width: 24px;
+    padding: 0;
+    color: var(--text-muted);
+}
+
+    ::deep .fluent-button[appearance="stealth"]:hover {
+        color: var(--sage-blue);
+        background: transparent;
+    }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

@@ -1,9 +1,15 @@
-﻿.recent-activity-panel {
+﻿/* Card Container */
+.timeline-card {
+    width: 100%;
+    padding: 16px;
+    border-radius: 8px;
+    background: white;
+    min-height: 350px;
     display: flex;
     flex-direction: column;
-    max-height: 450px;
 }
 
+/* Header styling matching Sage UI */
 .panel-header {
     display: flex;
     justify-content: space-between;
@@ -11,81 +17,77 @@
     margin-bottom: 20px;
 }
 
-.header-main h4 {
-    margin: 0;
-    font-size: 14px;
-    color: var(--text-primary);
-    text-transform: uppercase;
+    .panel-header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+        text-transform: uppercase; /* Sage UI style */
+    }
+
+/* Scroll Area for many activities */
+.timeline-scroll-area {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
-.activity-subtitle {
+/* Date separator (Today, Yesterday, etc.) */
+.timeline-date-label {
     font-size: 11px;
+    font-weight: 800;
     color: var(--text-muted);
+    letter-spacing: 0.05em;
+    margin-bottom: 15px;
 }
 
-/* Timeline Logic */
-.timeline-container {
+/* THE VERTICAL TRACK (The Line) */
+.timeline-group-container {
     position: relative;
-    padding-left: 20px;
-    margin-left: 10px;
-    border-left: 2px solid var(--border-color); /* The vertical line */
+    border-left: 2px solid var(--border-color);
+    margin-left: 14px; /* Exact spacing for Sage UI line */
+    padding-left: 24px;
+    margin-bottom: 20px;
 }
 
 .timeline-item {
     position: relative;
     padding-bottom: 24px;
-    padding-left: 15px;
 }
 
+/* THE CIRCULAR MARKER (Matching Image Cutout) */
 .timeline-marker {
     position: absolute;
-    left: -28px; /* Centers icon over the line */
+    left: -40px; /* Aligns circle center with the 2px line */
     top: 0;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    background: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--border-color);
-    font-size: 14px;
+    background: white; /* Base for the icon */
+    border: 2px solid white; /* Creates the visual gap/cut in the line */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     z-index: 2;
 }
 
-/* Specific Activity Colors */
-.icon-blue {
-    border-color: var(--sage-blue);
-    color: var(--sage-blue);
-}
-
-.icon-green {
-    border-color: var(--sage-green);
-    color: var(--sage-green);
-}
-
-.icon-orange {
-    border-color: var(--sage-orange);
-    color: var(--sage-orange);
-}
-
+/* Content Area */
 .timeline-content {
-    background: #f8fafc;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
 }
 
-.timeline-header {
+.activity-main {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 4px;
+    align-items: center;
 }
 
 .activity-title {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-dark);
 }
 
 .activity-time {
@@ -93,16 +95,23 @@
     color: var(--text-muted);
 }
 
-.activity-desc {
+.activity-sub {
     font-size: 12px;
-    margin: 0;
-    color: var(--text-muted);
+    color: #64748b;
+    margin-top: 2px;
 }
 
-.btn-refresh {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
+/* Footer Section */
+.timeline-footer {
+    margin-top: auto;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 12px;
+    text-align: center;
 }
 
+::deep .footer-link {
+    color: var(--sage-light-blue) !important;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 12px;
+}

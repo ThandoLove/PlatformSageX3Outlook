@@ -1,81 +1,153 @@
-﻿@using OperationalWorkspaceApplication.DTOs
+﻿@page "/tickets/new"
+@page "/tickets/edit/{TicketId:guid}"
+@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using Microsoft.FluentUI.AspNetCore.Components
+@implements IDisposable
 @inject DashboardState State
-@inject ModalService ModalService
+@inject NavigationManager NavManager
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
 
-<div class="sage-form-container" style="padding: 5px;">
-    @* Fix 1: Use fully qualified name for Orientation to avoid Radzen conflict *@
-    <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="4">
-        
-        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">TICKET #@Ticket.Id</div>
-            <div style="font-size: 1.1rem; font-weight: 600; color: #1e293b;">@Ticket.Title</div>
-        </div>
+<div class="form-container">
+    <div class="page-header">
+        <FluentButton Appearance="Appearance.Stealth"
+                      IconStart="@(new Icons.Regular.Size20.ArrowLeft())"
+                      OnClick="@(() => NavManager.NavigateTo("/tickets"))" />
+        <h2>@(TicketId == null ? "New Service Request" : $"Edit Ticket: {_ticket.TicketNumber}")</h2>
+    </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            @* Fix 2: Specify TOption="string" for FluentSelect and FluentOption *@
-            <FluentSelect TOption="string" Label="Current Status" @bind-Value="Ticket.Status" Style="width: 100%;">
-                <FluentOption TOption="string" Value="@("Open")">Open</FluentOption>
-                <FluentOption TOption="string" Value="@("In Progress")">In Progress</FluentOption>
-                <FluentOption TOption="string" Value="@("Resolved")">Resolved</FluentOption>
-                <FluentOption TOption="string" Value="@("Closed")">Closed</FluentOption>
-            </FluentSelect>
+    <EditForm Model="@_ticket" OnValidSubmit="HandleSubmit">
+        <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="5">
+            
+            <!-- SECTION 1: IDENTITY & PRIORITY -->
+            <div class="form-section">
+                <label class="section-title">REQUEST INFORMATION</label>
+                <FluentGrid>
+                    <FluentGridItem xs="12" sm="8">
+                        <FluentTextField Label="Subject" @bind-Value="_ticket.Title" Required="true" Style="width: 100%;" />
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" sm="4">
+                        <FluentSelect TOption="string" Label="Priority" @bind-Value="_priorityString" Style="width: 100%;">
+                            <FluentOption TOption="string" Value="1">Low</FluentOption>
+                            <FluentOption TOption="string" Value="3">Medium</FluentOption>
+                            <FluentOption TOption="string" Value="5">Critical</FluentOption>
+                        </FluentSelect>
+                    </FluentGridItem>
+                </FluentGrid>
+            </div>
 
-            <FluentSelect TOption="string" Label="Priority" @bind-Value="@_priorityString" Style="width: 100%;">
-                <FluentOption TOption="string" Value="@("1")">Low</FluentOption>
-                <FluentOption TOption="string" Value="@("3")">Medium</FluentOption>
-                <FluentOption TOption="string" Value="@("5")">Critical</FluentOption>
-            </FluentSelect>
-        </div>
+            <!-- SECTION 2: SAGE X3 CONTEXT -->
+            <div class="form-section">
+                <label class="section-title">SAGE X3 CONTEXT</label>
+                <FluentGrid>
+                    <FluentGridItem xs="12" sm="4">
+                        <FluentTextField Label="Site" @bind-Value="_ticket.SiteCode" Placeholder="e.g. AO011" Style="width: 100%;" />
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" sm="4">
+                        <FluentTextField Label="Customer Code" @bind-Value="_ticket.CustomerCode" Style="width: 100%;" />
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" sm="4">
+                        <FluentTextField Label="Machine Serial" @bind-Value="_ticket.MachineCode" Style="width: 100%;" />
+                    </FluentGridItem>
+                </FluentGrid>
+            </div>
 
-        <FluentTextArea Label="Resolution Notes"
-                        @bind-Value="Ticket.Description"
-                        Rows="5"
-                        Placeholder="Enter updates for Sage X3..."
-                        Style="width: 100%;" />
+            <!-- SECTION 3: DESCRIPTION -->
+            <div class="form-section">
+                <label class="section-title">PROBLEM DESCRIPTION</label>
+                <FluentTextArea Label="Issue Details" @bind-Value="_ticket.Description" Rows="5" Style="width: 100%;" />
+            </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <FluentButton Appearance="Appearance.Accent"
-                          OnClick="HandleUpdate"
-                          Style="flex: 1; background-color: #005fb8;">
-                Update Sage X3
-            </FluentButton>
-            <FluentButton Appearance="Appearance.Outline"
-                          OnClick="@(() => ModalService.CloseModal())"
-                          Style="flex: 1;">
-                Cancel
-            </FluentButton>
-        </div>
-    </FluentStack>
+            <!-- SECTION 4: ATTACHMENTS -->
+            <div class="form-section">
+                <label class="section-title">ATTACHMENTS</label>
+                <div class="attachment-zone">
+                    <FluentInputFile Id="ticket-upload"
+                                     Mode="InputFileMode.Buffer"
+                                     Multiple="true"
+                                     OnCompleted="@OnUploadCompleted">
+                        <ChildContent>
+                            <div class="upload-drop-zone">
+                                <FluentIcon Value="@(new Icons.Regular.Size24.ArrowUpload())" Color="@Color.Accent" />
+                                <p>Drag files here or <b>Browse</b></p>
+                            </div>
+                        </ChildContent>
+                    </FluentInputFile>
+
+                    @if (_uploadedFiles.Any())
+                    {
+                        <div class="file-list">
+                            @foreach (var file in _uploadedFiles)
+                            {
+                                <div class="file-chip">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Document())" />
+                                    <span>@file.Name</span>
+                                    <FluentButton Appearance="Appearance.Stealth"
+                                                  IconStart="@(new Icons.Regular.Size16.Dismiss())"
+                                                  OnClick="@(() => _uploadedFiles.Remove(file))" />
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="background-color: #005fb8;">
+                    @(TicketId == null ? "Create in Sage X3" : "Update Sage X3")
+                </FluentButton>
+                <FluentButton OnClick="@(() => NavManager.NavigateTo("/tickets"))">Cancel</FluentButton>
+            </div>
+
+        </FluentStack>
+    </EditForm>
 </div>
 
 @code {
-    [Parameter] public TicketDto Ticket { get; set; } = new();
+    [Parameter] public Guid? TicketId { get; set; }
 
-    private string _priorityString
-    {
-        get => Ticket.Priority.ToString();
-        set => Ticket.Priority = int.Parse(value);
-    }
+    private TicketDto _ticket = new();
+    private string _priorityString = "3";
+    private List<FluentInputFileEventArgs> _uploadedFiles = new();
 
-    private async Task HandleUpdate()
+    protected override void OnInitialized()
     {
-        var existing = State.AllTickets.FirstOrDefault(t => t.Id == Ticket.Id);
-        if (existing != null)
+        State.OnChange += StateHasChanged;
+
+        if (TicketId.HasValue)
         {
-            existing.Status = Ticket.Status;
-            existing.Priority = Ticket.Priority;
-            existing.Description = Ticket.Description;
+            // Edit Mode: Find the existing ticket
+            var existing = State.CurrentTickets.FirstOrDefault(t => t.Id == TicketId.Value);
+            if (existing != null)
+            {
+                _ticket = existing;
+            }
         }
-
-        // Updated to use your new ToastService instead of the JS bridge
-        ToastService.ShowSuccess($"Ticket #{Ticket.Id} Updated Successfully");
-
-        await ModalService.CloseModal();
-        await State.LoadDashboardAsync();
+        else
+        {
+            // Create Mode: New Object
+            _ticket = new TicketDto { Status = "Open", CreatedAt = DateTime.Now };
+        }
     }
+
+    private void OnUploadCompleted(IEnumerable<FluentInputFileEventArgs> files) => _uploadedFiles.AddRange(files);
+
+    private async Task HandleSubmit()
+    {
+        if (TicketId == null)
+        {
+            State.CurrentTickets.Add(_ticket);
+            ToastService.ShowSuccess("New Ticket Created.");
+        }
+        else
+        {
+            ToastService.ShowSuccess("Ticket Updated.");
+        }
+        
+        NavManager.NavigateTo("/tickets");
+    }
+
+    public void Dispose() => State.OnChange -= StateHasChanged;
 }

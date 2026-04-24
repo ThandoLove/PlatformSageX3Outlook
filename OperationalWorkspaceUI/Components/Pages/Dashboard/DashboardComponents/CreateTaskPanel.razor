@@ -1,70 +1,75 @@
-﻿@using OperationalWorkspaceApplication.DTOs
+﻿@page "/forms/admin-create-task"
+@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.DashboardUI
 @using OperationalWorkspace.Domain.Enums
 @using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+
 @inject DashboardState State
 @inject DashboardUIService DashboardService
 @inject IJSRuntime JS
 
-<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Create Task (Admin)</h3>
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
+<FormSection Title="Create Task (Admin)" 
+             SubmitLabel="Create Task" 
+             OnSubmit="HandleCreateTask">
+
+    <div class="sage-form-group">
+        <label class="section-title">SUBJECT</label>
+        <FluentTextField @bind-Value="_newTask.Title" 
+                         Placeholder="e.g. Follow up on quote..." 
+                         FullWidth="true" />
     </div>
 
-    <div class="task-form" style="display: flex; flex-direction: column; gap: 16px;">
-        
-        <FluentTextField @bind-Value="_newTask.Title" Placeholder="Task Title..." Style="width: 100%;" />
-
-        <FluentSelect TOption="string" Label="Assign To" Style="width: 100%;" @bind-Value="_newTask.AssignedTo">
-            <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Person())" Slot="start" />
+    <div class="sage-form-group" style="margin-top: 20px;">
+        <label class="section-title">ASSIGN TO</label>
+        <FluentSelect TOption="string" Style="width: 100%;" @bind-Value="_newTask.AssignedTo">
+            <FluentIcon Value="@(new Icons.Regular.Size20.Person())" Slot="start" />
             <FluentOption TOption="string" Value="Admin">Admin</FluentOption>
             <FluentOption TOption="string" Value="CurrentUser">Current User</FluentOption>
             <FluentOption TOption="string" Value="Sarah Johnson">Sarah Johnson</FluentOption>
         </FluentSelect>
+    </div>
 
-        @* Fix 1: Use the local nullable date variable to satisfy the component *@
-        <FluentDatePicker Label="Due Date" @bind-Value="_localDueDate" Style="width: 100%;" />
-
-        <div class="priority-selector" style="display: flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 6px;">
-            @foreach (var p in new[] { TaskPriority.Low, TaskPriority.Medium, TaskPriority.High })
-            {
-                <button type="button"
-                        class="priority-btn @(GetPriorityClass(p)) @(_newTask.Priority == p ? "active" : "")"
-                        @onclick="() => _newTask.Priority = p">
-                    @p.ToString()
-                </button>
-            }
+    <div class="form-grid-2-col" style="margin-top: 20px;">
+        <div class="sage-form-group">
+            <label class="section-title">DUE DATE</label>
+            <FluentDatePicker @bind-Value="_localDueDate" Style="width: 100%;" />
         </div>
 
-        <FluentButton Appearance="Appearance.Accent"
-                      OnClick="HandleCreateTask"
-                      Style="width: 100%; height: 42px; background-color: #005fb8; font-weight: 600;">
-            Create Task
-        </FluentButton>
+        <div class="sage-form-group">
+            <label class="section-title">PRIORITY</label>
+            <div class="priority-selector">
+                @foreach (var p in new[] { TaskPriority.Low, TaskPriority.Medium, TaskPriority.High })
+                {
+                    <button type="button"
+                            class="priority-btn @(GetPriorityClass(p)) @(_newTask.Priority == p ? "active" : "")"
+                            @onclick="() => _newTask.Priority = p">
+                        @p.ToString()
+                    </button>
+                }
+            </div>
+        </div>
     </div>
-</FluentCard>
+</FormSection>
 
 @code {
     private TaskDto _newTask = new() { DueDate = DateTime.Today, Priority = TaskPriority.Medium, AssignedTo = "Admin" };
-    
-    // Bridge variable: DatePicker likes Nullable, DTO might not.
     private DateTime? _localDueDate = DateTime.Today;
 
     private async Task HandleCreateTask()
     {
         if (string.IsNullOrWhiteSpace(_newTask.Title)) return;
 
-        // Sync the local date back to the DTO before saving
         _newTask.DueDate = _localDueDate ?? DateTime.Today;
 
         State.AllTasks.Add(new TaskDto
         {
             Id = Guid.NewGuid(),
             Title = _newTask.Title,
-            DueDate = _newTask.DueDate, // Removed ?? because _newTask.DueDate is now assigned
+            DueDate = _newTask.DueDate,
             Priority = _newTask.Priority,
             AssignedTo = _newTask.AssignedTo,
             Status = "Open"
@@ -72,12 +77,19 @@
 
         await JS.InvokeVoidAsync("showToast", $"Task assigned to {_newTask.AssignedTo}");
 
-        // Reset
+        // Reset Form
         _newTask = new() { DueDate = DateTime.Today, Priority = TaskPriority.Medium, AssignedTo = "Admin" };
         _localDueDate = DateTime.Today;
         
         await State.LoadDashboardAsync();
     }
     
-    private string GetPriorityClass(TaskPriority p) => p == TaskPriority.High ? "high-btn" : "";
+    private string GetPriorityClass(TaskPriority p) => p switch
+    {
+        TaskPriority.High => "high-btn",
+        TaskPriority.Medium => "medium-btn",
+        TaskPriority.Low => "low-btn",
+        _ => ""
+    };
 }
+

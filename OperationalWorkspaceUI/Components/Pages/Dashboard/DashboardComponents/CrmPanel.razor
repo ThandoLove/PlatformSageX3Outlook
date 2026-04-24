@@ -4,70 +4,58 @@
 @implements IDisposable
 @inject DashboardState State
 
-<FluentCard Style="width: 100%; padding: 16px; border-radius: 8px;">
+<FluentCard Class="crm-snapshot-card">
     @* Header *@
-    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">CRM Snapshot</h3>
-        @* FIX: Fully qualified Icon path *@
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
+    <div class="panel-header">
+        <h3>CRM Snapshot</h3>
     </div>
 
-    @* Company Selector *@
-    <div class="company-selector" style="display: flex; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 4px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Building())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" Style="margin-right: 12px;" />
-        <span style="flex-grow: 1; font-weight: 600; color: #1e293b;">Tech Innovations Inc.</span>
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())" />
+    @* Company Selector (Matches the Building icon in image) *@
+    <div class="company-selector">
+        <FluentIcon Value="@(new Icons.Regular.Size20.Building())" Color="@Color.Success" />
+        <span class="company-name">Tech Innovations Inc.</span>
+        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="@Color.Neutral" />
     </div>
 
-    @* Stats Grid *@
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px;">
-        <div>
-            <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 4px;">Open Tickets</div>
-            <div style="font-size: 1.25rem; font-weight: 600; color: #1e293b;">@State.CurrentTickets.Count Active</div>
+    @* Stats Grid Row 1 *@
+    <div class="crm-grid">
+        <div class="stat-item">
+            <span class="stat-label">OPEN TICKETS</span>
+            <span class="stat-value">@State.CurrentTickets.Count Active</span>
         </div>
-        <div>
-            <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 4px;">Overdue Invoices</div>
-            <div style="font-size: 1.25rem; font-weight: 600; color: #d83b01;">
-                $ @GetOverdueAmount()
+        <div class="stat-item">
+            <span class="stat-label">OVERDUE INVOICES</span>
+            <span class="stat-value snapshot-red">$ @GetOverdueAmount()</span>
+        </div>
+    </div>
+
+    @* Stats Grid Row 2 (With Progress Bar) *@
+    <div class="crm-grid bottom-row">
+        <div class="stat-item">
+            <span class="stat-label">CREDIT LIMIT</span>
+            <div class="limit-container">
+                <span class="stat-value snapshot-green">$50,000</span>
+                <FluentProgress Min="0" Max="50000" Value="37500" Class="limit-progress" />
             </div>
         </div>
-    </div>
-
-    @* Bottom Row *@
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: end;">
-        <div>
-            <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">Credit Limit</div>
-            <div style="color: #107c10; font-weight: 600; margin-bottom: 6px;">$50,000</div>
-            <FluentProgress Min="0" Max="50000" Value="37500" Style="height: 6px; border-radius: 3px;" />
-        </div>
-        <div>
-            <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 4px;">Last Contact</div>
-            <div style="font-size: 1rem; color: #334155; font-weight: 500;">3 days ago</div>
+        <div class="stat-item">
+            <span class="stat-label">LAST CONTACT</span>
+            <span class="stat-value small">3 days ago</span>
         </div>
     </div>
 </FluentCard>
 
 @code {
-    protected override void OnInitialized()
-    {
-        State.OnChange += StateHasChanged;
-    }
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
 
     private string GetOverdueAmount()
     {
         if (State.IsAdminEnvironment && State.AdminFinance != null)
         {
-            // FIX: Changed from OverdueAmount to TotalOutstandingReceivables to match your DTO
             return State.AdminFinance.TotalOutstandingReceivables.ToString("N0");
         }
-        
         return "12,500";
     }
 
-    public void Dispose()
-    {
-        State.OnChange -= StateHasChanged;
-    }
+    public void Dispose() => State.OnChange -= StateHasChanged;
 }
