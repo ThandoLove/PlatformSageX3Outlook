@@ -2,7 +2,6 @@
 
 namespace OperationalWorkspaceUI.Models.Forms
 {
- 
 
     public class SendKnowledgeModel
     {

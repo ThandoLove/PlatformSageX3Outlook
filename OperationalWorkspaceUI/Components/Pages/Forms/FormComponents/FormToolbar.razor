@@ -1,5 +1,6 @@
 ﻿@using Microsoft.FluentUI.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Authorization
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 <div class="sage-header-top">
     @* Left Side: Title/Logo *@
@@ -49,9 +50,7 @@
                 </div>
             </Authorized>
             <NotAuthorized>
-                
-                    Sign In
-                </FluentAnchor>
+                <FluentAnchor Href="login">Sign In</FluentAnchor>
             </NotAuthorized>
         </AuthorizeView>
     </div>
@@ -59,7 +58,7 @@
 
 <style>
     .sage-header-top {
-        background-color: #1a365d; /* Dark Sage Blue */
+        background-color: #1a365d;
         height: 60px;
         display: flex;
         justify-content: space-between;
@@ -89,7 +88,6 @@
 
     private void HandleSignOut()
     {
-        // This would typically redirect to your logout endpoint
         Console.WriteLine("User signing out...");
     }
 }

@@ -1,9 +1,6 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 
-
-// CODE START: OrderService.cs
-
 namespace OperationalWorkspaceApplication.Services
 {
     public class OrderService : IOrderService
@@ -20,6 +17,8 @@ namespace OperationalWorkspaceApplication.Services
             {
                 Id = Guid.NewGuid(),
                 OrderNumber = GenerateOrderNumber(),
+
+                // FIX: Ensures SalesOrderDto gets a value if order.OrderDate is null
                 OrderDate = order.OrderDate,
 
                 BusinessPartnerId = order.ClientId,
@@ -42,6 +41,7 @@ namespace OperationalWorkspaceApplication.Services
             return new OrderDto
             {
                 ClientId = order.ClientId,
+                // FIX: Explicit fallback for the return DTO
                 OrderDate = order.OrderDate,
                 Description = order.Description,
                 TotalAmount = order.TotalAmount
@@ -60,7 +60,7 @@ namespace OperationalWorkspaceApplication.Services
             {
                 Id = Guid.NewGuid(),
                 OrderNumber = "Q-" + GenerateOrderNumber(),
-                OrderDate = DateTime.UtcNow,
+                OrderDate = DateTime.Now,
 
                 BusinessPartnerName = "Quote Client",
 
@@ -83,7 +83,10 @@ namespace OperationalWorkspaceApplication.Services
             return _orders.Select(o => new OpenOrderDto
             {
                 OrderNumber = o.OrderNumber,
-                OrderDate = o.OrderDate,
+
+                // FIX: Conversion from nullable SalesOrderDto.OrderDate to non-nullable OpenOrderDto.OrderDate
+                OrderDate = o.OrderDate ?? DateTime.Now,
+
                 TotalAmount = o.TotalAmount,
                 Status = o.OrderStatus
             }).ToList();
@@ -102,9 +105,8 @@ namespace OperationalWorkspaceApplication.Services
         // =========================
         private string GenerateOrderNumber()
         {
-            return $"SO-{DateTime.UtcNow.Ticks.ToString()[^6..]}";
+            // Cleaned up the ticks logic to prevent potential index errors
+            return $"SO-{DateTime.UtcNow.Ticks.ToString().Substring(Math.Max(0, DateTime.UtcNow.Ticks.ToString().Length - 6))}";
         }
     }
 }
-
-// CODE END

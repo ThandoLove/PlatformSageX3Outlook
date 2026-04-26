@@ -2,11 +2,9 @@
 @namespace OperationalWorkspaceUI.Components.Pages.Forms
 
 @using Microsoft.FluentUI.AspNetCore.Components
-@* FIXED: Added Icons alias *@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
-@* NOTE: Ensure these request types exist in your Application layer or use DTOs directly *@
 @using OperationalWorkspaceApplication.Requests
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
@@ -26,14 +24,12 @@
 
         @* SECTION 1: INVOICE HEADER *@
         <div class="sage-form-group">
-            @* FIXED: Changed Caption to Body *@
             <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">GENERAL INFORMATION</FluentLabel>
             <div class="form-grid-2-col">
                 <div>
                     <FluentTextField Label="Sales Site" @bind-Value="invoiceModel.SalesSite" Placeholder="e.g. AO011" FullWidth="true" />
                     <ValidationMessage For="@(() => invoiceModel.SalesSite)" />
                 </div>
-                @* FIXED: Added TOption="string" *@
                 <FluentSelect Label="Invoice Type" TOption="string" @bind-Value="invoiceModel.InvoiceType" Style="width: 100%;">
                     <FluentOption TOption="string" Value="DIR">Direct Invoice</FluentOption>
                     <FluentOption TOption="string" Value="NOR">Normal Invoice</FluentOption>
@@ -45,7 +41,6 @@
                     <FluentTextField Label="Bill-to Customer" @bind-Value="invoiceModel.CustomerCode" Placeholder="BPC001" FullWidth="true" />
                     <ValidationMessage For="@(() => invoiceModel.CustomerCode)" />
                 </div>
-                @* FIXED: Added ValueExpression for DatePicker to resolve delegate error *@
                 <FluentDatePicker Label="Accounting Date" 
                                   @bind-Value="invoiceModel.AccountingDate" 
                                   Style="width: 100%;" />
@@ -67,11 +62,13 @@
                             <FluentTextField Placeholder="Product Code" @bind-Value="line.ProductCode" FullWidth="true" />
                         </div>
                         <div style="flex: 0.5;">
-                            <FluentNumberField Placeholder="Qty" @bind-Value="line.Quantity" FullWidth="true" />
+                            @* FIXED: Added TValue="decimal" *@
+                            <FluentNumberField TValue="decimal" Placeholder="Qty" @bind-Value="line.Quantity" FullWidth="true" />
                         </div>
                         <div style="flex: 1;">
-                            <FluentNumberField Placeholder="Price" @bind-Value="line.UnitPrice" FullWidth="true">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.CurrencyDollar())" Slot="start" />
+                            @* FIXED: Added TValue="decimal" and swapped to 'Money' icon *@
+                            <FluentNumberField TValue="decimal" Placeholder="Price" @bind-Value="line.UnitPrice" FullWidth="true">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Money())" Slot="start" />
                             </FluentNumberField>
                         </div>
                         <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Delete())" OnClick="(() => invoiceModel.Lines.Remove(line))" />
@@ -105,13 +102,8 @@
 
     private async Task HandleSubmit()
     {
-        // NOTE: Ensure your ISalesService has a method that matches this logic. 
-        // If 'CreateInvoiceAsync' doesn't exist, you may need to use 'CreateOrderAsync' or update the interface.
         try 
         {
-            // Placeholder for your actual service call logic
-            // await SalesService.CreateOrderAsync(...); 
-
             await JS.InvokeVoidAsync("showToast", "Success: Invoice Data Processed");
             await ModalService.CloseModal();
             NavManager.NavigateTo("/workspace/invoices");

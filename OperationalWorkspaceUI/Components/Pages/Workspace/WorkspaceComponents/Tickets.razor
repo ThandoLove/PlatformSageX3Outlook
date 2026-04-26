@@ -2,6 +2,8 @@
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
 @using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
 @implements IDisposable
 @inject DashboardState State
 @inject NavigationManager NavManager
@@ -22,7 +24,7 @@
     <FluentCard Class="grid-card">
         <FluentDataGrid Items="@FilteredTickets" ResizableColumns="true" Pagination="@_pagination" TGridItem="TicketDto">
             <PropertyColumn Property="@(t => t.TicketNumber)" Title="ID" Sortable="true" />
-            <PropertyColumn Property="@(t => t.Subject)" Title="Subject" Sortable="true" />
+            <PropertyColumn Property="@(t => t.Title)" Title="Title" Sortable="true" />
             <PropertyColumn Property="@(t => t.CustomerName)" Title="Customer" Sortable="true" />
             
             <TemplateColumn Title="Priority" Sortable="true">

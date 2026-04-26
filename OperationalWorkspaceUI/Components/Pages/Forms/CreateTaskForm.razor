@@ -16,6 +16,7 @@
              OnSubmit="SaveTaskAsync"
              OnCancel="HandleCancel">
 
+    @* Explicitly defining TModel helps the compiler resolve the delegate *@
     <EditForm Model="NewTask" OnValidSubmit="SaveTaskAsync">
         <DataAnnotationsValidator />
 
@@ -48,7 +49,7 @@
         <div class="sage-form-group" style="margin-top: 24px;">
             <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">SCHEDULE & PRIORITY</FluentLabel>
             <div class="form-grid-2-col">
-                @* FIXED: DatePicker now binds to a nullable DateTime? *@
+                @* This component requires the bound property to be DateTime? *@
                 <FluentDatePicker Label="Due Date" @bind-Value="NewTask.DueDate" Style="width: 100%;" />
                 
                 <FluentSelect Label="Priority" TOption="string" @bind-Value="PriorityString" FullWidth="true">
@@ -63,7 +64,7 @@
 </FormSection>
 
 @code {
-    // NewTask.DueDate MUST be DateTime? in the DTO class
+    // IMPORTANT: Ensure TaskDto.DueDate is DateTime?
     private TaskDto NewTask = new() { DueDate = DateTime.Now.AddDays(1) };
     private string PriorityString = "2";
 

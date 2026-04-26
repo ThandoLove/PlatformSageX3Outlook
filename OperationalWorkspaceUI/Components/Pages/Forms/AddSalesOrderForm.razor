@@ -2,6 +2,7 @@
 @namespace OperationalWorkspaceUI.Components.Pages.Forms
 
 @using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using OperationalWorkspaceApplication.Requests
@@ -18,18 +19,23 @@
              OnSubmit="HandleSubmit"
              OnCancel="() => ModalService.CloseModal()">
 
-    <EditForm Model="orderModel" OnValidSubmit="HandleSubmit">
+    @* Adding @Model helps the compiler resolve the delegate logic *@
+    <EditForm Model="@orderModel" OnValidSubmit="@HandleSubmit">
         <DataAnnotationsValidator />
 
         @* SECTION 1: ORDER HEADER *@
         <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">ORDER HEADER</FluentLabel>
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">ORDER HEADER</FluentLabel>
             <div class="form-grid-2-col">
                 <div>
                     <FluentTextField Label="Customer Code" @bind-Value="orderModel.CustomerCode" Placeholder="BPC001" FullWidth="true" />
                     <ValidationMessage For="@(() => orderModel.CustomerCode)" />
                 </div>
-                <FluentDatePicker Label="Order Date" @bind-Value="orderModel.OrderDate" Style="width: 100%;" />
+                
+                @* FIXED: Binds to a local nullable property to ensure perfect type matching *@
+                <FluentDatePicker Label="Order Date" 
+                                  @bind-Value="_pickerDate" 
+                                  Style="width: 100%;" />
             </div>
             <div style="margin-top: 12px;">
                 <FluentTextField Label="Customer Reference (PO #)" @bind-Value="orderModel.CustomerRef" Placeholder="Required for Sage X3" FullWidth="true" />
@@ -39,7 +45,7 @@
         @* SECTION 2: LINE ITEMS *@
         <div class="sage-form-group" style="margin-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edebe9; padding-bottom: 4px; margin-bottom: 12px;">
-                <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">LINE ITEMS</FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">LINE ITEMS</FluentLabel>
                 <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Add())" OnClick="AddLine" Style="color: #1b5e20;">Add Product</FluentButton>
             </div>
 
@@ -51,11 +57,11 @@
                             <FluentTextField Placeholder="Product Code" @bind-Value="line.ProductCode" FullWidth="true" />
                         </div>
                         <div style="flex: 0.5;">
-                            <FluentNumberField Placeholder="Qty" @bind-Value="line.Quantity" FullWidth="true" />
+                            <FluentNumberField TValue="decimal" Placeholder="Qty" @bind-Value="line.Quantity" FullWidth="true" />
                         </div>
                         <div style="flex: 1;">
-                            <FluentNumberField Placeholder="Price" @bind-Value="line.UnitPrice" FullWidth="true">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.CurrencyDollar())" Slot="start" />
+                            <FluentNumberField TValue="decimal" Placeholder="Price" @bind-Value="line.UnitPrice" FullWidth="true">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Money())" Slot="start" />
                             </FluentNumberField>
                         </div>
                         <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Delete())" OnClick="(() => orderModel.Lines.Remove(line))" />
@@ -63,7 +69,6 @@
                 }
             </div>
         </div>
-
     </EditForm>
 </FormSection>
 
@@ -71,10 +76,18 @@
     [Parameter] public string Email { get; set; } = "";
     [Parameter] public string FullName { get; set; } = "";
 
-    private SalesOrderCreateDto orderModel = new() { OrderDate = DateTime.Now };
+    private SalesOrderCreateDto orderModel = new();
+
+    // FIXED: The "Bridge Property" that solves the Lambda/EventCallback error
+    private DateTime? _pickerDate 
+    { 
+        get => orderModel.OrderDate; 
+        set => orderModel.OrderDate = value ?? DateTime.Now; 
+    }
 
     protected override void OnInitialized()
     {
+        orderModel.OrderDate = DateTime.Now;
         if (!orderModel.Lines.Any()) { AddLine(); }
     }
 
@@ -82,32 +95,29 @@
 
     private async Task HandleSubmit()
     {
-        // Calculate total amount for the request
         decimal totalAmount = orderModel.Lines.Sum(l => l.Quantity * l.UnitPrice);
 
         var request = new CreateSalesOrderRequest(
             orderModel.CustomerCode,
             orderModel.CustomerRef,
             totalAmount,
-            orderModel.Lines.Select(l => new CreateSalesOrderLineRequest(
-                l.ProductCode,
-                l.Quantity,
-                l.UnitPrice
-            )).ToList()
+            orderModel.Lines.Select(l => new CreateSalesOrderLineRequest(l.ProductCode, l.Quantity, l.UnitPrice)).ToList()
         );
 
         var response = await SalesService.CreateOrderAsync(request, default);
     
         if (response != null && response.OrderId != Guid.Empty)
         {
-            await JS.InvokeVoidAsync("showToast", "Success: Sales Order Created");
+            await JS.InvokeVoidAsync("showToast", "Success: Order Created");
             await ModalService.CloseModal();
             NavManager.NavigateTo("/workspace/orders");
-        }
-        else
-        {
-            await JS.InvokeVoidAsync("showToast", "Error: Failed to create order");
         }
     }
 }
 
+<style>
+    .sage-form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding: 8px; background: #fcfcfc; border-radius: 4px; border: 1px solid #f3f2f1; }
+    .items-list { max-height: 250px; overflow-y: auto; padding-right: 5px; }
+</style>

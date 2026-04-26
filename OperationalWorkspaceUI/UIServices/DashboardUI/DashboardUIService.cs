@@ -23,7 +23,7 @@ public class DashboardUIService
             state.AllTasks = await FetchTasksAsync(userRole);
             state.RecentActivities = await FetchActivitiesAsync();
 
-            // 2. TICKETS REPLACEMENT: Fetching Tickets instead of Opportunities
+            // 2. TICKETS REPLACEMENT
             state.AllTickets = await FetchTicketsAsync(userRole);
 
             // 3. SECURE GATE: Load Role-Specific Data
@@ -51,7 +51,6 @@ public class DashboardUIService
             StockAlerts = 3
         };
 
-        // Exact match for the $12,500 in the original image
         state.AdminFinance = new AdminFinanceDto
         {
             TotalRevenue = 450000.00m,
@@ -82,22 +81,40 @@ public class DashboardUIService
         state.AdminFinance = new AdminFinanceDto();
     }
 
-    // --- Data Fetching Methods (Updated for Tickets) ---
+    // --- Data Fetching Methods ---
 
     private async Task<List<TicketDto>> FetchTicketsAsync(string role)
     {
         // Mocking Sage X3 Ticket Data
         return new List<TicketDto>
         {
-            new TicketDto { Id = 1, Title = "Login Issue - Syracuse", Status = "Open", AssignedTo = "CurrentUser" },
-            new TicketDto { Id = 2, Title = "Invoice Sync Error", Status = "In Progress", AssignedTo = "CurrentUser" }
+            new TicketDto
+            {
+                Id = Guid.NewGuid(), // FIXED: No longer using int 1
+                TicketNumber = "TK-001",
+                Title = "Login Issue - Syracuse",
+                Status = "Open",
+                AssignedTo = "CurrentUser",
+                Priority = "5",
+                CreatedAt = DateTime.Now.AddDays(-1)
+            },
+            new TicketDto
+            {
+                Id = Guid.NewGuid(), // FIXED: No longer using int 2
+                TicketNumber = "TK-002",
+                Title = "Invoice Sync Error",
+                Status = "In Progress",
+                AssignedTo = "CurrentUser",
+                Priority = "3",
+                CreatedAt = DateTime.Now
+            }
         };
     }
 
     private async Task<List<TaskDto>> FetchTasksAsync(string role) => new()
     {
-        new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Report", Status = "Pending", AssignedTo = "Admin" },
-        new TaskDto { Id = Guid.NewGuid(), Title = "Update Client Contact", Status = "Open", AssignedTo = "CurrentUser" }
+        new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Report", Status = "Pending", AssignedTo = "Admin", DueDate = DateTime.Now.AddDays(2) },
+        new TaskDto { Id = Guid.NewGuid(), Title = "Update Client Contact", Status = "Open", AssignedTo = "CurrentUser", DueDate = DateTime.Now.AddDays(1) }
     };
 
     private async Task<List<ActivityDto>> FetchActivitiesAsync() => new()

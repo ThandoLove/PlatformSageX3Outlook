@@ -3,28 +3,31 @@
 <div style="margin-bottom: 12px; width: 100%;">
     @if (Type == "textarea")
     {
-        <FluentTextArea Label="@Label" 
-                        @bind-Value="@Value" 
-                        Rows="4" 
+        <FluentTextArea Label="@Label"
+                        @bind-Value="@Value"
+                        Rows="4"
                         Resize="TextAreaResize.Vertical"
                         Style="width: 100%;" />
     }
     else if (Type == "select" && Options != null)
     {
-        <FluentSelect Label="@Label" 
-                      @bind-Value="@Value" 
+        @* FIXED: Added TOption="string" and explicit binding parameters *@
+        <FluentSelect Label="@Label"
+                      TOption="string"
+                      Value="@Value"
+                      ValueChanged="@(val => ValueChanged.InvokeAsync(val))"
                       Style="width: 100%;">
             @foreach (var opt in Options)
             {
-                <FluentOption Value="@opt.Key">@opt.Value</FluentOption>
+                <FluentOption TOption="string" Value="@opt.Key">@opt.Value</FluentOption>
             }
         </FluentSelect>
     }
     else
     {
-        <FluentTextField Label="@Label" 
-                         Type="@GetFluentType(Type)" 
-                         @bind-Value="@Value" 
+        <FluentTextField Label="@Label"
+                         Type="@GetFluentType(Type)"
+                         @bind-Value="@Value"
                          Style="width: 100%;" />
     }
 </div>
@@ -32,10 +35,13 @@
 @code {
     [Parameter] public string? Label { get; set; }
     [Parameter] public string Type { get; set; } = "text";
+    
+    // Support two-way binding (@bind-Value)
     [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
     [Parameter] public List<KeyValuePair<string, string>>? Options { get; set; }
 
-    // Maps standard HTML types to Fluent UI types
     private TextFieldType GetFluentType(string type) => type.ToLower() switch
     {
         "password" => TextFieldType.Password,

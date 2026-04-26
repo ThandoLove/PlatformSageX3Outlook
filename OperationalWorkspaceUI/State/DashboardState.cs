@@ -87,7 +87,7 @@ namespace OperationalWorkspaceUI.State
 
         // --- State change event ---
         public event Action? OnChange;
-        private void NotifyStateChanged() => OnChange?.Invoke();
+        public void NotifyStateChanged() => OnChange?.Invoke();
 
         // --- Methods ---
 

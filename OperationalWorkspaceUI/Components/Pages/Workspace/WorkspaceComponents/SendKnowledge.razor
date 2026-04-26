@@ -1,0 +1,75 @@
+﻿@page "/forms/send-knowledge"
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceUI.UIServices.System
+
+@inject KnowledgeUIService KBService
+@inject Radzen.NotificationService Notifications
+@inject NavigationManager NavManager
+@inject ModalService ModalService
+
+<FormSection Title="Send Knowledge Article"
+             SubmitLabel="Send Article"
+             OnSubmit="HandleSubmit"
+             OnCancel="HandleCancel">
+
+    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+
+        <div class="sage-form-group">
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">KNOWLEDGE BASE SEARCH</FluentLabel>
+            <FluentTextField Label="Search Article"
+                             @bind-Value="Model.SearchQuery"
+                             FullWidth="true"
+                             Placeholder="Search the Sage X3 Knowledge Base..." />
+            <ValidationMessage For="@(() => Model.SearchQuery)" />
+        </div>
+
+        <div class="sage-form-group" style="margin-top: 20px;">
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">MESSAGE</FluentLabel>
+            <FluentTextArea Label="Personal Note"
+                            @bind-Value="Model.Message"
+                            Rows="5"
+                            FullWidth="true" />
+        </div>
+    </EditForm>
+</FormSection>
+
+@code {
+    private OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel Model = new();
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            await KBService.SendKnowledgeAsync(Model);
+            
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Article sent successfully.",
+                Duration = 4000
+            });
+            
+            await ModalService.CloseModal();
+            NavManager.NavigateTo("/workspace/knowledge");
+        }
+        catch (Exception ex)
+        {
+            Notifications.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Failed",
+                Detail = ex.Message
+            });
+        }
+    }
+
+    private void HandleCancel()
+    {
+        NavManager.NavigateTo("/workspace/knowledge");
+    }
+}

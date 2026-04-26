@@ -16,8 +16,6 @@ using Radzen;
 using FluentValidation;
 
 
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // ------------------ 1. SYSTEM ------------------
@@ -66,6 +64,7 @@ builder.Services.AddScoped<ModalService>();
 builder.Services.AddScoped<NavigationService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailSyncService>();
+builder.Services.AddScoped<ActivityUIService>();
 
 
 builder.Services.AddScoped<IToastService, ToastService>();
@@ -98,9 +97,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
-
-
-
 
 
 // CODE END

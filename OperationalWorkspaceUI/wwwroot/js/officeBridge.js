@@ -1,14 +1,14 @@
 /**
- * officeBridge.js
- * Optimized Bridge between Office.js (Outlook) and Blazor.
- * Handles context extraction and pushes updates to Blazor via DotNetHelper.
+ * officeBridge.js - FINAL CONSOLIDATED VERSION
+ * Connects Outlook (Office.js), Blazor Server, and Sage X3.
  */
 
 window.officeBridge = {
     _dotNetHelper: null,
     _isInitialized: false,
 
-    initialize: function(dotNetHelper) {
+    // 1. INITIALIZATION: Links Blazor and Outlook
+    initialize: function (dotNetHelper) {
         this._dotNetHelper = dotNetHelper;
 
         Office.onReady((info) => {
@@ -16,10 +16,10 @@ window.officeBridge = {
                 this._isInitialized = true;
                 console.log("Sage X3 Outlook Bridge: Ready.");
 
-                // 1. Initial check for the currently open email
+                // Initial context check
                 this.checkSender();
 
-                // 2. Listen for "ItemChanged" event (user clicks a different email)
+                // Listen for user clicking different emails
                 Office.context.mailbox.addHandlerAsync(
                     Office.EventType.ItemChanged,
                     () => { this.checkSender(); }
@@ -28,57 +28,93 @@ window.officeBridge = {
         });
     },
 
-    checkSender: function() {
+    // 2. CONTEXT EXTRACTION: Sends Email data to Blazor
+    checkSender: function () {
         if (!this._isInitialized || !this._dotNetHelper) return;
 
         const item = Office.context.mailbox.item;
         if (!item) return;
 
         try {
-            // Outlook property paths vary slightly between Read and Compose modes
-            // We use fallbacks to ensure we get the data on any platform
             const context = {
                 senderEmail: this._getSenderEmail(item),
                 senderName: this._getSenderName(item),
                 subject: item.subject || "No Subject"
             };
 
-            // Push to Blazor [JSInvokable] HandleEmailSelection
-            this._dotNetHelper.invokeMethodAsync('HandleEmailSelection', context)
-                .catch(err => console.error("Blazor HandleEmailSelection failed:", err));
+            // Push to Blazor [JSInvokable] in MainLayout or RightPanel
+            this._dotNetHelper.invokeMethodAsync('OnEmailReceived', context)
+                .catch(err => console.error("Blazor OnEmailReceived failed:", err));
 
         } catch (e) {
             console.error("officeBridge: Failed to extract context", e);
         }
     },
 
-    /**
-     * Internal helper to handle different Office.js item shapes for Email
-     */
-    _getSenderEmail: function(item) {
-        if (item.from) {
-            return item.from.emailAddress || item.from.address || "";
-        }
-        // Fallback for different API versions
-        return (item.sender && item.sender.emailAddress) ? item.sender.emailAddress : "";
+    // 3. ACTION: OPEN SAGE X3 RECORDS
+    openSageRecord: function (functionCode, recordKey) {
+        console.log(`[Sage X3] Navigating to ${functionCode} for ID: ${recordKey}`);
+        // In a real Syracuse environment, this URL structure is used:
+        const sageUrl = `https://your-sage-server.com{functionCode}.$query&where=key%20eq%20'${recordKey}'`;
+
+        // Opens Sage X3 in a new tab or the Syracuse frame
+        window.open(sageUrl, '_blank');
     },
 
-    /**
-     * Internal helper to handle different Office.js item shapes for Names
-     */
-    _getSenderName: function(item) {
-        if (item.from) {
-            return item.from.displayName || item.from.name || "";
-        }
-        return (item.sender && item.sender.displayName) ? item.sender.displayName : "";
-    }
-};
+    // 4. ACTION: ATCH DOCUMENT TO OUTLOOK EMAIL
+    attachDocument: function (entityType, fileName) {
+        console.log(`[Sage Bridge] Attempting to attach: ${fileName}`);
 
-/**
- * Global Utility: Manual trigger for Blazor if needed
- */
-window.triggerContextRefresh = function() {
-    if (window.officeBridge) {
-        window.officeBridge.checkSender();
+        // Construct the source URL from Sage X3 storage
+        const fileUrl = `https://your-sage-x3-server.com{entityType}/${fileName}`;
+
+        // Inject file directly into the active Outlook Compose window
+        Office.context.mailbox.item.addFileAttachmentAsync(
+            fileUrl,
+            fileName,
+            { asyncContext: null },
+            (asyncResult) => {
+                if (asyncResult.status === Office.AsyncResultStatus.Failed) {
+                    console.error("Attachment failed: " + asyncResult.error.message);
+                    this.showToast(`Failed to attach ${fileName}`, "error");
+                } else {
+                    this.showToast(`${fileName} attached to email.`, "success");
+                }
+            }
+        );
+    },
+
+    // 5. ACTION: EXPORT SAGE REPORTS
+    exportReport: function (reportCode, format) {
+        console.log(`[Sage X3] Generating ${format} for ${reportCode}`);
+        this.showToast(`Generating ${reportCode}...`, "info");
+
+        // Simulate background process for testing
+        setTimeout(() => {
+            this.showToast(`${reportCode} is ready for download.`, "success");
+        }, 3000);
+    },
+
+    // 6. UI UTILITY: Pass messages back to Blazor ToastService
+    showToast: function (message, type) {
+        if (this._dotNetHelper) {
+            // Invokes the Toast logic in your Blazor app
+            this._dotNetHelper.invokeMethodAsync('ShowToastFromJs', message, type);
+        }
+    },
+
+    // INTERNAL HELPERS
+    _getSenderEmail: function (item) {
+        if (item.itemType === Office.MailboxEnums.ItemType.Message) {
+            return (item.from) ? (item.from.emailAddress || item.from.address) : (item.sender ? item.sender.emailAddress : "");
+        }
+        return "";
+    },
+
+    _getSenderName: function (item) {
+        if (item.itemType === Office.MailboxEnums.ItemType.Message) {
+            return (item.from) ? (item.from.displayName || item.from.name) : (item.sender ? item.sender.displayName : "");
+        }
+        return "";
     }
 };

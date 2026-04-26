@@ -1,12 +1,12 @@
 ﻿@using Microsoft.FluentUI.AspNetCore.Components
 @using Microsoft.AspNetCore.Authorization
+@* THE FIX FOR THE ICONS ERROR *@
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
-@* Ensure only authorized users can access the forms *@
 @attribute [Authorize]
 
 <div class="sage-stepper-container">
-    
-    @* SAGE USER IDENTITY BAR (Top of the sidebar) *@
+    @* SAGE USER IDENTITY BAR *@
     <div class="sage-user-header">
         <div style="display: flex; align-items: center; gap: 12px;">
             <FluentPersona Name="John Smith"
@@ -19,7 +19,7 @@
         </div>
     </div>
 
-    @* FORM NAVIGATION TABS (Replacing your numeric Step 1, 2, 3) *@
+    @* TABS *@
     <div class="sage-tab-header">
         <FluentTabs @bind-ActiveTabId="@ActiveFormId" OnTabChange="HandleTabChange">
             <FluentTab Id="contact" Label="Contact" Icon="@(new Icons.Regular.Size20.ContactCard())" />
@@ -30,32 +30,38 @@
         </FluentTabs>
     </div>
 
-    @* DYNAMIC CONTENT VIEWPORT *@
     <div class="sage-form-viewport">
         <div class="form-scroll-container">
             @switch (ActiveFormId)
             {
                 case "contact":
-                    <NewContactForm OnCancel="ResetToDashboard" />
+                    <NewContactForm />
                     break;
                 case "order":
-                    <AddSalesOrderForm OnCancel="ResetToDashboard" />
+
+                    <AddSalesOrderForm />
                     break;
                 case "task":
-                    <CreateTaskForm OnCancel="ResetToDashboard" />
+
+                    <CreateTaskForm />
                     break;
                 case "quote":
-                    <CreateQuoteForm OnCancel="ResetToDashboard" />
+
+                    <CreateQuoteForm />
                     break;
                 case "kb":
-                    <SendKnowledgeForm OnCancel="ResetToDashboard" />
+
+                    <SendKnowledgeForm />
                     break;
+             
                 default:
                     <div class="dashboard-placeholder">
-                        <FluentIcon Value="@(new Icons.Regular.Size48.BoxMultiple())" Color="Color.Disabled" />
+                        @* FIXED: Swapped BoxMultiple for Box (which exists in Size48) *@
+                        <FluentIcon Value="@(new Icons.Regular.Size48.Box())" Color="Color.Disabled" />
                         <p>Select a Quick Action to begin.</p>
                     </div>
                     break;
+
             }
         </div>
     </div>
@@ -64,7 +70,6 @@
 @code {
     [Parameter] public string ActiveFormId { get; set; } = "contact";
 
-    // This method allows the Toolbar to switch the form
     public void SetActiveForm(string formId)
     {
         ActiveFormId = formId;
@@ -76,8 +81,5 @@
         ActiveFormId = tab.Id ?? "contact";
     }
 
-    private void ResetToDashboard()
-    {
-        ActiveFormId = "none";
-    }
+    private void ResetToDashboard() => ActiveFormId = "none";
 }

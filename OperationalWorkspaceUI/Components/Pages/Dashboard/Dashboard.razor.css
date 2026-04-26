@@ -1,49 +1,13 @@
-﻿:root {
-    --sage-blue: #003366;
-    --sage-light-blue: #3b82f6;
-    --sage-green: #22c55e;
-    --sage-orange: #f59e0b;
-    --border-color: #e2e8f0;
-    --bg-light: #f3f4f6;
-    --text-dark: #1e293b;
-    --text-muted: #64748b;
-}
+﻿/* ========================================================= 
+   DASHBOARD.RAZOR.CSS - Component Details
+   ========================================================= */
 
-/* THE GRID SYSTEM */
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Exact 2-column split from image */
-    gap: 1.5rem;
-    padding: 1.5rem;
-    background-color: var(--bg-light);
-    align-items: start;
-}
-
-/* WIDGET WRAPPERS */
-.widget-wrapper {
-    background: white;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    padding: 1.25rem;
-}
-
-/* THE QUICK ACTIONS BAR (Matches the full-width row in image) */
-.full-width-row {
-    grid-column: 1 / span 2;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    padding: 1.25rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-/* PANEL HEADERS (Matching the Chevrons/Dropdown arrows) */
+/* PANEL HEADERS (The top row with the chevron) */
 .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 10px;
     margin-bottom: 15px;
     font-weight: 600;
@@ -51,16 +15,16 @@
 }
 
     .panel-header::after {
-        content: 'expand_more'; /* This adds the "v" icon seen in the image */
+        content: 'expand_more';
         font-family: 'Material Icons';
         color: var(--text-muted);
         font-size: 1.2rem;
         cursor: pointer;
     }
 
-/* EMAIL INSIGHT & AI SUMMARY (Blue accent on left) */
+/* EMAIL INSIGHT (Blue AI Summary) */
 .ai-summary {
-    background: #f8fafc;
+    background: rgba(59, 130, 246, 0.05); /* Soft blue tint */
     border-left: 4px solid var(--sage-light-blue);
     padding: 12px;
     margin-top: 15px;
@@ -68,7 +32,7 @@
     color: var(--text-dark);
 }
 
-/* CRM SNAPSHOT COLORS (Red overdue / Green limit) */
+/* CRM SNAPSHOT (Red/Green text) */
 .snapshot-red {
     color: #ef4444;
     font-weight: 700;
@@ -79,7 +43,7 @@
     font-weight: 700;
 }
 
-/* QUICK ACTIONS GRID */
+/* QUICK ACTIONS CONTAINER */
 .quick-actions-container {
     display: flex;
     justify-content: space-around;
@@ -87,7 +51,7 @@
     text-align: center;
 }
 
-/* TIMELINE STYLING (The vertical line and dots) */
+/* TIMELINE (The vertical line logic) */
 .timeline-container {
     position: relative;
     padding-left: 20px;
@@ -97,34 +61,29 @@
 
 .timeline-marker {
     position: absolute;
-    left: -37px;
-    width: 32px;
-    height: 32px;
+    left: -31px; /* Aligns dot perfectly to the line */
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: white;
+    background: var(--card-bg);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--border-color);
+    border: 2px solid var(--sage-light-blue);
 }
 
-/* DARK MODE OVERRIDES */
-.dark-mode {
-    --bg-light: #0f172a;
-    --text-dark: #f8fafc;
-    --border-color: #334155;
+/* LOADING STATES */
+.sage-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(59, 130, 246, 0.2);
+    border-radius: 50%;
+    border-top-color: var(--sage-light-blue);
+    animation: spin 0.8s linear infinite;
 }
 
-    .dark-mode .widget-wrapper, .dark-mode .full-width-row {
-        background: #1e293b;
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
-/* Dashboard.razor.css - Final Polish */
-.dashboard-grid {
-    grid-template-rows: auto auto 1fr; /* Ensures top insights and actions take minimum space */
-}
-
-/* Ensure the CRM Snapshot and Email Insight have equal height */
-.widget-wrapper:nth-child(1),
-.widget-wrapper:nth-child(2) {
-    min-height: 280px;
 }

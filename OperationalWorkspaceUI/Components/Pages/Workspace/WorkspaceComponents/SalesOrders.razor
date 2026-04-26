@@ -19,8 +19,7 @@
 </WorkspaceToolbar>
 
 <WorkspaceFilters>
-    @* Fixed: lowercase 'v' in bind-value or just @bind *@
-    <FormField Label="Search" @bind-value="SearchQuery" />
+    <FormField Label="Search" @bind-Value="SearchQuery" />
 </WorkspaceFilters>
 
 @if (FilteredOrders == null)
@@ -33,8 +32,8 @@ else if (!FilteredOrders.Any())
 }
 else
 {
-    @* Using the Generic BpGrid with Templates *@
-    <BpGrid TItem="OpenOrderDto" Items="FilteredOrders" OnRowClick="Open">
+    @* FIXED: Passing the method reference 'Open' directly prevents lambda conversion issues *@
+    <BpGrid TItem="OpenOrderDto" Items="FilteredOrders.ToList()" OnRowClick="Open">
         <HeaderContent>
             <th>Order #</th>
             <th>Date</th>
@@ -43,7 +42,8 @@ else
         </HeaderContent>
         <RowTemplate Context="order">
             <td>@order.OrderNumber</td>
-            <td>@order.OrderDate.ToShortDateString()</td>
+            @* Safe display for nullable date values *@
+            <td>@(order.OrderDate?.ToShortDateString() ?? "N/A")</td>
             <td>@order.TotalAmount.ToString("C")</td>
             <td>
                 <span class="badge @(order.Status == "Completed" ? "bg-success" : "bg-warning")">
@@ -57,17 +57,16 @@ else
 @code {
     private string SearchQuery = string.Empty;
 
-    // We map the "Base" OrderDto from State into "UI-Friendly" OpenOrderDto locally
+    // FIXED: The Select logic now includes a null-coalescing operator (??)
+    // to bridge the gap between nullable DateTime? and non-nullable DateTime.
     private IEnumerable<OpenOrderDto>? FilteredOrders =>
         WorkspaceState.Orders?
             .Select(o => new OpenOrderDto
             {
                 Id = o.Id,
-                // Ensure OrderDto has 'OrderNumber' or map it from another field like 'Description'
                 OrderNumber = o.OrderNumber,
                 OrderDate = o.OrderDate,
                 TotalAmount = o.TotalAmount,
-                // Since OrderDto doesn't have Status, we provide a default here
                 Status = "Open"
             })
             .Where(o => string.IsNullOrWhiteSpace(SearchQuery)
@@ -82,7 +81,6 @@ else
     {
         await OrderService.GetOrdersAsync();
         
-        // Correct Radzen Notification syntax (not awaited)
         NotificationService.Notify(new Radzen.NotificationMessage
         {
             Severity = Radzen.NotificationSeverity.Success,

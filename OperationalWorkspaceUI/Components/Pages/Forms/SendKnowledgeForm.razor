@@ -55,15 +55,23 @@
 </FormSection>
 
 @code {
-    // Points to the new Model we created with advanced validation
-    private SendKnowledgeModel Model = new();
+    // This is your UI Model (with validation attributes)
+    private OperationalWorkspaceUI.Models.Forms.SendKnowledgeModel Model = new();
 
     private async Task HandleSubmit()
     {
         try
         {
-            // Map our UI model to the Service model if they differ, or pass directly
-            await KBService.SendKnowledgeAsync(Model);
+            // MAP: Convert UI Model into the DTO that the Service expects
+            var serviceModel = new OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel
+            {
+                SearchQuery = Model.SearchQuery,
+                Message = Model.Message
+                // Note: If your Service DTO has IncludeLink/TrackOpen, add them here
+            };
+
+            // Pass the service-specific model to the service
+            await KBService.SendKnowledgeAsync(serviceModel);
             
             Notifications.Notify(new Radzen.NotificationMessage
             {
@@ -94,3 +102,10 @@
     }
 }
 
+<style>
+    .sage-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+</style>

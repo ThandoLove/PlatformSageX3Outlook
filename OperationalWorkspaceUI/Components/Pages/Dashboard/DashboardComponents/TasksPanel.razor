@@ -2,30 +2,30 @@
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspace.Domain.Enums
 @using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
 @implements IDisposable
 @inject DashboardState State
 
 <FluentCard Class="tasks-widget-card">
-    @* Panel Header *@
     <div class="panel-header">
         <h3>My Tasks</h3>
         <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
-    @* Tab Section (Image Match: Minimalist Tabs) *@
     <div class="task-tabs">
         <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")" @onclick='() => SetTab("Pending")'>
             Pending (@State.CurrentTasks.Count(t => t.Status != "Completed"))
         </div>
         <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SetTab("Overdue")'>
-            Overdue (@State.CurrentTasks.Count(t => t.DueDate < DateTime.Now && t.Status != "Completed"))
+            @* FIXED: Safe null check for DueDate comparison *@
+            Overdue (@State.CurrentTasks.Count(t => t.DueDate.HasValue && t.DueDate < DateTime.Now && t.Status != "Completed"))
         </div>
         <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SetTab("Completed")'>
             Done
         </div>
     </div>
 
-    @* Task List Content *@
     <div class="task-list-container">
         @if (FilteredTasks != null && FilteredTasks.Any())
         {
@@ -39,6 +39,7 @@
                     <div class="task-details">
                         <span class="task-title">@task.Title</span>
                         <span class="task-due">
+                            @* FIXED: Passing nullable Date *@
                             Due: <span class="date-highlight">@FormatDueDate(task.DueDate)</span>
                         </span>
                     </div>
@@ -61,7 +62,6 @@
         }
     </div>
 
-    @* Footer Link *@
     <div class="task-footer">
         <FluentAnchor Appearance="Appearance.Lightweight" Href="/workspace/tasks" Class="footer-link">
             View All My Tasks →
@@ -79,22 +79,27 @@
     private IEnumerable<TaskDto> FilteredTasks => ActiveTab switch
     {
         "Pending" => State.CurrentTasks.Where(t => t.Status != "Completed"),
-        "Overdue" => State.CurrentTasks.Where(t => t.DueDate < DateTime.Now && t.Status != "Completed"),
+        "Overdue" => State.CurrentTasks.Where(t => t.DueDate.HasValue && t.DueDate < DateTime.Now && t.Status != "Completed"),
         "Completed" => State.CurrentTasks.Where(t => t.Status == "Completed"),
         _ => State.CurrentTasks
     };
 
-    private string FormatDueDate(DateTime date)
+    // FIXED: Now accepts DateTime? (Nullable)
+    private string FormatDueDate(DateTime? date)
     {
-        if (date.Date == DateTime.Today) return "Today";
-        if (date.Date == DateTime.Today.AddDays(1)) return "Tomorrow";
-        return date.ToString("MMM dd");
+        if (!date.HasValue) return "No Date";
+        
+        var d = date.Value;
+        if (d.Date == DateTime.Today) return "Today";
+        if (d.Date == DateTime.Today.AddDays(1)) return "Tomorrow";
+        return d.ToString("MMM dd");
     }
 
     private async Task HandleStatusChange(TaskDto task, bool isCompleted)
     {
         task.Status = isCompleted ? "Completed" : "Open";
-        State.NotifyChanged(); // Use this to update overall Dashboard stats (like Ticket count)
+        // FIXED: Match the method name in DashboardState
+        State.NotifyStateChanged();
     }
 
     public void Dispose() => State.OnChange -= StateHasChanged;

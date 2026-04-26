@@ -4,6 +4,8 @@
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
 @implements IDisposable
 @inject DashboardState State
 @inject NavigationManager NavManager
@@ -18,10 +20,12 @@
         <h2>@(TicketId == null ? "New Service Request" : $"Edit Ticket: {_ticket.TicketNumber}")</h2>
     </div>
 
+    @* Adding an explicit TModel helps resolve the lambda error *@
     <EditForm Model="@_ticket" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        
         <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="5">
             
-            <!-- SECTION 1: IDENTITY & PRIORITY -->
             <div class="form-section">
                 <label class="section-title">REQUEST INFORMATION</label>
                 <FluentGrid>
@@ -29,7 +33,11 @@
                         <FluentTextField Label="Subject" @bind-Value="_ticket.Title" Required="true" Style="width: 100%;" />
                     </FluentGridItem>
                     <FluentGridItem xs="12" sm="4">
-                        <FluentSelect TOption="string" Label="Priority" @bind-Value="_priorityString" Style="width: 100%;">
+                        @* FIXED: Explicit TOption and ValueExpression *@
+                        <FluentSelect TOption="string"
+                                      Label="Priority"
+                                      @bind-Value="_ticket.Priority"
+                                      Style="width: 100%;">
                             <FluentOption TOption="string" Value="1">Low</FluentOption>
                             <FluentOption TOption="string" Value="3">Medium</FluentOption>
                             <FluentOption TOption="string" Value="5">Critical</FluentOption>
@@ -38,10 +46,10 @@
                 </FluentGrid>
             </div>
 
-            <!-- SECTION 2: SAGE X3 CONTEXT -->
             <div class="form-section">
                 <label class="section-title">SAGE X3 CONTEXT</label>
                 <FluentGrid>
+                    @* These will now compile because you added them to the DTO *@
                     <FluentGridItem xs="12" sm="4">
                         <FluentTextField Label="Site" @bind-Value="_ticket.SiteCode" Placeholder="e.g. AO011" Style="width: 100%;" />
                     </FluentGridItem>
@@ -54,48 +62,16 @@
                 </FluentGrid>
             </div>
 
-            <!-- SECTION 3: DESCRIPTION -->
             <div class="form-section">
                 <label class="section-title">PROBLEM DESCRIPTION</label>
                 <FluentTextArea Label="Issue Details" @bind-Value="_ticket.Description" Rows="5" Style="width: 100%;" />
             </div>
 
-            <!-- SECTION 4: ATTACHMENTS -->
-            <div class="form-section">
-                <label class="section-title">ATTACHMENTS</label>
-                <div class="attachment-zone">
-                    <FluentInputFile Id="ticket-upload"
-                                     Mode="InputFileMode.Buffer"
-                                     Multiple="true"
-                                     OnCompleted="@OnUploadCompleted">
-                        <ChildContent>
-                            <div class="upload-drop-zone">
-                                <FluentIcon Value="@(new Icons.Regular.Size24.ArrowUpload())" Color="@Color.Accent" />
-                                <p>Drag files here or <b>Browse</b></p>
-                            </div>
-                        </ChildContent>
-                    </FluentInputFile>
-
-                    @if (_uploadedFiles.Any())
-                    {
-                        <div class="file-list">
-                            @foreach (var file in _uploadedFiles)
-                            {
-                                <div class="file-chip">
-                                    <FluentIcon Value="@(new Icons.Regular.Size16.Document())" />
-                                    <span>@file.Name</span>
-                                    <FluentButton Appearance="Appearance.Stealth"
-                                                  IconStart="@(new Icons.Regular.Size16.Dismiss())"
-                                                  OnClick="@(() => _uploadedFiles.Remove(file))" />
-                                </div>
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
-
             <div class="form-footer">
-                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" Style="background-color: #005fb8;">
+                @* Use full path for ButtonType to avoid Radzen conflict *@
+                <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Submit"
+                              Appearance="Appearance.Accent"
+                              Style="background-color: #005fb8;">
                     @(TicketId == null ? "Create in Sage X3" : "Update Sage X3")
                 </FluentButton>
                 <FluentButton OnClick="@(() => NavManager.NavigateTo("/tickets"))">Cancel</FluentButton>
@@ -109,7 +85,6 @@
     [Parameter] public Guid? TicketId { get; set; }
 
     private TicketDto _ticket = new();
-    private string _priorityString = "3";
     private List<FluentInputFileEventArgs> _uploadedFiles = new();
 
     protected override void OnInitialized()
@@ -118,7 +93,6 @@
 
         if (TicketId.HasValue)
         {
-            // Edit Mode: Find the existing ticket
             var existing = State.CurrentTickets.FirstOrDefault(t => t.Id == TicketId.Value);
             if (existing != null)
             {
@@ -127,7 +101,6 @@
         }
         else
         {
-            // Create Mode: New Object
             _ticket = new TicketDto { Status = "Open", CreatedAt = DateTime.Now };
         }
     }

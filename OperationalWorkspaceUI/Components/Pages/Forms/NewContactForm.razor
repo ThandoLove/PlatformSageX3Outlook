@@ -19,7 +19,8 @@
         
         @* IDENTITY SECTION *@
         <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">IDENTITY</FluentLabel>
+            @* FIXED: Changed Typography.Caption to Typography.Body *@
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">IDENTITY</FluentLabel>
             <div class="form-grid-2-col">
                 <div>
                     <FluentTextField Label="Full Name" @bind-Value="contactModel.FullName" FullWidth="true" />
@@ -31,7 +32,8 @@
 
         @* CONTACT INFO SECTION *@
         <div class="sage-form-group" style="margin-top: 20px;">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
+            @* FIXED: Changed Typography.Caption to Typography.Body *@
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
             <FluentTextField Label="Email Address" @bind-Value="contactModel.Email" Readonly="true" FullWidth="true" />
             
             <div class="form-grid-2-col" style="margin-top: 12px;">
@@ -42,7 +44,8 @@
 
         @* LOCATION SECTION *@
         <div class="sage-form-group" style="margin-top: 20px;">
-            <FluentLabel Typo="Typography.Caption" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
+            @* FIXED: Changed Typography.Caption to Typography.Body *@
+            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
             <FluentTextField Label="Street Address" @bind-Value="contactModel.Street" FullWidth="true" />
             
             <div class="form-grid-2-col" style="margin-top: 12px;">
@@ -65,9 +68,9 @@
 
     protected override void OnInitialized()
     {
-        // Pre-fill logic exactly as per the "Email Info" badge requirements
-        contactModel.FullName = PassedName;
-        contactModel.Email = PassedEmail;
+        // FIXED: Added ?? string.Empty to handle null reference warnings
+        contactModel.FullName = PassedName ?? string.Empty;
+        contactModel.Email = PassedEmail ?? string.Empty;
     }
 
     private async Task HandleSubmit()
@@ -92,7 +95,6 @@
 }
 
 <style>
-    /* Styling to ensure the internal groups look clean inside the FormSection */
     .sage-form-group {
         display: flex;
         flex-direction: column;

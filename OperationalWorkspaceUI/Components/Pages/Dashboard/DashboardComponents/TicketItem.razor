@@ -1,15 +1,14 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.System
 @using Microsoft.FluentUI.AspNetCore.Components
-@* Fix 1: Ensure Icons namespace is explicitly referenced *@
 @using Microsoft.FluentUI.AspNetCore.Components.Icons
 
 <div class="ticket-row"
      style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; gap: 12px; cursor: pointer;"
      @onclick="OpenTicketDetail">
     
-    @* Priority Indicator (Color bar exactly like Sage UI) *@
-    <div style="width: 4px; height: 32px; border-radius: 2px; background-color: @GetPriorityColor(Ticket.Priority);"></div>
+    @* Priority Indicator - FIXED: Parsing string to int for the color logic *@
+    <div style="width: 4px; height: 32px; border-radius: 2px; background-color: @GetPriorityColor(int.TryParse(Ticket.Priority, out var p) ? p : 0);"></div>
 
     <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -17,14 +16,13 @@
             <span style="font-size: 0.75rem; color: #94a3b8;">@Ticket.CreatedAt.ToString("MMM dd")</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 0.8rem; color: #64748b;">#@Ticket.Id</span>
-            <div class="status-badge @Ticket.Status.ToLower().Replace(" ", "-")">
+            <span style="font-size: 0.8rem; color: #64748b;">#@Ticket.TicketNumber</span>
+            <div class="status-badge @(Ticket.Status?.ToLower().Replace(" ", "-") ?? "open")">
                 @Ticket.Status
             </div>
         </div>
     </div>
 
-    @* Fix 2: Full path for Icon and Color to resolve conflict with Radzen *@
     <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronRight())"
                 Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
 </div>
@@ -38,6 +36,7 @@
     {
         await ModalService.ShowModal($"Edit Ticket: {Ticket.Title}", builder =>
         {
+            // Note: Ensure your TicketDetailForm component is ready to receive the "Ticket" attribute
             builder.OpenComponent<TicketDetailForm>(0);
             builder.AddAttribute(1, "Ticket", Ticket);
             builder.CloseComponent();

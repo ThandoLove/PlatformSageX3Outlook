@@ -5,7 +5,11 @@ public sealed class SalesOrderDto
     public Guid Id { get; init; }
 
     public string OrderNumber { get; init; } = string.Empty;
-    public DateTime OrderDate { get; init; }
+
+    // CRITICAL FIX: Added '?' to make it nullable. 
+    // This allows FluentDatePicker to bind without the "Delegate" error.
+    public DateTime? OrderDate { get; init; } = DateTime.Now;
+
     public DateTime? RequestedDeliveryDate { get; init; }
 
     public Guid BusinessPartnerId { get; init; }
@@ -29,10 +33,9 @@ public sealed class SalesOrderDto
     public string ShippingMethod { get; init; } = string.Empty;
     public string DeliveryAddress { get; init; } = string.Empty;
 
+    // FIXED: Combined the duplicate Lines properties into one clean collection
     public IReadOnlyCollection<SalesOrderLineDto> Lines { get; init; }
         = Array.Empty<SalesOrderLineDto>();
-
-    
 
     public Guid CreatedBy { get; init; }
     public DateTime CreatedAtUtc { get; init; }

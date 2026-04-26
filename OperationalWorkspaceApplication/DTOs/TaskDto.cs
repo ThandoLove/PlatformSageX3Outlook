@@ -9,7 +9,7 @@ public class TaskDto
 {
     public string TaskId { get; set; } = Guid.NewGuid().ToString();
     public string Title { get; set; } = string.Empty;
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
     public TaskPriority Priority { get; set; }
     public string AssignedTo { get; set; } = string.Empty;
     public string BpCode { get; set; } = string.Empty;
@@ -23,7 +23,6 @@ public class TaskDto
     public DateTime UpdatedDate { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
 
-  
     public string RelatedEntity { get; set; } = string.Empty; // e.g., "Invoice #12345", "Leave Request for John Doe"
 
 
