@@ -4,8 +4,10 @@
 
 @if (IsVisible)
 {
+    @* tabindex and autofocus are essential for the Escape key to work *@
     <div @onkeydown="HandleKeyDown" tabindex="0" autofocus class="modal-wrapper">
         <div class="modal-backdrop" @onclick="Close"></div>
+        
         <div class="modal-window" role="dialog" aria-modal="true">
             <div class="modal-header">
                 <h5 class="m-0">@Title</h5>
@@ -25,7 +27,6 @@
 
     protected override void OnInitialized()
     {
-        // Subscribe to the Service events
         ModalService.OnShow += HandleShow;
         ModalService.OnClose += HandleClose;
     }
@@ -35,14 +36,14 @@
         Title = title;
         ChildContent = content;
         IsVisible = true;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
         return Task.CompletedTask;
     }
 
     private Task HandleClose()
     {
         IsVisible = false;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
         return Task.CompletedTask;
     }
 
@@ -55,7 +56,6 @@
 
     public void Dispose()
     {
-        // Unsubscribe to prevent memory leaks
         ModalService.OnShow -= HandleShow;
         ModalService.OnClose -= HandleClose;
     }

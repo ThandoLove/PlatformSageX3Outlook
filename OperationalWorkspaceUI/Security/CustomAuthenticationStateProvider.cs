@@ -1,13 +1,12 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
-using Majorsoft.Blazor.Extensions.BrowserStorage; // FIX 1: Change to Majorsoft
+using Majorsoft.Blazor.Extensions.BrowserStorage;
 
 namespace OperationalWorkspaceUI.Security;
 
 public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
-    // FIX 2: Change ILocalStorageService to ILocalStorageService from Majorsoft
     private readonly ILocalStorageService _localStorage;
     private readonly ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
@@ -20,7 +19,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
         try
         {
-            // FIX 3: Majorsoft uses GetItemAsync<string> differently
+            // Majorsoft implementation
             var token = await _localStorage.GetItemAsync<string>("authToken");
 
             if (string.IsNullOrWhiteSpace(token))
@@ -72,4 +71,3 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         return Convert.FromBase64String(base64);
     }
 }
-// FIX 4: Removed the extra closing brace that caused the "End-of-file expected" error

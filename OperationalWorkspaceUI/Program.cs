@@ -1,11 +1,14 @@
 // CODE START
 
+using FluentValidation;
 using Majorsoft.Blazor.Extensions.BrowserStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services; // IMPORTANT
 using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
+using OperationalWorkspaceUI.Security;
 using OperationalWorkspaceUI.State;
 using OperationalWorkspaceUI.UIServices.Actions;
 using OperationalWorkspaceUI.UIServices.DashboardUI;
@@ -13,13 +16,15 @@ using OperationalWorkspaceUI.UIServices.EmailService;
 using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.Workspace;
 using Radzen;
-using FluentValidation;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ------------------ 1. SYSTEM ------------------
 builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 // 🔥 VALIDATION REGISTRATION (ONE LINE FOR ALL)
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
@@ -65,6 +70,7 @@ builder.Services.AddScoped<NavigationService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailSyncService>();
 builder.Services.AddScoped<ActivityUIService>();
+
 
 
 builder.Services.AddScoped<IToastService, ToastService>();

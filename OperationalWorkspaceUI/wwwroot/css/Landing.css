@@ -1,291 +1,218 @@
-﻿/* =========================================================
-   GLOBAL VARIABLES
-========================================================= */
+﻿/* ========================================================= 
+   SAGE X3 LANDING PAGE - ABSOLUTE FINAL FIX
+   ========================================================= */
+
 :root {
-    --sage-green: #00c853;
-    --panel-bg-dark: #0f172a;
-    --panel-text-dark: #e5e7eb;
-    --accent-blue: #2563eb;
-    --bg-dark: #020617;
+    --sage-primary: #003366;
+    --sage-accent: #0052cc;
+    --sage-accent-hover: #0747a6;
+    --sage-bg-light: #f8fafc;
+    --sage-bg-dark: #0f172a;
+    --card-bg-light: #ffffff;
+    --card-bg-dark: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
 }
 
-/* LIGHT MODE */
-body.light-mode {
-    --bg-dark: #f8fafc;
-    --panel-bg-dark: #ffffff;
-    --panel-text-dark: #111827;
-    --accent-blue: #2563eb;
+/* 1. BASE LAYOUT - GLOBAL SCROLL ENABLE */
+html, body {
+    height: auto !important;
+    overflow-y: auto !important;
+    margin: 0;
+    padding: 0;
 }
 
-/* DARK MODE (default fallback) */
-body.dark-mode {
-    --bg-dark: #020617;
-    --panel-bg-dark: #0f172a;
-    --panel-text-dark: #e5e7eb;
-}
-
-/* =========================================================
-   LANDING PAGE ROOT
-========================================================= */
 .landing-page {
-    min-height: 100vh;
-    background: var(--bg-dark);
-    color: white;
+    background: var(--sage-bg-light);
+    min-height: 100vh; /* Allow it to be taller than the screen */
     display: flex;
     flex-direction: column;
+    align-items: center;
+    /* Extra bottom padding so the button isn't cut off */
+    padding: 20px 20px 100px 20px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    position: relative;
+    overflow-y: auto !important; /* Force scrollbar */
     overflow-x: hidden;
+    transition: background 0.3s ease;
+    z-index: 1;
 }
 
-/* =========================================================
-   HERO SECTION LAYOUT
-========================================================= */
-.hero-section {
+body.dark-mode .landing-page {
+    background: var(--sage-bg-dark);
+    color: #f8fafc;
+}
+
+/* 2. LAYER DEPTH - FORCES CLICKABILITY */
+.theme-bar, .brand-header, .hero-text, .benefit-grid, .hero-actions {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 400px;
+}
+
+/* 3. THEME TOGGLE */
+.theme-bar {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 60px 80px;
-    gap: 60px;
-}
-
-/* LEFT SIDE */
-.hero-content {
-    max-width: 520px;
-}
-
-.hero-title {
-    font-size: 48px;
-    font-weight: 700;
+    justify-content: flex-end;
     margin-bottom: 10px;
 }
 
-.hero-subtitle {
-    color: #94a3b8;
+.theme-toggle-btn {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.dark-mode .theme-toggle-btn {
+    background: var(--card-bg-dark);
+    color: white;
+    border-color: #334155;
+}
+
+/* 4. HERO SECTION */
+.brand-header {
     margin-bottom: 20px;
+    text-align: left;
 }
 
-/* =========================================================
-   HERO BUTTONS (SAFE - WILL NOT DISAPPEAR)
-========================================================= */
-.hero-actions {
-    display: flex;
-    gap: 16px;
-}
-
-    /* PRIMARY BUTTON */
-    .hero-actions .btn-primary {
-        background: var(--sage-green);
-        color: #020617;
-        padding: 12px 32px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
+    .brand-header img {
+        height: 32px;
     }
 
-    /* OUTLINE BUTTON */
-    .hero-actions .btn-outline {
-        background: transparent;
-        border: 1px solid rgba(255,255,255,0.25);
-        color: white;
-        padding: 12px 32px;
-        border-radius: 8px;
-    }
-
-/* =========================================================
-   HERO VISUAL CONTAINER
-========================================================= */
-.hero-visual {
-    width: 420px;
-    height: 260px;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.45);
+.hero-text p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.1rem;
 }
 
-/* =========================================================
-   LIVE ERP PREVIEW (ANIMATED FAKE DASHBOARD)
-========================================================= */
-.dashboard-preview {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    background: var(--panel-bg-dark);
+.hero-text h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--sage-primary);
+    margin: 0;
+    line-height: 1.1;
 }
 
-/* SIDEBAR */
-.preview-sidebar {
-    width: 60px;
-    background: #0a0f1a;
-    position: relative;
+.hero-text h2 {
+    font-size: 1.6rem;
+    color: #1e293b;
+    margin-top: 5px;
+    font-weight: 600;
 }
 
-    /* blinking indicator */
-    .preview-sidebar::after {
-        content: "";
-        position: absolute;
-        top: 20px;
-        left: 12px;
-        width: 6px;
-        height: 6px;
-        background: #00c853;
-        border-radius: 50%;
-        animation: pulse 1.5s infinite;
-    }
-
-/* MAIN */
-.preview-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    gap: 10px;
+body.dark-mode .hero-text h1 {
+    color: #3b82f6;
 }
 
-/* TOP BAR */
-.preview-top {
-    height: 38px;
-    background: var(--panel-bg-dark);
-    border-radius: 6px;
-    position: relative;
-    overflow: hidden;
+body.dark-mode .hero-text h2 {
+    color: #f8fafc;
 }
 
-    /* moving search shimmer */
-    .preview-top::after {
-        content: "";
-        position: absolute;
-        top: 14px;
-        left: -40%;
-        width: 40%;
-        height: 8px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-        animation: shimmer 2.5s infinite;
-    }
-
-/* GRID */
-.preview-body {
-    flex: 1;
+/* 5. BENEFIT GRID (2x2) */
+.benefit-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 16px;
+    margin-top: 30px;
 }
 
-/* KPI CARD */
-.preview-card {
-    background: var(--panel-bg-dark);
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden;
-}
-
-    /* TITLE LINE */
-    .preview-card::before {
-        content: "";
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        width: 55%;
-        height: 6px;
-        background: rgba(255,255,255,0.08);
-        border-radius: 4px;
-    }
-
-    /* LIVE VALUE LINE */
-    .preview-card::after {
-        content: "";
-        position: absolute;
-        top: 28px;
-        left: 12px;
-        width: 65%;
-        height: 8px;
-        background: rgba(0, 200, 83, 0.5);
-        border-radius: 4px;
-        animation: pulse 1.8s infinite;
-    }
-
-/* MINI CHART (IMPORTANT REALISTIC TOUCH) */
-.preview-chart {
-    position: absolute;
-    bottom: 8px;
-    left: 10px;
-    right: 10px;
-    height: 30px;
-    display: flex;
-    gap: 3px;
-    align-items: flex-end;
-}
-
-    .preview-chart div {
-        width: 100%;
-        background: rgba(59,130,246,0.6);
-        animation: chartGrow 1.6s infinite ease-in-out;
-    }
-
-        .preview-chart div:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .preview-chart div:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        .preview-chart div:nth-child(4) {
-            animation-delay: 0.6s;
-        }
-
-        .preview-chart div:nth-child(5) {
-            animation-delay: 0.8s;
-        }
-
-/* =========================================================
-   FOOTER
-========================================================= */
-.landing-footer {
-    margin-top: auto;
-    display: flex;
-    justify-content: center;
-    gap: 40px;
+.benefit-card {
+    background: var(--card-bg-light);
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
     padding: 20px;
-    color: #94a3b8;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
-/* =========================================================
-   ANIMATIONS
-========================================================= */
-@keyframes pulse {
-    0% {
-        opacity: 0.4;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.05);
-    }
-
-    100% {
-        opacity: 0.4;
-        transform: scale(1);
-    }
+body.dark-mode .benefit-card {
+    background: var(--card-bg-dark);
+    border-color: #334155;
 }
 
-@keyframes shimmer {
-    0% {
-        left: -40%;
-    }
-
-    100% {
-        left: 120%;
-    }
+.icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    font-size: 1.2rem;
 }
 
-@keyframes chartGrow {
-    0%, 100% {
-        height: 25%;
+.icon-blue {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.icon-green {
+    background: #f0fdf4;
+    color: #22c55e;
+}
+
+.icon-purple {
+    background: #faf5ff;
+    color: #a855f7;
+}
+
+.icon-orange {
+    background: #fff7ed;
+    color: #f97316;
+}
+
+/* 6. PRIMARY BUTTON - ENSURE IT APPEARS */
+.hero-actions {
+    margin-top: 30px;
+    display: block !important;
+}
+
+.btn-sage-primary {
+    background: var(--sage-accent);
+    color: white !important;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+    .btn-sage-primary:hover {
+        background: var(--sage-accent-hover);
     }
 
-    50% {
-        height: 100%;
-    }
+/* 7. FOOTER DECORATION - PUSHED TO BACK */
+.landing-footer-bg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(to top, rgba(59, 130, 246, 0.08), transparent);
+    z-index: 0;
+    pointer-events: none; /* Crucial so it doesn't block the button */
+}
+
+/* 8. MODAL SYSTEM */
+.modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

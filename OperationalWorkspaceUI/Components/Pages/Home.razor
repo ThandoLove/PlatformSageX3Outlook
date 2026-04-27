@@ -2,93 +2,88 @@
 @layout EmptyLayout
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
 
-<PageTitle>Operational Workspace | Sage X3</PageTitle>
+<PageTitle>Welcome | Sage X3</PageTitle>
 
 <div class="landing-page">
+    <!-- THEME TOGGLE BAR -->
+    <div class="theme-bar">
+        <button class="theme-toggle-btn" @onclick="ToggleTheme">
+            <i class="ms-Icon ms-Icon--@(isDark ? "Sunny" : "Contact")"></i>
+            @(isDark ? "Light Mode" : "Dark Mode")
+        </button>
+    </div>
 
-    <!-- THEME TOGGLE -->
-    <button class="btn-outline" @onclick="ToggleTheme">
-        Toggle Theme
-    </button>
+    <!-- BRANDING -->
+    <div class="brand-header">
+        <img src="images/sage-x3-logo.png" alt="Sage X3" />
+    </div>
 
-    <!-- HERO -->
-    <section class="hero-section">
-        <div class="hero-content">
-            <div class="brand-logo">
-                <img src="https://dummyimage.com/200x80/00c853/ffffff&text=Sage+X3" />
-            </div>
-            
-            <h1 class="hero-title">Operational Workspace</h1>
+    <!-- HERO TEXT -->
+    <div class="hero-text">
+        <p>Welcome to</p>
+        <h1>Sage X3</h1>
+        <h2>Contextual Workspace</h2>
+        <p class="hero-subtitle">Your all-in-one workspace to manage customers, sales, service, and more.</p>
+    </div>
 
-            <p class="hero-subtitle">
-                Contextual ERP insights delivered directly to your Outlook.
-            </p>
-
-            <div class="hero-actions">
-                <button class="btn-primary" @onclick="GoToLogin">
-                    Get Started
-                </button>
-                <button class="btn-outline">
-                    Learn More
-                </button>
-            </div>
+    <!-- THE 2x2 BENEFIT GRID -->
+    <div class="benefit-grid">
+        <div class="benefit-card">
+            <div class="icon-box icon-blue"><i class="ms-Icon ms-Icon--GridViewSmall"></i></div>
+            <h3>Unified Workspace</h3>
+            <p>All your business functions in one place</p>
+        </div>
+        
+        <div class="benefit-card">
+            <div class="icon-box icon-green"><i class="ms-Icon ms-Icon--BarChartVerticalFill"></i></div>
+            <h3>Real-time Insights</h3>
+            <p>Make smarter decisions with real-time data</p>
         </div>
 
-        <!-- DASHBOARD PREVIEW -->
-        <div class="hero-visual">
-            <div class="dashboard-preview">
-                <div class="preview-sidebar"></div>
-                
-                <div class="preview-main">
-                    <div class="preview-top"></div>
+        <div class="benefit-card">
+            <div class="icon-box icon-purple"><i class="ms-Icon ms-Icon--Shield"></i></div>
+            <h3>Secure & Connected</h3>
+            <p>Enterprise-grade security you can trust</p>
+        </div>
 
-                    <div class="preview-body">
-                        <div class="preview-card"></div>
-                        <div class="preview-card"></div>
-                    </div>
-                </div>
-            </div>
+        <div class="benefit-card">
+            <div class="icon-box icon-orange"><i class="ms-Icon ms-Icon--LightningBolt"></i></div>
+            <h3>Smart & Efficient</h3>
+            <p>Automate tasks and boost productivity</p>
         </div>
-    </section>
+    </div>
 
-    <!-- FOOTER -->
-    <footer class="landing-footer">
-        <div class="footer-item">
-            <span>Real-time Sync</span>
-        </div>
-        <div class="footer-item">
-            <span>Secure Access</span>
-        </div>
-        <div class="footer-item">
-            <span>ERP Context</span>
-        </div>
-    </footer>
+    <!-- ACTION BUTTON -->
+    <div class="hero-actions">
+        <button class="btn-sage-primary" @onclick="ShowLogin">
+            <i class="ms-Icon ms-Icon--Forward"></i> Sign In to Sage X3
+        </button>
+    </div>
 
+    <!-- CITYSCAPE FOOTER DECORATION -->
+    <div class="landing-footer-bg"></div>
+    <div class="footer-copyright">© 2024 Sage Group</div>
 </div>
 
 @code {
-
     private bool isDark = true;
 
-    private void GoToLogin()
+    private void ShowLogin()
     {
-        Nav.NavigateTo("/login");
+        // Triggers Modal.razor and injects Login.razor content
+        ModalService.ShowModal("Sign In", builder =>
+        {
+            builder.OpenComponent<Login>(0);
+            builder.CloseComponent();
+        });
     }
 
     private async Task ToggleTheme()
     {
         isDark = !isDark;
-
-        if (isDark)
-        {
-            await JS.InvokeVoidAsync("document.body.classList.remove", "light-mode");
-            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
-        }
-        else
-        {
-            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
-            await JS.InvokeVoidAsync("document.body.classList.add", "light-mode");
-        }
+        // Toggles the class on body so it affects the Modal and the Landing Page
+        await JS.InvokeVoidAsync("document.body.classList.toggle", "dark-mode");
     }
 }

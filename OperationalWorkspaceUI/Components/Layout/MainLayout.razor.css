@@ -1,18 +1,18 @@
 /* ROOT CONTAINER - The 3-column split */
 .main-layout {
     display: flex;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background-color: #f1f5f9; /* Light blue workspace */
+    width: 100%;
+    min-height: 100vh; /* ✅ FIX: allow page to grow */
+    overflow: visible; /* ✅ FIX: allow scrolling */
+    background-color: #f1f5f9;
 }
 
 /* SIDEBAR SKELETON - Deep Navy */
 ::deep .sidebar {
-    width: 60px; /* Standard icon width */
-    height: 100vh;
+    width: 60px;
+    height: 100vh; /* ✅ OK: sidebar can stay fixed */
     flex-shrink: 0;
-    background-color: #020617; /* Deep Navy Frame */
+    background-color: #020617;
     border-right: 1px solid #1e293b;
     z-index: 100;
 }
@@ -22,23 +22,27 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto; /* ✅ FIX: enable scrolling */
     min-width: 0;
+}
+
+/* 🔥 CRITICAL FIX (you were missing this completely) */
+.content-body {
+    flex: 1;
+    overflow-y: auto; /* ✅ THIS enables page scroll */
 }
 
 /* TOPBAR SKELETON - Deep Navy */
 ::deep .topbar {
     height: 60px;
     flex-shrink: 0;
-    background-color: #020617; /* Matches Sidebar */
+    background-color: #020617;
     border-bottom: 1px solid #1e293b;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
     color: #ffffff;
-
-   
 }
 
 /* PAGE CONTAINER - Scrollable middle */
@@ -54,6 +58,6 @@
     background: #ffffff;
     border-left: 1px solid #e2e8f0;
     flex-shrink: 0;
-    height: 100vh;
+    height: 100vh; /* ✅ OK to keep fixed */
     overflow-y: auto;
 }
