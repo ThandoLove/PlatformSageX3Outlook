@@ -1,0 +1,109 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Security
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthStateProvider
+@inject Majorsoft.Blazor.Extensions.BrowserStorage.ILocalStorageService LocalStorage
+
+<div class="sage-login-body">
+    <!-- Icon Header matching high-fidelity image -->
+    <div class="login-icon-circle">
+        <i class="ms-Icon ms-Icon--Lock"></i>
+    </div>
+
+    <h2 class="login-title">Sign In to Sage X3</h2>
+    <p class="login-subtitle">Access your contextual workspace</p>
+
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+        @* Add Fluent Validation here if you are using it *@
+        
+        <div class="input-group-custom">
+            <label>Username</label>
+            <div class="input-wrapper">
+                <i class="ms-Icon ms-Icon--Contact"></i>
+                <InputText @bind-Value="loginModel.Username" placeholder="Enter username" />
+            </div>
+        </div>
+
+        <div class="input-group-custom">
+            <label>Password</label>
+            <div class="input-wrapper">
+                <i class="ms-Icon ms-Icon--Lock"></i>
+                <InputText @bind-Value="loginModel.Password" type="password" placeholder="Enter password" />
+            </div>
+        </div>
+
+        <button type="submit" class="btn-login-submit" disabled="@isBusy">
+            @if (isBusy)
+            {
+                <span>Verifying...</span>
+            }
+            else
+            {
+                <span><i class="ms-Icon ms-Icon--Forward"></i> Sign In</span>
+            }
+        </button>
+        
+        <div class="login-divider"><span>or</span></div>
+
+        <button type="button" class="btn-sso-login" disabled="@isBusy">
+            <i class="ms-Icon ms-Icon--Shield"></i> Sign in with SSO
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    private LoginRequestDto loginModel = new();
+    private bool isBusy;
+
+    private async Task HandleLogin()
+    {
+        if (isBusy) return;
+        isBusy = true;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/v1/Auth/login", loginModel);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                
+                if (result != null && !string.IsNullOrEmpty(result.Token))
+                {
+                    // 1. Save token to LocalStorage
+                    await LocalStorage.SetItemAsync("authToken", result.Token);
+
+                    // 2. Notify Authentication State Provider
+                    var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+                    customAuthStateProvider.NotifyUserAuthentication(result.Token);
+
+                    // 3. Navigate to Dashboard - forceLoad ensures a clean state and closes the modal
+                    Nav.NavigateTo("/dashboard", forceLoad: true);
+                }
+            }
+            else
+            {
+                // Handle login failure (e.g., show a toast or error message)
+                Console.WriteLine("Login failed: Invalid credentials.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Auth Error: {ex.Message}");
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    // Helper class for JSON parsing
+    public class LoginResponse
+    {
+        public string? Token { get; set; }
+    }
+}

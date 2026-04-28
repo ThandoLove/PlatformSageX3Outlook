@@ -1,11 +1,10 @@
 // CODE START
-
 using FluentValidation;
 using Majorsoft.Blazor.Extensions.BrowserStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspaceApplication.Interfaces.IServices;
-using OperationalWorkspaceApplication.Services; // IMPORTANT
+using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
@@ -14,32 +13,35 @@ using OperationalWorkspaceUI.UIServices.Actions;
 using OperationalWorkspaceUI.UIServices.DashboardUI;
 using OperationalWorkspaceUI.UIServices.EmailService;
 using OperationalWorkspaceUI.UIServices.System;
+using OperationalWorkspaceUI.UIServices.ToastUIService;
 using OperationalWorkspaceUI.UIServices.Workspace;
 using Radzen;
-
+using ToastService = OperationalWorkspaceUI.UIServices.ToastUIService.ToastService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ------------------ 1. SYSTEM ------------------
 builder.Services.AddDistributedMemoryCache();
 
+// 🔥 AUTHENTICATION FIXED
 builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
-// 🔥 VALIDATION REGISTRATION (ONE LINE FOR ALL)
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 // ------------------ 2. UI ------------------
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = true; // 🔥 THIS SHOWS THE REAL ERROR IN F12 CONSOLE
+    });
 
 builder.Services.AddFluentUIComponents();
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<Radzen.NotificationService>();
 builder.Services.AddScoped<Radzen.DialogService>();
-// Add this to your builder.Services
 builder.Services.AddBrowserStorage();
-
 
 // ------------------ 3. STATE ------------------
 builder.Services.AddScoped<DashboardState>();
@@ -50,13 +52,9 @@ builder.Services.AddScoped<UIState>();
 // ------------------ 4. API CLIENT ------------------
 builder.Services.AddHttpClient("ApiClient", client =>
 {
-    client.BaseAddress = new Uri(
-        builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7123"
-    );
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7123");
 });
-
-builder.Services.AddScoped(sp =>
-    sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
 
 // ------------------ 5. UI SERVICES ------------------
 builder.Services.AddScoped<DashboardUIService>();
@@ -71,17 +69,16 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailSyncService>();
 builder.Services.AddScoped<ActivityUIService>();
 
+// 🔥 TOAST SERVICE FIXED (Matches MainLayout @inject)
+builder.Services.AddScoped<IToastUIService, ToastService>();
+builder.Services.AddScoped<ToastService>(); // Register concrete class too just in case
 
-
-builder.Services.AddScoped<IToastService, ToastService>();
-
-
-// ------------------ 6. 🔥 BACKEND SERVICES (FIX) ------------------
+// ------------------ 6. BACKEND SERVICES ------------------
 builder.Services.AddScoped<IActivityService, MockUnifiedService>();
 builder.Services.AddScoped<IEmailService, MockUnifiedService>();
 builder.Services.AddScoped<IKnowledgeService, MockUnifiedService>();
 builder.Services.AddScoped<ISalesService, MockUnifiedService>();
-builder.Services.AddScoped<IBusinessPartnerService, MockUnifiedService>(); // 🔥 THIS FIXES YOUR ERROR
+builder.Services.AddScoped<IBusinessPartnerService, MockUnifiedService>();
 builder.Services.AddScoped<IInventoryService, MockUnifiedService>();
 builder.Services.AddScoped<ITaskService, MockUnifiedService>();
 builder.Services.AddScoped<IInvoiceService, MockUnifiedService>();
@@ -99,10 +96,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+// Ensure this matches your App.razor
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
-
-
-// CODE END

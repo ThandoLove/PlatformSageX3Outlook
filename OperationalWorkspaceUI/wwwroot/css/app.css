@@ -1,32 +1,39 @@
-/*======================== GLOBAL VARIABLES ========================= */ 
+/*======================== GLOBAL VARIABLES ========================= */
 :root {
     --sage-green: #00c853;
+    --sage-blue: #0052cc;
     --bg-dark: #020617;
     --bg-light: #f8fafc;
     --panel-dark: #0f172a;
     --panel-light: #ffffff;
     --text-dark: #e5e7eb;
     --text-light: #111827;
+    /* MODAL GLOBAL SYNC */
+    --modal-blur: 8px;
+    --modal-overlay-light: rgba(248, 250, 252, 0.7); /* Based on --bg-light */
+    --modal-overlay-dark: rgba(2, 6, 23, 0.7); /* Based on --bg-dark */
 }
-/* ========================= BODY THEMING ========================= */
 
+/* ========================= BODY THEMING ========================= */
 body {
     background: var(--bg-dark);
     color: var(--text-dark);
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    overflow-x: hidden;
 }
 
     body.light-mode {
         background: var(--bg-light);
         color: var(--text-light);
     }
-/* ========================= LANDING ========================= */
 
+/* ========================= LANDING & HERO ========================= */
 .landing-page {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
-/* ========================= HERO ========================= */
 
 .hero-section {
     display: flex;
@@ -34,14 +41,16 @@ body {
     padding: 60px 80px;
     gap: 60px;
 }
-/* ========================= BUTTONS ========================= */
 
+/* ========================= BUTTONS ========================= */
 .btn-primary {
     background: var(--sage-green);
     color: #020617;
     padding: 12px 32px;
     border-radius: 8px;
     border: none;
+    cursor: pointer;
+    font-weight: 600;
 }
 
 .btn-outline {
@@ -50,9 +59,10 @@ body {
     color: inherit;
     padding: 12px 32px;
     border-radius: 8px;
+    cursor: pointer;
 }
-/* ========================= DASHBOARD PREVIEW (IMPORTANT) ========================= */
 
+/* ========================= DASHBOARD PREVIEW ========================= */
 .hero-visual {
     width: 420px;
     height: 260px;
@@ -66,37 +76,31 @@ body {
     display: flex;
     background: var(--panel-dark);
 }
-/* LIGHT MODE */
 
 body.light-mode .dashboard-preview {
     background: var(--panel-light);
 }
-/* SIDEBAR */
 
 .preview-sidebar {
     width: 60px;
     background: #020617;
 }
-/* MAIN */
 
 .preview-main {
     flex: 1;
     padding: 10px;
 }
-/* TOP */
 
 .preview-top {
     height: 38px;
     background: rgba(255,255,255,0.06);
     border-radius: 6px;
 }
-/* BODY */
 
 .preview-body {
     display: flex;
     gap: 10px;
 }
-/* CARDS */
 
 .preview-card {
     flex: 1;
@@ -104,13 +108,71 @@ body.light-mode .dashboard-preview {
     background: rgba(255,255,255,0.08);
     border-radius: 6px;
 }
-/* LIGHT MODE CARDS */
 
 body.light-mode .preview-card {
     background: #e2e8f0;
 }
-/* FOOTER */
 
+/* ========================= GLOBAL SAGE MODAL ========================= */
+
+.modal-wrapper {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    /* Safety: If modal is bugged, pointer-events:none on wrapper 
+       and pointer-events:all on window ensures buttons stay clickable */
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    /* Matches global background colors with transparency */
+    background: var(--modal-overlay-dark);
+    backdrop-filter: blur(var(--modal-blur));
+    -webkit-backdrop-filter: blur(var(--modal-blur));
+    z-index: -1;
+}
+
+body.light-mode .modal-backdrop {
+    background: var(--modal-overlay-light);
+}
+
+.modal-window {
+    position: relative;
+    background: var(--panel-light);
+    color: var(--text-light);
+    width: 95%;
+    max-width: 460px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    padding: 40px;
+    z-index: 10000;
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+/* Dark Mode Modal Adjustment */
+body.dark-mode .modal-window {
+    background: var(--panel-dark);
+    color: var(--text-dark);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================= FOOTER ========================= */
 .landing-footer {
     margin-top: auto;
     display: flex;

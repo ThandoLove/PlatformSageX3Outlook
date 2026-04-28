@@ -3,20 +3,21 @@
 @using OperationalWorkspaceUI.Models.Email
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceUI.UIServices.ToastUIService
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.Components.Shared
 @using Microsoft.JSInterop
 @implements IDisposable
+
 @inject UIState UIState
 @inject DashboardState DashboardState
 @inject ActivityUIService ActivityService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject ModalService ModalService
-@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
+@inject IToastUIService ToastService
 
 <div class="main-layout @UIState.CurrentTheme @(UIState.IsGlassMode ? "glass-mode" : "")">
-
     @if (IsAppPage)
     {
         <!-- LEFT: FIXED SIDEBAR -->
@@ -37,10 +38,7 @@
                 }
             </div>
 
-            @* 
-               GLOBAL NOTIFICATIONS: 
-               Replaced FluentToastProvider with your custom Sage-style container.
-            *@
+            @* GLOBAL NOTIFICATIONS (SIDE-BAR CONTEXT) *@
             <ToastNotification />
         </main>
 
@@ -55,31 +53,14 @@
     }
 </div>
 
-@* --- MODAL OVERLAY --- *@
-@if (_showModal && IsAppPage)
-{
-    <div class="modal-backdrop" @onclick="CloseModal">
-        <div class="modal-container" @onclick:stopPropagation="true">
-            <div class="modal-header">
-                <h3>@_modalTitle</h3>
-                <button class="close-btn" @onclick="CloseModal">
-                    @* FIX: Use fully qualified icon path *@
-                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Dismiss())" />
-                </button>
-            </div>
-            <div class="modal-body">
-                @_modalContent
-            </div>
-        </div>
-    </div>
-}
+@* 🔥 STANDALONE MODAL WITH RENDER MODE 🔥 *@
+@* This must be outside the main-layout div and IsAppPage check so it works on the Landing Page *@
+
 
 @code {
     private DotNetObjectReference<MainLayout>? _objRef;
-    private bool _showModal;
-    private string _modalTitle = "";
-    private RenderFragment? _modalContent;
-
+    
+    // Determines if we are in the Dashboard App or the Landing/Login screens
     private bool IsAppPage => !Nav.Uri.EndsWith("/login") && Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
 
     protected override async Task OnInitializedAsync()
@@ -87,32 +68,15 @@
         Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
         DashboardState.OnChange += StateHasChanged;
-        ModalService.OnShow += HandleShowModal;
-        ModalService.OnClose += HandleCloseModal;
-
+        
         await UIState.LoadThemeFromLocalStorage();
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
 
-    private async Task HandleShowModal(string title, RenderFragment content)
-    {
-        _modalTitle = title;
-        _modalContent = content;
-        _showModal = true;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task HandleCloseModal()
-    {
-        _showModal = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private void CloseModal() => ModalService.CloseModal();
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Only initialize Office Bridge if we are inside an App Page (Outlook Context)
         if (firstRender && IsAppPage)
         {
             _objRef = DotNetObjectReference.Create(this);
@@ -123,8 +87,9 @@
     [JSInvokable]
     public async Task OnEmailReceived(EmailInsightDto emailData)
     {
-        if (emailData == null || string.IsNullOrEmpty(emailData.SenderEmail)) return;
+        if (emailData == null) return;
 
+        // Auto-log activity for the incoming email
         await ActivityService.LogActivityAsync(
             title: $"Email from {emailData.SenderName}",
             action: "Email",
@@ -133,23 +98,10 @@
 
         DashboardState.EmailContext = emailData;
         await DashboardState.LoadDashboardAsync();
-
-        bool contactExists = await DashboardState.CheckContactExists(emailData.SenderEmail);
-
-        if (!contactExists)
-        {
-            await ModalService.ShowModal($"New Sage X3 Contact: {emailData.SenderName}", builder =>
-            {
-                builder.OpenComponent<NewContactForm>(0);
-                builder.AddAttribute(1, "Email", emailData.SenderEmail);
-                builder.AddAttribute(2, "FullName", emailData.SenderName);
-                builder.CloseComponent();
-            });
-        }
-
+        
         StateHasChanged();
         
-        // FIX: Replaced old JS toast with your new service logic
+        // Show Sage-style Toast Notification
         ToastService.ShowInfo($"Workspace Synced: {emailData.SenderName}");
     }
 
@@ -158,8 +110,6 @@
         Nav.LocationChanged -= HandleLocationChanged;
         UIState.OnChange -= StateHasChanged;
         DashboardState.OnChange -= StateHasChanged;
-        ModalService.OnShow -= HandleShowModal;
-        ModalService.OnClose -= HandleCloseModal;
         _objRef?.Dispose();
     }
 }

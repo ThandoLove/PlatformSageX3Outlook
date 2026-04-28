@@ -1,6 +1,6 @@
-﻿/* =========================
+﻿/* ========================================================= 
    1. GLOBAL LAYOUT (3-COLUMNS)
-   ========================= */
+   ========================================================= */
 .main-layout {
     display: flex;
     width: 100vw;
@@ -25,16 +25,12 @@
 /* RIGHT PANEL (SAGE INSIGHTS) */
 .right-panel {
     width: 320px;
-    background: #020617; /* Deep Navy */
+    background: #020617; /* Deep Navy matching your image */
     padding: 15px;
     flex-shrink: 0;
     border-left: 1px solid #1e293b;
     overflow-y: auto;
 }
-
-/* =========================
-   2. SYSTEM COMPONENTS
-   ========================= */
 
 /* Topbar Context Area */
 .topbar {
@@ -47,29 +43,82 @@
     justify-content: space-between;
 }
 
-/* Modal System */
-.modal-backdrop {
+/* ========================================================= 
+   2. SAGE X3 GLOBAL MODAL SYSTEM (High-Fidelity)
+   ========================================================= */
+
+/* The Wrapper ensures the modal is centered and doesn't block background clicks when closed */
+.modal-wrapper {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: none;
+}
+
+/* The backdrop creates the "Blur" effect from your image */
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(2, 6, 23, 0.7); /* Deep navy tint */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -1;
+    pointer-events: all;
     animation: fadeIn 0.3s ease-out forwards;
 }
 
-.modal-window {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--bg-card);
-    border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-    z-index: 1050;
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Light mode override for backdrop */
+body.light-mode .modal-backdrop {
+    background-color: rgba(248, 250, 252, 0.7);
 }
 
-/* Toast & Animations */
+/* The actual white card (Login/Form container) */
+.modal-window {
+    position: relative;
+    background-color: var(--panel-light, #ffffff);
+    color: var(--text-light, #111827);
+    width: 100%;
+    max-width: 460px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    padding: 40px;
+    z-index: 10000;
+    pointer-events: all;
+    animation: sageModalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Dark Mode Modal Window */
+body.dark-mode .modal-window {
+    background-color: var(--panel-dark, #0f172a);
+    color: var(--text-dark, #e5e7eb);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-close-sage {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+    .btn-close-sage:hover {
+        color: #ef4444;
+    }
+
+/* ========================================================= 
+   3. NOTIFICATIONS & ANIMATIONS
+   ========================================================= */
+
 .toast {
     position: fixed;
     bottom: 20px;
@@ -90,14 +139,14 @@
     }
 }
 
-@keyframes slideUp {
+@keyframes sageModalPop {
     from {
-        transform: translate(-50%, -40%);
+        transform: translateY(15px);
         opacity: 0;
     }
 
     to {
-        transform: translate(-50%, -50%);
+        transform: translateY(0);
         opacity: 1;
     }
 }

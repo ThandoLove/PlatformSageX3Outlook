@@ -1,89 +1,138 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 @layout EmptyLayout
+
+@using OperationalWorkspaceUI.Components.Pages
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
 
 <PageTitle>Welcome | Sage X3</PageTitle>
 
-<div class="landing-page">
-    <!-- THEME TOGGLE BAR -->
-    <div class="theme-bar">
-        <button class="theme-toggle-btn" @onclick="ToggleTheme">
-            <i class="ms-Icon ms-Icon--@(isDark ? "Sunny" : "Contact")"></i>
-            @(isDark ? "Light Mode" : "Dark Mode")
-        </button>
-    </div>
+@* Outer container with relative positioning *@
+<div class="landing-page" style="position: relative; z-index: 1;">
+    
+    @* 🔥 CONTENT WRAPPER: Forced to the front to ensure clicks work *@
+    <div class="landing-content" style="position: relative; z-index: 9999 !important;">
 
-    <!-- BRANDING -->
-    <div class="brand-header">
-        <img src="images/sage-x3-logo.png" alt="Sage X3" />
-    </div>
-
-    <!-- HERO TEXT -->
-    <div class="hero-text">
-        <p>Welcome to</p>
-        <h1>Sage X3</h1>
-        <h2>Contextual Workspace</h2>
-        <p class="hero-subtitle">Your all-in-one workspace to manage customers, sales, service, and more.</p>
-    </div>
-
-    <!-- THE 2x2 BENEFIT GRID -->
-    <div class="benefit-grid">
-        <div class="benefit-card">
-            <div class="icon-box icon-blue"><i class="ms-Icon ms-Icon--GridViewSmall"></i></div>
-            <h3>Unified Workspace</h3>
-            <p>All your business functions in one place</p>
-        </div>
-        
-        <div class="benefit-card">
-            <div class="icon-box icon-green"><i class="ms-Icon ms-Icon--BarChartVerticalFill"></i></div>
-            <h3>Real-time Insights</h3>
-            <p>Make smarter decisions with real-time data</p>
+        <!-- THEME TOGGLE -->
+        <div class="theme-bar">
+            <button class="theme-toggle-btn" @onclick="ToggleTheme" style="cursor: pointer; pointer-events: auto;">
+                <i class="ms-Icon ms-Icon--@(isDark ? "Sunny" : "ClearNight")"></i>
+                @(isDark ? "Switch to Light Mode" : "Switch to Dark Mode")
+            </button>
         </div>
 
-        <div class="benefit-card">
-            <div class="icon-box icon-purple"><i class="ms-Icon ms-Icon--Shield"></i></div>
-            <h3>Secure & Connected</h3>
-            <p>Enterprise-grade security you can trust</p>
+        <!-- BRAND -->
+        <div class="brand-header">
+            <img src="/images/sage-x3-logo.png" alt="Sage X3" />
         </div>
 
-        <div class="benefit-card">
-            <div class="icon-box icon-orange"><i class="ms-Icon ms-Icon--LightningBolt"></i></div>
-            <h3>Smart & Efficient</h3>
-            <p>Automate tasks and boost productivity</p>
+        <!-- HERO -->
+        <div class="hero-text">
+            <p>Welcome to</p>
+            <h1>Sage X3</h1>
+            <h2>Contextual Workspace</h2>
+            <p class="hero-subtitle">
+                Your all-in-one workspace to manage customers, sales, service, and more.
+            </p>
         </div>
+
+        <!-- BENEFITS -->
+        <div class="benefit-grid">
+            <div class="benefit-card">
+                <div class="icon-box icon-blue">
+                    <i class="ms-Icon ms-Icon--GridViewSmall"></i>
+                </div>
+                <h3>Unified Workspace</h3>
+                <p>All your business functions in one place</p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="icon-box icon-green">
+                    <i class="ms-Icon ms-Icon--BarChartVerticalFill"></i>
+                </div>
+                <h3>Real-time Insights</h3>
+                <p>Make smarter decisions with real-time data</p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="icon-box icon-purple">
+                    <i class="ms-Icon ms-Icon--Shield"></i>
+                </div>
+                <h3>Secure & Connected</h3>
+                <p>Enterprise-grade security you can trust</p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="icon-box icon-orange">
+                    <i class="ms-Icon ms-Icon--LightningBolt"></i>
+                </div>
+                <h3>Smart & Efficient</h3>
+                <p>Automate tasks and boost productivity</p>
+            </div>
+        </div>
+
+        <!-- ACTION -->
+        <div class="hero-actions">
+            @* 🔥 SIGN IN BUTTON: High z-index to stay above background *@
+            <button class="btn-sage-primary" @onclick="ShowLogin" style="cursor: pointer; pointer-events: auto !important; position: relative; z-index: 10000;">
+                <i class="ms-Icon ms-Icon--Forward"></i>
+                Sign In to Sage X3
+            </button>
+        </div>
+
+        <div class="footer-copyright">
+            © 2024 Sage Group
+        </div>
+
     </div>
 
-    <!-- ACTION BUTTON -->
-    <div class="hero-actions">
-        <button class="btn-sage-primary" @onclick="ShowLogin">
-            <i class="ms-Icon ms-Icon--Forward"></i> Sign In to Sage X3
-        </button>
-    </div>
-
-    <!-- CITYSCAPE FOOTER DECORATION -->
-    <div class="landing-footer-bg"></div>
-    <div class="footer-copyright">© 2024 Sage Group</div>
+    <!-- BACKGROUND 🔥 CRITICAL: pointer-events none prevents it from blocking the buttons -->
+    <div class="landing-footer-bg" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: -1; pointer-events: none !important;"></div>
 </div>
 
 @code {
     private bool isDark = true;
 
-    private void ShowLogin()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Triggers Modal.razor and injects Login.razor content
-        ModalService.ShowModal("Sign In", builder =>
+        if (firstRender)
         {
-            builder.OpenComponent<Login>(0);
-            builder.CloseComponent();
-        });
+            await ApplyTheme();
+        }
     }
 
     private async Task ToggleTheme()
     {
         isDark = !isDark;
-        // Toggles the class on body so it affects the Modal and the Landing Page
-        await JS.InvokeVoidAsync("document.body.classList.toggle", "dark-mode");
+        await ApplyTheme();
+    }
+
+    private async Task ApplyTheme()
+    {
+        if (isDark)
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "light-mode");
+            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
+            await JS.InvokeVoidAsync("document.body.classList.add", "light-mode");
+        }
+    }
+
+    private async Task ShowLogin()
+    {
+        // Viewable in Browser F12 Console to verify the logic is hit
+        Console.WriteLine("Button Clicked - Loading Shared Login Component...");
+
+        await ModalService.ShowModal("Sign In", builder =>
+        {
+            // 🔥 CRITICAL: Pointing to the component in the Components/Shared folder
+            builder.OpenComponent<OperationalWorkspaceUI.Components.Shared.LoginForm>(0);
+            builder.CloseComponent();
+        });
     }
 }

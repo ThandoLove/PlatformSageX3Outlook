@@ -7,30 +7,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     
-    <!-- 1. STYLES (ORDER: External Frameworks FIRST) -->
+    <!-- 1. EXTERNAL FRAMEWORKS (Lowest Priority) -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/standard-base.css">
+    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.0.0/css/fabric.min.css">
     
-    <!-- 2. CUSTOM CSS (LAST = HIGHEST PRIORITY) -->
+    <!-- 2. INTERNAL BLAZOR STYLES (Includes MainLayout.razor.css) -->
+    <link rel="stylesheet" href="/OperationalWorkspaceUI.styles.css" />
+
+    <!-- 3. CUSTOM CSS (HIGHEST PRIORITY - Must be last to override layout) -->
     <link rel="stylesheet" href="/css/app.css" />
     <link rel="stylesheet" href="/css/Dashboard.css" />
     <link rel="stylesheet" href="css/Landing.css" />
     <link rel="stylesheet" href="css/Forms.css" />
     <link rel="stylesheet" href="css/Workspace.css" />
     <link rel="stylesheet" href="css/Components.css" />
-   <!--Blazor internal styles-->
-    <link rel="stylesheet" href="/OperationalWorkspaceUI.styles.css" />
-    <!-- 2. The Landing Style (The one that creates the cards) -->
-    
-    
-
-    <!-- FIX: Reliable Microsoft Fabric Core link for icons -->
-    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.0.0/css/fabric.min.css">
     
     <link rel="icon" type="image/png" href="/favicon.png" />
-    
 
-    <!-- 2. HISTORY CACHE -->
+    <!-- HISTORY CACHE SCRIPTS -->
     <script type="text/javascript">
             window._historyCache = {
                 replaceState: window.history.replaceState,
@@ -38,10 +33,8 @@
             };
     </script>
     
-    <!-- 3. OFFICE.JS -->
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     
-    <!-- 4. HISTORY RESTORATION -->
     <script type="text/javascript">
         window.history.replaceState = window._historyCache.replaceState;
         window.history.pushState = window._historyCache.pushState;
@@ -50,15 +43,19 @@
     <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
-<body class="dark-mode">
+@* 🔥 REMOVED hardcoded dark-mode so your C# ToggleTheme works! *@
+<body>
     <RadzenComponents />
     <FluentDesignTheme />
 
     <Routes @rendermode="InteractiveServer" />
     
+    @* 🔥 GLOBAL MODAL PLACEMENT *@
+    <Modal @rendermode="InteractiveServer" />
+    
     <ReconnectModal />
 
-    <!-- 5. SCRIPTS -->
+    <!-- SCRIPTS -->
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
@@ -79,8 +76,6 @@
         });
         } else {
         console.log("Office.js not available (browser mode)");
-        
-        // STILL restore navigation for browser
         window.history.pushState = window._historyCache.pushState;
         window.history.replaceState = window._historyCache.replaceState;
         }

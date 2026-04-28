@@ -4,15 +4,16 @@
 
 @if (IsVisible)
 {
-    @* tabindex and autofocus are essential for the Escape key to work *@
+    @* tabindex and autofocus allow the 'Escape' key logic to function immediately *@
     <div @onkeydown="HandleKeyDown" tabindex="0" autofocus class="modal-wrapper">
+        
+        @* The backdrop handles closing when clicking outside the window *@
         <div class="modal-backdrop" @onclick="Close"></div>
         
         <div class="modal-window" role="dialog" aria-modal="true">
-            <div class="modal-header">
-                <h5 class="m-0">@Title</h5>
-                <button type="button" class="btn-close" @onclick="Close" aria-label="Close">×</button>
-            </div>
+            @* High-fidelity close button (X) matching the Sage high-fidelity style *@
+            <button type="button" class="btn-close-sage" @onclick="Close" aria-label="Close">×</button>
+            
             <div class="modal-body">
                 @ChildContent
             </div>
@@ -22,33 +23,41 @@
 
 @code {
     private bool IsVisible;
-    private string Title = "Action Required";
+    private string Title = "";
     private RenderFragment? ChildContent;
 
     protected override void OnInitialized()
     {
+        // Subscribe to the ModalService events
         ModalService.OnShow += HandleShow;
         ModalService.OnClose += HandleClose;
     }
 
-    private Task HandleShow(string title, RenderFragment content)
+    private async Task HandleShow(string title, RenderFragment content)
     {
-        Title = title;
-        ChildContent = content;
-        IsVisible = true;
-        InvokeAsync(StateHasChanged);
-        return Task.CompletedTask;
+        // Marshalling the state change to the UI thread
+        await InvokeAsync(() =>
+        {
+            Title = title;
+            ChildContent = content;
+            IsVisible = true;
+            StateHasChanged();
+        });
     }
 
-    private Task HandleClose()
+    private async Task HandleClose()
     {
-        IsVisible = false;
-        InvokeAsync(StateHasChanged);
-        return Task.CompletedTask;
+        // Ensuring the hide action is reflected on the UI thread
+        await InvokeAsync(() =>
+        {
+            IsVisible = false;
+            StateHasChanged();
+        });
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
+        // Close modal on Escape key
         if (e.Key == "Escape") await Close();
     }
 
@@ -56,6 +65,7 @@
 
     public void Dispose()
     {
+        // Unsubscribe to prevent memory leaks
         ModalService.OnShow -= HandleShow;
         ModalService.OnClose -= HandleClose;
     }
