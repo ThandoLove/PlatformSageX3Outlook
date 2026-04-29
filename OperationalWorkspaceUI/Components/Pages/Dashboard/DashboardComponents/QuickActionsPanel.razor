@@ -1,5 +1,4 @@
-﻿
-@using OperationalWorkspaceUI.State
+﻿@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using Microsoft.FluentUI.AspNetCore.Components
@@ -7,71 +6,46 @@
 
 @inject OperationalWorkspaceUI.State.EmailContextState EmailState
 @inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
-@inject EmailContextState EmailState
-@inject ModalService ModalService
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
 
-<FluentCard Class="quick-actions-card">
-    @* Matches the Dashboard Header Style *@
-    <div class="panel-header">
-        <h3>Quick Actions</h3>
-        <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="@Color.Neutral" />
-    </div>
+<div class="quick-actions-container">
+    @* 1. Add Partner (Blue) *@
+    <button class="action-tile action-blue" @onclick='() => OpenModal<NewContactForm>("Add Business Partner")'>
+        <FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" Color="Color.Custom" CustomColor="#ffffff" />
+        <span>Add Partner</span>
+    </button>
 
-    @* THE GRID: 6 columns across as defined in your CSS *@
-    <div class="quick-actions-grid">
-        
-        @* 1. Add Partner (Blue) *@
-        <button class="action-item" @onclick='() => OpenModal<NewContactForm>("Add Business Partner")'>
-            <div class="icon-circle circle-blue">
-                <FluentIcon Value="@(new Icons.Regular.Size24.PersonAdd())" Color="@Color.Custom" CustomColor="white" />
-            </div>
-            <span class="action-label">Add Partner</span>
-        </button>
+    @* 2. Link Existing (Teal) *@
+    <button class="action-tile action-teal" @onclick='() => NavigateToSage("GESBPR", "LINK")'>
+        <FluentIcon Value="@(new Icons.Regular.Size20.Link())" Color="Color.Custom" CustomColor="#ffffff" />
+        <span>Link Existing</span>
+    </button>
 
-        @* 2. Link Existing (Teal) *@
-        <button class="action-item" @onclick='() => NavigateToSage("GESBPR", "LINK")'>
-            <div class="icon-circle circle-teal">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Link())" Color="@Color.Custom" CustomColor="white" />
-            </div>
-            <span class="action-label">Link Existing</span>
-        </button>
+    @* 3. Create Quote (Orange) *@
+    <button class="action-tile action-orange" @onclick='() => OpenModal<CreateQuoteForm>("Create Sage Quote")'>
+        <FluentIcon Value="@(new Icons.Regular.Size20.DocumentAdd())" Color="Color.Custom" CustomColor="#ffffff" />
+        <span>Create Quote</span>
+    </button>
 
-        @* 3. Create Quote (Orange) *@
-        <button class="action-item" @onclick='() => OpenModal<CreateQuoteForm>("Create Sage Quote")'>
-            <div class="icon-circle circle-orange">
-                <FluentIcon Value="@(new Icons.Regular.Size24.DocumentAdd())" Color="@Color.Custom" CustomColor="white" />
-            </div>
-            <span class="action-label">Create Quote</span>
-        </button>
+    @* 4. Add Sales (Indigo) *@
+    <button class="action-tile action-indigo" @onclick='() => OpenModal<AddSalesOrderForm>("New Sales Order")'>
+        <FluentIcon Value="@(new Icons.Regular.Size20.Cart())" Color="Color.Custom" CustomColor="#ffffff" />
+        <span>Add Sales</span>
+    </button>
 
-        @* 4. Add Sales (Indigo) *@
-        <button class="action-item" @onclick='() => OpenModal<AddSalesOrderForm>("New Sales Order")'>
-            <div class="icon-circle circle-indigo">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Cart())" Color="@Color.Custom" CustomColor="white" />
-            </div>
-            <span class="action-label">Add Sales</span>
-        </button>
+    @* 5. Create Invoice (Navy) *@
+    <button class="action-tile action-navy" @onclick='() => NavigateToSage("GESPNH", "NEW")'>
+        <FluentIcon Value="@(new Icons.Regular.Size20.Document())" Color="Color.Custom" CustomColor="#ffffff" />
+        <span>Create Invoice</span>
+    </button>
 
-        @* 5. Create Invoice (Dark Blue) *@
-        <button class="action-item" @onclick='() => NavigateToSage("GESPNH", "NEW")'>
-            <div class="icon-circle circle-blue-dark">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Document())" Color="@Color.Custom" CustomColor="white" />
-            </div>
-            <span class="action-label">Create Invoice</span>
-        </button>
-
-        @* 6. Attach Email (Green) *@
-        <button class="action-item" @onclick='() => OpenModal<AttachEmailForm>("Attach Email to Sage")'>
-            <div class="icon-circle circle-green">
-                <FluentIcon Value="@(new Icons.Regular.Size24.Attach())" Color="@Color.Custom" CustomColor="white" />
-            </div>
-            <span class="action-label">Attach Email</span>
-        </button>
-
-    </div>
-</FluentCard>
+    @* 6. Attach Email (Green) *@
+    <button class="action-tile action-green" @onclick='() => OpenModal<AttachEmailForm>("Attach Email to Sage")'>
+        <FluentIcon Value="@(new Icons.Regular.Size20.Attach())" Color="Color.Custom" CustomColor="#ffffff" />
+        <span>Attach to Email</span>
+    </button>
+</div>
 
 @code {
     private async Task OpenModal<TComponent>(string title) where TComponent : IComponent

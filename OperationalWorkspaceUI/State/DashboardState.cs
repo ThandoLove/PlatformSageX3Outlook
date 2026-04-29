@@ -82,6 +82,9 @@ namespace OperationalWorkspaceUI.State
         public AdminSystemHealthDto? CurrentHealth => IsAdminEnvironment ? AdminHealth : null;
         public List<TaskDto> CurrentTasks => IsAdminEnvironment ? AllTasks : MyTasks;
         public List<TicketDto> CurrentTickets => IsAdminEnvironment ? AllTickets : MyTickets;
+
+
+
         public List<ActivityDto> CurrentActivities => RecentActivities;
         public List<AuditLogDto> CurrentAuditLogs => AuditLogs;
 

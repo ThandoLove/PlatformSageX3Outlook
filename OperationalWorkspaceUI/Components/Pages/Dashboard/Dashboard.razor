@@ -4,6 +4,7 @@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Components.Shared
 @inject DashboardState State
 @inject IJSRuntime JS
 @inject UIState UIState
@@ -38,50 +39,58 @@
 
     @* --- ROW 2: PRIMARY INSIGHTS (SIDE-BY-SIDE) --- *@
     <div class="sage-dashboard-row">
-        <div class="widget-wrapper">
-            @* Email Insight Panel *@
-            <EmailContextPanel Data="@State.EmailContext" />
-        </div>
+       
+        <Card Title="Email Context">
+            <EmailContextPanel />
+        </Card>
         
-        <div class="widget-wrapper">
-            @* CRM Snapshot Panel *@
+       
+        <Card Title="Crm Snapshot">
             <CrmPanel Clients="@State.TopClients" />
-        </div>
+        </Card>
     </div>
 
     @* --- ROW 3: QUICK ACTIONS (Full Width) --- *@
     <div class="sage-dashboard-row single">
-        <div class="widget-wrapper">
+        
+        <Card Title="Quick Actions">
             <QuickActionsPanel />
-        </div>
+        </Card>
     </div>
 
     @* --- ROW 4: KNOWLEDGE & TASKS (SIDE-BY-SIDE) --- *@
     <div class="sage-dashboard-row">
-        <div class="widget-wrapper">
-            <KnowledgeBasePanel Data="@State.KnowledgeBase" />
-        </div>
-        <div class="widget-wrapper">
+        <Card Title="Knowledge Base">
+            <KnowledgeBasePanel />
+        </Card>
+        <Card Title="Create Task">
             <CreateTaskPanel />
-        </div>
+        </Card>
     </div>
 
     @* --- ROW 5: LISTS & TIMELINE (SIDE-BY-SIDE) --- *@
     <div class="sage-dashboard-row">
-        <div class="widget-wrapper">
-            <TasksPanel Tasks="@State.CurrentTasks" />
-        </div>
-        <div class="widget-wrapper">
+        
+        <Card Title="Tasks">
+            <TasksPanel />
+        </Card>
+        <Card Title="Recent Activity">
             <RecentActivityPanel Activities="@State.CurrentActivities" />
-        </div>
+        </Card>
     </div>
 
     @* --- SYSTEM HEALTH (Subtle Bottom Row) --- *@
-    <div class="sage-dashboard-row single">
-        <div class="widget-wrapper">
+    <div class="sage-dashboard-row">
+        
+        <Card Title="System Health">
             <SystemHealthPanel Status="@State.AdminHealth" />
-        </div>
+        </Card>
+    
+            <Card Title="Tickets">
+                <TicketsPanel Tickets="@State.CurrentTickets" />
+            </Card>
     </div>
+
 
     @* --- THEME TOGGLE (BOTTOM CORNER) --- *@
     <div class="theme-toggle-fixed">

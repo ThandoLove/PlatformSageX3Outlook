@@ -273,6 +273,65 @@ body.light-mode .dashboard-preview {
         color: #1e293b;
     }
 
+/* ========================= QUICK ACTIONS ROW FIX ========================= */
+.quick-actions-container {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px;
+    padding: 4px 0;
+    width: 100%;
+}
+
+.action-tile {
+    flex: 1;
+    height: 38px; /* High-density professional height */
+    border: none;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+    .action-tile:hover {
+        opacity: 0.9;
+    }
+
+    .action-tile span {
+        font-size: 0.75rem; /* MATCHES TARGET IMAGE FONT DENSITY */
+        font-weight: 600;
+        color: #ffffff;
+        white-space: nowrap;
+    }
+
+/* SAGE TARGET BRAND COLORS */
+.action-blue {
+    background-color: #0078d4;
+}
+
+.action-teal {
+    background-color: #008272;
+}
+
+.action-orange {
+    background-color: #f59e0b;
+}
+
+.action-indigo {
+    background-color: #4f46e5;
+}
+
+.action-navy {
+    background-color: #003366;
+}
+
+.action-green {
+    background-color: #10b981;
+}
+
+
 /* ========================= FOOTER ========================= */
 .landing-footer {
     margin-top: auto;
