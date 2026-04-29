@@ -56,6 +56,11 @@
 </FluentCard>
 
 @code {
+   
+    [Parameter] public List<AuditLogDto>? Logs { get; set; } = new();
+
+   
+
     protected override void OnInitialized()
     {
         State.OnChange += StateHasChanged;

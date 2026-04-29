@@ -1,0 +1,167 @@
+﻿/* Container Padding */
+.sage-login-body {
+    padding: 10px 15px;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Top Icon Circle */
+.login-icon-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #f0f7ff; /* Very light blue */
+    color: #005ce6; /* Sage/Microsoft Blue */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+}
+
+/* Typography */
+.login-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.login-subtitle {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Input Fields */
+.input-group-custom {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+    .input-group-custom label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d1d1;
+    border-radius: 6px;
+    padding: 10px 14px;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+    .input-wrapper:focus-within {
+        border-color: #005ce6;
+        box-shadow: 0 0 0 2px rgba(0, 92, 230, 0.1);
+    }
+
+    .input-wrapper i {
+        color: #666;
+        margin-right: 12px;
+        font-size: 1.1rem;
+    }
+
+    .input-wrapper input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 0.95rem;
+        color: #1a1a1a;
+    }
+
+/* Options Row (Remember Me / Forgot Pwd) */
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.85rem;
+}
+
+    .login-options a {
+        color: #005ce6;
+        text-decoration: none;
+    }
+
+        .login-options a:hover {
+            text-decoration: underline;
+        }
+
+/* Buttons */
+.btn-login-submit {
+    width: 100%;
+    background-color: #005ce6;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+    .btn-login-submit:hover {
+        background-color: #004bbd;
+    }
+
+.login-divider {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #999;
+    font-size: 0.8rem;
+}
+
+    .login-divider::before, .login-divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .login-divider span {
+        padding: 0 10px;
+    }
+
+.btn-sso-login {
+    width: 100%;
+    background-color: #fff;
+    color: #1a1a1a;
+    border: 1px solid #d1d1d1;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+    .btn-sso-login:hover {
+        background-color: #f9f9f9;
+    }
+
+/* Footer help text */
+.login-footer-help {
+    margin-top: 25px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+    .login-footer-help a {
+        color: #005ce6;
+        text-decoration: none;
+    }

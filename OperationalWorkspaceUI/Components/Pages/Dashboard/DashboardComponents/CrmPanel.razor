@@ -48,6 +48,12 @@
 </FluentCard>
 
 @code {
+
+    
+        [Parameter]
+        public List<ClientDto>? Clients { get; set; }
+    
+
     protected override void OnInitialized() => State.OnChange += StateHasChanged;
 
     private string GetOverdueAmount()

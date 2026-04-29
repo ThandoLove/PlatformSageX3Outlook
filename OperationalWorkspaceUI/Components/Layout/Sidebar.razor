@@ -8,36 +8,42 @@
 @inject DashboardState DashboardState
 
 <div class="sage-sidebar">
+    @* FIXED: Height and icon size matched to Topbar *@
     <div class="sidebar-header">
-        <FluentIcon Value="@(new Icons.Regular.Size24.LineHorizontal3())" Color="@Color.Fill" />
-        <span class="brand-text">Sage X3 Contextual Workspace</span>
+        @* Only the icon remains here; the text is now in the Topbar *@
+        <FluentIcon Value="@(new Icons.Regular.Size16.LineHorizontal3())"
+                    Color="@Color.Fill"
+                    Style="cursor: pointer;" />
     </div>
 
+
     <nav class="nav-menu">
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Board())" Href="/dashboard" Match="NavLinkMatch.All">Dashboard</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Person())" Href="/contacts">Contacts</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Building())" Href="/accounts">Accounts</FluentNavLink>
-        
-        @* UPDATED: Tickets & Activities swapped in *@
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.TicketDiagonal())" Href="/tickets">Tickets</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Pulse())" Href="/activities">Activities</FluentNavLink>
+        @* FIXED: All icons dropped to Size16 for compact ERP density *@
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())" Href="/dashboard" Match="NavLinkMatch.All">Dashboard</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Person())" Href="/contacts">Contacts</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Building())" Href="/accounts">Accounts</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.TicketDiagonal())" Href="/tickets">Tickets</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.DataUsage())" Href="/activities">Activities</FluentNavLink>
+
+
+        <div class="sidebar-divider"></div>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Cart())" Href="/sales-orders">Sales Orders</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Document())" Href="/quotes">Quotes</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Receipt())" Href="/invoices">Invoices</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Briefcase())" Href="/cases">Cases</FluentNavLink>
         
         <div class="sidebar-divider"></div>
 
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Cart())" Href="/sales-orders">Sales Orders</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Document())" Href="/quotes">Quotes</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Receipt())" Href="/invoices">Invoices</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Briefcase())" Href="/cases">Cases</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())" Href="/kb">Knowledge Base</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.CheckmarkCircle())" Href="/tasks">My Tasks</FluentNavLink>
         
-        <div class="sidebar-divider"></div>
-
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Library())" Href="/kb">Knowledge Base</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.CheckmarkCircle())" Href="/tasks">My Tasks</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Settings())" Href="/admin">Admin</FluentNavLink>
+        <div class="group-title">Administration</div>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())" Href="/admin">Admin</FluentNavLink>
     </nav>
 
     <div class="sidebar-footer">
-        <FluentNavLink Icon="@(new Icons.Regular.Size20.Settings())" Href="/settings">Settings</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())" Href="/settings">Settings</FluentNavLink>
     </div>
 </div>
 

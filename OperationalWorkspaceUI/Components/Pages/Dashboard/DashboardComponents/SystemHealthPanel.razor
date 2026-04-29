@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    @* UPDATED FOOTER: Timestamp + Refresh Button *@
+    @* FOOTER: Timestamp + Refresh Button *@
     <div class="health-footer">
         <span class="refresh-label">Last updated: @_lastUpdated</span>
         <FluentButton Appearance="Appearance.Stealth"
@@ -62,6 +62,10 @@
 </FluentCard>
 
 @code {
+    // 🔥 FIX: This parameter MUST exist to prevent the "does not have a property matching name Status" crash
+    [Parameter]
+    public AdminSystemHealthDto? Status { get; set; }
+
     private System.Threading.Timer? _refreshTimer;
     private string _lastUpdated = DateTime.Now.ToString("HH:mm:ss");
     private bool _isRefreshing = false;

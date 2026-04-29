@@ -1,4 +1,3 @@
-/*======================== GLOBAL VARIABLES ========================= */
 :root {
     --sage-green: #00c853;
     --sage-blue: #0052cc;
@@ -10,8 +9,8 @@
     --text-light: #111827;
     /* MODAL GLOBAL SYNC */
     --modal-blur: 8px;
-    --modal-overlay-light: rgba(248, 250, 252, 0.7); /* Based on --bg-light */
-    --modal-overlay-dark: rgba(2, 6, 23, 0.7); /* Based on --bg-dark */
+    --modal-overlay-light: rgba(248, 250, 252, 0.7);
+    --modal-overlay-dark: rgba(2, 6, 23, 0.7);
 }
 
 /* ========================= BODY THEMING ========================= */
@@ -42,34 +41,7 @@ body {
     gap: 60px;
 }
 
-/* ========================= BUTTONS ========================= */
-.btn-primary {
-    background: var(--sage-green);
-    color: #020617;
-    padding: 12px 32px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-.btn-outline {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.25);
-    color: inherit;
-    padding: 12px 32px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
 /* ========================= DASHBOARD PREVIEW ========================= */
-.hero-visual {
-    width: 420px;
-    height: 260px;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
 .dashboard-preview {
     width: 100%;
     height: 100%;
@@ -81,65 +53,7 @@ body.light-mode .dashboard-preview {
     background: var(--panel-light);
 }
 
-.preview-sidebar {
-    width: 60px;
-    background: #020617;
-}
-
-.preview-main {
-    flex: 1;
-    padding: 10px;
-}
-
-.preview-top {
-    height: 38px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 6px;
-}
-
-.preview-body {
-    display: flex;
-    gap: 10px;
-}
-
-.preview-card {
-    flex: 1;
-    height: 80px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 6px;
-}
-
-body.light-mode .preview-card {
-    background: #e2e8f0;
-}
-
 /* ========================= GLOBAL SAGE MODAL ========================= */
-
-.modal-wrapper {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    /* Safety: If modal is bugged, pointer-events:none on wrapper 
-       and pointer-events:all on window ensures buttons stay clickable */
-}
-
-.modal-backdrop {
-    position: absolute;
-    inset: 0;
-    /* Matches global background colors with transparency */
-    background: var(--modal-overlay-dark);
-    backdrop-filter: blur(var(--modal-blur));
-    -webkit-backdrop-filter: blur(var(--modal-blur));
-    z-index: -1;
-}
-
-body.light-mode .modal-backdrop {
-    background: var(--modal-overlay-light);
-}
-
 .modal-window {
     position: relative;
     background: var(--panel-light);
@@ -149,28 +63,183 @@ body.light-mode .modal-backdrop {
     border-radius: 16px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
     padding: 40px;
-    z-index: 10000;
-    animation: modalSlideUp 0.3s ease-out;
 }
 
-/* Dark Mode Modal Adjustment */
-body.dark-mode .modal-window {
-    background: var(--panel-dark);
-    color: var(--text-dark);
-    border: 1px solid rgba(255,255,255,0.05);
+/* ========================= SAGE DASHBOARD SIDEBAR FIX ========================= */
+.sidebar, .preview-sidebar, .sage-sidebar {
+    width: 240px !important;
+    flex: 0 0 240px !important;
+    background-color: #003366 !important;
+    height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.1);
 }
 
-@keyframes modalSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
+/* ========================= SAGE TOPBAR FIX (HEIGHT & ALIGNMENT) ========================= */
+.sage-topbar, .sage-topbar-wrapper {
+    height: 40px !important; /* FIXED: Now matches the Sidebar Header exactly */
+    background-color: #003366 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 15px !important;
+    color: #ffffff !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* The small Brand text in the Topbar */
+.sage-brand-text {
+    font-size: 0.7rem !important; /* Small and professional */
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.7) !important;
+    letter-spacing: 0.05rem;
+    white-space: nowrap;
+}
+
+.topbar-left .page-title {
+    font-weight: 600;
+    color: #ffffff !important;
+    font-size: 0.85rem; /* Slightly smaller for ERP density */
+    white-space: nowrap;
+}
+
+/* Vertical Divider in Topbar */
+.topbar-divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 4px;
+}
+
+/* Search Box Fixing */
+.topbar-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+}
+
+.search-input-group {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.12) !important;
+    padding: 2px 10px;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 350px;
+}
+
+.topbar-search {
+    border: none;
+    background: transparent;
+    font-size: 0.75rem;
+    outline: none;
+    width: 100%;
+    color: #ffffff !important;
+    padding-left: 8px;
+}
+
+    .topbar-search::placeholder {
+        color: rgba(255, 255, 255, 0.5);
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Right Section Alignment */
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding-right: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+}
+
+/* User Profile adjacent to status */
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    color: white !important;
+}
+
+
+/* THE METRIC GRID LOCK */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 even columns */
+    gap: 16px;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.metric-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px; /* Tight padding */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 90px;
+}
+
+/* Typography Scaling - STOP THE BLOWN UP LOOK */
+.metric-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.02rem;
+}
+
+.metric-value {
+    font-size: 1.4rem; /* Reduced from massive size */
+    font-weight: 700;
+    color: #0f172a;
+    margin: 4px 0;
+}
+
+.metric-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+    .metric-trend.positive {
+        color: #10b981;
+    }
+    /* Sage Green */
+    .metric-trend.negative {
+        color: #ef4444;
+    }
+
+.metric-subtext {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+/* System Status specific color */
+.status-optimal {
+    color: #003366 !important; /* Sage Navy */
+}
+
 
 /* ========================= FOOTER ========================= */
 .landing-footer {

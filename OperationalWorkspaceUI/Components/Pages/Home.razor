@@ -1,34 +1,38 @@
 ﻿@page "/"
-@rendermode InteractiveServer
 @layout EmptyLayout
+@rendermode InteractiveServer
 
-@using OperationalWorkspaceUI.Components.Pages
+@using OperationalWorkspaceUI.Components.Shared
+@using OperationalWorkspaceUI.UIServices.System
 @inject NavigationManager Nav
 @inject IJSRuntime JS
-@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
+@inject ModalService ModalService
 
 <PageTitle>Welcome | Sage X3</PageTitle>
 
-@* Outer container with relative positioning *@
+@* 
+   The 'landing-page' is the base. 
+   We use 'landing-content' at a high z-index to ensure it is above the 
+   cityscape background so buttons remain clickable.
+*@
 <div class="landing-page" style="position: relative; z-index: 1;">
-    
-    @* 🔥 CONTENT WRAPPER: Forced to the front to ensure clicks work *@
-    <div class="landing-content" style="position: relative; z-index: 9999 !important;">
 
-        <!-- THEME TOGGLE -->
-        <div class="theme-bar">
-            <button class="theme-toggle-btn" @onclick="ToggleTheme" style="cursor: pointer; pointer-events: auto;">
+    <div class="landing-content" style="position: relative; z-index: 100 !important;">
+
+        <!-- 1. THEME TOGGLE BAR -->
+        <div class="theme-bar" style="position: relative; z-index: 110;">
+            <button class="theme-toggle-btn" @onclick="ToggleTheme" style="cursor: pointer; pointer-events: all;">
                 <i class="ms-Icon ms-Icon--@(isDark ? "Sunny" : "ClearNight")"></i>
                 @(isDark ? "Switch to Light Mode" : "Switch to Dark Mode")
             </button>
         </div>
 
-        <!-- BRAND -->
+        <!-- 2. BRANDING -->
         <div class="brand-header">
             <img src="/images/sage-x3-logo.png" alt="Sage X3" />
         </div>
 
-        <!-- HERO -->
+        <!-- 3. HERO TEXT -->
         <div class="hero-text">
             <p>Welcome to</p>
             <h1>Sage X3</h1>
@@ -38,8 +42,9 @@
             </p>
         </div>
 
-        <!-- BENEFITS -->
+        <!-- 4. BENEFIT GRID (The 2x2 cards from your image) -->
         <div class="benefit-grid">
+
             <div class="benefit-card">
                 <div class="icon-box icon-blue">
                     <i class="ms-Icon ms-Icon--GridViewSmall"></i>
@@ -71,25 +76,31 @@
                 <h3>Smart & Efficient</h3>
                 <p>Automate tasks and boost productivity</p>
             </div>
+
         </div>
 
-        <!-- ACTION -->
-        <div class="hero-actions">
-            @* 🔥 SIGN IN BUTTON: High z-index to stay above background *@
-            <button class="btn-sage-primary" @onclick="ShowLogin" style="cursor: pointer; pointer-events: auto !important; position: relative; z-index: 10000;">
+        <!-- 5. ACTION BUTTON (Triggers Login Modal) -->
+        <div class="hero-actions" style="position: relative; z-index: 120;">
+            <button class="btn-sage-primary"
+                    @onclick="ShowLogin"
+                    style="cursor: pointer; pointer-events: auto !important; position: relative; z-index: 130;">
                 <i class="ms-Icon ms-Icon--Forward"></i>
                 Sign In to Sage X3
             </button>
         </div>
 
+        <!-- 6. FOOTER COPYRIGHT -->
         <div class="footer-copyright">
             © 2024 Sage Group
         </div>
 
     </div>
 
-    <!-- BACKGROUND 🔥 CRITICAL: pointer-events none prevents it from blocking the buttons -->
+    <!-- 7. BACKGROUND DECORATION
+         CRITICAL: 'pointer-events: none' ensures this doesn't block clicks on buttons.
+    -->
     <div class="landing-footer-bg" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: -1; pointer-events: none !important;"></div>
+
 </div>
 
 @code {
@@ -99,6 +110,7 @@
     {
         if (firstRender)
         {
+            // Sync the initial theme on first load
             await ApplyTheme();
         }
     }
@@ -111,6 +123,7 @@
 
     private async Task ApplyTheme()
     {
+        // Direct CSS class manipulation on document.body to ensure Modal reflects theme too
         if (isDark)
         {
             await JS.InvokeVoidAsync("document.body.classList.remove", "light-mode");
@@ -125,12 +138,12 @@
 
     private async Task ShowLogin()
     {
-        // Viewable in Browser F12 Console to verify the logic is hit
-        Console.WriteLine("Button Clicked - Loading Shared Login Component...");
+        // Logic check: Viewable in Browser Console (F12)
+        Console.WriteLine("Dispatching signal to load Shared.LoginForm inside Modal...");
 
         await ModalService.ShowModal("Sign In", builder =>
         {
-            // 🔥 CRITICAL: Pointing to the component in the Components/Shared folder
+            // 🔥 LINKED: This targets LoginForm.razor in your Components/Shared folder
             builder.OpenComponent<OperationalWorkspaceUI.Components.Shared.LoginForm>(0);
             builder.CloseComponent();
         });

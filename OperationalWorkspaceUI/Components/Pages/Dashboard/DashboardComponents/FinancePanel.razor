@@ -1,25 +1,57 @@
-﻿@using OperationalWorkspaceUI.State
-@inject DashboardState State
+﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
-<div class="dashboard-panel finance-panel">
-    <h4>Finance Overview</h4>
-    
-    <div class="panel-content">
-        @if (IsAdminView)
+<FluentCard Class="finance-widget-card">
+    <div class="panel-header">
+        <h3>Financial Overview</h3>
+        <FluentIcon Value="@(new Icons.Regular.Size16.Money())" Color="@Color.Neutral" />
+    </div>
+
+    <div class="finance-content">
+        @if (Data is AdminFinanceDto admin)
         {
-            @* Use State.Property (the instance) not the Class Name *@
-            <KpiWidget Label="Total Receivables" Value="@State.AdminFinance.TotalOutstandingReceivables" Prefix="$" />
-            <KpiWidget Label="High Risk Accounts" Value="@State.AdminFinance.HighRiskAccounts" Variant="danger" />
+            <!-- ADMIN VIEW: Matching your specific DTO names -->
+            <div class="finance-stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Total Revenue</span>
+                    <span class="stat-value">@admin.TotalRevenue.ToString("C0")</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Sales This Month</span>
+                    <span class="stat-value">@admin.TotalSalesThisMonth.ToString("C0")</span>
+                </div>
+                <div class="stat-item warning">
+                    <span class="stat-label">Total Overdue</span>
+                    <span class="stat-value">@admin.TotalOverdue.ToString("C0")</span>
+                </div>
+            </div>
+        }
+        else if (Data is EmployeeFinanceDto employee)
+        {
+            <!-- EMPLOYEE VIEW: Matching your specific DTO names -->
+            <div class="finance-stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Sales This Month</span>
+                    <span class="stat-value">@employee.ThisMonthSales.ToString("C0")</span>
+                </div>
+                <div class="stat-item warning">
+                    <span class="stat-label">Outstanding Rec.</span>
+                    <span class="stat-value">@employee.OutstandingReceivables.ToString("C0")</span>
+                </div>
+            </div>
         }
         else
         {
-            <KpiWidget Label="My Sales (Month)" Value="@State.EmployeeFinance.ThisMonthSales" Prefix="$" />
-            <KpiWidget Label="Pending My Action" Value="@State.EmployeeFinance.OutstandingReceivables" Prefix="$" />
+            <div class="finance-empty">
+                <FluentProgressRing Style="width:24px; height:24px;" />
+                <p>Loading Sage X3 Financials...</p>
+            </div>
         }
     </div>
-</div>
+</FluentCard>
 
 @code {
-    // FIX: This defines the 'IsAdminView' variable the HTML is looking for
-    [Parameter] public bool IsAdminView { get; set; }
+    [Parameter]
+    public object? Data { get; set; }
 }

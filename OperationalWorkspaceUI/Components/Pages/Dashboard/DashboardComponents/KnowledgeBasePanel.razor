@@ -61,9 +61,22 @@
 </FluentCard>
 
 @code {
+    // 🔥 FIX: This property matches the 'Data' parameter the Dashboard is trying to send.
+    // I used KnowledgeDto because your HTML logic relies on it.
+    [Parameter]
+    public List<KnowledgeDto>? Data { get; set; }
+
     private string? _searchQuery = "";
 
-    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    protected override void OnInitialized()
+    {
+        State.OnChange += HandleStateChanged;
+    }
+
+    private void HandleStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
 
     private IEnumerable<KnowledgeDto> FilteredArticles =>
         string.IsNullOrWhiteSpace(_searchQuery)
@@ -85,5 +98,8 @@
         _ => Color.Neutral
     };
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose()
+    {
+        State.OnChange -= HandleStateChanged;
+    }
 }

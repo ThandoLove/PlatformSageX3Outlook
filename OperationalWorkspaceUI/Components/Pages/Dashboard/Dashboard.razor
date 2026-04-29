@@ -3,81 +3,101 @@
 
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
 @inject DashboardState State
 @inject IJSRuntime JS
 @inject UIState UIState
 
+<PageTitle>Sage X3 | Contextual Workspace</PageTitle>
+
 <div class="dashboard-wrapper @(UIState.IsDarkMode ? "dark-mode" : "")">
-    
+
+    @* --- KPI METRIC ROW --- *@
+    <div class="metrics-grid">
+        @* 1. Open Orders *@
+        <div class="metric-card">
+            <span class="metric-label">Open Orders</span>
+            <div class="metric-value">12</div>
+            <span class="metric-trend positive">+2 today</span>
+        </div>
+
+        @* 2. Pending Invoices *@
+        <div class="metric-card">
+            <span class="metric-label">Pending Invoices</span>
+            <div class="metric-value">$4,250</div>
+            <span class="metric-trend negative">-1</span>
+        </div>
+
+        @* 3. NEW: Open Tickets Tracker *@
+        <div class="metric-card">
+            <span class="metric-label">Open Tickets</span>
+            <div class="metric-value">2 Active</div>
+            <span class="metric-trend neutral" style="color: #64748b;">Steady</span>
+        </div>
+
+        @* 4. System Status *@
+        <div class="metric-card">
+            <span class="metric-label">System Status</span>
+            <div class="metric-value status-optimal" style="color: #003366; font-size: 1.2rem;">Optimal</div>
+            <span class="metric-subtext" style="font-size: 0.7rem; color: #94a3b8;">Daily Active Users: 48</span>
+        </div>
+    </div>
+
     <div class="dashboard-grid">
         
-        @* COLUMN 1: Context, Knowledge & Admin Health *@
+        @* COLUMN 1: Context, Knowledge & System Health *@
         <div class="grid-column">
             <div class="widget-wrapper">
                 <EmailContextPanel Data="@State.EmailContext" />
             </div>
             
             <div class="widget-wrapper">
+                @* Shows top suggested articles from the State *@
                 <KnowledgeBasePanel Data="@State.KnowledgeBase" />
             </div>
 
-            @if (State.CurrentHealth != null)
-            {
-                <div class="widget-wrapper">
-                    <SystemHealthPanel Status="@State.CurrentHealth" />
-                </div>
-            }
-
             <div class="widget-wrapper">
-                <ErpPanel Data="@State.CurrentErp" />
+                @* Status receives the full AdminSystemHealthDto object *@
+                <SystemHealthPanel Status="@State.AdminHealth" />
             </div>
-
-            @if (State.CurrentFinance != null)
-            {
-                <div class="widget-wrapper">
-                    <FinancePanel Data="@State.CurrentFinance" />
-                </div>
-            }
         </div>
 
         @* COLUMN 2: Operations, Tasks & Activity *@
         <div class="grid-column">
             <div class="widget-wrapper">
-                @* Exact Image Reference: Tickets-enabled CRM Snapshot *@
+                @* CRM Snapshot focused on Linked Client Metrics *@
                 <CrmPanel Clients="@State.TopClients" />
             </div>
 
             <div class="widget-wrapper">
-                @* Custom Create Task Panel (Admin Section in image) *@
+                @* Custom form for quick task assignment *@
                 <CreateTaskPanel />
             </div>
 
             <div class="widget-wrapper">
                 <TasksPanel Tasks="@State.CurrentTasks" />
             </div>
-
+            
             <div class="widget-wrapper">
                 <RecentActivityPanel Activities="@State.CurrentActivities" />
             </div>
-
-            <div class="widget-wrapper">
-                <AuditPanel Logs="@State.CurrentAuditLogs" />
-            </div>
-            
-            @* THEME TOGGLE *@
-            <div class="widget-wrapper theme-toggle-card">
-                <FluentSwitch @bind-Value="IsDarkMode" Label="Dark Mode Appearance" />
-            </div>
         </div>
+    </div>
 
-        @* MIDDLE ROW: Quick Actions (Full Width across columns) *@
-        <div class="full-width-row">
-            <QuickActionsPanel />
-        </div>
+    @* --- FULL WIDTH ROW: QUICK ACTIONS --- *@
+    <div class="full-width-row">
+        <QuickActionsPanel />
+    </div>
+
+    @* --- UTILITY: THEME TOGGLE (BOTTOM CORNER) --- *@
+    <div class="theme-toggle-fixed">
+        <FluentSwitch @bind-Value="IsDarkMode"
+                      Label="@(UIState.IsDarkMode ? "Dark Appearance" : "Light Appearance")" />
     </div>
 </div>
 
 @code {
+    // Logic to bridge the UI Switch with the Global UIState and JavaScript
     private bool IsDarkMode
     {
         get => UIState.IsDarkMode;
@@ -90,14 +110,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Sage X3 Logic: Detect environment and load relevant workspace data
-        string env = await DetectEnvironmentAsync();
-        State.SetEnvironment(env);
+        // Triggers the Unified Mock Service to fill State with data
         await State.LoadDashboardAsync();
-    }
-
-    private Task<string> DetectEnvironmentAsync()
-    {
-        return Task.FromResult("Admin");
     }
 }

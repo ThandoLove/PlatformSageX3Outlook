@@ -7,38 +7,53 @@
 @inject NavigationManager Nav
 @inject AuthenticationStateProvider AuthStateProvider
 @inject Majorsoft.Blazor.Extensions.BrowserStorage.ILocalStorageService LocalStorage
+@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
 
 <div class="sage-login-body">
-    <!-- Icon Header matching high-fidelity image -->
+    <!-- 1. Header Icon matching high-fidelity image -->
     <div class="login-icon-circle">
         <i class="ms-Icon ms-Icon--Lock"></i>
     </div>
 
+    <!-- 2. Titles -->
     <h2 class="login-title">Sign In to Sage X3</h2>
     <p class="login-subtitle">Access your contextual workspace</p>
 
     <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-        @* Add Fluent Validation here if you are using it *@
         
+        <!-- 3. Username Field -->
         <div class="input-group-custom">
             <label>Username</label>
             <div class="input-wrapper">
                 <i class="ms-Icon ms-Icon--Contact"></i>
-                <InputText @bind-Value="loginModel.Username" placeholder="Enter username" />
+                <InputText @bind-Value="loginModel.Username" placeholder="Enter your username" />
             </div>
         </div>
 
+        <!-- 4. Password Field -->
         <div class="input-group-custom">
             <label>Password</label>
             <div class="input-wrapper">
                 <i class="ms-Icon ms-Icon--Lock"></i>
-                <InputText @bind-Value="loginModel.Password" type="password" placeholder="Enter password" />
+                <InputText @bind-Value="loginModel.Password" type="password" placeholder="Enter your password" />
+                <i class="ms-Icon ms-Icon--RedEye eye-icon" style="cursor:pointer; color:#94a3b8; margin-left: auto;"></i>
             </div>
         </div>
 
+        <!-- 5. Options Row (Remember Me / Forgot Pwd) -->
+        <div class="login-options">
+            <label class="checkbox-container">
+                <input type="checkbox" />
+                <span>Remember me</span>
+            </label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- 6. Submit Button -->
         <button type="submit" class="btn-login-submit" disabled="@isBusy">
             @if (isBusy)
             {
+                <span class="spinner-border spinner-border-sm" role="status"></span>
                 <span>Verifying...</span>
             }
             else
@@ -47,11 +62,20 @@
             }
         </button>
         
-        <div class="login-divider"><span>or</span></div>
+        <!-- 7. Divider -->
+        <div class="login-divider">
+            <span>or</span>
+        </div>
 
+        <!-- 8. SSO Button -->
         <button type="button" class="btn-sso-login" disabled="@isBusy">
             <i class="ms-Icon ms-Icon--Shield"></i> Sign in with SSO
         </button>
+
+        <!-- 9. Footer Help -->
+        <div class="login-footer-help">
+            Need help? <a href="#">Contact your administrator</a>
+        </div>
     </EditForm>
 </div>
 
@@ -74,20 +98,16 @@
                 
                 if (result != null && !string.IsNullOrEmpty(result.Token))
                 {
-                    // 1. Save token to LocalStorage
                     await LocalStorage.SetItemAsync("authToken", result.Token);
-
-                    // 2. Notify Authentication State Provider
                     var customAuthStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
                     customAuthStateProvider.NotifyUserAuthentication(result.Token);
 
-                    // 3. Navigate to Dashboard - forceLoad ensures a clean state and closes the modal
+                    // Navigate to Dashboard - forceLoad ensures a clean state
                     Nav.NavigateTo("/dashboard", forceLoad: true);
                 }
             }
             else
             {
-                // Handle login failure (e.g., show a toast or error message)
                 Console.WriteLine("Login failed: Invalid credentials.");
             }
         }
@@ -101,9 +121,5 @@
         }
     }
 
-    // Helper class for JSON parsing
-    public class LoginResponse
-    {
-        public string? Token { get; set; }
-    }
+    public class LoginResponse { public string? Token { get; set; } }
 }

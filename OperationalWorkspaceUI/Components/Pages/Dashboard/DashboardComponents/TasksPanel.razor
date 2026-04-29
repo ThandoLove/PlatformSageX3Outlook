@@ -13,12 +13,12 @@
         <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
+    @* --- TABS SECTION --- *@
     <div class="task-tabs">
         <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")" @onclick='() => SetTab("Pending")'>
             Pending (@State.CurrentTasks.Count(t => t.Status != "Completed"))
         </div>
         <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SetTab("Overdue")'>
-            @* FIXED: Safe null check for DueDate comparison *@
             Overdue (@State.CurrentTasks.Count(t => t.DueDate.HasValue && t.DueDate < DateTime.Now && t.Status != "Completed"))
         </div>
         <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SetTab("Completed")'>
@@ -26,6 +26,7 @@
         </div>
     </div>
 
+    @* --- LIST SECTION --- *@
     <div class="task-list-container">
         @if (FilteredTasks != null && FilteredTasks.Any())
         {
@@ -39,7 +40,6 @@
                     <div class="task-details">
                         <span class="task-title">@task.Title</span>
                         <span class="task-due">
-                            @* FIXED: Passing nullable Date *@
                             Due: <span class="date-highlight">@FormatDueDate(task.DueDate)</span>
                         </span>
                     </div>
@@ -62,6 +62,7 @@
         }
     </div>
 
+    @* --- FOOTER SECTION --- *@
     <div class="task-footer">
         <FluentAnchor Appearance="Appearance.Lightweight" Href="/workspace/tasks" Class="footer-link">
             View All My Tasks →
@@ -70,9 +71,16 @@
 </FluentCard>
 
 @code {
+    // 🔥 THE CRITICAL FIX: This property stops the Dashboard crash
+    [Parameter]
+    public IEnumerable<TaskDto>? Tasks { get; set; }
+
     private string ActiveTab = "Pending";
 
-    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    protected override void OnInitialized()
+    {
+        State.OnChange += StateHasChanged;
+    }
 
     private void SetTab(string tab) => ActiveTab = tab;
 
@@ -84,7 +92,6 @@
         _ => State.CurrentTasks
     };
 
-    // FIXED: Now accepts DateTime? (Nullable)
     private string FormatDueDate(DateTime? date)
     {
         if (!date.HasValue) return "No Date";
@@ -98,9 +105,12 @@
     private async Task HandleStatusChange(TaskDto task, bool isCompleted)
     {
         task.Status = isCompleted ? "Completed" : "Open";
-        // FIXED: Match the method name in DashboardState
+        // Ensure state is updated globally
         State.NotifyStateChanged();
     }
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
+    }
 }

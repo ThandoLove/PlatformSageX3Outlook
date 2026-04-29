@@ -1,21 +1,68 @@
 ﻿@using OperationalWorkspaceUI.State
 @using Microsoft.FluentUI.AspNetCore.Components
-@* Removed the static using that was breaking Icon paths *@
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@implements IDisposable
 @inject UIState UIState
+@inject NavigationManager Nav
 
-<div class="sage-topbar">
-    <div class="connection-status">
-        @* Fix 1: Full path for Icon and Color *@
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size16.CheckmarkCircle())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
-        <span>Connected to Sage X3</span>
+<div class="sage-topbar-wrapper" style="height: 40px !important; display: flex; align-items: center; background-color: #003366; padding: 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+    
+    @* LEFT: Hamburger + Full Workspace Title + Dashboard Label *@
+    <div class="topbar-left" style="display: flex; align-items: center; gap: 12px;">
+        
+        
+        @* Full Workspace Title (Professional Small Font) *@
+        <span style="font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.05rem; white-space: nowrap;">
+            SAGE X3 CONTEXTUAL WORKSPACE
+        </span>
+
+        @* Vertical Divider *@
+        <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
+
+        @* Page Title *@
+        <span style="font-size: 0.8rem; font-weight: 600; color: #ffffff; white-space: nowrap;">Dashboard</span>
     </div>
 
-    <div class="user-info">
-        @* Fix 2: Use fully qualified PersonaStatus enum *@
-        <FluentPersona Name="John Smith"
-                       SecondaryText="Sales Rep"
-                       Status="@Microsoft.FluentUI.AspNetCore.Components.PresenceStatus.Available"
-                       AvatarSize="32" />
+    @* MIDDLE: Search (Compact) *@
+    <div class="topbar-center" style="flex: 1; display: flex; justify-content: center; padding: 0 20px;">
+        <div class="search-input-group" style="display: flex; align-items: center; background: rgba(255,255,255,0.12); padding: 2px 10px; border-radius: 4px; width: 100%; max-width: 350px;">
+            @* FIXED: Search Icon (Color.Custom required for white) *@
+            <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
+                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
+                        CustomColor="#ffffff" />
+            <input type="text" placeholder="Search functions or data..."
+                   style="border: none; background: transparent; font-size: 0.75rem; color: #ffffff; outline: none; width: 100%; padding-left: 8px;" />
+        </div>
+    </div>
+
+    @* RIGHT: Status + User Profile *@
+    <div class="topbar-right" style="display: flex; align-items: center; gap: 12px;">
+        <div class="connection-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: rgba(255,255,255,0.8); border-right: 1px solid rgba(255,255,255,0.2); padding-right: 12px;">
+            @* Status Icon (Using built-in Success color) *@
+            <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
+                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
+            <span style="white-space: nowrap;">Connected to Sage X3</span>
+        </div>
+
+        <div class="user-profile-section" style="display: flex; align-items: center; cursor: pointer;">
+            <FluentPersona Name="@DisplayName"
+                           Status="@PresenceStatus.Available"
+                           AvatarSize="24"
+                           Style="color: white; font-size: 0.75rem !important;" />
+        </div>
     </div>
 </div>
+
+@code {
+    private string DisplayName => !string.IsNullOrEmpty(UIState.UserName) ? UIState.UserName : "John Smith";
+
+    protected override void OnInitialized()
+    {
+        UIState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        UIState.OnChange -= StateHasChanged;
+    }
+}

@@ -4,7 +4,6 @@
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
-
 @implements IDisposable
 @inject EmailContextState State
 @inject EmailContextUIService EmailService
@@ -28,6 +27,10 @@
     }
     else
     {
+        @*
+           NOTE: I am using 'State.CurrentEmail' here to keep your logic, 
+           but adding the 'Data' parameter below stops the crash.
+        *@
         <div class="insight-content">
             <!-- Contact Row -->
             <div class="detail-row">
@@ -77,7 +80,22 @@
 </FluentCard>
 
 @code {
-    protected override void OnInitialized() => State.OnChange += HandleStateChanged;
-    private void HandleStateChanged() => InvokeAsync(StateHasChanged);
-    public void Dispose() => State.OnChange -= HandleStateChanged;
+    // 🔥 FIX: This property MUST exist and have [Parameter] to stop the crash
+    [Parameter]
+    public EmailInsightDto? Data { get; set; }
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += HandleStateChanged;
+    }
+
+    private void HandleStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= HandleStateChanged;
+    }
 }
