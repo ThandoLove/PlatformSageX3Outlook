@@ -1,51 +1,81 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @if (IsLoading)
 {
-    <LoadingSpinner />
+    <div class="d-flex justify-content-center p-5">
+        <FluentProgressRing />
+    </div>
 }
 else if (Data == null || !Data.Any())
 {
-    <EmptyState Message="No attachments available." />
+    <div class="text-center p-5 border rounded bg-white">
+        <FluentIcon Value="@(new Icons.Regular.Size32.DocumentSearch())" Color="@Color.Neutral" />
+        <p class="mt-2 text-muted">No attachments available.</p>
+    </div>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>File Name</th>
-                <th>Type</th>
-                <th>Size</th>
-                <th>Uploaded</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var file in Data)
-            {
-                <tr @onclick="() => OnDownload.InvokeAsync(file)" style="cursor:pointer">
-                    <td>@file.FileName</td>
-                    @* FIX 1: Changed FileType to ContentType *@
-                    <td>@file.ContentType</td>
-                    @* FIX 2: Changed Size to FileSize *@
-                    <td>@FormatSize(file.FileSize)</td>
-                    @* FIX 3: Changed UploadedAt to UploadedAtUtc *@
-                    <td>@file.UploadedAtUtc.ToString("yyyy-MM-dd")</td>
+    <div class="table-responsive bg-white rounded shadow-sm border">
+        <table class="table table-hover mb-0" style="font-size: 0.85rem;">
+            <thead class="bg-light">
+                <tr style="text-transform: uppercase; font-size: 0.7rem; color: #64748b; font-weight: 700;">
+                    <th class="ps-4 py-3">File Name</th>
+                    <th class="py-3">Type</th>
+                    <th class="py-3">Size</th>
+                    <th class="py-3">Uploaded</th>
+                    <th class="py-3 text-end pe-4">Action</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var file in Data)
+                {
+                    <tr style="cursor: pointer; vertical-align: middle;">
+                        <td class="ps-4 py-3" @onclick="() => OnDownload.InvokeAsync(file)">
+                            <div class="d-flex align-items-center gap-3">
+                                <FluentIcon Value="@GetFileIcon(file.FileName)" Color="@Color.Accent" />
+                                <span class="fw-bold text-dark">@file.FileName</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">@file.ContentType</td>
+                        <td>@FormatSize(file.FileSize)</td>
+                        <td class="text-muted">@file.UploadedAtUtc.ToString("MMM dd, yyyy")</td>
+                        <td class="text-end pe-4">
+                            <FluentButton Appearance="Appearance.Stealth"
+                                          IconStart="@(new Icons.Regular.Size16.ArrowDownload())"
+                                          OnClick="() => OnDownload.InvokeAsync(file)" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
-    // FIX 4: Added ! to handle the non-nullable warning
     [Parameter] public List<AttachmentDto> Data { get; set; } = new();
     [Parameter] public bool IsLoading { get; set; }
     [Parameter] public EventCallback<AttachmentDto> OnDownload { get; set; }
 
     private string FormatSize(long bytes)
     {
+        if (bytes <= 0) return "0 KB"; // Handling 0 size from the mapping logic
         if (bytes < 1024) return $"{bytes} B";
         if (bytes < 1048576) return $"{(bytes / 1024.0):F1} KB";
         return $"{(bytes / 1048576.0):F1} MB";
+    }
+
+    private Icon GetFileIcon(string fileName)
+    {
+        var ext = System.IO.Path.GetExtension(fileName).ToLower();
+        return ext switch
+        {
+            ".pdf" => new Icons.Regular.Size20.DocumentPdf(),
+            ".docx" or ".doc" => new Icons.Regular.Size20.DocumentEdit(),
+            ".xlsx" or ".xls" => new Icons.Regular.Size20.Table(),
+            ".png" or ".jpg" or ".jpeg" => new Icons.Regular.Size20.Image(),
+            _ => new Icons.Regular.Size20.Document()
+        };
     }
 }

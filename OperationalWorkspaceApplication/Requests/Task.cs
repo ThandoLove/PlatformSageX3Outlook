@@ -4,12 +4,16 @@ using System.Text;
 
 namespace OperationalWorkspaceApplication.Requests
 {
-    
-    public sealed record CreateTaskRequest(
-        string Title,
-        string Description,  // Added
-        string CreatedBy,    // Added
-        DateTime DueDate);
+
+    public class CreateTaskRequest
+    {
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string CreatedBy { get; set; } = "";
+        public string AssignedTo { get; set; } = "";
+        public DateTime DueDate { get; set; }
+        public int Priority { get; set; }
+    }
 
     public sealed record AssignTaskRequest(Guid TaskId, string AssigneeId) // Missing record
     {

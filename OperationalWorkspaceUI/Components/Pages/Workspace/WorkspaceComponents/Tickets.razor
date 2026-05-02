@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.Models.Constant
 @using OperationalWorkspaceUI.State
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
@@ -18,7 +19,7 @@
         </div>
         <FluentButton Appearance="Appearance.Accent"
                       IconStart="@(new Icons.Regular.Size20.Add())"
-                      OnClick="@(() => NavManager.NavigateTo("/create-ticket"))">
+                      OnClick="@(() => NavManager.NavigateTo(AppRoutes.Tickets + "/new"))">
             New Ticket
         </FluentButton>
     </div>
@@ -61,7 +62,10 @@
         FilteredTickets = State.CurrentTickets.AsQueryable();
     }
 
-    private void EditTicket(TicketDto ticket) => NavManager.NavigateTo($"/tickets/edit/{ticket.Id}");
+    // Use the constant instead of a hardcoded string
+    private void EditTicket(TicketDto ticket) =>
+        NavManager.NavigateTo($"{AppRoutes.Tickets}/edit/{ticket.Id}");
+
 
     public void Dispose() => State.OnChange -= StateHasChanged;
 }

@@ -1,0 +1,52 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspace.Domain.Enums
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<div class="task-row" @onclick="() => OnSelect.InvokeAsync(Task)">
+
+    <div class="task-main">
+        <div class="title">@Task.Title</div>
+        <div class="company">@Task.CompanyName</div>
+    </div>
+
+    <div class="task-meta">
+
+        <span class="chip @PriorityClass">
+            @Task.Priority.ToString()
+        </span>
+
+        <span class="date">
+            @(Task.DueDate.HasValue
+                ? Task.DueDate.Value.ToString("ddd")
+                : "No date")
+        </span>
+
+    </div>
+
+    <div class="task-actions">
+
+        <FluentButton Appearance="Appearance.Outline" Size="Small">
+            Complete
+        </FluentButton>
+
+        <FluentButton Appearance="Appearance.Lightweight" Size="Small">
+            Open Source Email
+        </FluentButton>
+
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public TaskDto Task { get; set; } = default!;
+    [Parameter] public EventCallback<TaskDto> OnSelect { get; set; }
+
+    private string PriorityClass => Task.Priority switch
+    {
+        TaskPriority.Urgent => "urgent",
+        TaskPriority.High => "high",
+        TaskPriority.Medium => "medium",
+        TaskPriority.Low => "low",
+        _ => "normal"
+    };
+}

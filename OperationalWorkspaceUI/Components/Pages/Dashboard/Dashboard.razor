@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
+@using OperationalWorkspaceUI.Components.Email
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.Components.Shared
@@ -9,69 +11,84 @@
 @inject IJSRuntime JS
 @inject UIState UIState
 
-<PageTitle>Sage X3 | Contextual Workspace</PageTitle>
+<PageTitle>Sage X3 | Operational Dashboard</PageTitle>
 
 <div class="dashboard-wrapper @(UIState.IsDarkMode ? "dark-mode" : "")">
 
-    @* --- ROW 1: KPI METRICS (4 Columns) --- *@
+    @* --- ROW 1: DYNAMIC KPI METRICS (Imported Logic from Workspace) --- *@
     <div class="metrics-grid">
+
+        @{
+            var customer = State.TopClients?.FirstOrDefault();
+            var customerName = customer?.Name ?? "No Customer Linked";
+        }
+
+        <!-- OPEN ORDERS -->
         <div class="metric-card">
             <span class="metric-label">Open Orders</span>
-            <div class="metric-value">12</div>
-            <span class="metric-trend positive">+2 today</span>
+            <div class="metric-value">@State.DashboardData.OpenOrders</div>
+            <span class="metric-subtext">@customerName</span>
         </div>
-        <div class="metric-card">
-            <span class="metric-label">Pending Invoices</span>
-            <div class="metric-value">$4,250</div>
-            <span class="metric-trend negative">-1</span>
-        </div>
+
+        <!-- TICKETS -->
         <div class="metric-card">
             <span class="metric-label">Open Tickets</span>
-            <div class="metric-value">2 Active</div>
-            <span class="metric-trend neutral" style="color: #64748b;">Steady</span>
+            <div class="metric-value">@State.CurrentTickets?.Count()</div>
+            <span class="metric-subtext">
+                @(State.CurrentTickets?.Any(t => t.Priority == "High") == true ? "Urgent" : "Normal")
+            </span>
         </div>
+
+        <!-- ACTIVITIES -->
         <div class="metric-card">
-            <span class="metric-label">System Status</span>
-            <div class="metric-value status-optimal">Optimal</div>
-            <span class="metric-subtext">Daily Active Users: 48</span>
+            <span class="metric-label">Recent Activity</span>
+            <div class="metric-value">@State.CurrentActivities?.Count()</div>
+            <span class="metric-subtext">Updated Today</span>
         </div>
+
+        <!-- CUSTOMER STATUS -->
+        <div class="metric-card">
+            <span class="metric-label">Customer</span>
+            <div class="metric-value">@customerName</div>
+            <span class="metric-subtext">Active</span>
+        </div>
+
     </div>
 
-    @* --- ROW 2: PRIMARY INSIGHTS (SIDE-BY-SIDE) --- *@
+    @* --- ROW 2: CONTEXTUAL INSIGHTS --- *@
     <div class="sage-dashboard-row">
-       
         <Card Title="Email Context">
             <EmailContextPanel />
         </Card>
         
-       
         <Card Title="Crm Snapshot">
             <CrmPanel Clients="@State.TopClients" />
         </Card>
     </div>
 
-    @* --- ROW 3: QUICK ACTIONS (Full Width) --- *@
+   
+
+
+    @* --- ROW 4: QUICK ACTIONS --- *@
     <div class="sage-dashboard-row single">
-        
         <Card Title="Quick Actions">
             <QuickActionsPanel />
         </Card>
     </div>
 
-    @* --- ROW 4: KNOWLEDGE & TASKS (SIDE-BY-SIDE) --- *@
+    @* --- ROW 5: OPERATIONAL TOOLS --- *@
     <div class="sage-dashboard-row">
-        <Card Title="Knowledge Base">
+        <Card Title="Knowledge">
             <KnowledgeBasePanel />
         </Card>
-        <Card Title="Create Task">
-            <CreateTaskPanel />
+        <Card Title="Documents">
+            <AttachDocumentsPanel />
         </Card>
     </div>
 
-    @* --- ROW 5: LISTS & TIMELINE (SIDE-BY-SIDE) --- *@
+    @* --- ROW 6: LISTS & ACTIVITY --- *@
     <div class="sage-dashboard-row">
-        
-        <Card Title="Tasks">
+        <Card Title="Tasks & Approvals">
             <TasksPanel />
         </Card>
         <Card Title="Recent Activity">
@@ -79,20 +96,17 @@
         </Card>
     </div>
 
-    @* --- SYSTEM HEALTH (Subtle Bottom Row) --- *@
+    @* --- ROW 7: SYSTEM HEALTH & TICKETS --- *@
     <div class="sage-dashboard-row">
-        
         <Card Title="System Health">
             <SystemHealthPanel Status="@State.AdminHealth" />
         </Card>
-    
-            <Card Title="Tickets">
-                <TicketsPanel Tickets="@State.CurrentTickets" />
-            </Card>
+        <Card Title="Active Tickets">
+            <TicketsPanel Tickets="@State.CurrentTickets" />
+        </Card>
     </div>
 
-
-    @* --- THEME TOGGLE (BOTTOM CORNER) --- *@
+    @* --- THEME TOGGLE --- *@
     <div class="theme-toggle-fixed">
         <FluentSwitch @bind-Value="IsDarkMode"
                       Label="@(UIState.IsDarkMode ? "Dark Appearance" : "Light Appearance")" />
@@ -112,6 +126,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Ensures all data (including the new Sales/Quotes) is loaded on start
         await State.LoadDashboardAsync();
+        State.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
     }
 }

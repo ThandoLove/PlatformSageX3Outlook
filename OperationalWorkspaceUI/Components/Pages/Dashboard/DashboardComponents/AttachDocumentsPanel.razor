@@ -1,65 +1,65 @@
-﻿@using OperationalWorkspaceUI.State
+﻿@rendermode InteractiveServer
+
+@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using Microsoft.FluentUI.AspNetCore.Components
-@* Fix: Add Icon namespace *@
 @using Microsoft.FluentUI.AspNetCore.Components.Icons
-@* Fix: Add ToastLevel namespace *@
 @using OperationalWorkspace.Domain.Enums
-@inject DashboardState State
-@* Fix: Explicitly inject YOUR ToastService to avoid FluentUI conflict *@
+@using OperationalWorkspaceApplication.DTOs
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@inject WorkspaceState WorkspaceState
+@inject OperationalWorkspaceUI.UIServices.Workspace.AttachmentUIService AttachmentService
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
-@inject ModalService ModalService
+@inject NavigationManager NavManager
 @inject IJSRuntime JS
 
-<FluentCard Style="width: 100%; max-width: 450px; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none;">
+<FluentCard Style="width: 100%; height: 100%; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; display: flex; flex-direction: column;">
+    
+    @* HEADER: Always visible *@
     <div class="panel-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b;">Attach Documents from Sage X3</h3>
-        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Attach())"
-                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
-    </div>
-
-    @* Search Bar *@
-    <div style="display: flex; gap: 8px; margin-bottom: 16px; align-items: center;">
-        <div style="flex-grow: 1;">
-            <FluentSearch Placeholder="Search Sage X3 Documents..."
-                          @bind-Value="_searchQuery"
-                          @bind-Value:event="oninput"
-                          Style="width: 100%;" />
-        </div>
-        <FluentButton Appearance="Appearance.Stealth">
-            <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.Filter())"
-                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b;">Documents</h3>
+        <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => UploadToEmail())">
+            <FluentIcon Value="@(new Icons.Regular.Size20.ArrowUpload())" Color="@Color.Accent" />
         </FluentButton>
     </div>
 
-    @* Document List *@
-    <div class="document-list" style="display: flex; flex-direction: column; max-height: 350px; overflow-y: auto;">
-        @foreach (var doc in FilteredDocuments)
-        {
-            <div class="doc-item" style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; gap: 12px;">
-                <FluentIcon Value="@GetFileIcon(doc.Name)" Color="@GetIconColor(doc.Name)" />
-                
-                <div class="doc-info" style="flex-grow: 1; display: flex; flex-direction: column;">
-                    <div class="doc-name" style="font-size: 0.95rem; font-weight: 500; color: #1e293b;">@doc.Name</div>
-                    <div class="doc-meta" style="font-size: 0.8rem; color: #64748b;">
-                        @doc.Type : @doc.Ext <span style="color: #94a3b8; margin-left: 8px;">@doc.Size</span>
-                    </div>
-                </div>
+    @* SEARCH *@
+    <div style="margin-bottom: 12px;">
+        <FluentSearch Placeholder="Search files..." @bind-Value="_searchQuery" @bind-Value:event="oninput" Style="width: 100%;" />
+    </div>
 
-                <FluentButton Appearance="Appearance.Outline"
-                              Style="border-radius: 20px; font-weight: 600;"
-                              OnClick="@(() => Attach(doc.Name))">
-                    Attach
-                </FluentButton>
-            </div>
+    @* DOCUMENT LIST *@
+    <div class="document-list" style="flex-grow: 1; overflow-y: auto; min-height: 150px;">
+        @if (WorkspaceState.Attachments == null)
+        {
+            <p>Loading...</p>
+        }
+        else if (!FilteredAttachments.Any())
+        {
+            <p style="font-size: 0.8rem; color: #64748b; padding: 10px;">No documents found.</p>
+        }
+        else
+        {
+            @foreach (var doc in FilteredAttachments)
+            {
+                <div class="doc-item" style="display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; gap: 12px;">
+                    <FluentIcon Value="@GetFileIcon(doc.FileName)" Color="@GetIconColor(doc.FileName)" />
+                    <div style="flex-grow: 1;">
+                        <div style="font-size: 0.9rem; font-weight: 500;">@doc.FileName</div>
+                    </div>
+                    <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Attach())" OnClick="@(() => Attach(doc.FileName))" />
+                </div>
+            }
         }
     </div>
 
-    <div style="margin-top: 16px;">
-        <FluentButton Appearance="Appearance.Outline"
-                      Style="width: 100%; border-radius: 8px; color: #005fb8; font-weight: 600; background: #f0f7ff; border-color: #d0e7ff;"
-                      OnClick="@(() => BrowseSage())">
-            Browse Sage X3 &nbsp; <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ArrowRight())" />
+    @* FOOTER: THIS IS THE LINK TO THE PAGE IN WORKSPACE *@
+    <div style="border-top: 1px solid #f1f5f9; padding-top: 12px;">
+        <FluentButton Appearance="Appearance.Stealth"
+                      Style="width: 100%; font-size: 0.8rem; color: #005fb8; justify-content: center;"
+                      OnClick="@(() => NavManager.NavigateTo("/attachments"))">
+            Go to Attachments &nbsp; <FluentIcon Value="@(new Icons.Regular.Size16.Open())" />
         </FluentButton>
     </div>
 </FluentCard>
@@ -67,49 +67,35 @@
 @code {
     private string _searchQuery = "";
 
-    private List<DocumentStub> _documents = new()
-    {
-        new("Product Catalog.pdf", "PDF", "PDF", "1.2 MB"),
-        new("Customer Contract.docx", "DOCX", "DOCX", "564 KB"),
-        new("Invoice INV-100045.pdf", "PDF", "PDF", "2.1 MB"),
-        new("Quote QTE-7789.xlsx", "XLSX", "XLSX", "613 KB")
-    };
+    private IEnumerable<AttachmentDto> FilteredAttachments =>
+        (WorkspaceState.Attachments ?? new List<AttachmentDto>())
+            .Where(d => string.IsNullOrWhiteSpace(_searchQuery) || d.FileName.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
 
-    private IEnumerable<DocumentStub> FilteredDocuments =>
-        string.IsNullOrWhiteSpace(_searchQuery)
-            ? _documents
-            : _documents.Where(d => d.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+    protected override async Task OnInitializedAsync()
+    {
+        if (WorkspaceState.Attachments == null)
+        {
+            var fileNames = await AttachmentService.GetAttachmentsAsync();
+            WorkspaceState.Attachments = fileNames.Select(name => new AttachmentDto(
+                Guid.NewGuid(), name, "application/octet-stream", 0, $"/files/{name}", "General", DateTime.UtcNow
+            )).ToList();
+            StateHasChanged();
+        }
+    }
 
     private async Task Attach(string fileName)
     {
         await JS.InvokeVoidAsync("officeBridge.attachDocument", "GENERAL", fileName);
-        
-        // Fix: Use your custom service and helper methods for clean logic
-        CustomToastService.ShowSuccess($"{fileName} attached successfully");
-        
-        await ModalService.CloseModal();
+        CustomToastService.ShowSuccess($"{fileName} attached");
     }
 
-    private async Task BrowseSage()
+    private async Task UploadToEmail()
     {
-        await JS.InvokeVoidAsync("officeBridge.navigateToSageFunction", "ATTACH", "BROWSE");
+        // This triggers the PowerShell log you saw
+        await JS.InvokeVoidAsync("officeBridge.uploadCurrentDocument", "EMAIL_ATTACHMENT");
+        CustomToastService.ShowSuccess("Uploading...");
     }
 
-    // Fix: Full path for Icon return types
-    private Microsoft.FluentUI.AspNetCore.Components.Icon GetFileIcon(string name) => name.ToLower() switch
-    {
-        var n when n.EndsWith(".pdf") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size24.DocumentPdf(),
-        var n when n.EndsWith(".xlsx") => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size24.Table(),
-        _ => new Microsoft.FluentUI.AspNetCore.Components.Icons.Filled.Size24.DocumentBulletList()
-    };
-
-    // Fix: Full path for Color return types to avoid Radzen conflict
-    private Microsoft.FluentUI.AspNetCore.Components.Color GetIconColor(string name) => name.ToLower() switch
-    {
-        var n when n.EndsWith(".pdf") => Microsoft.FluentUI.AspNetCore.Components.Color.Error,
-        var n when n.EndsWith(".xlsx") => Microsoft.FluentUI.AspNetCore.Components.Color.Success,
-        _ => Microsoft.FluentUI.AspNetCore.Components.Color.Accent
-    };
-
-    public record DocumentStub(string Name, string Type, string Ext, string Size);
+    private Microsoft.FluentUI.AspNetCore.Components.Icon GetFileIcon(string name) => name.ToLower().EndsWith(".pdf") ? new Icons.Filled.Size20.DocumentPdf() : new Icons.Filled.Size20.DocumentBulletList();
+    private Microsoft.FluentUI.AspNetCore.Components.Color GetIconColor(string name) => name.ToLower().EndsWith(".pdf") ? Color.Error : Color.Accent;
 }

@@ -1,99 +1,173 @@
-﻿@page "/workspace/orders"
+﻿@page "/orders"
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceApplication.DTOs
+@using Microsoft.JSInterop
 
 @inject OrdersUIService OrderService
 @inject WorkspaceState WorkspaceState
-@inject NavigationService NavigationService
-@inject Radzen.NotificationService NotificationService
+@inject DashboardState DashboardState
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
 
-<h3>Sales Orders</h3>
+<div class="workspace-container" style="flex-direction: column; background: #f3f4f6; min-height: 100vh;">
+    
+    <WorkspaceHeader Title="Sales Orders" Subtitle="ERP Contextual Workspace" />
 
-<WorkspaceHeader Title="Orders" Subtitle="Manage all sales orders" />
+    <div class="page-container" style="padding: 24px;">
+        <div class="dashboard-card shadow-sm" style="background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+            
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h2 style="font-weight: 700; color: #111827; margin: 0; font-size: 1.5rem;">Sales Orders</h2>
+                    
+                    <div class="d-flex flex-column gap-3 mt-4">
+                        <div class="d-flex gap-2">
+                            <div style="width: 350px; position: relative;">
+                                <span style="position: absolute; left: 16px; top: 12px; color: #94a3b8;">🔍</span>
+                                <input type="text" class="form-control ps-5" 
+                                       style="height: 45px; border-radius: 8px; border: 1px solid #e2e8f0;" 
+                                       placeholder="Search Sage X3..." 
+                                       @bind="SearchQuery" @bind:event="oninput" />
+                            </div>
 
-<WorkspaceToolbar>
-    <button class="btn btn-primary" @onclick="Create">+ New Order</button>
-    <button class="btn btn-outline-secondary" @onclick="Refresh">Refresh</button>
-</WorkspaceToolbar>
+                            <button class="btn btn-light border d-flex align-items-center gap-2" 
+                                    style="height: 45px; border-radius: 8px; background: white; color: #475569; font-weight: 500;"
+                                    @onclick="() => IsFilterOpen = !IsFilterOpen">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                </svg>
+                                Filter
+                            </button>
+                        </div>
 
-<WorkspaceFilters>
-    <FormField Label="Search" @bind-Value="SearchQuery" />
-</WorkspaceFilters>
+                        @if (IsFilterOpen)
+                        {
+                            <div class="filter-tray d-flex gap-3 p-3 mb-2" style="background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                <div class="filter-item">
+                                    <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">ORDER STATUS</label>
+                                    <select class="form-select form-select-sm" @bind="SelectedStatus">
+                                        <option value="All Orders">All Orders</option>
+                                        <option value="Draft">Draft</option>
+                                        <option value="Confirmed">Confirmed</option>
+                                        <option value="Shipped">Shipped</option>
+                                        <option value="Delivered">Delivered</option>
+                                    </select>
+                                </div>
+                                <div class="filter-item">
+                                    <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">DATE RANGE</label>
+                                    <select class="form-select form-select-sm" @bind="SelectedDateRange">
+                                        <option value="All Time">All Time</option>
+                                        <option value="Last 30 Days">Last 30 Days</option>
+                                        <option value="Last 6 Months">Last 6 Months</option>
+                                    </select>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
 
-@if (FilteredOrders == null)
-{
-    <LoadingSpinner />
-}
-else if (!FilteredOrders.Any())
-{
-    <EmptyState Message="No orders found." />
-}
-else
-{
-    @* FIXED: Passing the method reference 'Open' directly prevents lambda conversion issues *@
-    <BpGrid TItem="OpenOrderDto" Items="FilteredOrders.ToList()" OnRowClick="Open">
-        <HeaderContent>
-            <th>Order #</th>
-            <th>Date</th>
-            <th>Total</th>
-            <th>Status</th>
-        </HeaderContent>
-        <RowTemplate Context="order">
-            <td>@order.OrderNumber</td>
-            @* Safe display for nullable date values *@
-            <td>@(order.OrderDate?.ToShortDateString() ?? "N/A")</td>
-            <td>@order.TotalAmount.ToString("C")</td>
-            <td>
-                <span class="badge @(order.Status == "Completed" ? "bg-success" : "bg-warning")">
-                    @order.Status
-                </span>
-            </td>
-        </RowTemplate>
-    </BpGrid>
-}
+                <button class="btn btn-primary px-4 py-2" style="background-color: #0061d5; border: none; border-radius: 6px; font-weight: 600;" @onclick="Create">
+                    Create Sales Order
+                </button>
+            </div>
+
+            <div class="table-responsive mt-4">
+                <table class="table table-hover" style="border: none;">
+                    <thead>
+                        <tr style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #f1f5f9;">
+                            <th class="pb-3 border-0">Order #</th>
+                            <th class="pb-3 border-0">Account</th>
+                            <th class="pb-3 border-0">Order Date</th>
+                            <th class="pb-3 border-0">Status</th>
+                            <th class="pb-3 border-0 text-end">Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in PaginatedOrders)
+                        {
+                            <tr @onclick="() => HandleRowClick(order)" style="cursor: pointer; border-bottom: 1px solid #f8fafc;" class="sage-row">
+                                <td class="py-4 border-0 fw-bold" style="color: #2563eb;">@order.OrderNumber</td>
+                                <td class="py-4 border-0" style="color: #374151;">@order.ClientName</td>
+                                <td class="py-4 border-0 text-muted">@(order.OrderDate?.ToString("MMM dd, yyyy") ?? "N/A")</td>
+                                
+                                @* REUSABLE COMPONENT APPLIED HERE *@
+                                <td class="py-4 border-0">
+                                    <StatusBadge Status="@order.Status" />
+                                </td>
+
+                                <td class="py-4 border-0 text-end fw-bold" style="color: #111827;">@order.TotalAmount.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-5" style="color: #94a3b8; font-size: 0.85rem;">
+                <span>Showing @((CurrentPage - 1) * PageSize + 1) to @(Math.Min(CurrentPage * PageSize, FilteredData.Count())) of @FilteredData.Count() results</span>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-sm btn-link text-muted p-0" @onclick="() => CurrentPage--" disabled="@(CurrentPage == 1)" style="text-decoration: none;">&lt;</button>
+                    @for (int i = 1; i <= TotalPages; i++)
+                    {
+                        var p = i;
+                        <span class="pager-num @(CurrentPage == p ? "active" : "")" @onclick="() => CurrentPage = p">@p</span>
+                    }
+                    <button class="btn btn-sm btn-link text-muted p-0" @onclick="() => CurrentPage++" disabled="@(CurrentPage == TotalPages)" style="text-decoration: none;">&gt;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sage-row:hover { background-color: #f9fafb !important; }
+    .pager-num { cursor: pointer; padding: 4px 10px; border-radius: 50%; }
+    .pager-num.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
+</style>
 
 @code {
-    private string SearchQuery = string.Empty;
+    private string SearchQuery = "";
+    private string SelectedStatus = "All Orders";
+    private string SelectedDateRange = "All Time";
+    private bool IsFilterOpen = false;
+    private int CurrentPage = 1;
+    private int PageSize = 8;
 
-    // FIXED: The Select logic now includes a null-coalescing operator (??)
-    // to bridge the gap between nullable DateTime? and non-nullable DateTime.
-    private IEnumerable<OpenOrderDto>? FilteredOrders =>
-        WorkspaceState.Orders?
-            .Select(o => new OpenOrderDto
-            {
-                Id = o.Id,
-                OrderNumber = o.OrderNumber,
-                OrderDate = o.OrderDate,
-                TotalAmount = o.TotalAmount,
-                Status = "Open"
-            })
-            .Where(o => string.IsNullOrWhiteSpace(SearchQuery)
-                     || (o.OrderNumber != null && o.OrderNumber.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
-
-    protected override async Task OnInitializedAsync()
+    private List<OpenOrderDto> MasterList = new()
     {
-        await OrderService.GetOrdersAsync();
-    }
+        new() { Id = Guid.NewGuid(), OrderNumber = "SO-2024-00125", ClientName = "Tech Innovations Inc.", OrderDate = DateTime.Now.AddDays(-5), Status = "Draft", TotalAmount = 15750m },
+        new() { Id = Guid.NewGuid(), OrderNumber = "SO-2024-00124", ClientName = "Global Solutions LLC", OrderDate = DateTime.Now.AddDays(-10), Status = "Confirmed", TotalAmount = 8450m },
+        new() { Id = Guid.NewGuid(), OrderNumber = "SO-2024-00123", ClientName = "Future Systems Corp", OrderDate = DateTime.Now.AddMonths(-2), Status = "Shipped", TotalAmount = 22100m },
+        new() { Id = Guid.NewGuid(), OrderNumber = "SO-2024-00122", ClientName = "NextGen Technologies", OrderDate = DateTime.Now.AddMonths(-7), Status = "Delivered", TotalAmount = 12300m }
+    };
 
-    private async Task Refresh()
+    private IEnumerable<OpenOrderDto> FilteredData => MasterList
+        .Where(o => (SelectedStatus == "All Orders" || o.Status == SelectedStatus) &&
+                    (string.IsNullOrWhiteSpace(SearchQuery) || o.OrderNumber.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) || o.ClientName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)) &&
+                    IsWithinDateRange(o.OrderDate));
+
+    private bool IsWithinDateRange(DateTime? date)
     {
-        await OrderService.GetOrdersAsync();
-        
-        NotificationService.Notify(new Radzen.NotificationMessage
+        if (!date.HasValue || SelectedDateRange == "All Time") return true;
+        return SelectedDateRange switch
         {
-            Severity = Radzen.NotificationSeverity.Success,
-            Summary = "Success",
-            Detail = "Orders refreshed",
-            Duration = 4000
-        });
+            "Last 30 Days" => date >= DateTime.Now.AddDays(-30),
+            "Last 6 Months" => date >= DateTime.Now.AddMonths(-6),
+            _ => true
+        };
     }
 
-    private void Create() => NavigationService.NavigateTo("/forms/create-order");
+    private IEnumerable<OpenOrderDto> PaginatedOrders => FilteredData.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+    private int TotalPages => (int)Math.Ceiling((double)FilteredData.Count() / PageSize);
 
-    private void Open(OpenOrderDto order) =>
-        NavigationService.NavigateTo($"/workspace/orders/{order.Id}");
+    private async Task HandleRowClick(OpenOrderDto order)
+    {
+        await DashboardState.LoadOrderDetailsAsync(order.OrderNumber);
+        NavManager.NavigateTo($"/orders/{order.Id}");
+    }
+
+    private void Create() => NavManager.NavigateTo("/forms/add-sales-order");
 }

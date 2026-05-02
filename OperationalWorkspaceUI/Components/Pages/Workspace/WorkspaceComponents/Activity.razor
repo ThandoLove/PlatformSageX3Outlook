@@ -1,37 +1,38 @@
-﻿@page "/workspace/activities"
+﻿@page "/activities"
 @rendermode InteractiveServer
 
-@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 @using OperationalWorkspaceUI.State
-@using Microsoft.FluentUI.AspNetCore.Components
 @inject DashboardState DashboardState
 @inject OperationalWorkspaceUI.UIServices.Workspace.ActivityUIService ActivityService
 
-<div class="workspace-container" style="padding: 20px; background-color: #f4f7f9; min-height: 100vh;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+@* REMOVED: workspace-container and 100vh styles to prevent layout clashing *@
+<div style="padding: 24px;">
+    
+    @* HEADER SECTION *@
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
         <div>
-            <h2 style="margin: 0; color: #003366; font-weight: 600;">Activity Log</h2>
-            <p style="margin: 0; color: #64748b; font-size: 0.9rem;">System-wide activity tracking</p>
+            <h2 style="margin: 0; color: #1e293b; font-size: 1.75rem; font-weight: 700;">Activity Log</h2>
+            <p style="margin: 4px 0 0 0; color: #64748b;">System-wide activity tracking</p>
         </div>
         <FluentButton Appearance="Appearance.Outline"
-                      @* FIX: Use ArrowClockwise which is the standard Size20 Refresh icon *@
                       IconStart="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.ArrowClockwise())"
                       OnClick="Reload">
             Refresh
         </FluentButton>
     </div>
 
+    @* DATA LOADING LOGIC *@
     @if (DashboardState.RecentActivities == null)
     {
-        <div style="display: flex; justify-content: center; padding: 50px;">
+        <div style="display: flex; justify-content: center; padding: 100px;">
             <FluentProgressRing />
         </div>
     }
     else if (!DashboardState.RecentActivities.Any())
     {
-        <div style="text-align:center; padding: 40px;">
-            <p>No activity found.</p>
-        </div>
+        <FluentCard Style="padding: 40px; text-align: center;">
+            <p style="color: #64748b;">No activities found in the system log.</p>
+        </FluentCard>
     }
     else
     {
@@ -42,13 +43,13 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
+        // Load data on start
         await Reload();
     }
 
     private async Task Reload()
     {
-        var logs = await ActivityService.GetActivitiesAsync();
-        DashboardState.RecentActivities = logs;
+        DashboardState.RecentActivities = await ActivityService.GetActivitiesAsync();
         StateHasChanged();
     }
 }

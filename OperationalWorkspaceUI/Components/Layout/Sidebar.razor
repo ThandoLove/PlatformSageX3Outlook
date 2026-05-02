@@ -1,4 +1,5 @@
-﻿@using OperationalWorkspaceUI.State
+﻿@using OperationalWorkspaceUI.Models.Constant
+@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
@@ -16,34 +17,36 @@
                     Style="cursor: pointer;" />
     </div>
 
+        <nav class="nav-menu">
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())" Href="@AppRoutes.Dashboard" Match="NavLinkMatch.All">Dashboard</FluentNavLink>
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.Person())" Href="@AppRoutes.BusinessPartners">Contacts</FluentNavLink>
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.TicketDiagonal())" Href="@AppRoutes.Tickets">Tickets</FluentNavLink>
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.DataUsage())" Href="@AppRoutes.Activity">Activities</FluentNavLink>
 
-    <nav class="nav-menu">
-        @* FIXED: All icons dropped to Size16 for compact ERP density *@
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())" Href="/dashboard" Match="NavLinkMatch.All">Dashboard</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Person())" Href="/contacts">Contacts</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Building())" Href="/accounts">Accounts</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.TicketDiagonal())" Href="/tickets">Tickets</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.DataUsage())" Href="/activities">Activities</FluentNavLink>
+            <div class="sidebar-divider"></div>
+
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.Cart())" Href="@AppRoutes.Orders">Sales Orders</FluentNavLink>
+    
+            <div class="sidebar-divider"></div>
+
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())" Href="@AppRoutes.Knowledge">Knowledge Base</FluentNavLink>
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.CheckmarkCircle())" Href="@AppRoutes.Tasks">My Tasks</FluentNavLink>
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.Book())" Href="@AppRoutes.Attachments">Documents</FluentNavLink>
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.DocumentText())" Href="@AppRoutes.Quotes">Quotes</FluentNavLink>
 
 
-        <div class="sidebar-divider"></div>
+            <div class="group-title">Administration</div>
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldSettings())" Href="@AppRoutes.Administration">Admin</FluentNavLink>
 
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Cart())" Href="/sales-orders">Sales Orders</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Document())" Href="/quotes">Quotes</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Receipt())" Href="/invoices">Invoices</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Briefcase())" Href="/cases">Cases</FluentNavLink>
-        
-        <div class="sidebar-divider"></div>
+       
 
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())" Href="/kb">Knowledge Base</FluentNavLink>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.CheckmarkCircle())" Href="/tasks">My Tasks</FluentNavLink>
-        
-        <div class="group-title">Administration</div>
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())" Href="/admin">Admin</FluentNavLink>
-    </nav>
+           
+        </nav>
+
+ 
 
     <div class="sidebar-footer">
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())" Href="/settings">Settings</FluentNavLink>
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())" Href="@AppRoutes.Settings">Settings</FluentNavLink>
     </div>
 </div>
 

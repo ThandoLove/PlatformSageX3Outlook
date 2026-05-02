@@ -1,6 +1,5 @@
-﻿@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.State
-@using OperationalWorkspace.Domain.Enums
+﻿@using OperationalWorkspace.Domain.Enums
+@using OperationalWorkspaceApplication.DTOs
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
@@ -8,74 +7,86 @@
 @inject DashboardState State
 
 <FluentCard Class="tasks-widget-card">
+
     <div class="panel-header">
         <h3>My Tasks</h3>
         <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
-
-
-    @* --- TABS SECTION --- *@
     <div class="task-tabs">
-        <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")" @onclick='() => SetTab("Pending")'>
-            Pending (@State.CurrentTasks.Count(t => t.Status != "Completed"))
+        <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")"
+             @onclick='() => SetTab("Pending")'>
+            Pending (@State.CurrentTasks.Count(t => !t.Completed))
         </div>
-        <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SetTab("Overdue")'>
-            Overdue (@State.CurrentTasks.Count(t => t.DueDate.HasValue && t.DueDate < DateTime.Now && t.Status != "Completed"))
+
+        <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")"
+             @onclick='() => SetTab("Overdue")'>
+            Overdue (@State.CurrentTasks.Count(t =>
+                            t.DueDate.HasValue &&
+                            t.DueDate.Value < DateTime.Now &&
+                            !t.Completed))
         </div>
-        <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SetTab("Completed")'>
-            Done
+
+        <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")"
+             @onclick='() => SetTab("Completed")'>
+            Done (@State.CurrentTasks.Count(t => t.Completed))
         </div>
     </div>
 
-    @* --- LIST SECTION --- *@
     <div class="task-list-container">
-        @if (FilteredTasks != null && FilteredTasks.Any())
+
+        @if (FilteredTasks.Any())
         {
             @foreach (var task in FilteredTasks)
             {
-                <div class="task-item @(task.Status == "Completed" ? "task-done" : "")">
-                    <FluentCheckbox Value="@(task.Status == "Completed")"
+                <div class="task-item @(task.Completed ? "task-done" : "")">
+
+                    <FluentCheckbox Value="@task.Completed"
                                     ValueChanged="@((bool val) => HandleStatusChange(task, val))"
                                     Class="task-check" />
-                    
+
                     <div class="task-details">
                         <span class="task-title">@task.Title</span>
+
                         <span class="task-due">
-                            Due: <span class="date-highlight">@FormatDueDate(task.DueDate)</span>
+                            Due: @FormatDueDate(task.DueDate)
                         </span>
                     </div>
 
-                    <div class="task-prio-tag">
+                    <div>
                         @if (task.Priority == TaskPriority.High)
                         {
-                            <FluentBadge BackgroundColor="#ef4444" Color="white">High</FluentBadge>
+                            <FluentBadge BackgroundColor="#ef4444" Color="white">
+                                High
+                            </FluentBadge>
                         }
                     </div>
+
                 </div>
             }
         }
         else
         {
             <div class="task-empty-state">
-                <FluentIcon Value="@(new Icons.Regular.Size24.CheckmarkCircle())" Color="@Color.Success" />
+                <FluentIcon Value="@(new Icons.Regular.Size24.CheckmarkCircle())"
+                            Color="@Color.Success" />
                 <p>No tasks in this category.</p>
             </div>
         }
+
     </div>
 
-    @* --- FOOTER SECTION --- *@
     <div class="task-footer">
-        <FluentAnchor Appearance="Appearance.Lightweight" Href="/workspace/tasks" Class="footer-link">
+        <FluentAnchor Appearance="Appearance.Lightweight"
+                      Href="/tasks"
+                      Class="footer-link">
             View All My Tasks →
         </FluentAnchor>
     </div>
+
 </FluentCard>
 
 @code {
-    // 🔥 THE CRITICAL FIX: This property stops the Dashboard crash
-    [Parameter]
-    public IEnumerable<TaskDto>? Tasks { get; set; }
 
     private string ActiveTab = "Pending";
 
@@ -88,26 +99,32 @@
 
     private IEnumerable<TaskDto> FilteredTasks => ActiveTab switch
     {
-        "Pending" => State.CurrentTasks.Where(t => t.Status != "Completed"),
-        "Overdue" => State.CurrentTasks.Where(t => t.DueDate.HasValue && t.DueDate < DateTime.Now && t.Status != "Completed"),
-        "Completed" => State.CurrentTasks.Where(t => t.Status == "Completed"),
+        "Pending" => State.CurrentTasks.Where(t => !t.Completed),
+
+        "Overdue" => State.CurrentTasks.Where(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value < DateTime.Now &&
+            !t.Completed),
+
+        "Completed" => State.CurrentTasks.Where(t => t.Completed),
+
         _ => State.CurrentTasks
     };
 
     private string FormatDueDate(DateTime? date)
     {
         if (!date.HasValue) return "No Date";
-        
+
         var d = date.Value;
         if (d.Date == DateTime.Today) return "Today";
         if (d.Date == DateTime.Today.AddDays(1)) return "Tomorrow";
+
         return d.ToString("MMM dd");
     }
 
     private async Task HandleStatusChange(TaskDto task, bool isCompleted)
     {
-        task.Status = isCompleted ? "Completed" : "Open";
-        // Ensure state is updated globally
+        task.Completed = isCompleted;
         State.NotifyStateChanged();
     }
 

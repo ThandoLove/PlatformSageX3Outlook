@@ -1,11 +1,10 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using OperationalWorkspaceApplication.DTOs;
 
 namespace OperationalWorkspaceUI.State
 {
-    
     public class WorkspaceState
     {
         public List<ClientDto> Clients { get; set; } = new();
@@ -18,35 +17,42 @@ namespace OperationalWorkspaceUI.State
 
         public List<string> Knowledge { get; set; } = new();
         public List<OpenOrderDto> Quotes { get; set; } = new();
+        public EmailInsightDto? SelectedEmail { get; set; }
 
         public void ReloadKnowledge(List<string> articles)
         {
             Knowledge = articles;
         }
 
-        public void PreFillOrderFromEmail(EmailInsightDto email)
+        public async Task LoadTasksAsync()
         {
-            Orders.Add(new OrderDto
-            {
-                ClientId = email.ClientId,
-                OrderDate = DateTime.UtcNow,
-                Description = $"Auto-generated from email {email.Subject}"
-            });
+            await Task.Delay(200);
+
+            Tasks = new List<TaskDto>
+    {
+        new TaskDto
+        {
+            Title = "Review Invoice Sync",
+            DueDate = DateTime.UtcNow.AddDays(1),
+            Completed = false,
+            CompanyName = "Demo Company",
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
+        },
+        new TaskDto
+        {
+            Title = "Fix Outlook Integration",
+            DueDate = DateTime.UtcNow.AddDays(-1),
+            Completed = false,
+            CompanyName = "Sage X3",
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
+        }
+    };
         }
 
-        public void PreFillTaskFromEmail(EmailInsightDto email)
-        {
-            Tasks.Add(new TaskDto
-            {
-                Title = $"Follow-up: {email.Subject}",
-                StatusDescription = email.Message,
-                AssignedTo = email.AssignedUserId,
-                DueDate = DateTime.UtcNow.AddDays(3)
-            });
-        }
-
-        public void ReloadClients() { /* Call UI service to reload */ }
-        public void ReloadOrders() { /* Call UI service to reload */ }
-        public void ReloadTasks() { /* Call UI service to reload */ }
+        public void ReloadClients() { }
+        public void ReloadOrders() { }
+        public void ReloadTasks() { }
     }
 }

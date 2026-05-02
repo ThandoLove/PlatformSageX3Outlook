@@ -4,8 +4,13 @@
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using Microsoft.FluentUI.AspNetCore.Components
 @implements IAsyncDisposable
+@implements IDisposable
 
-<div class="right-panel-container" style="padding: 16px; background-color: #f4f7f9; height: 100%; overflow-y: auto;">
+@inject DashboardState DashboardState
+@inject EmailContextState EmailState
+@inject IBusinessPartnerService BPService
+
+<div class="right-panel-container" style="padding: 16px; background-color: #f4f7f9; height: 100%; overflow-y: auto; border-left: 1px solid #e2e8f0;">
     @if (IsLoading)
     {
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px;">
@@ -13,13 +18,38 @@
             <p style="margin-top: 10px; color: #64748b;">Checking Sage X3...</p>
         </div>
     }
+    else if (DashboardState.SelectedOrderId != null)
+    {
+        @* ORDER INSIGHT CARD *@
+        <FluentCard Style="width: 100%; padding: 16px; margin-bottom: 20px; border-left: 4px solid #0078d4;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Order Insight</h3>
+                <div style="background-color: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">SAGE X3</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="color: #64748b; min-width: 80px;">Order #:</span>
+                    <span style="font-weight: 600; color: #1e293b;">@DashboardState.SelectedOrderId</span>
+                </div>
+                <p style="font-size: 0.85rem; color: #475569; margin: 8px 0 0 0;">
+                    Viewing live context for this order.
+                </p>
+            </div>
+            
+            <FluentButton Appearance="Appearance.Stealth"
+                          Style="width: 100%; margin-top: 12px;"
+                          OnClick="@(async () => await DashboardState.LoadOrderDetailsAsync(null))">
+                Clear Context
+            </FluentButton>
+        </FluentCard>
+    }
     else if (EmailState.CurrentEmail == null)
     {
         <FluentCard Style="padding: 20px; text-align: center;">
-            @* FIX: Fully qualified icon path *@
             <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size32.Mail())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
-            <p style="color: #64748b;">Select an email to view Sage X3 insights.</p>
+            <p style="color: #64748b; margin-top: 10px;">Select an email or order record.</p>
         </FluentCard>
     }
     else
@@ -36,77 +66,28 @@
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="color: #64748b; min-width: 70px;">Contact:</span>
                     <span style="font-weight: 500; color: #1e293b;">@EmailState.CurrentEmail.SenderName</span>
-                    @if (CurrentPartner != null && CurrentPartner.IsLinkedToSage)
-                    {
-                        <div style="background-color: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; padding: 1px 8px; border-radius: 12px; font-size: 0.75rem; margin-left: auto;">Linked</div>
-                    }
                 </div>
-
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <span style="color: #64748b; min-width: 70px;">Company:</span>
                     <span style="font-weight: 500; color: #1e293b;">@(CurrentPartner?.Company ?? "Unknown")</span>
                 </div>
-
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color: #64748b; min-width: 70px;">Intent:</span>
-                    <span style="font-weight: 500; color: #3b82f6;">Quote Request</span>
-                </div>
-
-                @* AI Summary Box *@
-                <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 12px; margin-top: 8px; border-radius: 0 4px 4px 0;">
-                    <div style="font-weight: 600; font-size: 0.85rem; color: #334155; margin-bottom: 4px;">AI Summary:</div>
-                    <div style="font-size: 0.9rem; color: #475569; line-height: 1.4;">
-                        Customer is inquiring about pricing for 50 units.
-                    </div>
-                </div>
             </div>
         </FluentCard>
-
-        @if (CurrentPartner == null || !CurrentPartner.IsLinkedToSage)
-        {
-            @* CREATE CONTACT FORM *@
-            <FluentCard Style="width: 100%; padding: 16px;">
-                <h4 style="margin-top: 0;">Create Sage X3 Contact</h4>
-                @* FIX: Fully qualified Orientation to resolve conflict with Radzen *@
-                <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="3">
-                    <FluentTextField @bind-Value="NewContact.FullName" Label="Full Name" Style="width: 100%;" />
-                    <FluentTextField @bind-Value="NewContact.Email" Label="Email" ReadOnly="true" Style="width: 100%;" />
-                    <FluentTextField @bind-Value="NewContact.Company" Label="Company" Style="width: 100%;" />
-                    <FluentButton Appearance="Appearance.Accent" OnClick="HandleCreateContact" Style="width: 100%;">Create in Sage</FluentButton>
-                </FluentStack>
-            </FluentCard>
-        }
-        else
-        {
-            @* RECENT ACTIVITY STACK *@
-            <div style="margin-top: 20px;">
-                <h4 style="font-size: 1rem; color: #333; margin-bottom: 12px;">Recent Activities</h4>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    @foreach (var activity in CurrentPartner.Timeline)
-                    {
-                        <div style="display: flex; gap: 12px; align-items: flex-start;">
-                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; margin-top: 6px;"></div>
-                            <div>
-                                <div style="font-size: 0.85rem; font-weight: 500;">@activity.Action</div>
-                                <div style="font-size: 0.75rem; color: #64748b;">@activity.Timestamp.ToShortDateString()</div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        }
     }
 </div>
 
 @code {
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private EmailContextState EmailState { get; set; } = default!;
-    [Inject] private IBusinessPartnerService BPService { get; set; } = default!;
-
+    
     private BusinessPartnerSnapshotDto? CurrentPartner;
     private ContactCreateDto NewContact = new();
     private bool IsLoading = false;
     private DotNetObjectReference<RightPanel>? _dotRef;
+
+    protected override void OnInitialized()
+    {
+        DashboardState.OnChange += HandleStateChange;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -117,13 +98,23 @@
         }
     }
 
+    private async void HandleStateChange()
+    {
+        if (DashboardState.SelectedOrderId != null)
+        {
+            EmailState.CurrentEmail = null;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
     [JSInvokable]
     public async Task HandleEmailSelection(EmailBridgeContext context)
     {
         IsLoading = true;
+        // FIX: Added 'await' here to resolve the error in your image
+        await DashboardState.LoadOrderDetailsAsync(null);
         await InvokeAsync(StateHasChanged);
 
-        // Update Global Email State
         EmailState.CurrentEmail = new EmailInsightDto
         {
             SenderEmail = context.SenderEmail ?? string.Empty,
@@ -132,40 +123,25 @@
             ReceivedAt = DateTime.UtcNow
         };
 
-        // Fetch Sage X3 Data
         if (!string.IsNullOrWhiteSpace(context.SenderEmail))
         {
             CurrentPartner = await BPService.GetPartnerByEmailAsync(context.SenderEmail);
-        }
-
-        // Prepare "Create" DTO if partner doesn't exist
-        if (CurrentPartner == null)
-        {
-            NewContact = new ContactCreateDto
-            {
-                FullName = context.SenderName ?? "",
-                Email = context.SenderEmail ?? "",
-                Company = ""
-            };
         }
 
         IsLoading = false;
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleCreateContact()
-    {
-        // Logic for Sage X3 API creation would go here
-        await JS.InvokeVoidAsync("officeBridge.showToast", "Contact Created in Sage X3!");
-        
-        // Refresh the view
-        CurrentPartner = await BPService.GetPartnerByEmailAsync(NewContact.Email ?? string.Empty);
-        await InvokeAsync(StateHasChanged);
-    }
-
     public async ValueTask DisposeAsync()
     {
+        DashboardState.OnChange -= HandleStateChange;
         _dotRef?.Dispose();
+        await Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        DashboardState.OnChange -= HandleStateChange;
     }
 
     public class EmailBridgeContext

@@ -274,26 +274,31 @@ body.light-mode .dashboard-preview {
     }
 
 /* ========================= QUICK ACTIONS ROW FIX ========================= */
+/* Merged Fix: Keeps your 38px height but forces full-width alignment */
 .quick-actions-container {
     display: flex !important;
     flex-direction: row !important;
-    gap: 8px;
-    padding: 4px 0;
-    width: 100%;
+    gap: 8px !important;
+    padding: 0 !important; /* Kills the extra white space from the screenshot */
+    margin: 8px 0 !important;
+    width: 100% !important;
+    background: transparent !important; /* Removes the white box background */
 }
 
 .action-tile {
-    flex: 1;
-    height: 38px; /* High-density professional height */
-    border: none;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
+    flex: 1 !important; /* FORCES buttons to stretch and fill the row equally */
+    height: 38px !important; /* Kept your high-density height */
+    border: none !important;
+    border-radius: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
     transition: opacity 0.2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Adds subtle professional depth */
 }
+
 
     .action-tile:hover {
         opacity: 0.9;
@@ -340,3 +345,4 @@ body.light-mode .dashboard-preview {
     gap: 40px;
     padding: 20px;
 }
+

@@ -1,0 +1,114 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<div class="tasks-root">
+
+    <!-- HEADER -->
+    <div class="tasks-header">
+        <div class="user">
+            <div class="avatar"></div>
+            <div>
+                <div class="name">Tasks Hub</div>
+                <div class="role">Manage your workload</div>
+            </div>
+        </div>
+
+        <FluentTextField Placeholder="Search across Outlook & Sage X3..." Class="search-box" />
+    </div>
+
+    <!-- BODY -->
+    <div class="tasks-body">
+
+        <!-- LEFT SIDE -->
+        <div class="tasks-left">
+
+            <!-- TABS -->
+            <div class="tabs">
+                @foreach (var tab in Tabs)
+                {
+                    <div class="tab @(tab == SelectedTab ? "active" : "")"
+                         @onclick="() => ChangeTab(tab)">
+                        @tab (@GetCount(tab))
+                    </div>
+                }
+            </div>
+
+            <!-- TASK LIST -->
+            <div class="task-list">
+                @foreach (var task in FilteredTasks)
+                {
+                    <TaskItem Task="task" OnSelect="SelectTask" />
+                }
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="tasks-right">
+            @if (SelectedTask != null)
+            {
+                <TaskDetailsPanel Task="SelectedTask" />
+            }
+        </div>
+
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<TaskDto> Tasks { get; set; } = new();
+    [Parameter] public EventCallback<TaskDto> OnTaskSelected { get; set; }
+
+    private List<string> Tabs = new() { "Today", "Overdue", "Upcoming", "Completed" };
+    private string SelectedTab = "Today";
+
+    private TaskDto? SelectedTask;
+
+    private IEnumerable<TaskDto> FilteredTasks => SelectedTab switch
+    {
+        "Today" => Tasks.Where(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date == DateTime.Today),
+
+        "Overdue" => Tasks.Where(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date < DateTime.Today),
+
+        "Upcoming" => Tasks.Where(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date > DateTime.Today),
+
+        "Completed" => Tasks.Where(t => t.Completed),
+
+        _ => Tasks
+    };
+
+    private int GetCount(string tab) => tab switch
+    {
+        "Today" => Tasks.Count(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date == DateTime.Today),
+
+        "Overdue" => Tasks.Count(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date < DateTime.Today),
+
+        "Upcoming" => Tasks.Count(t =>
+            t.DueDate.HasValue &&
+            t.DueDate.Value.Date > DateTime.Today),
+
+        "Completed" => Tasks.Count(t => t.Completed),
+
+        _ => 0
+    };
+
+    private void ChangeTab(string tab)
+    {
+        SelectedTab = tab;
+    }
+
+    private void SelectTask(TaskDto task)
+    {
+        SelectedTask = task;
+    }
+}

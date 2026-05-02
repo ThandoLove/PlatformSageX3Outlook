@@ -4,7 +4,6 @@ using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-// Using aliases to resolve the Task vs System.Threading.Tasks.Task conflict
 using DomainTask = OperationalWorkspace.Domain.Entities.TaskEntity;
 using DomainStatus = OperationalWorkspace.Domain.Enums.TaskStatus;
 
@@ -56,8 +55,8 @@ public class TaskService : ITaskService
         {
             Id = t.Id,
             Title = t.Title,
-            Status = t.Status.ToString(),
-            DueDate = DateTime.UtcNow
+            DueDate = DateTime.UtcNow,
+            Completed = t.Status == DomainStatus.Completed
         }).ToList();
 
         return new TaskListResponse(dtos);
@@ -66,37 +65,38 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<List<TaskDto>> GetTasksAssignedToAsync(string userId)
     {
         var tasks = await _repo.GetByUserAsync(userId, CancellationToken.None);
+
         return tasks.Select(t => new TaskDto
         {
             Id = t.Id,
             Title = t.Title,
-            Status = t.Status.ToString(),
-            DueDate = DateTime.UtcNow
+            DueDate = DateTime.UtcNow,
+            Completed = t.Status == DomainStatus.Completed
         }).ToList();
     }
 
     public async System.Threading.Tasks.Task<List<ApprovalDto>> GetPendingApprovalsAsync(string userId)
     {
         var approvals = await _repo.GetPendingApprovalsAsync(userId, CancellationToken.None);
-        // Assuming ApprovalDto mapping logic here
-        return approvals.Select(a => new ApprovalDto { /* mapping */ }).ToList();
+        return approvals.Select(a => new ApprovalDto { }).ToList();
     }
 
     public async System.Threading.Tasks.Task<List<TaskDto>> GetAllTasksAsync()
     {
         var tasks = await _repo.GetAllAsync(CancellationToken.None);
+
         return tasks.Select(t => new TaskDto
         {
             Id = t.Id,
             Title = t.Title,
-            Status = t.Status.ToString(),
-            DueDate = DateTime.UtcNow
+            DueDate = DateTime.UtcNow,
+            Completed = t.Status == DomainStatus.Completed
         }).ToList();
     }
 
     public async System.Threading.Tasks.Task<List<ApprovalDto>> GetAllPendingApprovalsAsync()
     {
         var approvals = await _repo.GetPendingApprovalsAsync(null, CancellationToken.None);
-        return approvals.Select(a => new ApprovalDto { /* mapping */ }).ToList();
+        return approvals.Select(a => new ApprovalDto { }).ToList();
     }
 }

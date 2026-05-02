@@ -1,29 +1,39 @@
 ﻿using OperationalWorkspace.Domain.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace OperationalWorkspaceApplication.DTOs;
-
-public class TaskDto
+namespace OperationalWorkspaceApplication.DTOs
 {
-    public string TaskId { get; set; } = Guid.NewGuid().ToString();
-    public string Title { get; set; } = string.Empty;
-    public DateTime? DueDate { get; set; }
-    public TaskPriority Priority { get; set; }
-    public string AssignedTo { get; set; } = string.Empty;
-    public string BpCode { get; set; } = string.Empty;
-    public bool Completed { get; set; }
-    public Guid Id { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public string StatusMessage { get; set; }= string.Empty;
-    public string StatusDescription { get; set; } = string.Empty;
+    public class TaskDto
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
 
-    public DateTime CreatedDate { get; set; }
-    public DateTime UpdatedDate { get; set; }
-    public string CreatedBy { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
 
-    public string RelatedEntity { get; set; } = string.Empty; // e.g., "Invoice #12345", "Leave Request for John Doe"
+        public DateTime? DueDate { get; set; }
+
+        public TaskPriority Priority { get; set; }
+
+        public string AssignedTo { get; set; } = string.Empty;
+
+        public string? CompanyName { get; set; }
+
+        public bool Completed { get; set; }
+
+        public DateTime CreatedDate { get; set; }
+
+        public DateTime UpdatedDate { get; set; }
 
 
+        public string? OutlookItemId { get; set; }
+
+        public string? SageEntityId { get; set; }
+
+        public string? StatusDescription { get; set; }
+
+        public string? Description { get; set; }
+
+        public string SourceEmailSubject { get; set; } = "";
+        public string SourceSender { get; set; } = "";
+        public string Category { get; set; } = ""; // Sales, Support, Finance
+    }
 }

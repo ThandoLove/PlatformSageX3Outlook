@@ -3,6 +3,7 @@ using OperationalWorkspaceUI.UIServices.Workspace;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceUI.Models.Email;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceUI.UIServices.System;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,123 +27,80 @@ namespace OperationalWorkspaceUI.State
             _activityService = activityService;
         }
 
-        // --- CONTACT LOGIC ---
-        public int LateShipmentsCount { get; set; } = 48;
-        public int OverdueTasksCount { get; set; } = 5;
-
-        public async Task<bool> CheckContactExists(string email)
+        // --- ORDER CONTEXT ---
+        public string? SelectedOrderId { get; private set; }
+        public async Task LoadOrderDetailsAsync(string? orderId)
         {
-            if (string.IsNullOrWhiteSpace(email)) return false;
-            try
+            SelectedOrderId = orderId;
+            if (orderId != null)
             {
-                var partner = await _bpService.GetPartnerByEmailAsync(email);
-                return partner != null && partner.IsLinkedToSage;
+                EmailContext = new EmailInsightDto { SenderName = "Sage X3", Subject = $"Order: {orderId}", ReceivedAt = DateTime.Now };
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[Sage Lookup Error]: {ex.Message}");
-                return false;
-            }
+            NotifyStateChanged();
+            await Task.CompletedTask;
         }
 
-        // Environment flag
-        public bool IsAdminEnvironment { get; private set; }
-
-        // --- TICKETS (Replacing Opportunities globally) ---
+        // --- DATA LISTS ---
+        public List<AuditLogDto> AuditLogs { get; set; } = new();
+        public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
         public List<TicketDto> AllTickets { get; set; } = new();
         public List<TicketDto> MyTickets { get; set; } = new();
-
-        // --- REPORTS LOGIC ---
         public List<ReportDto> AvailableReports { get; set; } = new();
+        public List<ActivityDto> RecentActivities { get; set; } = new();
+        public List<TaskDto> AllTasks { get; set; } = new();
+        public List<TaskDto> MyTasks { get; set; } = new();
+        public List<ClientDto> TopClients { get; set; } = new();
 
-        // --- ADMIN DATA ---
+        public EmailInsightDto EmailContext { get; set; } = new();
+        public DashboardDto DashboardData { get; set; } = new();
+        public bool IsAdminEnvironment { get; private set; }
+
+        // --- DTO OBJECTS ---
         public AdminErpDto AdminErp { get; set; } = new();
         public AdminCrmDto AdminCrm { get; set; } = new();
         public AdminFinanceDto AdminFinance { get; set; } = new();
         public AdminSystemHealthDto AdminHealth { get; set; } = new();
-        public List<AuditLogDto> AuditLogs { get; set; } = new();
-
-        // --- EMPLOYEE DATA ---
         public EmployeeErpDto EmployeeErp { get; set; } = new();
         public EmployeeCRMDTO EmployeeCrm { get; set; } = new();
         public EmployeeFinanceDto EmployeeFinance { get; set; } = new();
-        public List<TaskDto> MyTasks { get; set; } = new();
 
-        // --- SHARED DATA ---
-        public List<ClientDto> TopClients { get; set; } = new();
-        public List<ActivityDto> RecentActivities { get; set; } = new();
-        public List<TaskDto> AllTasks { get; set; } = new();
-        public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
-        public EmailInsightDto EmailContext { get; set; } = new();
-
-        // --- CURRENT ENVIRONMENT DATA (Bound to UI) ---
-        public AdminErpDto? CurrentErp => IsAdminEnvironment ? AdminErp : null;
-        public object CurrentCrm => IsAdminEnvironment ? AdminCrm : EmployeeCrm;
-        public object CurrentFinance => IsAdminEnvironment ? AdminFinance : EmployeeFinance;
-        public AdminSystemHealthDto? CurrentHealth => IsAdminEnvironment ? AdminHealth : null;
-        public List<TaskDto> CurrentTasks => IsAdminEnvironment ? AllTasks : MyTasks;
-        public List<TicketDto> CurrentTickets => IsAdminEnvironment ? AllTickets : MyTickets;
-
-
-
-        public List<ActivityDto> CurrentActivities => RecentActivities;
+        // --- HELPER PROPERTIES (FIXES UI ERRORS) ---
         public List<AuditLogDto> CurrentAuditLogs => AuditLogs;
+        public List<TicketDto> CurrentTickets => IsAdminEnvironment ? AllTickets : MyTickets;
+        public List<ActivityDto> CurrentActivities => RecentActivities;
+        public List<TaskDto> CurrentTasks => IsAdminEnvironment ? AllTasks : MyTasks;
+        public object CurrentCrm => IsAdminEnvironment ? (object)AdminCrm : (object)EmployeeCrm;
+        public object CurrentFinance => IsAdminEnvironment ? (object)AdminFinance : (object)EmployeeFinance;
 
-        // --- State change event ---
         public event Action? OnChange;
         public void NotifyStateChanged() => OnChange?.Invoke();
 
-        // --- Methods ---
-
-        public void SetEnvironment(string environment)
-        {
-            IsAdminEnvironment = environment.Equals("Admin", StringComparison.OrdinalIgnoreCase);
-            NotifyStateChanged();
-        }
-
-        /// <summary>
-        /// Main Dashboard Load logic merging Sage X3 DTOs, Activities, and Reports
-        /// </summary>
         public async Task LoadDashboardAsync()
         {
-            // 1. Fetch DTO data from DashboardUIService (ERP, Finance, CRM)
             await _dashboardService.LoadDashboardAsync(this);
-
-            // 2. Fetch structured Activities from ActivityUIService
             RecentActivities = await _activityService.GetActivitiesAsync();
 
-            // 3. Seed data if testing with empty results
-            if (!RecentActivities.Any())
+            // Seed Audit Logs if empty
+            if (!AuditLogs.Any())
             {
-                _activityService.SeedInitialData();
-                RecentActivities = await _activityService.GetActivitiesAsync();
+                AuditLogs = new List<AuditLogDto>
+                {
+                    new AuditLogDto { Action = "User Login", Entity = "auth", User = "Admin", Timestamp = DateTime.Now.AddMinutes(-5) },
+                    new AuditLogDto { Action = "Invoice Generated", Entity = "invoice", User = "System", Timestamp = DateTime.Now.AddHours(-1) }
+                };
             }
 
-            // 4. Initialize Reports for the Dashboard
-            AvailableReports = new List<ReportDto>
+            // Seed Knowledge Base (Positional Record Fix)
+            if (!KnowledgeBase.Any())
             {
-                new() { Code = "INV_LIST", Name = "Aged Receivables (Invoices)" },
-                new() { Code = "TK_SUM", Name = "Open Tickets Summary" },
-                new() { Code = "SOH_LOG", Name = "Daily Sales Order Log" }
-            };
-
-            // 5. Filter Shared Tasks and Tickets for the current user view
-            MyTasks = AllTasks.Where(t => t.AssignedTo == "CurrentUser" && t.Status != "Completed").ToList();
-            MyTickets = AllTickets.Where(t => t.AssignedTo == "CurrentUser").ToList();
+                KnowledgeBase = new List<KnowledgeDto>
+                {
+                    new KnowledgeDto(Guid.NewGuid(), "Pricing Guide", "Content", "Sales", "Summary", "#"),
+                    new KnowledgeDto(Guid.NewGuid(), "Shipping FAQ", "Content", "Support", "Summary", "#")
+                };
+            }
 
             NotifyStateChanged();
-        }
-
-        public async Task LoadAdminDashboardAsync()
-        {
-            IsAdminEnvironment = true;
-            await LoadDashboardAsync();
-        }
-
-        public async Task LoadEmployeeDashboardAsync()
-        {
-            IsAdminEnvironment = false;
-            await LoadDashboardAsync();
         }
     }
 }

@@ -1,0 +1,14 @@
+﻿.details h4 {
+    margin-bottom: 10px;
+}
+
+.card {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.delegate-btn {
+    width: 100%;
+}

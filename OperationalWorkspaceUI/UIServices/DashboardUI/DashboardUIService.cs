@@ -19,14 +19,10 @@ public class DashboardUIService
 
         try
         {
-            // 1. Fetch Shared Data
             state.AllTasks = await FetchTasksAsync(userRole);
             state.RecentActivities = await FetchActivitiesAsync();
-
-            // 2. TICKETS REPLACEMENT
             state.AllTickets = await FetchTicketsAsync(userRole);
 
-            // 3. SECURE GATE: Load Role-Specific Data
             if (state.IsAdminEnvironment)
             {
                 await LoadAdminData(state);
@@ -74,36 +70,30 @@ public class DashboardUIService
             PendingDeliveries = 2
         };
 
-        // Reset Admin-only collections
         state.AdminErp = new AdminErpDto();
         state.AdminHealth = new AdminSystemHealthDto();
-        state.AuditLogs = new List<AuditLogDto>();
         state.AdminFinance = new AdminFinanceDto();
+        state.AuditLogs = new List<AuditLogDto>();
     }
-
-    // --- Data Fetching Methods ---
 
     private async Task<List<TicketDto>> FetchTicketsAsync(string role)
     {
-        // Mocking Sage X3 Ticket Data
         return new List<TicketDto>
         {
             new TicketDto
             {
-                Id = Guid.NewGuid(), // FIXED: No longer using int 1
+                Id = Guid.NewGuid(),
                 TicketNumber = "TK-001",
                 Title = "Login Issue - Syracuse",
-                Status = "Open",
                 AssignedTo = "CurrentUser",
                 Priority = "5",
                 CreatedAt = DateTime.Now.AddDays(-1)
             },
             new TicketDto
             {
-                Id = Guid.NewGuid(), // FIXED: No longer using int 2
+                Id = Guid.NewGuid(),
                 TicketNumber = "TK-002",
                 Title = "Invoice Sync Error",
-                Status = "In Progress",
                 AssignedTo = "CurrentUser",
                 Priority = "3",
                 CreatedAt = DateTime.Now
@@ -111,21 +101,66 @@ public class DashboardUIService
         };
     }
 
-    private async Task<List<TaskDto>> FetchTasksAsync(string role) => new()
+    private async Task<List<TaskDto>> FetchTasksAsync(string role)
     {
-        new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Report", Status = "Pending", AssignedTo = "Admin", DueDate = DateTime.Now.AddDays(2) },
-        new TaskDto { Id = Guid.NewGuid(), Title = "Update Client Contact", Status = "Open", AssignedTo = "CurrentUser", DueDate = DateTime.Now.AddDays(1) }
-    };
+        return new List<TaskDto>
+        {
+            new TaskDto
+            {
+                Id = Guid.NewGuid(),
+                Title = "Review Sales Report",
+                AssignedTo = "Admin",
+                DueDate = DateTime.Now.AddDays(2),
+                Completed = false
+            },
+            new TaskDto
+            {
+                Id = Guid.NewGuid(),
+                Title = "Update Client Contact",
+                AssignedTo = "CurrentUser",
+                DueDate = DateTime.Now.AddDays(1),
+                Completed = false
+            }
+        };
+    }
 
-    private async Task<List<ActivityDto>> FetchActivitiesAsync() => new()
+    private async Task<List<ActivityDto>> FetchActivitiesAsync()
     {
-        new ActivityDto { Title = "Sales Order Created", Action = "Created", Timestamp = DateTime.Now },
-        new ActivityDto { Title = "Ticket #101", Action = "Updated", Timestamp = DateTime.Now.AddHours(-1) }
-    };
+        return new List<ActivityDto>
+        {
+            new ActivityDto
+            {
+                Title = "Sales Order Created",
+                Action = "Created",
+                Timestamp = DateTime.Now
+            },
+            new ActivityDto
+            {
+                Title = "Ticket #101",
+                Action = "Updated",
+                Timestamp = DateTime.Now.AddHours(-1)
+            }
+        };
+    }
 
-    private async Task<List<AuditLogDto>> FetchAuditLogsAsync() => new()
+    private async Task<List<AuditLogDto>> FetchAuditLogsAsync()
     {
-        new AuditLogDto { User = "Admin", Action = "User Login", Entity = "Auth", Timestamp = DateTime.Now },
-        new AuditLogDto { User = "Manager", Action = "Invoice Deleted", Entity = "Invoice", Timestamp = DateTime.Now.AddMinutes(-30) }
-    };
+        return new List<AuditLogDto>
+        {
+            new AuditLogDto
+            {
+                User = "Admin",
+                Action = "User Login",
+                Entity = "Auth",
+                Timestamp = DateTime.Now
+            },
+            new AuditLogDto
+            {
+                User = "Manager",
+                Action = "Invoice Deleted",
+                Entity = "Invoice",
+                Timestamp = DateTime.Now.AddMinutes(-30)
+            }
+        };
+    }
 }

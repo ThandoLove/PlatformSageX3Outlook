@@ -1,4 +1,6 @@
-﻿@using OperationalWorkspaceApplication.DTOs
+﻿@inject NavigationManager Nav
+
+@using OperationalWorkspaceApplication.DTOs
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
@@ -12,7 +14,10 @@
         @* Small action button like the original image *@
         <FluentButton Appearance="Appearance.Lightweight"
                       IconStart="@(new Icons.Regular.Size16.Add())"
-                      Style="height: 24px; font-size: 0.75rem;">New</FluentButton>
+                      Style="height: 24px; font-size: 0.75rem;"
+                      @onclick="GoToCreateTicket">
+            New
+        </FluentButton>
     </div>
 
     @* The Scrollable List Area *@
@@ -35,4 +40,9 @@
 
 @code {
     [Parameter] public List<TicketDto> Tickets { get; set; } = new();
+
+    private void GoToCreateTicket()
+    {
+        Nav.NavigateTo("/tickets/new"); // adjust route if needed
+    }
 }

@@ -7,9 +7,8 @@
 
 <div class="sage-topbar-wrapper" style="height: 40px !important; display: flex; align-items: center; background-color: #003366; padding: 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
     
-    @* LEFT: Hamburger + Full Workspace Title + Dashboard Label *@
+    @* LEFT: Full Workspace Title + DYNAMIC Dashboard Label *@
     <div class="topbar-left" style="display: flex; align-items: center; gap: 12px;">
-        
         
         @* Full Workspace Title (Professional Small Font) *@
         <span style="font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.05rem; white-space: nowrap;">
@@ -19,14 +18,13 @@
         @* Vertical Divider *@
         <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
 
-        @* Page Title *@
-        <span style="font-size: 0.8rem; font-weight: 600; color: #ffffff; white-space: nowrap;">Dashboard</span>
+        @* DYNAMIC PAGE TITLE: This changes automatically based on the URL *@
+        <span style="font-size: 0.8rem; font-weight: 600; color: #ffffff; white-space: nowrap;">@PageTitle</span>
     </div>
 
     @* MIDDLE: Search (Compact) *@
     <div class="topbar-center" style="flex: 1; display: flex; justify-content: center; padding: 0 20px;">
         <div class="search-input-group" style="display: flex; align-items: center; background: rgba(255,255,255,0.12); padding: 2px 10px; border-radius: 4px; width: 100%; max-width: 350px;">
-            @* FIXED: Search Icon (Color.Custom required for white) *@
             <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
                         CustomColor="#ffffff" />
@@ -38,7 +36,6 @@
     @* RIGHT: Status + User Profile *@
     <div class="topbar-right" style="display: flex; align-items: center; gap: 12px;">
         <div class="connection-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: rgba(255,255,255,0.8); border-right: 1px solid rgba(255,255,255,0.2); padding-right: 12px;">
-            @* Status Icon (Using built-in Success color) *@
             <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
             <span style="white-space: nowrap;">Connected to Sage X3</span>
@@ -54,15 +51,57 @@
 </div>
 
 @code {
+    private string PageTitle { get; set; } = "Dashboard";
     private string DisplayName => !string.IsNullOrEmpty(UIState.UserName) ? UIState.UserName : "John Smith";
 
     protected override void OnInitialized()
     {
+        // Subscribe to navigation events
+        Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
+        
+        // Initial title set
+        UpdatePageTitle();
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdatePageTitle();
+        StateHasChanged();
+    }
+
+    private void UpdatePageTitle()
+    {
+        // Gets the part of the URL after the domain (e.g., "quotes")
+        var relativePath = Nav.ToBaseRelativePath(Nav.Uri).ToLower();
+
+        // Clean up query strings if they exist
+        if (relativePath.Contains("?"))
+            relativePath = relativePath.Split('?')[0];
+
+        // Mapping URLs to Sidebar Names
+        PageTitle = relativePath switch
+        {
+            "" or "dashboard" => "Dashboard",
+            "contacts" => "Contacts",
+            "accounts" => "Accounts",
+            "tickets" => "Tickets",
+            "activities" => "Activities",
+            "sales-orders" => "Orders",
+            "quotes" => "Quotes",
+            "invoices" => "Invoices",
+            "cases" => "Cases",
+            "kb" => "Knowledge Base",
+            "tasks" => "My Tasks",
+            "admin" => "Admin",
+            _ => "Workspace"
+        };
     }
 
     public void Dispose()
     {
+        // Unsubscribe to prevent memory leaks
+        Nav.LocationChanged -= HandleLocationChanged;
         UIState.OnChange -= StateHasChanged;
     }
 }

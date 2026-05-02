@@ -68,6 +68,9 @@ builder.Services.AddScoped<NavigationService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailSyncService>();
 builder.Services.AddScoped<ActivityUIService>();
+builder.Services.AddScoped<AttachmentUIService>();
+
+
 
 // 🔥 TOAST SERVICE FIXED (Matches MainLayout @inject)
 builder.Services.AddScoped<IToastUIService, ToastService>();
@@ -82,6 +85,7 @@ builder.Services.AddScoped<IBusinessPartnerService, MockUnifiedService>();
 builder.Services.AddScoped<IInventoryService, MockUnifiedService>();
 builder.Services.AddScoped<ITaskService, MockUnifiedService>();
 builder.Services.AddScoped<IInvoiceService, MockUnifiedService>();
+builder.Services.AddScoped<KnowledgeUIService>();
 
 var app = builder.Build();
 

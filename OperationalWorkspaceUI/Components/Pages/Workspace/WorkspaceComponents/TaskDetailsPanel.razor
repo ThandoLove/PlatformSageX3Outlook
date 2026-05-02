@@ -1,0 +1,30 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<div class="details">
+
+    <h4>Task Details</h4>
+
+    <div class="card">
+        <div><strong>@Task.Title</strong></div>
+        <div>@Task.CompanyName</div>
+    </div>
+
+    <div class="card">
+        <div>Status: @(Task.Completed ? "Completed" : "Active")</div>
+        <div>
+            Due: @(Task.DueDate.HasValue
+                    ? Task.DueDate.Value.ToShortDateString()
+                : "No due date")
+        </div>
+    </div>
+
+    <FluentButton Appearance="Appearance.Accent" Class="delegate-btn">
+        Delegate Task
+    </FluentButton>
+
+</div>
+
+@code {
+    [Parameter] public TaskDto Task { get; set; } = default!;
+}

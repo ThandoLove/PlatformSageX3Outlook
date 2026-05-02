@@ -1,31 +1,158 @@
-﻿
-
-<!-- CODE START: Attachments.razor -->
-
-@page "/workspace/attachments"
+﻿@page "/attachments"
 @rendermode InteractiveServer
 
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
+<div class="page-container" style="background-color: #f3f4f6; min-height: 100vh; padding: 24px;">
+    
+    @* MAIN WHITE CARD *@
+    <div class="dashboard-card shadow-sm" style="background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+        
+        @* HEADER SECTION *@
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h2 style="font-weight: 700; color: #111827; margin: 0; font-size: 1.5rem;">Attach Documents</h2>
+                
+                <div class="d-flex flex-column gap-3 mt-4">
+                    <div class="d-flex gap-2">
+                        @* SEARCH BAR *@
+                        <div style="width: 350px; position: relative;">
+                            <span style="position: absolute; left: 16px; top: 12px; color: #94a3b8;">🔍</span>
+                            <input type="text" class="form-control ps-5" 
+                                   style="height: 45px; border-radius: 10px; border: 1px solid #e2e8f0; background: #ffffff;" 
+                                   placeholder="Search documents..." 
+                                   @bind="SearchQuery" @bind:event="oninput" />
+                        </div>
 
-@inject WorkspaceState WorkspaceState
-@inject OperationalWorkspaceUI.UIServices.Workspace.AttachmentUIService AttachmentService
+                        @* FILTER TOGGLE *@
+                        <button class="btn btn-white border d-flex align-items-center gap-2" 
+                                style="height: 45px; border-radius: 10px; background: white; color: #374151; font-weight: 500; border-color: #e5e7eb;"
+                                @onclick="() => IsFilterOpen = !IsFilterOpen">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            Filter
+                        </button>
+                    </div>
 
+                    @* FILTER TRAY *@
+                    @if (IsFilterOpen)
+                    {
+                        <div class="filter-tray d-flex gap-3 p-3 mb-2" style="background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            <div class="filter-item">
+                                <label style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block;">File Type</label>
+                                <select class="form-select form-select-sm" @bind="SelectedType" style="border-radius: 6px; min-width: 150px;">
+                                    <option value="All">All Types</option>
+                                    <option value="Proposal">Proposal</option>
+                                    <option value="Invoice">Invoice</option>
+                                    <option value="Contract">Contract</option>
+                                </select>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
 
-<h3>Attachments</h3>
+            <button class="btn btn-primary px-4 py-2" style="background-color: #2563eb; border: none; border-radius: 8px; font-weight: 600;">
+                Upload Document
+            </button>
+        </div>
 
-<WorkspaceHeader Title="Attachments" Subtitle="Files and documents" />
+        @* DATA TABLE *@
+        <div class="table-responsive mt-4">
+            <table class="table table-hover" style="border: none;">
+                <thead>
+                    <tr style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #f1f5f9;">
+                        <th class="pb-3 border-0">Document Name</th>
+                        <th class="pb-3 border-0">Related To</th>
+                        <th class="pb-3 border-0">Type</th>
+                        <th class="pb-3 border-0">File Size</th>
+                        <th class="pb-3 border-0">Uploaded By</th>
+                        <th class="pb-3 border-0">Uploaded On</th>
+                        <th class="pb-3 border-0"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var doc in PaginatedDocs)
+                    {
+                        <tr style="cursor: pointer; border-bottom: 1px solid #f8fafc;" class="doc-row">
+                            <td class="py-4 border-0">
+                                <div class="d-flex align-items-center gap-2">
+                                    <FluentIcon Value="@GetIcon(doc.FileName)" Color="Color.Accent" />
+                                    <span class="fw-bold" style="color: #2563eb; font-size: 0.85rem;">@doc.FileName</span>
+                                </div>
+                            </td>
+                            <td class="py-4 border-0 text-muted" style="font-size: 0.85rem;">@doc.RelatedEntity</td>
+                            <td class="py-4 border-0" style="color: #64748b; font-size: 0.85rem;">@doc.ContentType</td>
+                            <td class="py-4 border-0 text-muted" style="font-size: 0.85rem;">@(doc.FileSize / 1024) KB</td>
+                            <td class="py-4 border-0" style="color: #1e293b; font-size: 0.85rem;">John Smith</td>
+                            <td class="py-4 border-0 text-muted" style="font-size: 0.85rem;">@doc.UploadedAtUtc.ToString("MMM dd, yyyy")</td>
+                            <td class="py-4 border-0 text-end">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.MoreVertical())" Color="Color.Neutral" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-@if (WorkspaceState.Attachments == null)
-{
-    <LoadingSpinner />
+        @* PAGINATION FOOTER *@
+        <div class="d-flex justify-content-between align-items-center mt-5" style="color: #94a3b8; font-size: 0.85rem;">
+            <span>Showing @((CurrentPage - 1) * PageSize + 1) to @(Math.Min(CurrentPage * PageSize, FilteredData.Count())) of @FilteredData.Count() results</span>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-link text-muted p-0" @onclick="() => CurrentPage--" disabled="@(CurrentPage == 1)">&lt;</button>
+                @for (int i = 1; i <= TotalPages; i++)
+                {
+                    var p = i;
+                    <span class="pager-num @(CurrentPage == p ? "active" : "")" @onclick="() => CurrentPage = p">@p</span>
+                }
+                <button class="btn btn-sm btn-link text-muted p-0" @onclick="() => CurrentPage++" disabled="@(CurrentPage == TotalPages)">&gt;</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .doc-row:hover { background-color: #f9fafb !important; }
+    .pager-num { cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .pager-num.active { background: #eff6ff; color: #2563eb; border-radius: 50%; font-weight: 700; }
+    .pager-num:hover:not(.active) { background: #f3f4f6; border-radius: 50%; }
+</style>
+
+@code {
+    private string SearchQuery = "";
+    private string SelectedType = "All";
+    private bool IsFilterOpen = false;
+    private int CurrentPage = 1;
+    private int PageSize = 10;
+
+    private List<AttachmentDto> MasterDocs = new() {
+        new(Guid.NewGuid(), "QTE-7789_Proposal.pdf", "Proposal", 1240000, "#", "Quote - QTE-7789", DateTime.Parse("Apr 24, 2024")),
+        new(Guid.NewGuid(), "SO-2024-00125_Contract.pdf", "Contract", 2450000, "#", "Sales Order - SO-2024-00125", DateTime.Parse("Apr 24, 2024")),
+        new(Guid.NewGuid(), "INV-2024-00567_Invoice.pdf", "Invoice", 960000, "#", "Invoice - INV-2024-00567", DateTime.Parse("Apr 24, 2024")),
+        new(Guid.NewGuid(), "TechInnovations_Brochure.pdf", "Brochure", 3150000, "#", "Account - Tech Innovations Inc.", DateTime.Parse("Apr 22, 2024")),
+        new(Guid.NewGuid(), "Product_Specs_v2.pdf", "Specification", 1760000, "#", "Case - CASE-2024-01485", DateTime.Parse("Apr 21, 2024")),
+        new(Guid.NewGuid(), "GlobalSolutions_Terms.pdf", "Terms", 1050000, "#", "Account - Global Solutions LLC", DateTime.Parse("Apr 20, 2024")),
+        new(Guid.NewGuid(), "Delivery_Proof_Signed.pdf", "Proof", 1320000, "#", "Case - CASE-2024-01483", DateTime.Parse("Apr 18, 2024")),
+        new(Guid.NewGuid(), "Payment_Receipt.pdf", "Receipt", 850000, "#", "Invoice - INV-2024-00564", DateTime.Parse("Apr 18, 2024")),
+        new(Guid.NewGuid(), "Meeting_Notes_042424.pdf", "Notes", 640000, "#", "Contact - Sarah Johnson", DateTime.Parse("Apr 17, 2024")),
+        new(Guid.NewGuid(), "Training_Guide.pdf", "Guide", 2110000, "#", "Knowledge Base", DateTime.Parse("Apr 15, 2024"))
+    };
+
+    private IEnumerable<AttachmentDto> FilteredData => MasterDocs
+        .Where(d => (SelectedType == "All" || d.ContentType == SelectedType) &&
+                    (string.IsNullOrWhiteSpace(SearchQuery) || d.FileName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) || d.RelatedEntity.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
+
+    private IEnumerable<AttachmentDto> PaginatedDocs => FilteredData.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+    private int TotalPages => (int)Math.Ceiling((double)FilteredData.Count() / PageSize);
+
+    private Icon GetIcon(string filename) {
+        if (filename.Contains("Invoice")) return new Icons.Regular.Size20.Money();
+        if (filename.Contains("Contract")) return new Icons.Regular.Size20.Signature();
+        return new Icons.Regular.Size20.DocumentPdf();
+    }
 }
-else if (!WorkspaceState.Attachments.Any())
-{
-    <EmptyState Message="No attachments found." />
-}
-else
-{
-    <AttachmentGrid Items="WorkspaceState.Attachments" />
-}
-
-<!-- CODE END -->

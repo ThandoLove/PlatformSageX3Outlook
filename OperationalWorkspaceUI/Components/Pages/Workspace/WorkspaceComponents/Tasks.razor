@@ -1,81 +1,263 @@
-﻿<!-- CODE START: Tasks.razor -->
-
-@page "/workspace/tasks"
+﻿@page "/tasks"
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceApplication.Interfaces.IServices
-@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
-@using OperationalWorkspaceUI.UIServices.System
-@using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 
-@inject TasksUIService TaskService
 @inject WorkspaceState WorkspaceState
-@inject NavigationService NavigationService
-@inject Radzen.NotificationService NotificationService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<h3>Tasks</h3>
+<div class="task-hub-container">
 
-<WorkspaceHeader Title="Tasks" Subtitle="Track and manage work" />
+    <main class="hub-main">
 
-<WorkspaceToolbar>
-    <button class="btn btn-primary" @onclick="Create">+ New Task</button>
-    <button class="btn btn-outline-secondary" @onclick="Refresh">Refresh</button>
-</WorkspaceToolbar>
+        <div class="profile-header">
+            <div class="profile-left">
+                <div class="avatar-wrapper">
+                    <img src="https://ui-avatars.com/api/?name=User" />
+                    <span class="status-dot"></span>
+                </div>
+                <div class="profile-text">
+                    <h1>Tasks Hub</h1>
+                    <p>Manage your workload</p>
+                </div>
+            </div>
 
-<WorkspaceFilters>
-    <FormField Label="Search" @bind-Value="SearchQuery" />
-</WorkspaceFilters>
+            <div class="search-wrapper">
+                <input type="text"
+                       placeholder="Search across Outlook & Sage X3..."
+                       @bind="SearchQuery"
+                       @bind:event="oninput" />
+            </div>
 
-@if (FilteredTasks == null)
-{
-    <LoadingSpinner />
-}
-else if (!FilteredTasks.Any())
-{
-    <EmptyState Message="No tasks found." />
-}
-else
-{
-    <TaskGrid Items="FilteredTasks" OnRowClick="Open" />
-    
+            <button class="btn-blue-action" @onclick="CreateTaskFromEmail">
+                Create Task from Email
+            </button>
+        </div>
 
-}
+        <div class="hub-card-container">
+
+            <nav class="hub-tabs">
+                @foreach (var tab in Tabs)
+                {
+                    <div class="tab @(tab == SelectedTab ? "active" : "")"
+                         @onclick="() => ChangeTab(tab)">
+                        @tab (@GetCount(tab))
+                    </div>
+                }
+            </nav>
+
+            <div class="sub-header-bar">
+                <div class="btn-grey-pill">
+                    <span>@SelectedTab (@GetCount(SelectedTab))</span>
+                </div>
+
+                <button class="btn-grey-outline" @onclick="OpenSelectedTaskEmail">
+                    Open Source Email
+                </button>
+            </div>
+
+            <TaskGrid Tasks="FilteredTasks.ToList()"
+                      OnTaskSelected="HandleTaskSelected" />
+        </div>
+
+    </main>
+
+    <aside class="details-sidebar">
+
+        <div class="sidebar-header">
+            <span>Task Details</span>
+        </div>
+
+        @if (SelectedTask != null)
+        {
+            <div class="side-card">
+                <label class="side-label">TASK</label>
+                <div class="task-title">@SelectedTask.Title</div>
+                <div class="task-company">@SelectedTask.CompanyName</div>
+            </div>
+
+            <div class="side-card">
+                <label class="side-label">TASK AGING</label>
+
+                <div class="aging-stats">
+                    <div class="stat">
+                        <span class="val-red">@OverdueCount</span>
+                        <span class="cap">Overdue</span>
+                    </div>
+
+                    <div class="stat">
+                        <span class="val-blue">@DueSoonCount</span>
+                        <span class="cap">Due Soon</span>
+                    </div>
+
+                    <div class="stat-progress">
+                        <FluentProgressRing Value="@CompletionRate" />
+                        <span class="ring-text">@CompletionRate%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <div class="histogram-bars">
+                    <div class="bar bar-red" style="height:@(OverdueCount * 10)%"></div>
+                    <div class="bar bar-orange" style="height:@(DueSoonCount * 10)%"></div>
+                    <div class="bar bar-green" style="height:@(CompletedCount * 10)%"></div>
+                </div>
+            </div>
+
+            <button class="btn-blue-action" @onclick="DelegateTask">
+                Delegate Task
+            </button>
+        }
+        else
+        {
+            <div class="empty-state">
+                Select a task to view details
+            </div>
+        }
+
+    </aside>
+
+</div>
 
 @code {
-    private string? SearchQuery;
 
-    private IEnumerable<TaskDto> FilteredTasks =>
-        WorkspaceState.Tasks?
-            .Where(t => string.IsNullOrWhiteSpace(SearchQuery)
-                     || (t.Title != null && t.Title.Contains(SearchQuery!, StringComparison.OrdinalIgnoreCase)))
-            ?? Enumerable.Empty<TaskDto>();
+    private string SearchQuery = "";
+    private string SelectedTab = "Today";
+    private TaskDto? SelectedTask;
+
+    private List<string> Tabs = new() { "Today", "Overdue", "Upcoming", "Completed" };
 
     protected override async Task OnInitializedAsync()
     {
-        await TaskService.LoadTasksAsync();
+        await WorkspaceState.LoadTasksAsync();
     }
 
-    private async Task Refresh()
+    private IEnumerable<TaskDto> FilteredTasks =>
+        (WorkspaceState.Tasks ?? new List<TaskDto>())
+        .Where(t =>
+            (SelectedTab == "Today" &&
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date == DateTime.Today) ||
+
+            (SelectedTab == "Overdue" &&
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date < DateTime.Today &&
+                !t.Completed) ||
+
+            (SelectedTab == "Upcoming" &&
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date > DateTime.Today) ||
+
+            (SelectedTab == "Completed" &&
+                t.Completed))
+        .Where(t =>
+            string.IsNullOrWhiteSpace(SearchQuery) ||
+            t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+
+    private void ChangeTab(string tab)
     {
-        // Ensure data is reloaded
-        await TaskService.LoadTasksAsync();
-
-        // FIX: Correct Radzen Notification syntax (no await)
-        NotificationService.Notify(new Radzen.NotificationMessage
-        {
-            Severity = Radzen.NotificationSeverity.Success,
-            Summary = "Success",
-            Detail = "Tasks refreshed",
-            Duration = 4000
-        });
+        SelectedTab = tab;
+        SelectedTask = null;
     }
 
-    private void Create() => NavigationService.NavigateTo("/forms/create-task");
+    private int GetCount(string tab)
+    {
+        var tasks = WorkspaceState.Tasks ?? new List<TaskDto>();
 
-    private void Open(TaskDto task) =>
-        NavigationService.NavigateTo($"/workspace/tasks/{task.Id}");
+        return tab switch
+        {
+            "Today" => tasks.Count(t =>
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date == DateTime.Today),
+
+            "Overdue" => tasks.Count(t =>
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date < DateTime.Today &&
+                !t.Completed),
+
+            "Upcoming" => tasks.Count(t =>
+                t.DueDate.HasValue &&
+                t.DueDate.Value.Date > DateTime.Today),
+
+            "Completed" => tasks.Count(t => t.Completed),
+
+            _ => 0
+        };
+    }
+
+    private void HandleTaskSelected(TaskDto task)
+    {
+        SelectedTask = task;
+    }
+
+    private int OverdueCount =>
+        (WorkspaceState.Tasks ?? new List<TaskDto>())
+        .Count(t => t.DueDate.HasValue &&
+                    t.DueDate.Value.Date < DateTime.Today &&
+                    !t.Completed);
+
+    private int DueSoonCount =>
+        (WorkspaceState.Tasks ?? new List<TaskDto>())
+        .Count(t => t.DueDate.HasValue &&
+                    t.DueDate.Value.Date >= DateTime.Today &&
+                    t.DueDate.Value.Date <= DateTime.Today.AddDays(2));
+
+    private int CompletedCount =>
+        (WorkspaceState.Tasks ?? new List<TaskDto>())
+        .Count(t => t.Completed);
+
+    private int CompletionRate
+    {
+        get
+        {
+            var tasks = WorkspaceState.Tasks ?? new List<TaskDto>();
+            if (tasks.Count == 0) return 0;
+
+            var done = tasks.Count(t => t.Completed);
+            return (int)((double)done / tasks.Count * 100);
+        }
+    }
+
+    private async Task OpenSelectedTaskEmail()
+    {
+        if (SelectedTask?.OutlookItemId != null)
+        {
+            await JS.InvokeVoidAsync("outlookInterop.displayEmail", SelectedTask.OutlookItemId);
+        }
+    }
+
+    private async Task CreateTaskFromEmail()
+    {
+        // Get email context from your existing STATE (officeBridge already pushes into Blazor)
+        var email = WorkspaceState.SelectedEmail;
+
+        if (email == null)
+            return;
+
+        var newTask = new TaskDto
+        {
+            Id = Guid.NewGuid(),
+            Title = $"Follow up: {email.Subject}",
+            AssignedTo = "CurrentUser",
+            DueDate = DateTime.Today.AddDays(2),
+            Completed = false,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
+        };
+
+        WorkspaceState.Tasks.Add(newTask);
+
+        SelectedTask = newTask;
+
+        await JS.InvokeVoidAsync("showToast", "Task created from email");
+    }
+
+    private void DelegateTask()
+    {
+        // future modal / workflow
+    }
 }
-
-
-<!-- CODE END -->

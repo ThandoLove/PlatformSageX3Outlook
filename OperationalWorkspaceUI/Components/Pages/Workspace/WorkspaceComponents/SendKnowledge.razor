@@ -1,77 +1,162 @@
-﻿@page "/forms/send-knowledge"
+﻿@page "/knowledge-page"
 @rendermode InteractiveServer
 
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
-@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
+@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.Workspace
-@using OperationalWorkspaceUI.UIServices.System
+@using Microsoft.JSInterop
 
 @inject KnowledgeUIService KBService
-@inject Radzen.NotificationService Notifications
 @inject NavigationManager NavManager
-@inject ModalService ModalService
 
-<FormSection Title="Send Knowledge Article"
-             SubmitLabel="Send Article"
-             OnSubmit="HandleSubmit"
-             OnCancel="HandleCancel">
+<div class="kb-dashboard-container" style="background-color: #f3f4f6; min-height: 100vh; padding: 24px;">
+    
+    <div class="dashboard-card shadow-sm" style="background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+        
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h2 style="font-weight: 700; color: #111827; margin: 0; font-size: 1.5rem;">Knowledge Base</h2>
+                
+                <div class="d-flex flex-column gap-3 mt-4">
+                    <div class="d-flex gap-2">
+                        @* SEARCH BAR *@
+                        <div style="width: 350px; position: relative;">
+                            <span style="position: absolute; left: 16px; top: 12px; color: #94a3b8;">🔍</span>
+                            <input type="text" class="form-control ps-5" 
+                                   style="height: 45px; border-radius: 8px; border: 1px solid #e2e8f0;" 
+                                   placeholder="Search Sage X3..." 
+                                   @bind="SearchQuery" @bind:event="oninput" />
+                        </div>
 
-    <EditForm Model="Model" OnValidSubmit="HandleSubmit">
-        <DataAnnotationsValidator />
+                        @* FIXED FILTER BUTTON WITH ICON *@
+                        <button class="btn btn-light border d-flex align-items-center gap-2" 
+                                style="height: 45px; border-radius: 8px; background: white; color: #475569; font-weight: 500;"
+                                @onclick="ToggleFilter">
+                            @* SVG Filter Icon *@
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            Filter
+                        </button>
+                    </div>
 
-        <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">KNOWLEDGE BASE SEARCH</FluentLabel>
-            <FluentTextField Label="Search Article"
-                             @bind-Value="Model.SearchQuery"
-                             FullWidth="true"
-                             Placeholder="Search the Sage X3 Knowledge Base..." />
-            <ValidationMessage For="@(() => Model.SearchQuery)" />
+                    @* REVEALABLE FILTER TRAY *@
+                    @if (IsFilterOpen)
+                    {
+                        <div class="filter-tray d-flex gap-3 p-3 mb-2 animate-fade-in" style="background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <div class="filter-item">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">SORT BY</label>
+                                <select class="form-select form-select-sm" @bind="SortOrder">
+                                    <option value="Newest">Newest First</option>
+                                    <option value="Views">Most Viewed</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">DATE RANGE</label>
+                                <select class="form-select form-select-sm">
+                                    <option>Last 30 Days</option>
+                                    <option>Last 6 Months</option>
+                                    <option>All Time</option>
+                                </select>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <button class="btn btn-primary px-4 py-2" style="background-color: #0061d5; border: none; border-radius: 6px; font-weight: 600;" @onclick="CreateArticle">
+                New Article
+            </button>
         </div>
 
-        <div class="sage-form-group" style="margin-top: 20px;">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">MESSAGE</FluentLabel>
-            <FluentTextArea Label="Personal Note"
-                            @bind-Value="Model.Message"
-                            Rows="5"
-                            FullWidth="true" />
+        @* CONTENT TABLE *@
+        <div class="row mt-4">
+            <div class="col-md-3 border-end">
+                <h5 style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 20px;">Categories</h5>
+                <ul class="list-unstyled kb-category-list">
+                    @foreach (var cat in Categories)
+                    {
+                        <li class="@(SelectedCategory == cat.Name ? "active" : "")" @onclick="() => SelectedCategory = cat.Name">
+                            <span class="cat-name">@cat.Name</span>
+                            <span class="cat-count">@cat.Count</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <div class="col-md-9 ps-4">
+                <div class="table-responsive">
+                    <table class="table table-hover" style="border: none;">
+                        <thead>
+                            <tr style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #f1f5f9;">
+                                <th class="pb-3 border-0">Article Title</th>
+                                <th class="pb-3 border-0">Category</th>
+                                <th class="pb-3 border-0">Last Updated</th>
+                                <th class="pb-3 border-0 text-end">Views</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var article in PaginatedArticles)
+                            {
+                                <tr style="cursor: pointer; border-bottom: 1px solid #f8fafc;" class="kb-row">
+                                    <td class="py-4 border-0 fw-bold" style="color: #2563eb;">@article.Title</td>
+                                    <td class="py-4 border-0" style="color: #64748b;">@article.Category</td>
+                                    <td class="py-4 border-0 text-muted">@article.LastUpdated.ToString("MMM dd, yyyy")</td>
+                                    <td class="py-4 border-0 text-end text-muted">@article.Views</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </EditForm>
-</FormSection>
+    </div>
+</div>
+
+<style>
+    .animate-fade-in { animation: fadeIn 0.2s ease-in; }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .kb-category-list li { display: flex; justify-content: space-between; padding: 12px 16px; border-radius: 8px; cursor: pointer; color: #64748b; font-size: 0.9rem; transition: 0.2s; }
+    .kb-category-list li.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
+    .kb-category-list li:hover:not(.active) { background: #f8fafc; color: #1e293b; }
+    .kb-row:hover { background-color: #f8fafc !important; }
+</style>
 
 @code {
-    private OperationalWorkspaceUI.UIServices.Workspace.SendKnowledgeModel Model = new();
+    private string SearchQuery = "";
+    private string SelectedCategory = "All Categories";
+    private string SortOrder = "Newest";
+    private bool IsFilterOpen = false;
+    private int CurrentPage = 1;
+    private int PageSize = 10;
 
-    private async Task HandleSubmit()
-    {
-        try
-        {
-            await KBService.SendKnowledgeAsync(Model);
-            
-            Notifications.Notify(new Radzen.NotificationMessage
-            {
-                Severity = Radzen.NotificationSeverity.Success,
-                Summary = "Success",
-                Detail = "Article sent successfully.",
-                Duration = 4000
-            });
-            
-            await ModalService.CloseModal();
-            NavManager.NavigateTo("/workspace/knowledge");
-        }
-        catch (Exception ex)
-        {
-            Notifications.Notify(new Radzen.NotificationMessage
-            {
-                Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Failed",
-                Detail = ex.Message
-            });
-        }
-    }
+    private void ToggleFilter() => IsFilterOpen = !IsFilterOpen;
 
-    private void HandleCancel()
-    {
-        NavManager.NavigateTo("/workspace/knowledge");
-    }
+    private List<CategoryItem> Categories = new() {
+        new("All Categories", 24), new("Pricing Guidelines", 4), new("Product Documentation", 5),
+        new("Case Studies", 3), new("FAQ", 6), new("How To Guides", 4)
+    };
+
+    private List<KbArticle> MasterArticles = new() {
+        new("Pricing Guidelines 2024", "Pricing Guidelines", DateTime.Parse("Apr 24, 2024"), 128),
+        new("Product Installation Guide", "Product Documentation", DateTime.Parse("Apr 23, 2024"), 96),
+        new("Frequently Asked Questions", "FAQ", DateTime.Parse("Apr 21, 2024"), 210),
+        new("How to Create a Sales Order", "How To Guides", DateTime.Parse("Apr 20, 2024"), 153)
+    };
+
+    private IEnumerable<KbArticle> FilteredArticles => MasterArticles
+        .Where(a => (SelectedCategory == "All Categories" || a.Category == SelectedCategory) &&
+                    (string.IsNullOrWhiteSpace(SearchQuery) || a.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)))
+        .OrderByDescending(a => SortOrder == "Newest" ? a.LastUpdated : DateTime.MinValue)
+        .OrderByDescending(a => SortOrder == "Views" ? a.Views : 0);
+
+    private IEnumerable<KbArticle> PaginatedArticles => FilteredArticles.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+    private int TotalPages => (int)Math.Ceiling((double)FilteredArticles.Count() / PageSize);
+
+    private void CreateArticle() => NavManager.NavigateTo("/forms/send-knowledge");
+
+    public record KbArticle(string Title, string Category, DateTime LastUpdated, int Views);
+    public record CategoryItem(string Name, int Count);
 }

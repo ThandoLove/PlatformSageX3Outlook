@@ -118,3 +118,21 @@ window.officeBridge = {
         return "";
     }
 };
+
+
+window.outlookInterop = {
+
+    getCurrentEmailId: function () {
+        try {
+            return Office.context.mailbox.item.itemId;
+        } catch {
+            return null;
+        }
+    },
+
+    displayEmail: function (itemId) {
+        if (!itemId) return;
+
+        Office.context.mailbox.displayItemAsync(itemId);
+    }
+};

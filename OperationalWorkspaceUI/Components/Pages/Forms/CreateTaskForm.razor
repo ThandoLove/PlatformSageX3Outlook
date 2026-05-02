@@ -2,11 +2,9 @@
 @rendermode InteractiveServer
 
 @using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.Requests
 @using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
-@using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.State
-@using OperationalWorkspaceUI.Models.Forms
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.TasksUIService TaskService
 @inject WorkspaceState WorkspaceState
@@ -18,73 +16,147 @@
              OnSubmit="SaveTaskAsync"
              OnCancel="HandleCancel">
 
-    @* Explicitly defining TModel helps the compiler resolve the delegate *@
-    <EditForm Model="NewTask" OnValidSubmit="SaveTaskAsync">
+    <EditForm Model="NewTask">
+
         <DataAnnotationsValidator />
 
-        @* SECTION 1: BASIC INFO *@
         <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">BASIC INFO</FluentLabel>
-            <FluentTextField Label="Title" @bind-Value="NewTask.Title" FullWidth="true" />
-            <ValidationMessage For="@(() => NewTask.Title)" />
-            
-            <FluentTextArea Label="Description" @bind-Value="NewTask.StatusDescription" Rows="3" FullWidth="true" Style="margin-top: 12px;" />
+
+            <FluentLabel Style="font-weight:bold;">
+                BASIC INFO
+            </FluentLabel>
+
+            <FluentTextField Label="Title"
+                             @bind-Value="NewTask.Title"
+                             FullWidth="true" />
+
+            <FluentTextArea Label="Description"
+                            @bind-Value="NewTask.Description"
+                            Rows="3"
+                            FullWidth="true"
+                            Style="margin-top:12px;" />
+
         </div>
 
-        @* SECTION 2: ASSIGNMENT *@
-        <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">ASSIGNMENT</FluentLabel>
-            
-            <FluentSelect Label="Assigned To"
-                          TOption="string"
+        <div class="sage-form-group" style="margin-top:24px;">
+
+            <FluentLabel Style="font-weight:bold;">
+                ASSIGNMENT
+            </FluentLabel>
+
+            <FluentSelect TOption="string"
+                          Label="Assigned To"
                           @bind-Value="NewTask.AssignedTo"
-                          Style="width: 100%;">
-                <FluentOption TOption="string" Value="">Select a user...</FluentOption>
+                          Style="width:100%;">
+
+                <FluentOption TOption="string" Value="">
+                    Select user...
+                </FluentOption>
+
                 @foreach (var user in WorkspaceState.Users)
                 {
-                    <FluentOption TOption="string" Value="@user.Id.ToString()">👤 @user.Name</FluentOption>
+                    <FluentOption TOption="string" Value="@user.Id.ToString()">
+                        @user.Name
+                    </FluentOption>
                 }
+
             </FluentSelect>
+
         </div>
 
-        @* SECTION 3: SCHEDULE *@
-        <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">SCHEDULE & PRIORITY</FluentLabel>
+        <div class="sage-form-group" style="margin-top:24px;">
+
+            <FluentLabel Style="font-weight:bold;">
+                SCHEDULE & PRIORITY
+            </FluentLabel>
+
             <div class="form-grid-2-col">
-                @* This component requires the bound property to be DateTime? *@
-                <FluentDatePicker Label="Due Date" @bind-Value="NewTask.DueDate" Style="width: 100%;" />
-                
-                <FluentSelect Label="Priority" TOption="string" @bind-Value="PriorityString" FullWidth="true">
+
+                <FluentDatePicker Value="NewTask.DueDate"
+                                  ValueChanged="OnDateChanged"
+                                  ValueExpression="@(() => NewTask.DueDate)"
+                                  Style="width:100%;" />
+
+                <FluentSelect TOption="string"
+                              Label="Priority"
+                              @bind-Value="PriorityString"
+                              Style="width:100%;">
+
                     <FluentOption TOption="string" Value="1">Low</FluentOption>
                     <FluentOption TOption="string" Value="2">Medium</FluentOption>
                     <FluentOption TOption="string" Value="3">High</FluentOption>
+                    <FluentOption TOption="string" Value="4">Urgent</FluentOption>
+
                 </FluentSelect>
+
             </div>
+
         </div>
 
     </EditForm>
+
 </FormSection>
 
-@code {
-    // IMPORTANT: Ensure TaskDto.DueDate is DateTime?
-    private TaskDto NewTask = new() { DueDate = DateTime.Now.AddDays(1) };
+@code
+{
+    private CreateTaskRequest NewTask = new CreateTaskRequest
+    {
+        Title = "",
+        Description = "",
+        CreatedBy = "system",
+        AssignedTo = "",
+        DueDate = DateTime.Now.AddDays(1),
+        Priority = 2
+    };
+
     private string PriorityString = "2";
+
+    private void OnDateChanged(DateTime? value)
+    {
+        NewTask.DueDate = value ?? DateTime.Now;
+    }
 
     private async Task SaveTaskAsync()
     {
-        var success = await TaskService.CreateTaskAsync(NewTask);
+        NewTask.Priority = int.Parse(PriorityString);
+
+        var taskDto = new TaskDto
+        {
+            Title = NewTask.Title,
+            Description = NewTask.Description,
+            AssignedTo = NewTask.AssignedTo,
+            DueDate = NewTask.DueDate,
+            Priority = (OperationalWorkspace.Domain.Enums.TaskPriority)NewTask.Priority
+        };
+
+        var success = await TaskService.CreateTaskAsync(taskDto);
 
         if (success)
         {
             WorkspaceState.ReloadTasks();
-            NotificationService.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Success", Detail = "Task created" });
+
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Success,
+                Summary = "Success",
+                Detail = "Task created successfully"
+            });
+
             NavManager.NavigateTo("/workspace/tasks");
         }
         else
         {
-            NotificationService.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Error, Summary = "Error", Detail = "Failed" });
+            NotificationService.Notify(new Radzen.NotificationMessage
+            {
+                Severity = Radzen.NotificationSeverity.Error,
+                Summary = "Error",
+                Detail = "Failed to create task"
+            });
         }
     }
 
-    private void HandleCancel() => NavManager.NavigateTo("/workspace/dashboard");
+    private void HandleCancel()
+    {
+        NavManager.NavigateTo("/workspace/dashboard");
+    }
 }

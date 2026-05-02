@@ -58,10 +58,10 @@
 @code {
     private TaskDto _newTask = new() { DueDate = DateTime.Today, Priority = TaskPriority.Medium, AssignedTo = "Admin" };
     private DateTime? _localDueDate = DateTime.Today;
-
     private async Task HandleCreateTask()
     {
-        if (string.IsNullOrWhiteSpace(_newTask.Title)) return;
+        if (string.IsNullOrWhiteSpace(_newTask.Title))
+            return;
 
         _newTask.DueDate = _localDueDate ?? DateTime.Today;
 
@@ -72,15 +72,22 @@
             DueDate = _newTask.DueDate,
             Priority = _newTask.Priority,
             AssignedTo = _newTask.AssignedTo,
-            Status = "Open"
+            Completed = false,
+            CreatedDate = DateTime.UtcNow,
+            UpdatedDate = DateTime.UtcNow
         });
 
         await JS.InvokeVoidAsync("showToast", $"Task assigned to {_newTask.AssignedTo}");
 
-        // Reset Form
-        _newTask = new() { DueDate = DateTime.Today, Priority = TaskPriority.Medium, AssignedTo = "Admin" };
+        _newTask = new TaskDto
+        {
+            DueDate = DateTime.Today,
+            Priority = TaskPriority.Medium,
+            AssignedTo = "Admin"
+        };
+
         _localDueDate = DateTime.Today;
-        
+
         await State.LoadDashboardAsync();
     }
     

@@ -36,12 +36,16 @@ public class QuickActionUIService
 
     public async Task CreateTaskFromEmailAsync(EmailInsightDto email)
     {
-        var request = new CreateTaskRequest(
-            $"Follow-up: {email.Subject}",
-            email.Message,
-            email.AssignedUserId,
-            DateTime.UtcNow.AddDays(3)
-        );
+        // Use the { } syntax because CreateTaskRequest is a class, not a positional record
+        var request = new CreateTaskRequest
+        {
+            Title = $"Follow-up: {email.Subject}",
+            Description = email.Message,
+            AssignedTo = email.AssignedUserId,
+            DueDate = DateTime.UtcNow.AddDays(3),
+            CreatedBy = "System", // Added because your class requires it
+            Priority = 1         // Added because your class requires it
+        };
 
         var response = await _http.PostAsJsonAsync("api/tasks", request);
 
