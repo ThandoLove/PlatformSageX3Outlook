@@ -1,5 +1,6 @@
 ﻿using OperationalWorkspace.Domain.Enums;
 using System;
+using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus;
 
 namespace OperationalWorkspaceApplication.DTOs
 {
@@ -10,8 +11,9 @@ namespace OperationalWorkspaceApplication.DTOs
         public string Title { get; set; } = string.Empty;
 
         public DateTime? DueDate { get; set; }
+        public TaskPriority Priority { get; set; } = TaskPriority.Medium;
 
-        public TaskPriority Priority { get; set; }
+        public TaskStatus Status { get; set; }
 
         public string AssignedTo { get; set; } = string.Empty;
 
@@ -37,3 +39,8 @@ namespace OperationalWorkspaceApplication.DTOs
         public string Category { get; set; } = ""; // Sales, Support, Finance
     }
 }
+
+
+
+
+ 

@@ -1,30 +1,45 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
-@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.Mappers
+@inject ITaskUiService TaskUiService
 
-<div class="details">
-
-    <h4>Task Details</h4>
-
-    <div class="card">
-        <div><strong>@Task.Title</strong></div>
-        <div>@Task.CompanyName</div>
+<div class="details-card-container">
+    <div class="sidebar-header">Task Details <i class="oi oi-chevron-bottom"></i></div>
+    
+    <div class="detail-group card">
+        <div class="task-title">@Task.Title</div>
+        <div class="task-subtitle">@Task.CompanyName</div>
     </div>
 
-    <div class="card">
-        <div>Status: @(Task.Completed ? "Completed" : "Active")</div>
-        <div>
-            Due: @(Task.DueDate.HasValue
-                    ? Task.DueDate.Value.ToShortDateString()
-                : "No due date")
-        </div>
+    <div class="detail-group card">
+        <p><strong>Status:</strong> @Task.Status</p>
+        <p><strong>Due:</strong> @TaskRulesEngine.DueLabel(Task)</p>
     </div>
 
-    <FluentButton Appearance="Appearance.Accent" Class="delegate-btn">
-        Delegate Task
-    </FluentButton>
-
+    <div class="delegate-control-group">
+        <span class="side-label">Delegate to Team Member</span>
+        <select @bind="SelectedEmployeeEmail" class="employee-select">
+            <option value="">Select Employee...</option>
+            @foreach (var email in Emails)
+            {
+                <option value="@email">@email</option>
+            }
+        </select>
+        
+        <button class="btn-blue-action" @onclick="HandleDelegate" disabled="@string.IsNullOrEmpty(SelectedEmployeeEmail)">
+            Delegate Task <i class="oi oi-share-boxed"></i>
+        </button>
+    </div>
 </div>
 
 @code {
     [Parameter] public TaskDto Task { get; set; } = default!;
+    private string SelectedEmployeeEmail = "";
+    private List<string> Emails = new() { "john.doe@company.com", "jane.smith@company.com" };
+
+    private async Task HandleDelegate()
+    {
+        // Uses Corrected Email Body Generation
+        string emailBody = TaskRulesEngine.GenerateDelegationEmailBody(Task, SelectedEmployeeEmail);
+        await TaskUiService.DelegateTaskAsync(Task.Id, SelectedEmail, emailBody);
+    }
 }

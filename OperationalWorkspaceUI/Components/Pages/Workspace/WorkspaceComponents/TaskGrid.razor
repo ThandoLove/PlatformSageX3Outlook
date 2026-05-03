@@ -8,18 +8,20 @@
         <div class="user">
             <div class="avatar"></div>
             <div>
-                <div class="name">Tasks Hub</div>
-                <div class="role">Manage your workload</div>
+                <div class="name">Alex Turner</div>
+                <div class="role">UX Designer | UX Design</div>
             </div>
         </div>
 
-        <FluentTextField Placeholder="Search across Outlook & Sage X3..." Class="search-box" />
+        <FluentTextField Placeholder="Search across Outlook & Sage X3..."
+                         Class="search-box"
+                         @bind-Value="SearchQuery" />
     </div>
 
     <!-- BODY -->
     <div class="tasks-body">
 
-        <!-- LEFT SIDE -->
+        <!-- LEFT -->
         <div class="tasks-left">
 
             <!-- TABS -->
@@ -33,6 +35,14 @@
                 }
             </div>
 
+            <!-- SUB HEADER -->
+            <div class="sub-header">
+                <span>@SelectedTab (@GetCount(SelectedTab))</span>
+                <FluentButton Appearance="Appearance.Lightweight">
+                    Open Source Email
+                </FluentButton>
+            </div>
+
             <!-- TASK LIST -->
             <div class="task-list">
                 @foreach (var task in FilteredTasks)
@@ -43,72 +53,55 @@
 
         </div>
 
-        <!-- RIGHT SIDE -->
+        <!-- RIGHT -->
         <div class="tasks-right">
             @if (SelectedTask != null)
             {
                 <TaskDetailsPanel Task="SelectedTask" />
             }
+            else
+            {
+                <div class="empty">Select a task</div>
+            }
         </div>
 
     </div>
+
 </div>
 
 @code {
-    [Parameter]
-    public List<TaskDto> Tasks { get; set; } = new();
-    [Parameter] public EventCallback<TaskDto> OnTaskSelected { get; set; }
+    [Parameter] public List<TaskDto> Tasks { get; set; } = new();
 
-    private List<string> Tabs = new() { "Today", "Overdue", "Upcoming", "Completed" };
+    private string SearchQuery = "";
     private string SelectedTab = "Today";
-
     private TaskDto? SelectedTask;
 
-    private IEnumerable<TaskDto> FilteredTasks => SelectedTab switch
-    {
-        "Today" => Tasks.Where(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date == DateTime.Today),
+    private List<string> Tabs = new() { "Today", "Overdue", "Upcoming", "Completed" };
 
-        "Overdue" => Tasks.Where(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date < DateTime.Today),
-
-        "Upcoming" => Tasks.Where(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date > DateTime.Today),
-
-        "Completed" => Tasks.Where(t => t.Completed),
-
-        _ => Tasks
-    };
+    private IEnumerable<TaskDto> FilteredTasks =>
+        Tasks
+        .Where(t =>
+            string.IsNullOrWhiteSpace(SearchQuery) ||
+            t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+        .Where(t => SelectedTab switch
+        {
+            "Today" => t.DueDate?.Date == DateTime.Today,
+            "Overdue" => t.DueDate?.Date < DateTime.Today && !t.Completed,
+            "Upcoming" => t.DueDate?.Date > DateTime.Today,
+            "Completed" => t.Completed,
+            _ => true
+        });
 
     private int GetCount(string tab) => tab switch
     {
-        "Today" => Tasks.Count(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date == DateTime.Today),
-
-        "Overdue" => Tasks.Count(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date < DateTime.Today),
-
-        "Upcoming" => Tasks.Count(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value.Date > DateTime.Today),
-
+        "Today" => Tasks.Count(t => t.DueDate?.Date == DateTime.Today),
+        "Overdue" => Tasks.Count(t => t.DueDate?.Date < DateTime.Today && !t.Completed),
+        "Upcoming" => Tasks.Count(t => t.DueDate?.Date > DateTime.Today),
         "Completed" => Tasks.Count(t => t.Completed),
-
         _ => 0
     };
 
-    private void ChangeTab(string tab)
-    {
-        SelectedTab = tab;
-    }
+    private void ChangeTab(string tab) => SelectedTab = tab;
 
-    private void SelectTask(TaskDto task)
-    {
-        SelectedTask = task;
-    }
+    private void SelectTask(TaskDto task) => SelectedTask = task;
 }

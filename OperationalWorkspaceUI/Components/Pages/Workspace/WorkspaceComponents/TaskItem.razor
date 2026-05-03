@@ -1,52 +1,33 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspace.Domain.Enums
-@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.Mappers
 
-<div class="task-row" @onclick="() => OnSelect.InvokeAsync(Task)">
-
-    <div class="task-main">
-        <div class="title">@Task.Title</div>
-        <div class="company">@Task.CompanyName</div>
+<div class="task-item-row" @onclick="() => OnSelect.InvokeAsync(Task)">
+    <div class="task-info-col">
+        <div class="task-title">@Task.Title</div>
+        <div class="task-subtitle">@Task.CompanyName</div>
     </div>
 
-    <div class="task-meta">
-
-        <span class="chip @PriorityClass">
-            @Task.Priority.ToString()
+    <div class="task-status-col">
+        <!-- Uses Corrected PriorityLabel -->
+        <span class="status-badge @Task.Priority.ToString().ToLower()">
+            <i class="oi oi-tag"></i> @TaskRulesEngine.PriorityLabel(Task.Priority)
         </span>
-
-        <span class="date">
-            @(Task.DueDate.HasValue
-                ? Task.DueDate.Value.ToString("ddd")
-                : "No date")
+        <!-- Uses Corrected DueLabel and Overdue Check -->
+        <span class="due-text @(TaskRulesEngine.IsOverdue(Task) ? "text-red" : "")">
+            <i class="oi oi-clock"></i> Due @TaskRulesEngine.DueLabel(Task)
         </span>
-
     </div>
 
-    <div class="task-actions">
-
-        <FluentButton Appearance="Appearance.Outline" Size="Small">
-            Complete
-        </FluentButton>
-
-        <FluentButton Appearance="Appearance.Lightweight" Size="Small">
-            Open Source Email
-        </FluentButton>
-
+    <div class="task-actions-col">
+        <button class="btn-action-ghost" @onclick:stopPropagation="true">
+            Open Source Email <img src="images/sage-icon.png" width="12" />
+        </button>
+        <button class="btn-action-outline" @onclick:stopPropagation="true">Complete</button>
+        <button class="btn-sage-square"><i class="oi oi-external-link"></i></button>
     </div>
-
 </div>
 
 @code {
     [Parameter] public TaskDto Task { get; set; } = default!;
     [Parameter] public EventCallback<TaskDto> OnSelect { get; set; }
-
-    private string PriorityClass => Task.Priority switch
-    {
-        TaskPriority.Urgent => "urgent",
-        TaskPriority.High => "high",
-        TaskPriority.Medium => "medium",
-        TaskPriority.Low => "low",
-        _ => "normal"
-    };
 }

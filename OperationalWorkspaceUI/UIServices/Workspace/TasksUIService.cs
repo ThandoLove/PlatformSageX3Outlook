@@ -1,6 +1,6 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
+using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceUI.State;
-using OperationalWorkspaceUI.UIServices.Workspace;
 using System.Net.Http.Json;
 
 namespace OperationalWorkspaceUI.UIServices.Workspace;
@@ -9,7 +9,6 @@ public class TasksUIService
 {
     private readonly HttpClient _http;
     private readonly WorkspaceState _workspaceState;
-    private readonly List<TaskDto> _tasks = new();
 
     public TasksUIService(HttpClient http, WorkspaceState workspaceState)
     {
@@ -17,39 +16,37 @@ public class TasksUIService
         _workspaceState = workspaceState;
     }
 
-    /// <summary>
-    /// Fetches tasks from the API and updates the global WorkspaceState.
-    /// Matches the call in Tasks.razor
-    /// </summary>
     public async Task LoadTasksAsync()
     {
         try
         {
-            // 1. Fetch data from your API endpoint
             var tasks = await _http.GetFromJsonAsync<List<TaskDto>>("api/tasks");
-
-            // 2. Update the shared state container used by the Razor page
             _workspaceState.Tasks = tasks ?? new List<TaskDto>();
         }
         catch (Exception ex)
         {
-            // Handle failure and ensure the UI doesn't crash
             Console.WriteLine($"Error loading tasks: {ex.Message}");
             _workspaceState.Tasks = new List<TaskDto>();
         }
     }
 
-    public Task<List<TaskDto>> GetTasksAsync() => Task.FromResult(_workspaceState.Tasks?.ToList() ?? new List<TaskDto>());
+    public Task<List<TaskDto>> GetTasksAsync()
+        => Task.FromResult(_workspaceState.Tasks?.ToList() ?? new List<TaskDto>());
 
-    public async Task<bool> CreateTaskAsync(TaskDto task)
+    // ✅ FIXED METHOD (THIS IS THE ONLY IMPORTANT CHANGE)
+    public async Task<bool> CreateTaskAsync(CreateTaskRequest request)
     {
-        // Example: Post to API, then reload state
-        var response = await _http.PostAsJsonAsync("api/tasks", task);
+        var response = await _http.PostAsJsonAsync("api/tasks", request);
+
         if (response.IsSuccessStatusCode)
         {
-            await LoadTasksAsync(); // Refresh the global list after creating
+            await LoadTasksAsync(); // refresh UI
             return true;
         }
+
         return false;
     }
+
+
+
 }

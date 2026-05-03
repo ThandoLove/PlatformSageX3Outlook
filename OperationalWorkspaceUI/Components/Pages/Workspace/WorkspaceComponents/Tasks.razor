@@ -1,263 +1,117 @@
 ﻿@page "/tasks"
 @rendermode InteractiveServer
-
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
-@using Microsoft.FluentUI.AspNetCore.Components
-
+@using OperationalWorkspaceApplication.Mappers
 @inject WorkspaceState WorkspaceState
-@inject NavigationManager Nav
-@inject IJSRuntime JS
 
 <div class="task-hub-container">
-
-    <main class="hub-main">
-
-        <div class="profile-header">
-            <div class="profile-left">
+    <div class="hub-main">
+        <!-- Exact Profile Header from Mockup -->
+        <header class="profile-header">
+            <div class="user-profile">
                 <div class="avatar-wrapper">
-                    <img src="https://ui-avatars.com/api/?name=User" />
+                    <img src="images/alex_turner.png" alt="Alex Turner" />
                     <span class="status-dot"></span>
                 </div>
                 <div class="profile-text">
-                    <h1>Tasks Hub</h1>
-                    <p>Manage your workload</p>
+                    <h1>Alex Turner</h1>
+                    <p>UX Designer | UX Design</p>
                 </div>
             </div>
-
             <div class="search-wrapper">
-                <input type="text"
-                       placeholder="Search across Outlook & Sage X3..."
-                       @bind="SearchQuery"
-                       @bind:event="oninput" />
+                <i class="oi oi-magnifying-glass"></i>
+                <input type="text" value="@SearchQuery" @oninput="OnSearchInput" placeholder="Search across Outlook & Sage X3..." />
             </div>
+        </header>
 
-            <button class="btn-blue-action" @onclick="CreateTaskFromEmail">
-                Create Task from Email
-            </button>
-        </div>
-
+        <!-- Card Hub with Dynamic Tabs -->
         <div class="hub-card-container">
-
-            <nav class="hub-tabs">
+            <div class="hub-tabs">
                 @foreach (var tab in Tabs)
                 {
-                    <div class="tab @(tab == SelectedTab ? "active" : "")"
-                         @onclick="() => ChangeTab(tab)">
-                        @tab (@GetCount(tab))
+                    <div class="tab @(SelectedTab == tab ? "active" : "")" @onclick="() => ChangeTab(tab)">
+                        @tab @(tab == "Today" ? $"({GetCount("Today")})" : "")
                     </div>
                 }
-            </nav>
+            </div>
 
             <div class="sub-header-bar">
                 <div class="btn-grey-pill">
-                    <span>@SelectedTab (@GetCount(SelectedTab))</span>
+                    <i class="oi oi-calendar"></i> Today (@GetCount("Today")) <i class="oi oi-chevron-bottom"></i>
                 </div>
-
-                <button class="btn-grey-outline" @onclick="OpenSelectedTaskEmail">
-                    Open Source Email
-                </button>
+                <button class="btn-grey-outline">Open Source Email</button>
             </div>
 
-            <TaskGrid Tasks="FilteredTasks.ToList()"
-                      OnTaskSelected="HandleTaskSelected" />
+            <!-- TaskGrid receives the reactive FilteredTasks list -->
+            <TaskGrid Tasks="FilteredTasks" OnTaskSelected="t => SelectedTask = t" />
         </div>
+    </div>
 
-    </main>
-
+    <!-- Sidebar with Aging Stats and Task Details -->
     <aside class="details-sidebar">
-
-        <div class="sidebar-header">
-            <span>Task Details</span>
-        </div>
-
         @if (SelectedTask != null)
         {
-            <div class="side-card">
-                <label class="side-label">TASK</label>
-                <div class="task-title">@SelectedTask.Title</div>
-                <div class="task-company">@SelectedTask.CompanyName</div>
-            </div>
-
-            <div class="side-card">
-                <label class="side-label">TASK AGING</label>
-
-                <div class="aging-stats">
-                    <div class="stat">
-                        <span class="val-red">@OverdueCount</span>
-                        <span class="cap">Overdue</span>
-                    </div>
-
-                    <div class="stat">
-                        <span class="val-blue">@DueSoonCount</span>
-                        <span class="cap">Due Soon</span>
-                    </div>
-
-                    <div class="stat-progress">
-                        <FluentProgressRing Value="@CompletionRate" />
-                        <span class="ring-text">@CompletionRate%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="side-card">
-                <div class="histogram-bars">
-                    <div class="bar bar-red" style="height:@(OverdueCount * 10)%"></div>
-                    <div class="bar bar-orange" style="height:@(DueSoonCount * 10)%"></div>
-                    <div class="bar bar-green" style="height:@(CompletedCount * 10)%"></div>
-                </div>
-            </div>
-
-            <button class="btn-blue-action" @onclick="DelegateTask">
-                Delegate Task
-            </button>
+            <TaskDetailsPanel Task="SelectedTask" />
         }
         else
         {
-            <div class="empty-state">
-                Select a task to view details
+            <div class="side-card">
+                <span class="side-label">Task Aging</span>
+                <div class="aging-stats">
+                    <div class="stat"><span class="val-red">2</span><p>Overdue</p></div>
+                    <div class="stat"><span class="val-blue">1</span><p>Due Soon</p></div>
+                    <div class="stat-progress"><div class="ring-text">78%</div></div>
+                </div>
+                <div class="histogram-bars">
+                    <div class="bar bar-red" style="height: 100%;"><span>Overdue</span></div>
+                    <div class="bar bar-orange" style="height: 60%;"><span>Due Soon</span></div>
+                    <div class="bar bar-green" style="height: 40%;"><span>Completed</span></div>
+                </div>
+            </div>
+
+            <button class="btn-blue-action">
+                Delegate Task <i class="oi oi-chevron-bottom"></i>
+            </button>
+
+            <div class="workload-section">
+                <span class="side-label">Workload</span>
+                <p>6 Active Tasks</p>
+                <div class="workload-icons">
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <i class="oi oi-person blue"></i>
+                    }
+                    <i class="oi oi-person grey"></i>
+                </div>
             </div>
         }
-
     </aside>
-
 </div>
 
 @code {
-
-    private string SearchQuery = "";
     private string SelectedTab = "Today";
+    private string SearchQuery = "";
     private TaskDto? SelectedTask;
+    private string[] Tabs = { "Today", "Overdue", "Upcoming", "Completed" };
 
-    private List<string> Tabs = new() { "Today", "Overdue", "Upcoming", "Completed" };
-
-    protected override async Task OnInitializedAsync()
-    {
-        await WorkspaceState.LoadTasksAsync();
-    }
-
-    private IEnumerable<TaskDto> FilteredTasks =>
-        (WorkspaceState.Tasks ?? new List<TaskDto>())
-        .Where(t =>
-            (SelectedTab == "Today" &&
-                t.DueDate.HasValue &&
-                t.DueDate.Value.Date == DateTime.Today) ||
-
-            (SelectedTab == "Overdue" &&
-                t.DueDate.HasValue &&
-                t.DueDate.Value.Date < DateTime.Today &&
-                !t.Completed) ||
-
-            (SelectedTab == "Upcoming" &&
-                t.DueDate.HasValue &&
-                t.DueDate.Value.Date > DateTime.Today) ||
-
-            (SelectedTab == "Completed" &&
-                t.Completed))
-        .Where(t =>
-            string.IsNullOrWhiteSpace(SearchQuery) ||
-            t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
-
-    private void ChangeTab(string tab)
-    {
-        SelectedTab = tab;
-        SelectedTask = null;
-    }
-
-    private int GetCount(string tab)
-    {
-        var tasks = WorkspaceState.Tasks ?? new List<TaskDto>();
-
-        return tab switch
+    private List<TaskDto> FilteredTasks => WorkspaceState.Tasks
+        .Where(t => SelectedTab switch
         {
-            "Today" => tasks.Count(t =>
-                t.DueDate.HasValue &&
-                t.DueDate.Value.Date == DateTime.Today),
+            "Today" => t.DueDate?.Date == DateTime.Today,
+            "Overdue" => TaskRulesEngine.IsOverdue(t),
+            "Upcoming" => t.DueDate?.Date > DateTime.Today && !t.Completed,
+            "Completed" => t.Completed,
+            _ => true
+        })
+        .Where(t => string.IsNullOrEmpty(SearchQuery) ||
+                    t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    t.CompanyName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) == true)
+        .ToList();
 
-            "Overdue" => tasks.Count(t =>
-                t.DueDate.HasValue &&
-                t.DueDate.Value.Date < DateTime.Today &&
-                !t.Completed),
+    private void OnSearchInput(ChangeEventArgs e) => SearchQuery = e.Value?.ToString() ?? "";
+    private void ChangeTab(string tab) => SelectedTab = tab;
 
-            "Upcoming" => tasks.Count(t =>
-                t.DueDate.HasValue &&
-                t.DueDate.Value.Date > DateTime.Today),
-
-            "Completed" => tasks.Count(t => t.Completed),
-
-            _ => 0
-        };
-    }
-
-    private void HandleTaskSelected(TaskDto task)
-    {
-        SelectedTask = task;
-    }
-
-    private int OverdueCount =>
-        (WorkspaceState.Tasks ?? new List<TaskDto>())
-        .Count(t => t.DueDate.HasValue &&
-                    t.DueDate.Value.Date < DateTime.Today &&
-                    !t.Completed);
-
-    private int DueSoonCount =>
-        (WorkspaceState.Tasks ?? new List<TaskDto>())
-        .Count(t => t.DueDate.HasValue &&
-                    t.DueDate.Value.Date >= DateTime.Today &&
-                    t.DueDate.Value.Date <= DateTime.Today.AddDays(2));
-
-    private int CompletedCount =>
-        (WorkspaceState.Tasks ?? new List<TaskDto>())
-        .Count(t => t.Completed);
-
-    private int CompletionRate
-    {
-        get
-        {
-            var tasks = WorkspaceState.Tasks ?? new List<TaskDto>();
-            if (tasks.Count == 0) return 0;
-
-            var done = tasks.Count(t => t.Completed);
-            return (int)((double)done / tasks.Count * 100);
-        }
-    }
-
-    private async Task OpenSelectedTaskEmail()
-    {
-        if (SelectedTask?.OutlookItemId != null)
-        {
-            await JS.InvokeVoidAsync("outlookInterop.displayEmail", SelectedTask.OutlookItemId);
-        }
-    }
-
-    private async Task CreateTaskFromEmail()
-    {
-        // Get email context from your existing STATE (officeBridge already pushes into Blazor)
-        var email = WorkspaceState.SelectedEmail;
-
-        if (email == null)
-            return;
-
-        var newTask = new TaskDto
-        {
-            Id = Guid.NewGuid(),
-            Title = $"Follow up: {email.Subject}",
-            AssignedTo = "CurrentUser",
-            DueDate = DateTime.Today.AddDays(2),
-            Completed = false,
-            CreatedDate = DateTime.UtcNow,
-            UpdatedDate = DateTime.UtcNow
-        };
-
-        WorkspaceState.Tasks.Add(newTask);
-
-        SelectedTask = newTask;
-
-        await JS.InvokeVoidAsync("showToast", "Task created from email");
-    }
-
-    private void DelegateTask()
-    {
-        // future modal / workflow
-    }
+    private int GetCount(string tab) => WorkspaceState.Tasks.Count(t =>
+        tab == "Today" ? t.DueDate?.Date == DateTime.Today : TaskRulesEngine.IsOverdue(t));
 }

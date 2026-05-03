@@ -1,5 +1,4 @@
-﻿
-using OperationalWorkspaceApplication.DTOs;
+﻿using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspace.Domain.Enums;
 
 namespace OperationalWorkspaceApplication.Mappers
@@ -41,7 +40,7 @@ namespace OperationalWorkspaceApplication.Mappers
         }
 
         // -----------------------------
-        // DUE STATE (MORE INTELLIGENT THAN BOOLEAN)
+        // DUE STATE (FOR UI STATE LOGIC)
         // -----------------------------
         public static TaskDueState GetDueState(TaskDto task)
         {
@@ -94,15 +93,19 @@ namespace OperationalWorkspaceApplication.Mappers
         public static int WorkloadScore(TaskDto task)
         {
             var priorityScore = PriorityWeight(task.Priority);
-
             var duePenalty = IsOverdue(task) ? 5 : 0;
-
             return priorityScore + duePenalty;
         }
+
+        // -----------------------------
+        // EMAIL DELEGATION BODY
+        // -----------------------------
+        public static string GenerateDelegationEmailBody(TaskDto t, string name) =>
+            $"Hello {name},\n\nTask '{t.Title}' for {t.CompanyName} has been delegated to you.\nDue: {DueLabel(t)}.";
     }
 
     // ---------------------------------
-    // SUPPORTING ENUM (NEW LOGIC LAYER)
+    // SUPPORTING ENUM
     // ---------------------------------
     public enum TaskDueState
     {

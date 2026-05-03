@@ -1,162 +1,57 @@
-﻿@page "/forms/create-task"
-@rendermode InteractiveServer
-
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspace.Domain.Enums
 @using Microsoft.FluentUI.AspNetCore.Components
-@using OperationalWorkspaceApplication.Requests
-@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.State
 
-@inject OperationalWorkspaceUI.UIServices.Workspace.TasksUIService TaskService
-@inject WorkspaceState WorkspaceState
-@inject Radzen.NotificationService NotificationService
-@inject NavigationManager NavManager
+<div class="form">
 
-<FormSection Title="Create New Task"
-             SubmitLabel="Save Task"
-             OnSubmit="SaveTaskAsync"
-             OnCancel="HandleCancel">
+    <FluentTextField Label="Title"
+                     @bind-Value="Model.Title" />
 
-    <EditForm Model="NewTask">
+    <FluentTextField Label="Company"
+                     @bind-Value="Model.CompanyName" />
 
-        <DataAnnotationsValidator />
+    <FluentDatePicker Label="Due Date"
+                      @bind-Value="Model.DueDate" />
 
-        <div class="sage-form-group">
+    <!-- ✅ FIXED ENUM SELECT -->
+    <FluentSelect TOption="string"
+                  @bind-Value="PriorityString">
 
-            <FluentLabel Style="font-weight:bold;">
-                BASIC INFO
-            </FluentLabel>
+        <FluentOption TOption="string" Value="Low">Low</FluentOption>
+        <FluentOption TOption="string" Value="Medium">Medium</FluentOption>
+        <FluentOption TOption="string" Value="High">High</FluentOption>
+        <FluentOption TOption="string" Value="Urgent">Urgent</FluentOption>
 
-            <FluentTextField Label="Title"
-                             @bind-Value="NewTask.Title"
-                             FullWidth="true" />
+    </FluentSelect>
 
-            <FluentTextArea Label="Description"
-                            @bind-Value="NewTask.Description"
-                            Rows="3"
-                            FullWidth="true"
-                            Style="margin-top:12px;" />
+    <FluentButton Appearance="Appearance.Accent"
+                  @onclick="Create">
+        Create
+    </FluentButton>
 
-        </div>
+</div>
 
-        <div class="sage-form-group" style="margin-top:24px;">
+@code {
+    private TaskDto Model = new();
 
-            <FluentLabel Style="font-weight:bold;">
-                ASSIGNMENT
-            </FluentLabel>
+    private string PriorityString = "Medium";
 
-            <FluentSelect TOption="string"
-                          Label="Assigned To"
-                          @bind-Value="NewTask.AssignedTo"
-                          Style="width:100%;">
+    [Parameter] public EventCallback<TaskDto> OnCreated { get; set; }
 
-                <FluentOption TOption="string" Value="">
-                    Select user...
-                </FluentOption>
-
-                @foreach (var user in WorkspaceState.Users)
-                {
-                    <FluentOption TOption="string" Value="@user.Id.ToString()">
-                        @user.Name
-                    </FluentOption>
-                }
-
-            </FluentSelect>
-
-        </div>
-
-        <div class="sage-form-group" style="margin-top:24px;">
-
-            <FluentLabel Style="font-weight:bold;">
-                SCHEDULE & PRIORITY
-            </FluentLabel>
-
-            <div class="form-grid-2-col">
-
-                <FluentDatePicker Value="NewTask.DueDate"
-                                  ValueChanged="OnDateChanged"
-                                  ValueExpression="@(() => NewTask.DueDate)"
-                                  Style="width:100%;" />
-
-                <FluentSelect TOption="string"
-                              Label="Priority"
-                              @bind-Value="PriorityString"
-                              Style="width:100%;">
-
-                    <FluentOption TOption="string" Value="1">Low</FluentOption>
-                    <FluentOption TOption="string" Value="2">Medium</FluentOption>
-                    <FluentOption TOption="string" Value="3">High</FluentOption>
-                    <FluentOption TOption="string" Value="4">Urgent</FluentOption>
-
-                </FluentSelect>
-
-            </div>
-
-        </div>
-
-    </EditForm>
-
-</FormSection>
-
-@code
-{
-    private CreateTaskRequest NewTask = new CreateTaskRequest
+    private async Task Create()
     {
-        Title = "",
-        Description = "",
-        CreatedBy = "system",
-        AssignedTo = "",
-        DueDate = DateTime.Now.AddDays(1),
-        Priority = 2
-    };
-
-    private string PriorityString = "2";
-
-    private void OnDateChanged(DateTime? value)
-    {
-        NewTask.DueDate = value ?? DateTime.Now;
-    }
-
-    private async Task SaveTaskAsync()
-    {
-        NewTask.Priority = int.Parse(PriorityString);
-
-        var taskDto = new TaskDto
+        Model.Priority = PriorityString switch
         {
-            Title = NewTask.Title,
-            Description = NewTask.Description,
-            AssignedTo = NewTask.AssignedTo,
-            DueDate = NewTask.DueDate,
-            Priority = (OperationalWorkspace.Domain.Enums.TaskPriority)NewTask.Priority
+            "Low" => TaskPriority.Low,
+            "Medium" => TaskPriority.Medium,
+            "High" => TaskPriority.High,
+            "Urgent" => TaskPriority.Urgent,
+            _ => TaskPriority.Medium
         };
 
-        var success = await TaskService.CreateTaskAsync(taskDto);
+        await OnCreated.InvokeAsync(Model);
 
-        if (success)
-        {
-            WorkspaceState.ReloadTasks();
-
-            NotificationService.Notify(new Radzen.NotificationMessage
-            {
-                Severity = Radzen.NotificationSeverity.Success,
-                Summary = "Success",
-                Detail = "Task created successfully"
-            });
-
-            NavManager.NavigateTo("/workspace/tasks");
-        }
-        else
-        {
-            NotificationService.Notify(new Radzen.NotificationMessage
-            {
-                Severity = Radzen.NotificationSeverity.Error,
-                Summary = "Error",
-                Detail = "Failed to create task"
-            });
-        }
-    }
-
-    private void HandleCancel()
-    {
-        NavManager.NavigateTo("/workspace/dashboard");
+        Model = new TaskDto();
+        PriorityString = "Medium";
     }
 }
