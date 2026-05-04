@@ -66,13 +66,14 @@ public class TaskService : ITaskService
     {
         var tasks = await _repo.GetByUserAsync(userId, CancellationToken.None);
 
-        return tasks.Select(t => new TaskDto
-        {
-            Id = t.Id,
-            Title = t.Title,
-            DueDate = DateTime.UtcNow,
-            Completed = t.Status == DomainStatus.Completed
-        }).ToList();
+       return tasks.Select(t => new TaskDto
+{
+    Id = t.Id,
+    Title = t.Title,
+    DueDate = DateTime.UtcNow,
+    Status = t.Status, // 🔥 THIS IS WHAT YOU WERE MISSING
+    Completed = t.Status == DomainStatus.Completed
+}).ToList();
     }
 
     public async System.Threading.Tasks.Task<List<ApprovalDto>> GetPendingApprovalsAsync(string userId)
