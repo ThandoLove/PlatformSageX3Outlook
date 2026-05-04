@@ -1,65 +1,47 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceApplication.Mappers
 
 <div class="hub-container">
-    <!-- 1. HUB HEADER (Image Match: Title + Horizontal Tabs) -->
-    <div class="hub-header">
-        <div class="hub-title-group">
-            <i class="oi oi-list-rich"></i>
-            <span>Tasks Hub</span>
+    <header class="hub-header">
+        <!-- TITLE CLICK (RESET) -->
+        <div class="hub-title-group @(ActiveTab == "All" ? "active" : "")"
+             @onclick='() => OnTabChanged.InvokeAsync("All")' style="cursor:pointer">
+            <i class="oi oi-list-rich"></i><span>Tasks Hub</span>
         </div>
         
         <nav class="hub-tabs">
             @foreach (var tab in FilterTabs)
             {
-                <div class="tab-item @(SelectedTab == tab ? "active" : "")"
-                     @onclick="() => SelectedTab = tab">
-                    @tab
+                var tabName = tab; // 🔥 CRITICAL FIX: Locks the variable for the click event
+                <div class="tab-item @(ActiveTab == tabName ? "active" : "")"
+                     @onclick="() => OnTabChanged.InvokeAsync(tabName)">
+                    @tabName
                 </div>
             }
         </nav>
-    </div>
+    </header>
 
-    <!-- 2. SUB-HEADER BAR (Image Match: Dropdown Pill + Right-aligned Button) -->
     <div class="sub-header-bar">
         <div class="pill-dropdown">
             <i class="oi oi-calendar"></i>
-            <span>Today (6)</span>
+            <span>@(ActiveTab == "All" ? "All Tasks" : ActiveTab)</span>
             <i class="oi oi-chevron-bottom"></i>
         </div>
-        
         <button class="btn-source-top">Open Source Email</button>
     </div>
 
-    <!-- 3. THE VERTICAL LIST (Image Match: High-Density White Cards on Gray) -->
     <div class="task-list-scroller">
-        @if (Tasks == null || !Tasks.Any())
+        @foreach (var task in Tasks)
         {
-            <div class="empty-msg">No tasks found.</div>
-        }
-        else
-        {
-            @foreach (var task in FilteredTasks)
-            {
-                <TaskItem Task="task" OnSelect="OnTaskSelected" />
-            }
+            <TaskItem Task="task" OnSelect="OnTaskSelected" />
         }
     </div>
 </div>
 
 @code {
     [Parameter] public List<TaskDto> Tasks { get; set; } = new();
+    [Parameter] public string ActiveTab { get; set; } = "";
+    [Parameter] public EventCallback<string> OnTabChanged { get; set; }
     [Parameter] public EventCallback<TaskDto> OnTaskSelected { get; set; }
     
-    private string SelectedTab = "Today (6)";
     private string[] FilterTabs = { "Today (6)", "Overdue", "Upcoming", "Completed" };
-
-    private IEnumerable<TaskDto> FilteredTasks => SelectedTab switch
-    {
-        "Today (6)" => Tasks.Where(t => t.DueDate?.Date == DateTime.Today),
-        "Overdue" => Tasks.Where(t => TaskRulesEngine.IsOverdue(t)),
-        "Upcoming" => Tasks.Where(t => t.DueDate?.Date > DateTime.Today && !t.Completed),
-        "Completed" => Tasks.Where(t => t.Completed),
-        _ => Tasks
-    };
 }

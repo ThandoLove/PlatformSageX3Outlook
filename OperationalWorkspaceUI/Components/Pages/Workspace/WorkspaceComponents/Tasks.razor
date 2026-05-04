@@ -6,7 +6,7 @@
 @inject WorkspaceState State
 
 <div class="sage-app">
-    <!-- 1. TOP HEADER: ALEX TURNER SECTION -->
+    <!-- TOP HEADER -->
     <header class="sage-header">
         <div class="user-block">
             <div class="avatar-ring">
@@ -18,29 +18,22 @@
                 <span class="u-role">UX Designer | UX Design</span>
             </div>
         </div>
-
-        <!-- INTEGRATED SEARCH COMPONENT -->
         <div class="search-pill">
             <i class="oi oi-magnifying-glass search-icon"></i>
-            <input type="text"
-                   value="@SearchQuery"
-                   @oninput="OnSearch"
-                   placeholder="Search across Outlook & Sage X3..." />
-            <i class="oi oi-chevron-bottom dropdown-icon"></i>
+            <input type="text" @bind="SearchQuery" @bind:event="oninput" placeholder="Search..." />
         </div>
     </header>
 
     <main class="sage-body">
-        <!-- 2. LEFT COLUMN: THE TASKS HUB -->
         <section class="hub-main-container">
-            @* TaskGrid handles Hub Title, Tabs, and the 4-column cards *@
+            <!-- 🔥 THE CONNECTION FIX: ActiveTab + OnTabChanged -->
             <TaskGrid Tasks="FilteredTasks"
-                      OnTaskSelected="HandleTaskSelection" />
+                      ActiveTab="@CurrentTab"
+                      OnTabChanged="HandleTabChange"
+                      OnTaskSelected="t => SelectedTask = t" />
         </section>
 
-        <!-- 3. RIGHT COLUMN: THE SIDEBAR -->
         <aside class="details-sidebar">
-            @* TaskDetailsPanel handles Aging Charts, Delegate, and Workload *@
             <TaskDetailsPanel Task="SelectedTask" />
         </aside>
     </main>
@@ -48,28 +41,33 @@
 
 @code {
     private string SearchQuery = "";
+    private string CurrentTab = "Today (6)";
     private TaskDto? SelectedTask;
 
-    // REACTIVE FILTERING LOGIC
+    // 🔥 DYNAMIC FILTER: Re-runs every time CurrentTab or SearchQuery changes
     private List<TaskDto> FilteredTasks => State.Tasks
-        .Where(t => string.IsNullOrWhiteSpace(SearchQuery) ||
-                    t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    t.CompanyName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) == true)
+        .Where(t =>
+        {
+            if (CurrentTab == "All") return true;
+            if (CurrentTab.Contains("Today")) return t.DueDate?.Date == DateTime.Today && !t.Completed;
+            if (CurrentTab == "Overdue") return TaskRulesEngine.IsOverdue(t);
+            if (CurrentTab == "Upcoming") return t.DueDate?.Date > DateTime.Today && !t.Completed;
+            if (CurrentTab == "Completed") return t.Completed;
+            return true;
+        })
+        .Where(t => string.IsNullOrWhiteSpace(SearchQuery) || t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
         .ToList();
 
-    private void OnSearch(ChangeEventArgs e) => SearchQuery = e.Value?.ToString() ?? "";
-
-    private void HandleTaskSelection(TaskDto task) => SelectedTask = task;
+    // 🔥 THE BRIDGE: Receives the click from the grid and wakes up the UI
+    private void HandleTabChange(string newTab)
+    {
+        CurrentTab = newTab;
+        StateHasChanged(); // Forces the UI to push the new 'FilteredTasks' to the Grid
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        // Load the 5 image-specific dummy tasks if list is empty
-        if (State.Tasks == null || State.Tasks.Count == 0)
-        {
-            await State.LoadTasksAsync();
-        }
-        
-        // Auto-select the first task (Inquiry about Product XYZ) to fill sidebar
-        SelectedTask = State.Tasks?.FirstOrDefault();
+        if (State.Tasks.Count == 0) await State.LoadTasksAsync();
+        SelectedTask = State.Tasks.FirstOrDefault();
     }
 }

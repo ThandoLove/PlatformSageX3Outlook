@@ -9,5 +9,6 @@ public class TaskEntity
     public OperationalWorkspace.Domain.Enums.TaskStatus Status { get; set; } // Added
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Added
     public Guid AssignedToUserId { get; set; }
-
+    public string AssignedTo { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

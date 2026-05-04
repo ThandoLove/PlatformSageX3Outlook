@@ -94,19 +94,31 @@ public class TaskService : ITaskService
         }).ToList();
     }
 
-    public async Task<TaskResponse> DelegateAsync(DelegateTaskRequest request, CancellationToken ct)
+    public async System.Threading.Tasks.Task<TaskResponse> DelegateAsync(DelegateTaskRequest request, CancellationToken ct)
     {
-        var task = await _repository.GetByIdAsync(request.TaskId);
-        if (task == null) return new TaskResponse { IsSuccess = false, Message = "Task not found" };
+        // FIX 1: Use '_repo' instead of '_repository'
+        // FIX 2: Include the CancellationToken 'ct' to match your interface patterns
+        var task = await _repo.GetByIdAsync(request.TaskId, ct);
 
+        if (task == null)
+            return new TaskResponse { IsSuccess = false, Message = "Task not found" };
+
+        // Update the domain entity properties
         task.AssignedTo = request.RecipientEmail;
-        task.Status = TaskStatus.Assigned; // Move to "In Progress"
-        task.UpdatedDate = DateTime.UtcNow;
 
-        await _repository.UpdateAsync(task);
+        // FIX 3: Use 'DomainStatus.Pending' or similar if 'Assigned' doesn't exist in your Enum
+        // Based on your previous logic, TaskStatus.Assigned is intended. 
+        // If you get an error here, check OperationalWorkspace.Domain.Enums.TaskStatus
+        task.Status = DomainStatus.Assigned;
+
+        task.UpdatedAt = DateTime.UtcNow;
+
+        // FIX 4: Use '_repo' and include 'ct'
+        await _repo.UpdateAsync(task, ct);
 
         return new TaskResponse { IsSuccess = true, Id = task.Id, Message = "Task delegated successfully" };
     }
+
 
 
     public async System.Threading.Tasks.Task<List<ApprovalDto>> GetAllPendingApprovalsAsync()

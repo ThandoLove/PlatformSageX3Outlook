@@ -157,6 +157,22 @@ public sealed class MockUnifiedService :
     public async Task<List<ApprovalDto>> GetAllPendingApprovalsAsync() =>
         new List<ApprovalDto>();
 
+
+    public async Task<TaskResponse> DelegateAsync(DelegateTaskRequest request, CancellationToken ct)
+    {
+        // 1. Simulate a tiny delay for the mock
+        await Task.Delay(50, ct);
+
+        // 2. Find the task in your local mock list
+        // This assumes you have a mock list of tasks in this service
+        // If not, just returning a Success response is enough to fix the build
+        return new TaskResponse
+        {
+            IsSuccess = true,
+            Message = "Mock: Task delegated successfully",
+            Id = request.TaskId
+        };
+    }
     // ---------------- SALES ----------------
     public async Task<int> CountOpenOrdersAsync(string userId) => 0;
 
