@@ -1,107 +1,65 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
-@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.Mappers
 
-<div class="tasks-root">
-
-    <!-- HEADER -->
-    <div class="tasks-header">
-        <div class="user">
-            <div class="avatar"></div>
-            <div>
-                <div class="name">Alex Turner</div>
-                <div class="role">UX Designer | UX Design</div>
-            </div>
+<div class="hub-container">
+    <!-- 1. HUB HEADER (Image Match: Title + Horizontal Tabs) -->
+    <div class="hub-header">
+        <div class="hub-title-group">
+            <i class="oi oi-list-rich"></i>
+            <span>Tasks Hub</span>
         </div>
-
-        <FluentTextField Placeholder="Search across Outlook & Sage X3..."
-                         Class="search-box"
-                         @bind-Value="SearchQuery" />
+        
+        <nav class="hub-tabs">
+            @foreach (var tab in FilterTabs)
+            {
+                <div class="tab-item @(SelectedTab == tab ? "active" : "")"
+                     @onclick="() => SelectedTab = tab">
+                    @tab
+                </div>
+            }
+        </nav>
     </div>
 
-    <!-- BODY -->
-    <div class="tasks-body">
-
-        <!-- LEFT -->
-        <div class="tasks-left">
-
-            <!-- TABS -->
-            <div class="tabs">
-                @foreach (var tab in Tabs)
-                {
-                    <div class="tab @(tab == SelectedTab ? "active" : "")"
-                         @onclick="() => ChangeTab(tab)">
-                        @tab (@GetCount(tab))
-                    </div>
-                }
-            </div>
-
-            <!-- SUB HEADER -->
-            <div class="sub-header">
-                <span>@SelectedTab (@GetCount(SelectedTab))</span>
-                <FluentButton Appearance="Appearance.Lightweight">
-                    Open Source Email
-                </FluentButton>
-            </div>
-
-            <!-- TASK LIST -->
-            <div class="task-list">
-                @foreach (var task in FilteredTasks)
-                {
-                    <TaskItem Task="task" OnSelect="SelectTask" />
-                }
-            </div>
-
+    <!-- 2. SUB-HEADER BAR (Image Match: Dropdown Pill + Right-aligned Button) -->
+    <div class="sub-header-bar">
+        <div class="pill-dropdown">
+            <i class="oi oi-calendar"></i>
+            <span>Today (6)</span>
+            <i class="oi oi-chevron-bottom"></i>
         </div>
-
-        <!-- RIGHT -->
-        <div class="tasks-right">
-            @if (SelectedTask != null)
-            {
-                <TaskDetailsPanel Task="SelectedTask" />
-            }
-            else
-            {
-                <div class="empty">Select a task</div>
-            }
-        </div>
-
+        
+        <button class="btn-source-top">Open Source Email</button>
     </div>
 
+    <!-- 3. THE VERTICAL LIST (Image Match: High-Density White Cards on Gray) -->
+    <div class="task-list-scroller">
+        @if (Tasks == null || !Tasks.Any())
+        {
+            <div class="empty-msg">No tasks found.</div>
+        }
+        else
+        {
+            @foreach (var task in FilteredTasks)
+            {
+                <TaskItem Task="task" OnSelect="OnTaskSelected" />
+            }
+        }
+    </div>
 </div>
 
 @code {
     [Parameter] public List<TaskDto> Tasks { get; set; } = new();
+    [Parameter] public EventCallback<TaskDto> OnTaskSelected { get; set; }
+    
+    private string SelectedTab = "Today (6)";
+    private string[] FilterTabs = { "Today (6)", "Overdue", "Upcoming", "Completed" };
 
-    private string SearchQuery = "";
-    private string SelectedTab = "Today";
-    private TaskDto? SelectedTask;
-
-    private List<string> Tabs = new() { "Today", "Overdue", "Upcoming", "Completed" };
-
-    private IEnumerable<TaskDto> FilteredTasks =>
-        Tasks
-        .Where(t =>
-            string.IsNullOrWhiteSpace(SearchQuery) ||
-            t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
-        .Where(t => SelectedTab switch
-        {
-            "Today" => t.DueDate?.Date == DateTime.Today,
-            "Overdue" => t.DueDate?.Date < DateTime.Today && !t.Completed,
-            "Upcoming" => t.DueDate?.Date > DateTime.Today,
-            "Completed" => t.Completed,
-            _ => true
-        });
-
-    private int GetCount(string tab) => tab switch
+    private IEnumerable<TaskDto> FilteredTasks => SelectedTab switch
     {
-        "Today" => Tasks.Count(t => t.DueDate?.Date == DateTime.Today),
-        "Overdue" => Tasks.Count(t => t.DueDate?.Date < DateTime.Today && !t.Completed),
-        "Upcoming" => Tasks.Count(t => t.DueDate?.Date > DateTime.Today),
-        "Completed" => Tasks.Count(t => t.Completed),
-        _ => 0
+        "Today (6)" => Tasks.Where(t => t.DueDate?.Date == DateTime.Today),
+        "Overdue" => Tasks.Where(t => TaskRulesEngine.IsOverdue(t)),
+        "Upcoming" => Tasks.Where(t => t.DueDate?.Date > DateTime.Today && !t.Completed),
+        "Completed" => Tasks.Where(t => t.Completed),
+        _ => Tasks
     };
-
-    private void ChangeTab(string tab) => SelectedTab = tab;
-
-    private void SelectTask(TaskDto task) => SelectedTask = task;
 }

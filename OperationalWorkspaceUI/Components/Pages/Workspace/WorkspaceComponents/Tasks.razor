@@ -1,117 +1,75 @@
 ﻿@page "/tasks"
 @rendermode InteractiveServer
 @using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.Mappers
-@inject WorkspaceState WorkspaceState
+@using OperationalWorkspaceUI.State
+@inject WorkspaceState State
 
-<div class="task-hub-container">
-    <div class="hub-main">
-        <!-- Exact Profile Header from Mockup -->
-        <header class="profile-header">
-            <div class="user-profile">
-                <div class="avatar-wrapper">
-                    <img src="images/alex_turner.png" alt="Alex Turner" />
-                    <span class="status-dot"></span>
-                </div>
-                <div class="profile-text">
-                    <h1>Alex Turner</h1>
-                    <p>UX Designer | UX Design</p>
-                </div>
+<div class="sage-app">
+    <!-- 1. TOP HEADER: ALEX TURNER SECTION -->
+    <header class="sage-header">
+        <div class="user-block">
+            <div class="avatar-ring">
+                <img src="images/alex_turner.png" alt="Alex Turner" />
+                <span class="online-dot"></span>
             </div>
-            <div class="search-wrapper">
-                <i class="oi oi-magnifying-glass"></i>
-                <input type="text" value="@SearchQuery" @oninput="OnSearchInput" placeholder="Search across Outlook & Sage X3..." />
+            <div class="u-text">
+                <span class="u-name">Alex Turner</span>
+                <span class="u-role">UX Designer | UX Design</span>
             </div>
-        </header>
-
-        <!-- Card Hub with Dynamic Tabs -->
-        <div class="hub-card-container">
-            <div class="hub-tabs">
-                @foreach (var tab in Tabs)
-                {
-                    <div class="tab @(SelectedTab == tab ? "active" : "")" @onclick="() => ChangeTab(tab)">
-                        @tab @(tab == "Today" ? $"({GetCount("Today")})" : "")
-                    </div>
-                }
-            </div>
-
-            <div class="sub-header-bar">
-                <div class="btn-grey-pill">
-                    <i class="oi oi-calendar"></i> Today (@GetCount("Today")) <i class="oi oi-chevron-bottom"></i>
-                </div>
-                <button class="btn-grey-outline">Open Source Email</button>
-            </div>
-
-            <!-- TaskGrid receives the reactive FilteredTasks list -->
-            <TaskGrid Tasks="FilteredTasks" OnTaskSelected="t => SelectedTask = t" />
         </div>
-    </div>
 
-    <!-- Sidebar with Aging Stats and Task Details -->
-    <aside class="details-sidebar">
-        @if (SelectedTask != null)
-        {
+        <!-- INTEGRATED SEARCH COMPONENT -->
+        <div class="search-pill">
+            <i class="oi oi-magnifying-glass search-icon"></i>
+            <input type="text"
+                   value="@SearchQuery"
+                   @oninput="OnSearch"
+                   placeholder="Search across Outlook & Sage X3..." />
+            <i class="oi oi-chevron-bottom dropdown-icon"></i>
+        </div>
+    </header>
+
+    <main class="sage-body">
+        <!-- 2. LEFT COLUMN: THE TASKS HUB -->
+        <section class="hub-main-container">
+            @* TaskGrid handles Hub Title, Tabs, and the 4-column cards *@
+            <TaskGrid Tasks="FilteredTasks"
+                      OnTaskSelected="HandleTaskSelection" />
+        </section>
+
+        <!-- 3. RIGHT COLUMN: THE SIDEBAR -->
+        <aside class="details-sidebar">
+            @* TaskDetailsPanel handles Aging Charts, Delegate, and Workload *@
             <TaskDetailsPanel Task="SelectedTask" />
-        }
-        else
-        {
-            <div class="side-card">
-                <span class="side-label">Task Aging</span>
-                <div class="aging-stats">
-                    <div class="stat"><span class="val-red">2</span><p>Overdue</p></div>
-                    <div class="stat"><span class="val-blue">1</span><p>Due Soon</p></div>
-                    <div class="stat-progress"><div class="ring-text">78%</div></div>
-                </div>
-                <div class="histogram-bars">
-                    <div class="bar bar-red" style="height: 100%;"><span>Overdue</span></div>
-                    <div class="bar bar-orange" style="height: 60%;"><span>Due Soon</span></div>
-                    <div class="bar bar-green" style="height: 40%;"><span>Completed</span></div>
-                </div>
-            </div>
-
-            <button class="btn-blue-action">
-                Delegate Task <i class="oi oi-chevron-bottom"></i>
-            </button>
-
-            <div class="workload-section">
-                <span class="side-label">Workload</span>
-                <p>6 Active Tasks</p>
-                <div class="workload-icons">
-                    @for (int i = 0; i < 5; i++)
-                    {
-                        <i class="oi oi-person blue"></i>
-                    }
-                    <i class="oi oi-person grey"></i>
-                </div>
-            </div>
-        }
-    </aside>
+        </aside>
+    </main>
 </div>
 
 @code {
-    private string SelectedTab = "Today";
     private string SearchQuery = "";
     private TaskDto? SelectedTask;
-    private string[] Tabs = { "Today", "Overdue", "Upcoming", "Completed" };
 
-    private List<TaskDto> FilteredTasks => WorkspaceState.Tasks
-        .Where(t => SelectedTab switch
-        {
-            "Today" => t.DueDate?.Date == DateTime.Today,
-            "Overdue" => TaskRulesEngine.IsOverdue(t),
-            "Upcoming" => t.DueDate?.Date > DateTime.Today && !t.Completed,
-            "Completed" => t.Completed,
-            _ => true
-        })
-        .Where(t => string.IsNullOrEmpty(SearchQuery) ||
+    // REACTIVE FILTERING LOGIC
+    private List<TaskDto> FilteredTasks => State.Tasks
+        .Where(t => string.IsNullOrWhiteSpace(SearchQuery) ||
                     t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
                     t.CompanyName?.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) == true)
         .ToList();
 
-    private void OnSearchInput(ChangeEventArgs e) => SearchQuery = e.Value?.ToString() ?? "";
-    private void ChangeTab(string tab) => SelectedTab = tab;
+    private void OnSearch(ChangeEventArgs e) => SearchQuery = e.Value?.ToString() ?? "";
 
-    private int GetCount(string tab) => WorkspaceState.Tasks.Count(t =>
-        tab == "Today" ? t.DueDate?.Date == DateTime.Today : TaskRulesEngine.IsOverdue(t));
+    private void HandleTaskSelection(TaskDto task) => SelectedTask = task;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load the 5 image-specific dummy tasks if list is empty
+        if (State.Tasks == null || State.Tasks.Count == 0)
+        {
+            await State.LoadTasksAsync();
+        }
+        
+        // Auto-select the first task (Inquiry about Product XYZ) to fill sidebar
+        SelectedTask = State.Tasks?.FirstOrDefault();
+    }
 }

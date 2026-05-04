@@ -1,0 +1,140 @@
+﻿.task-card {
+    display: grid;
+    /* COLUMN WIDTHS MATCHING IMAGE DENSITY */
+    grid-template-columns: 1.5fr 1fr 1fr 180px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin-bottom: 8px;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+    .task-card:hover {
+        border-color: #2563eb;
+        background-color: #f8fafc;
+    }
+
+/* COL 1: TITLE & COMPANY */
+.card-t {
+    font-weight: 800;
+    font-size: 13px;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.card-c {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* COL 2: PRIORITY & DUE DATE */
+.priority-chip {
+    font-size: 9px;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    width: fit-content;
+}
+
+    .priority-chip.urgent {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .priority-chip.high {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .priority-chip.normal {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+.due-text {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+    .due-text i {
+        font-size: 10px;
+        margin-right: 4px;
+    }
+
+.red-alert {
+    color: #ef4444 !important;
+}
+
+/* COL 3: SOURCE EMAIL */
+.source-email-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-ghost-sm {
+    background: transparent;
+    border: none;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.sage-s-box {
+    background: #2563eb;
+    color: white;
+    padding: 0 4px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: 900;
+}
+
+/* COL 4: COMPLETE & BLUE SQUARE */
+.final-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-outline-complete {
+    border: 1px solid #cbd5e1;
+    background: white;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.btn-sage-blue-square {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+}

@@ -23,5 +23,7 @@ public interface ITaskService
     Task<List<ApprovalDto>> GetPendingApprovalsAsync(string userId);
     Task<List<TaskDto>> GetAllTasksAsync();
     Task<List<ApprovalDto>> GetAllPendingApprovalsAsync();
-    
+
+    Task<TaskResponse> DelegateAsync(DelegateTaskRequest request, CancellationToken ct);
+
 }

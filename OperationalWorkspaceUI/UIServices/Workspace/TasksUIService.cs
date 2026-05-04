@@ -33,20 +33,31 @@ public class TasksUIService
     public Task<List<TaskDto>> GetTasksAsync()
         => Task.FromResult(_workspaceState.Tasks?.ToList() ?? new List<TaskDto>());
 
-    // ✅ FIXED METHOD (THIS IS THE ONLY IMPORTANT CHANGE)
     public async Task<bool> CreateTaskAsync(CreateTaskRequest request)
     {
         var response = await _http.PostAsJsonAsync("api/tasks", request);
-
         if (response.IsSuccessStatusCode)
         {
-            await LoadTasksAsync(); // refresh UI
+            await LoadTasksAsync();
             return true;
         }
-
         return false;
     }
 
 
 
+
+    // ✅ ADDED THIS METHOD TO FIX THE COMPILATION ERROR
+    public async Task<bool> DelegateTaskAsync(Guid taskId, string employeeEmail)
+    {
+        var request = new { TaskId = taskId, Recipient = employeeEmail };
+        var response = await _http.PostAsJsonAsync("api/tasks/delegate", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadTasksAsync(); // Refresh state after delegating
+            return true;
+        }
+        return false;
+    }
 }

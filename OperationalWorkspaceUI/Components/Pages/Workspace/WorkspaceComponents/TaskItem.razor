@@ -1,33 +1,55 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Mappers
+@inject IJSRuntime JSRuntime
 
-<div class="task-item-row" @onclick="() => OnSelect.InvokeAsync(Task)">
-    <div class="task-info-col">
-        <div class="task-title">@Task.Title</div>
-        <div class="task-subtitle">@Task.CompanyName</div>
+<div class="task-card" @onclick="() => OnSelect.InvokeAsync(Task)">
+    
+    <!-- COL 1: IDENTITY (Title & Company) -->
+    <div class="card-col info-group">
+        <div class="card-t">@Task.Title</div>
+        <div class="card-c">@Task.CompanyName</div>
     </div>
 
-    <div class="task-status-col">
-        <!-- Uses Corrected PriorityLabel -->
-        <span class="status-badge @Task.Priority.ToString().ToLower()">
-            <i class="oi oi-tag"></i> @TaskRulesEngine.PriorityLabel(Task.Priority)
-        </span>
-        <!-- Uses Corrected DueLabel and Overdue Check -->
-        <span class="due-text @(TaskRulesEngine.IsOverdue(Task) ? "text-red" : "")">
-            <i class="oi oi-clock"></i> Due @TaskRulesEngine.DueLabel(Task)
-        </span>
+    <!-- COL 2: META (Priority Chip & Clock/Overdue Text) -->
+    <div class="card-col meta-group">
+        <div class="priority-chip @Task.Priority.ToString().ToLower()">
+            <i class="oi oi-media-record"></i> @TaskRulesEngine.PriorityLabel(Task.Priority)
+        </div>
+        <div class="due-text @(TaskRulesEngine.IsOverdue(Task) ? "red-alert" : "")">
+            <i class="oi oi-clock"></i> @TaskRulesEngine.DueLabel(Task)
+        </div>
     </div>
 
-    <div class="task-actions-col">
-        <button class="btn-action-ghost" @onclick:stopPropagation="true">
-            Open Source Email <img src="images/sage-icon.png" width="12" />
+    <!-- COL 3: EMAIL ACTION -->
+    <div class="card-col source-email-group">
+        <button class="btn-ghost-sm" @onclick="OpenEmail" @onclick:stopPropagation="true">
+            <i class="oi oi-circle-check"></i>
+            <span>Open Source Email</span>
+            <span class="sage-s-box">S</span>
         </button>
-        <button class="btn-action-outline" @onclick:stopPropagation="true">Complete</button>
-        <button class="btn-sage-square"><i class="oi oi-external-link"></i></button>
+    </div>
+
+    <!-- COL 4: FINAL ACTIONS (Complete & Sage Link) -->
+    <div class="card-col final-actions">
+        <button class="btn-outline-complete" @onclick:stopPropagation="true">
+            <i class="oi oi-envelope-closed"></i> Complete
+        </button>
+        
+        <button class="btn-sage-blue-square" title="Open in Sage X3">
+            <i class="oi oi-external-link"></i>
+        </button>
     </div>
 </div>
 
 @code {
     [Parameter] public TaskDto Task { get; set; } = default!;
     [Parameter] public EventCallback<TaskDto> OnSelect { get; set; }
+
+    private async Task OpenEmail()
+    {
+        if (!string.IsNullOrEmpty(Task.OutlookItemId))
+        {
+            await JSRuntime.InvokeVoidAsync("openOutlookItem", Task.OutlookItemId);
+        }
+    }
 }

@@ -94,6 +94,21 @@ public class TaskService : ITaskService
         }).ToList();
     }
 
+    public async Task<TaskResponse> DelegateAsync(DelegateTaskRequest request, CancellationToken ct)
+    {
+        var task = await _repository.GetByIdAsync(request.TaskId);
+        if (task == null) return new TaskResponse { IsSuccess = false, Message = "Task not found" };
+
+        task.AssignedTo = request.RecipientEmail;
+        task.Status = TaskStatus.Assigned; // Move to "In Progress"
+        task.UpdatedDate = DateTime.UtcNow;
+
+        await _repository.UpdateAsync(task);
+
+        return new TaskResponse { IsSuccess = true, Id = task.Id, Message = "Task delegated successfully" };
+    }
+
+
     public async System.Threading.Tasks.Task<List<ApprovalDto>> GetAllPendingApprovalsAsync()
     {
         var approvals = await _repo.GetPendingApprovalsAsync(null, CancellationToken.None);

@@ -1,78 +1,52 @@
-﻿.tasks-root {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: #f3f4f6;
-}
-
-.tasks-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 20px;
-    background: white;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.user {
+﻿/* Container for the 3-column board */
+.kanban-board {
     display: flex;
     gap: 10px;
-}
-
-.avatar {
-    width: 40px;
-    height: 40px;
-    background: #cbd5f5;
-    border-radius: 50%;
-}
-
-.name {
-    font-weight: 600;
-}
-
-.role {
-    font-size: 12px;
-    color: #6b7280;
-}
-
-.search-box {
-    width: 400px;
-}
-
-.tasks-body {
-    display: flex;
+    padding: 12px;
+    background: #f3f5f8; /* Soft Sage Background */
     flex: 1;
+    overflow-x: auto;
+    height: calc(100vh - 120px);
 }
 
-.tasks-left {
-    flex: 2;
-    padding: 16px;
-}
-
-.tabs {
+/* Individual Status Columns */
+.kanban-col {
+    flex: 1;
+    min-width: 260px;
+    max-width: 320px;
+    background: #ebedef;
+    border-radius: 8px;
     display: flex;
-    gap: 16px;
-    margin-bottom: 12px;
+    flex-direction: column;
+    padding: 10px;
 }
 
-.tab {
-    padding: 6px 10px;
-    cursor: pointer;
-    color: #6b7280;
+/* Column Header with Task Count */
+.col-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 800;
+    font-size: 12px;
+    color: #333;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #d1d5db;
+    margin-bottom: 10px;
 }
 
-    .tab.active {
-        border-bottom: 2px solid #3b82f6;
-        color: black;
-        font-weight: 600;
+    .col-head span.count {
+        background: #d1d5db;
+        padding: 1px 7px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: 700;
     }
 
-.task-list {
+/* Scrollable task area inside column */
+.col-body {
+    flex: 1;
     overflow-y: auto;
-}
-
-.tasks-right {
-    width: 340px;
-    background: white;
-    border-left: 1px solid #e5e7eb;
-    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }

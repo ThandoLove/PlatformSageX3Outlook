@@ -1,146 +1,128 @@
-﻿.task-hub-container {
-    display: flex;
-    background: #f4f7fa;
-    padding: 10px;
-    gap: 12px;
-    font-family: 'Segoe UI', sans-serif;
+﻿/* --- 1. GLOBAL WRAPPER --- */
+.sage-app {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    background: #f8fafc !important; /* Exact light blue-grey background */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    font-size: 11px !important;
+    overflow: hidden !important;
 }
 
-.hub-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* --- 2. THE ALEX TURNER HEADER --- */
+.sage-header {
+    display: flex !important;
+    align-items: center !important;
+    background: white !important;
+    padding: 8px 24px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    height: 56px !important;
+    flex-shrink: 0 !important;
 }
 
-.details-sidebar {
-    width: 280px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* Profile Header */
-.profile-header {
-    background: white;
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
+.user-block {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    min-width: 240px;
 }
 
-.avatar-wrapper {
+.avatar-ring {
     position: relative;
-    width: 38px;
-    height: 38px;
+    margin-right: 12px;
 }
 
-    .avatar-wrapper img {
-        width: 100%;
+    .avatar-ring img {
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         border: 2px solid #10b981;
     }
 
-.status-dot {
+.online-dot {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 10px;
-    height: 10px;
+    bottom: 1px;
+    right: 1px;
+    width: 8px;
+    height: 8px;
     background: #10b981;
-    border: 2px solid #fff;
+    border: 2px solid white;
     border-radius: 50%;
 }
 
-/* Card Hub & Tabs */
-.hub-card-container {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.hub-tabs {
-    display: flex;
-    border-bottom: 1px solid #f1f5f9;
-    background: white;
-}
-
-.tab {
-    padding: 12px 18px;
+.u-name {
+    display: block;
     font-weight: 700;
-    color: #64748b;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
+    font-size: 13px;
+    color: #1e293b;
 }
 
-    .tab.active {
-        color: #2563eb;
-        border-bottom-color: #2563eb;
-    }
-
-/* Grid Rows */
-.task-item-row {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1.5fr;
-    padding: 15px 20px;
-    border-bottom: 1px solid #f1f5f9;
-    background: white;
-}
-
-.status-badge {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 800;
+.u-role {
     font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
 }
 
-    .status-badge.urgent {
-        background: #fee2e2;
-        color: #ef4444;
-    }
-
-    .status-badge.high {
-        background: #dbeafe;
-        color: #2563eb;
-    }
-
-/* Charts & Sidebar */
-.histogram-bars {
-    height: 60px;
-    display: flex;
-    align-items: flex-end;
-    gap: 5px;
-    margin-top: 10px;
+/* MODERN SEARCH PILL */
+.search-pill {
+    background: #f1f5f9 !important;
+    border-radius: 8px !important;
+    flex: 1 !important;
+    max-width: 580px !important;
+    height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    margin-left: 50px !important;
+    padding: 0 12px !important;
+    border: 1px solid #e2e8f0 !important;
 }
 
-.bar {
-    flex: 1;
-    border-radius: 2px;
+.search-icon {
+    color: #94a3b8;
+    font-size: 13px;
 }
 
-.bar-red {
-    background: #fca5a5;
+.dropdown-icon {
+    color: #64748b;
+    font-size: 10px;
+    cursor: pointer;
 }
 
-.bar-orange {
-    background: #fdba74;
+.search-pill input {
+    border: none !important;
+    background: transparent !important;
+    width: 100% !important;
+    outline: none !important;
+    font-size: 11.5px !important;
+    padding: 0 10px !important;
+    color: #1e293b !important;
 }
 
-.bar-green {
-    background: #86efac;
+/* --- 3. THE 2-COLUMN BODY --- */
+.sage-body {
+    display: flex !important;
+    flex-direction: row !important; /* FORCES SIDE-BY-SIDE */
+    flex: 1 !important;
+    padding: 15px !important;
+    gap: 15px !important;
+    overflow: hidden !important;
 }
 
-.btn-blue-action {
-    background: #2563eb;
-    color: white;
-    border: none;
-    width: 100%;
-    padding: 12px;
-    border-radius: 6px;
-    font-weight: 800;
-    display: flex;
-    justify-content: space-between;
+/* LEFT HUB AREA */
+.hub-main-container {
+    flex: 1 !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+/* RIGHT SIDEBAR AREA */
+.details-sidebar {
+    width: 280px !important; /* Exact width from mockup */
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    overflow-y: auto !important;
 }
