@@ -25,15 +25,23 @@ namespace OperationalWorkspaceUI.State
 
         // GLOBAL FLAGS FOR DASHBOARD PREVIEWS
         public bool IsUploading { get; set; }
+        public bool IsSendingKnowledge { get; set; }
 
         // 2. STATE NOTIFICATION (Broadcast)
         public event Action? OnChange;
         public void Notify() => OnChange?.Invoke();
 
-        // A helper to update the status and notify the dashboard instantly
+        // Helper to update document status and notify dashboard
         public void SetUploading(bool status)
         {
             IsUploading = status;
+            Notify();
+        }
+
+        // Helper to update knowledge status and notify dashboard
+        public void SetSendingKnowledge(bool status)
+        {
+            IsSendingKnowledge = status;
             Notify();
         }
 

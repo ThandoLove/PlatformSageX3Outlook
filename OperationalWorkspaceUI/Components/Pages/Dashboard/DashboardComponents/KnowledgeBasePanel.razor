@@ -1,14 +1,24 @@
 ﻿@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
 @using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
-@inject NavigationManager NavManager
-
 
 @implements IDisposable
-@inject DashboardState State
+@inject WorkspaceState WState
+@inject NavigationManager NavManager
 
-<FluentCard Class="kb-widget-card">
+<FluentCard Class="kb-widget-card" Style="position: relative;">
+    
+    @* --- LIVE OVERLAY: Dims the tile when an article is being sent --- *@
+    @if (WState.IsSendingKnowledge)
+    {
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: inherit;">
+            <FluentProgressRing Style="width: 32px; height: 32px;" />
+            <span style="margin-top: 12px; font-size: 0.85rem; color: #008272; font-weight: 600;">Sending Article...</span>
+        </div>
+    }
+
     @* Panel Header *@
     <div class="panel-header">
         <h3>Knowledge Base</h3>
@@ -27,9 +37,9 @@
     <div class="kb-links-container">
         @if (FilteredArticles != null && FilteredArticles.Any())
         {
-            @foreach (var kb in FilteredArticles)
+            @foreach (var kb in FilteredArticles.Take(4))
             {
-                <a href="@kb.Url" target="_blank" class="kb-link-wrapper">
+                <div class="kb-link-wrapper" style="cursor: pointer;" @onclick="NavigateToKB">
                     <div class="kb-link-item">
                         <FluentIcon Value="@GetIcon(kb.Title)" Color="@GetIconColor(kb.Title)" />
                         
@@ -42,7 +52,7 @@
                                     Color="@Color.Accent"
                                     Class="arrow-icon" />
                     </div>
-                </a>
+                </div>
             }
         }
         else
@@ -65,8 +75,6 @@
 </FluentCard>
 
 @code {
-    // 🔥 FIX: This property matches the 'Data' parameter the Dashboard is trying to send.
-    // I used KnowledgeDto because your HTML logic relies on it.
     [Parameter]
     public List<KnowledgeDto>? Data { get; set; }
 
@@ -74,7 +82,19 @@
 
     protected override void OnInitialized()
     {
-        State.OnChange += HandleStateChanged;
+        // Subscribe to WorkspaceState so the 'Sending' overlay works
+        WState.OnChange += HandleStateChanged;
+
+        // Populate initial data if empty
+        if (WState.KnowledgeBase == null || !WState.KnowledgeBase.Any())
+        {
+            WState.KnowledgeBase = new List<KnowledgeDto>
+            {
+                new KnowledgeDto { Title = "Pricing Guidelines 2024", Url = "#" },
+                new KnowledgeDto { Title = "Product Installation Guide", Url = "#" },
+                new KnowledgeDto { Title = "Sage X3 FAQ", Url = "#" }
+            };
+        }
     }
 
     private void HandleStateChanged()
@@ -82,10 +102,11 @@
         InvokeAsync(StateHasChanged);
     }
 
+    // POINTED TO WState (WorkspaceState)
     private IEnumerable<KnowledgeDto> FilteredArticles =>
         string.IsNullOrWhiteSpace(_searchQuery)
-            ? State.KnowledgeBase
-            : State.KnowledgeBase.Where(a => a.Title.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
+            ? WState.KnowledgeBase
+            : WState.KnowledgeBase.Where(a => a.Title.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
 
     private Icon GetIcon(string title) => title.ToLower() switch
     {
@@ -104,12 +125,11 @@
 
     public void Dispose()
     {
-        State.OnChange -= HandleStateChanged;
+        WState.OnChange -= HandleStateChanged;
     }
 
     private void NavigateToKB()
     {
-        // Replace "/knowledge-base" with the actual route of your page
         NavManager.NavigateTo("/knowledge-page");
     }
 }

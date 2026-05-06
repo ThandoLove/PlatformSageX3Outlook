@@ -4,24 +4,26 @@
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using System.Text.RegularExpressions
 
 @inject NavigationManager NavManager
 @inject KnowledgeUIService KBService
+@inject WorkspaceState WState
 @inject Radzen.NotificationService Notifications
 
-<div class="kb-page-container" style="padding: 20px; background-color: #f8fafc; min-height: 100vh; position: relative;">
+<div class="kb-page-container">
     
-    @* 1. HEADER SECTION: Bold Blue Underline *@
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="font-weight: 900; color: #002d5a; margin: 0; font-size: 1.8rem; border-bottom: 3px solid #002d5a; padding-bottom: 8px;">Knowledge Base</h1>
-        <FluentButton Appearance="Appearance.Accent" Style="background-color: #0061d5; font-weight: 600;" OnClick="CreateArticle">New Article</FluentButton>
+    @* HEADER *@
+    <div class="kb-header">
+        <h1 class="kb-title">Knowledge Base</h1>
+        <FluentButton Appearance="Appearance.Accent" class="kb-new-btn" OnClick="CreateArticle">New Article</FluentButton>
     </div>
 
-    @* 2. FILTER BAR: All Categories and Sort Options *@
-    <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
-        <div style="position: relative; flex-grow: 1; max-width: 350px;">
+    @* FILTERS *@
+    <div class="kb-filter-bar">
+        <div class="search-wrapper">
             <FluentSearch Placeholder="Search Sage X3 Articles..."
                           @bind-Value="SearchQuery"
                           @bind-Value:event="oninput"
@@ -34,36 +36,34 @@
         <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Filter())">Filter</FluentButton>
     </div>
 
-    @* 3. DATA TABLE: Title, Category, Views, and Fixed Actions *@
-    <div style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+    @* DATA TABLE *@
+    <div class="kb-table-container">
+        <table class="kb-table">
             <thead>
-                <tr style="color: #94a3b8; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #f1f5f9; text-align: left;">
-                    <th style="padding: 12px; width: 40px;"><FluentCheckbox /></th>
-                    <th style="padding: 12px;">ARTICLE TITLE</th>
-                    <th style="padding: 12px;">CATEGORY</th>
-                    <th style="padding: 12px; text-align: center;">VIEWS</th>
-                    <th style="padding: 12px; text-align: right;">ACTIONS</th>
+                <tr>
+                    <th style="width: 40px;"><FluentCheckbox /></th>
+                    <th>ARTICLE TITLE</th>
+                    <th>CATEGORY</th>
+                    <th style="text-align: center;">VIEWS</th>
+                    <th style="text-align: right;">ACTIONS</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var article in FilteredArticles)
                 {
-                    <tr style="border-bottom: 1px solid #f8fafc;" class="kb-row-hover">
-                        <td style="padding: 12px;"><FluentCheckbox /></td>
-                        <td style="padding: 12px;">
-                            <FluentButton Appearance="Appearance.Lightweight" Style="color: #0061d5; font-weight: 600; padding: 0;" OnClick="@(() => OpenPreview(article))">
+                    <tr class="kb-row-hover">
+                        <td><FluentCheckbox /></td>
+                        <td>
+                            <FluentButton Appearance="Appearance.Lightweight" class="kb-title-btn" OnClick="@(() => OpenPreview(article))">
                                 <FluentIcon Value="@(new Icons.Regular.Size20.Document())" Style="margin-right: 8px; vertical-align: middle;" />
                                 @article.Title
                             </FluentButton>
                         </td>
-                        <td style="padding: 12px; color: #64748b;">@article.Category</td>
-                        <td style="padding: 12px; color: #64748b; text-align: center;">@article.Views</td>
-                        <td style="padding: 12px; text-align: right;">
-                            <FluentButton Appearance="Appearance.Outline" Style="color: #475569; border: 1px solid #e2e8f0;" OnClick="@(() => OpenPreview(article))">Preview</FluentButton>
-                            <FluentButton Appearance="Appearance.Accent" Style="background-color: #008272; margin: 0 8px;" OnClick="@(() => OpenEmailForm(article))">Send</FluentButton>
-                            
-                            @* Restored Delete Button *@
+                        <td class="kb-col-category">@article.Category</td>
+                        <td class="kb-col-views">@article.Views</td>
+                        <td class="kb-actions">
+                            <FluentButton Appearance="Appearance.Outline" OnClick="@(() => OpenPreview(article))">Preview</FluentButton>
+                            <FluentButton Appearance="Appearance.Accent" class="kb-send-btn" OnClick="@(() => OpenEmailForm(article))">Send</FluentButton>
                             <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => DeleteArticle(article))">
                                 <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                             </FluentButton>
@@ -74,31 +74,43 @@
         </table>
     </div>
 
-    @* 4. MODAL OVERLAY: Preview, Send Form, and Success State *@
+    @* MODAL OVERLAY *@
     @if (SelectedArticle != null)
     {
-        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
-            <div style="background: white; width: 650px; max-height: 85vh; border-radius: 12px; padding: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow-y: auto;">
+        <div class="kb-modal-backdrop">
+            <div class="kb-modal-content">
                 
                 @if (!IsSuccessMode)
                 {
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2 style="color: #002d5a; margin: 0;">@(IsEmailMode ? "Send Article" : SelectedArticle.Title)</h2>
+                    <div class="modal-header">
+                        <h2>@(IsEmailMode ? "Send Article" : SelectedArticle.Title)</h2>
                         <FluentButton Appearance="Appearance.Stealth" OnClick="CloseModal" Disabled="IsSending"><FluentIcon Value="@(new Icons.Regular.Size24.Dismiss())" /></FluentButton>
                     </div>
-                    <hr style="margin: 20px 0; border-top: 1px solid #e2e8f0;" />
+                    <hr class="modal-divider" />
 
                     @if (IsEmailMode)
                     {
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                            <FluentTextField @bind-Value="RecipientEmail" Placeholder="recipient@company.com" Label="Recipient Email" Style="width: 100%;" @oninput="@(e => RecipientEmail = e.Value?.ToString() ?? "")" />
+                        <div class="email-form-box">
+                            <FluentTextField @bind-Value="RecipientEmail"
+                                             Placeholder="recipient@company.com"
+                                             Label="Recipient Email"
+                                             @oninput="@(e => RecipientEmail = e.Value?.ToString() ?? "")"
+                                             Style="width: 100%;" />
+                            
                             @if (!string.IsNullOrEmpty(RecipientEmail) && !IsEmailValid)
                             {
-                                <span style="color: #d32f2f; font-size: 0.75rem; margin-top: 4px; display: block;">Invalid email format.</span>
+                                <span class="validation-error">Please enter a valid email address.</span>
                             }
-                            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px;">
+
+                            <div class="modal-footer-actions">
                                 <FluentButton Appearance="Appearance.Stealth" OnClick="CloseModal" Disabled="IsSending">Cancel</FluentButton>
-                                <FluentButton Appearance="Appearance.Accent" Style="background-color: #008272; min-width: 140px;" OnClick="SendAsAttachment" Disabled="@(!IsEmailValid || IsSending)">
+                                <FluentButton Appearance="Appearance.Accent" class="kb-send-confirm-btn"
+                                              OnClick="SendAsAttachment"
+                                              Disabled="@(!IsEmailValid || IsSending)">
+                                    @if (IsSending)
+                                    {
+                                        <FluentProgressRing Style="width:16px; height:16px; margin-right:8px;" />
+                                    }
                                     @(IsSending ? "Sending..." : "Confirm Send")
                                 </FluentButton>
                             </div>
@@ -106,48 +118,36 @@
                     }
                     else
                     {
-                        <p style="line-height: 1.6; color: #1e293b;">@SelectedArticle.Content</p>
-                        <div style="text-align: right; margin-top: 32px;">
+                        <div class="preview-text">@SelectedArticle.Content</div>
+                        <div class="modal-footer-actions">
                             <FluentButton Appearance="Appearance.Accent" OnClick="CloseModal">Close</FluentButton>
                         </div>
                     }
                 }
                 else
                 {
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0;">
+                    <div class="success-state">
                         <FluentIcon Value="@(new Icons.Filled.Size32.CheckmarkCircle())" Color="Color.Success" Style="width: 64px; height: 64px;" />
-                        <h2 style="color: #008272; margin-top: 20px;">Sent!</h2>
-                        <p>Closing window...</p>
+                        <h2>Sent Successfully!</h2>
+                        <p>The dashboard has been updated.</p>
                     </div>
                 }
             </div>
         </div>
     }
 
-    @* 5. FOOTER: Browse Sage Button & Pagination *@
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 0 10px;">
-        <FluentAnchor Appearance="Appearance.Stealth"
-                      Href="https://your-sage-x3-url.com"
-                      Target="_blank"
-                      Style="color: #0061d5; font-weight: 600; text-decoration: none;">
+    @* FOOTER *@
+    <div class="kb-footer">
+        <FluentAnchor Appearance="Appearance.Stealth" Href="https://your-sage-url.com" Target="_blank" class="kb-browse-link">
             Browse Sage X3 →
         </FluentAnchor>
-
-        <div style="display: flex; align-items: center; gap: 15px; color: #64748b; font-size: 0.8rem;">
+        <div class="kb-pagination">
             <span>1 of 1</span>
-            <div style="display: flex; gap: 5px;">
-                <FluentButton Appearance="Appearance.Stealth">Prev</FluentButton>
-                <FluentButton Appearance="Appearance.Stealth">Next</FluentButton>
-            </div>
+            <FluentButton Appearance="Appearance.Stealth">Prev</FluentButton>
+            <FluentButton Appearance="Appearance.Stealth">Next</FluentButton>
         </div>
     </div>
 </div>
-
-<style>
-    .kb-row-hover:hover {
-        background-color: #f8fafc;
-    }
-</style>
 
 @code {
     private KbArticle? SelectedArticle;
@@ -162,19 +162,40 @@
     private async Task SendAsAttachment()
     {
         if (SelectedArticle == null) return;
-        IsSending = true;
-        await Task.Delay(1200);
-        await KBService.SendKnowledgeAsync(new SendKnowledgeModel { SearchQuery = SelectedArticle.Title, Message = RecipientEmail });
-        IsSuccessMode = true; IsSending = false;
-        StateHasChanged();
-        await Task.Delay(2000);
-        CloseModal();
+        
+        // 1. BROADCAST START TO DASHBOARD
+        WState.SetSendingKnowledge(true);
+
+        try
+        {
+            IsSending = true;
+            await Task.Delay(1500); // Simulate network
+            
+            await KBService.SendKnowledgeAsync(new SendKnowledgeModel
+            {
+                SearchQuery = SelectedArticle.Title,
+                Message = RecipientEmail
+            });
+            
+            IsSuccessMode = true;
+            IsSending = false;
+            StateHasChanged();
+            
+            await Task.Delay(2000);
+            CloseModal();
+        }
+        finally
+        {
+            // 2. BROADCAST END TO DASHBOARD
+            WState.SetSendingKnowledge(false);
+        }
     }
 
     private void DeleteArticle(KbArticle article)
     {
         MasterArticles.Remove(article);
-        Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Deleted", Detail = "Article removed from list." });
+        WState.LogActivity(article.Title, "Deleted Article", "Tia");
+        Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Deleted", Detail = "Article removed." });
     }
 
     private bool IsEmailValid => Regex.IsMatch(RecipientEmail ?? "", @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
@@ -185,10 +206,8 @@
     };
 
     private List<KbArticle> MasterArticles = new() {
-        new("Pricing Guidelines 2024", "Pricing Guidelines", DateTime.Parse("Apr 24, 2024"), 128, "Sage X3 pricing tiered structure for 2024."),
-        new("Product Installation Guide", "Product Documentation", DateTime.Parse("Apr 23, 2024"), 96, "Step-by-step server configuration..."),
-        new("Frequently Asked Questions", "FAQ", DateTime.Parse("Apr 21, 2024"), 210, "Top user permission answers..."),
-        new("How to Create a Sales Order", "How To Guides", DateTime.Parse("Apr 20, 2024"), 153, "Full O-WS interface instructions...")
+        new("Pricing Guidelines 2024", "Pricing Guidelines", DateTime.Now, 120, "Sage X3 pricing tiered structure for 2024."),
+        new("How to Create a Sales Order", "How To Guides", DateTime.Now, 153, "Full O-WS interface instructions...")
     };
 
     private IEnumerable<KbArticle> FilteredArticles => MasterArticles
