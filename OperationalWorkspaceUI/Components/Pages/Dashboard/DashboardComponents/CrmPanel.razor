@@ -5,6 +5,9 @@
 
 @implements IDisposable
 @inject DashboardState State
+@inject WorkspaceState WorkspaceState
+
+
 
 <FluentCard Class="crm-snapshot-card">
     @* Header *@
@@ -66,4 +69,7 @@
     }
 
     public void Dispose() => State.OnChange -= StateHasChanged;
-}
+
+    }
+
+

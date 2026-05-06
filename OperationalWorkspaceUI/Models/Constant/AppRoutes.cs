@@ -6,7 +6,7 @@
         public const string Home = "/";
         public const string Dashboard = "dashboard";
         
-        public const string BusinessPartners = "business-partners";
+        public const string BusinessPartners = "contacts";
         public const string Orders = "orders";
         public const string Tasks = "tasks";
         public const string Activity = "activities";

@@ -56,12 +56,21 @@
     <ReconnectModal />
 
     <!-- SCRIPTS -->
-    <script src="_framework/blazor.web.js"></script>
-    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
-    <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
+    <!-- SCRIPTS (ORDER MATTERS!) -->
+    <!-- 1. External / Custom JS FIRST -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <script src="/js/charts.js"></script>
     <script src="/js/officeBridge.js"></script>
     <script src="/js/app.js"></script>
+
+    <!-- 2. Blazor LAST -->
+    <script src="_framework/blazor.web.js"></script>
+
+    <!-- 3. Component libraries AFTER Blazor -->
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
 
     <script>
         if (window.Office) {

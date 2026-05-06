@@ -10,70 +10,102 @@
 @inject EmailContextState EmailState
 @inject IBusinessPartnerService BPService
 
-<div class="right-panel-container" style="padding: 16px; background-color: #f4f7f9; height: 100%; overflow-y: auto; border-left: 1px solid #e2e8f0;">
-    @if (IsLoading)
-    {
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px;">
-            <FluentProgressRing />
-            <p style="margin-top: 10px; color: #64748b;">Checking Sage X3...</p>
-        </div>
-    }
-    else if (DashboardState.SelectedOrderId != null)
-    {
-        @* ORDER INSIGHT CARD *@
-        <FluentCard Style="width: 100%; padding: 16px; margin-bottom: 20px; border-left: 4px solid #0078d4;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Order Insight</h3>
-                <div style="background-color: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">SAGE X3</div>
-            </div>
+<div class="right-panel-wrapper" style="position: relative; height: 100%; display: flex; flex-direction: row;">
 
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color: #64748b; min-width: 80px;">Order #:</span>
-                    <span style="font-weight: 600; color: #1e293b;">@DashboardState.SelectedOrderId</span>
-                </div>
-                <p style="font-size: 0.85rem; color: #475569; margin: 8px 0 0 0;">
-                    Viewing live context for this order.
-                </p>
-            </div>
-            
-            <FluentButton Appearance="Appearance.Stealth"
-                          Style="width: 100%; margin-top: 12px;"
-                          OnClick="@(async () => await DashboardState.LoadOrderDetailsAsync(null))">
-                Clear Context
-            </FluentButton>
-        </FluentCard>
-    }
-    else if (EmailState.CurrentEmail == null)
-    {
-        <FluentCard Style="padding: 20px; text-align: center;">
-            <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size32.Mail())"
-                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
-            <p style="color: #64748b; margin-top: 10px;">Select an email or order record.</p>
-        </FluentCard>
-    }
-    else
-    {
-        @* EMAIL INSIGHT CARD *@
-        <FluentCard Style="width: 100%; padding: 16px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Email Insight</h3>
-                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
-            </div>
+    @* COLLAPSE TOGGLE BUTTON *@
+    <div style="position: absolute; left: -16px; top: 20px; z-index: 100;">
+        <FluentButton Appearance="Appearance.Accent"
+                      OnClick="TogglePanel"
+                      Style="border-radius: 50%; min-width: 32px; height: 32px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            @if (IsCollapsed)
+            {
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronLeft())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Fill" />
+            }
+            else
+            {
+                <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronRight())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Fill" />
+            }
+        </FluentButton>
+    </div>
 
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color: #64748b; min-width: 70px;">Contact:</span>
-                    <span style="font-weight: 500; color: #1e293b;">@EmailState.CurrentEmail.SenderName</span>
+    @* MAIN PANEL CONTENT *@
+    <div class="right-panel-container"
+         style="width: @(IsCollapsed ? "0px" : "350px");
+        padding: @(IsCollapsed ? "0" : "16px");
+        background-color: #f4f7f9;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border-left: @(IsCollapsed ? "none" : "1px solid #e2e8f0");
+        transition: width 0.3s ease, padding 0.3s ease;">
+
+        @if (!IsCollapsed)
+        {
+            @if (IsLoading)
+            {
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px;">
+                    <FluentProgressRing />
+                    <p style="margin-top: 10px; color: #64748b;">Checking Sage X3...</p>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color: #64748b; min-width: 70px;">Company:</span>
-                    <span style="font-weight: 500; color: #1e293b;">@(CurrentPartner?.Company ?? "Unknown")</span>
-                </div>
-            </div>
-        </FluentCard>
-    }
+            }
+            else if (DashboardState.SelectedOrderId != null)
+            {
+                <FluentCard Style="width: 100%; padding: 16px; margin-bottom: 20px; border-left: 4px solid #0078d4;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Order Insight</h3>
+                        <div style="background-color: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">SAGE X3</div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #64748b; min-width: 80px;">Order #:</span>
+                            <span style="font-weight: 600; color: #1e293b;">@DashboardState.SelectedOrderId</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #475569; margin: 8px 0 0 0;">
+                            Viewing live context for this order.
+                        </p>
+                    </div>
+                    
+                    <FluentButton Appearance="Appearance.Stealth"
+                                  Style="width: 100%; margin-top: 12px;"
+                                  OnClick="@(async () => await DashboardState.LoadOrderDetailsAsync(null))">
+                        Clear Context
+                    </FluentButton>
+                </FluentCard>
+            }
+            else if (EmailState.CurrentEmail == null)
+            {
+                <FluentCard Style="padding: 20px; text-align: center;">
+                    <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size32.Mail())"
+                                Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Accent" />
+                    <p style="color: #64748b; margin-top: 10px;">Select an email or order record.</p>
+                </FluentCard>
+            }
+            else
+            {
+                <FluentCard Style="width: 100%; padding: 16px; margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #333;">Email Insight</h3>
+                        <FluentIcon Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.ChevronDown())"
+                                    Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Neutral" />
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #64748b; min-width: 70px;">Contact:</span>
+                            <span style="font-weight: 500; color: #1e293b;">@EmailState.CurrentEmail.SenderName</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #64748b; min-width: 70px;">Company:</span>
+                            <span style="font-weight: 500; color: #1e293b;">@(CurrentPartner?.Company ?? "Unknown")</span>
+                        </div>
+                    </div>
+                </FluentCard>
+            }
+        }
+    </div>
 </div>
 
 @code {
@@ -82,6 +114,7 @@
     private BusinessPartnerSnapshotDto? CurrentPartner;
     private ContactCreateDto NewContact = new();
     private bool IsLoading = false;
+    private bool IsCollapsed = false;
     private DotNetObjectReference<RightPanel>? _dotRef;
 
     protected override void OnInitialized()
@@ -98,11 +131,18 @@
         }
     }
 
+    private void TogglePanel()
+    {
+        IsCollapsed = !IsCollapsed;
+        StateHasChanged();
+    }
+
     private async void HandleStateChange()
     {
         if (DashboardState.SelectedOrderId != null)
         {
             EmailState.CurrentEmail = null;
+            IsCollapsed = false;
         }
         await InvokeAsync(StateHasChanged);
     }
@@ -111,7 +151,7 @@
     public async Task HandleEmailSelection(EmailBridgeContext context)
     {
         IsLoading = true;
-        // FIX: Added 'await' here to resolve the error in your image
+        IsCollapsed = false;
         await DashboardState.LoadOrderDetailsAsync(null);
         await InvokeAsync(StateHasChanged);
 

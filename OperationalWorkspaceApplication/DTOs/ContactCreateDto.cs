@@ -29,7 +29,9 @@ namespace OperationalWorkspaceApplication.DTOs
         public string SalesRepId { get; set; } = string.Empty;
 
         // Metadata for Sage X3
-        public string Category { get; set; } = "BPC"; // Business Partner Customer
+        public string Category { get; set; } = "CCN"; // Business Partner Customer
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public bool IsActive { get; set; } = true;
     }
 }

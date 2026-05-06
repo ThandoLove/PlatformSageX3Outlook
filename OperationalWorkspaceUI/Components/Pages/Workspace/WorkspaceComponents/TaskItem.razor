@@ -10,32 +10,36 @@
         <div class="card-c">@Task.CompanyName</div>
     </div>
 
-    <!-- COL 2: META (Priority Chip & Clock/Overdue Text) -->
-    <div class="card-col meta-group">
-        <div class="priority-chip @Task.Priority.ToString().ToLower()">
-            <i class="oi oi-media-record"></i> @TaskRulesEngine.PriorityLabel(Task.Priority)
-        </div>
+    <!-- COL 2: STATUS (Priority Chip & Dynamic Due Date) -->
+    <div class="card-col status-group">
+        <span class="p-chip @Task.Priority.ToString().ToLower()">
+            <i class="oi oi-layers"></i> @Task.Priority
+        </span>
         <div class="due-text @(TaskRulesEngine.IsOverdue(Task) ? "red-alert" : "")">
             <i class="oi oi-clock"></i> @TaskRulesEngine.DueLabel(Task)
         </div>
     </div>
 
-    <!-- COL 3: EMAIL ACTION -->
-    <div class="card-col source-email-group">
-        <button class="btn-ghost-sm" @onclick="OpenEmail" @onclick:stopPropagation="true">
+    <!-- COL 3: SOURCE (Link with S-Box) -->
+    <div class="card-col source-group">
+        <button class="btn-ghost-link" @onclick="OpenEmail" @onclick:stopPropagation="true">
             <i class="oi oi-circle-check"></i>
             <span>Open Source Email</span>
             <span class="sage-s-box">S</span>
         </button>
     </div>
 
-    <!-- COL 4: FINAL ACTIONS (Complete & Sage Link) -->
-    <div class="card-col final-actions">
+    <!-- COL 4: MAIN ACTION (Complete Button) -->
+    <div class="card-col action-group">
         <button class="btn-outline-complete" @onclick:stopPropagation="true">
-            <i class="oi oi-envelope-closed"></i> Complete
+            <i class="oi oi-envelope-closed"></i>
+            <span>Complete</span>
         </button>
-        
-        <button class="btn-sage-blue-square" title="Open in Sage X3">
+    </div>
+
+    <!-- COL 5: SAGE ACTION (The Blue Square) -->
+    <div class="card-col sage-link-group">
+        <button class="btn-blue-square-icon" title="View in Sage X3">
             <i class="oi oi-external-link"></i>
         </button>
     </div>
@@ -49,6 +53,7 @@
     {
         if (!string.IsNullOrEmpty(Task.OutlookItemId))
         {
+            // Triggers the deep link logic in your charts.js
             await JSRuntime.InvokeVoidAsync("openOutlookItem", Task.OutlookItemId);
         }
     }

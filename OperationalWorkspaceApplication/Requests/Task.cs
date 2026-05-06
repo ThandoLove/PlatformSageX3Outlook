@@ -29,7 +29,7 @@ namespace OperationalWorkspaceApplication.Requests
     public sealed record CompleteTaskRequest(Guid TaskId);
 
     // 4. DELEGATE TASK: Specifically for the Sidebar Blue Button
-    public sealed record DelegateTaskRequest(Guid TaskId, string RecipientEmail);
+  
 
     // 5. GET TASKS: Used by the Service to fetch the initial list
     public sealed record GetTasksRequest(string UserId);

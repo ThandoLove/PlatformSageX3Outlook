@@ -1,66 +1,82 @@
-﻿/* THE HUB SHELL */
-.hub-container {
-    display: flex !important;
-    flex-direction: column !important;
+﻿.hub-container {
+    display: flex;
+    flex-direction: column;
     height: 100%;
     background: white;
     border-radius: 12px;
     overflow: hidden;
 }
 
-/* 1. HUB HEADER: TITLE + TABS ON ONE ROW */
+/* HEADER */
 .hub-header {
-    display: flex !important;
-    flex-direction: row !important; /* FORCES HORIZONTAL */
-    align-items: center !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     padding: 0 25px;
     border-bottom: 1px solid #f1f5f9;
     height: 52px;
     flex-shrink: 0;
+    position: relative;
+    z-index: 10; /* ensures clickable */
 }
 
 .hub-title-group {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: 10px;
     font-weight: 800;
     font-size: 14px;
     color: #1e293b;
-    margin-right: 40px; /* Pushes tabs away from title */
+    margin-right: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
 .hub-tabs {
-    display: flex !important;
-    flex-direction: row !important; /* FORCES TABS HORIZONTAL */
+    display: flex;
     gap: 25px;
     height: 100%;
 }
 
 .tab-item {
-    display: flex !important;
-    align-items: center;
+    background: none;
+    border: none;
+    border-bottom: 3.5px solid transparent;
     font-weight: 700;
     color: #64748b;
     cursor: pointer;
-    border-bottom: 3px solid transparent;
-    font-size: 12px;
+    font-size: 12.5px;
     height: 100%;
+    padding: 0 5px;
+    transition: 0.2s;
 }
 
     .tab-item.active {
-        color: #2563eb !important;
-        border-bottom-color: #2563eb !important;
+        color: #2563eb;
+        border-bottom-color: #2563eb;
     }
 
-/* 2. SUB-HEADER: MATCHING IMAGE ALIGNMENT */
+    .tab-item:hover:not(.active) {
+        color: #1e293b;
+    }
+
+/* SUB HEADER */
 .sub-header-bar {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important; /* PILL LEFT, BUTTON RIGHT */
-    align-items: center !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 12px 25px;
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
+    position: relative;
+    z-index: 10; /* clickable fix */
+}
+
+.sub-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .pill-dropdown {
@@ -72,51 +88,54 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    cursor: pointer;
     color: #475569;
 }
 
-.btn-source-top {
+.btn-filter-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+}
+
+    .btn-filter-action:hover {
+        background: #f8fafc;
+    }
+
+.btn-source-top-bold {
     background: white;
     border: 1.5px solid #1e293b;
-    border-radius: 4px;
-    padding: 5px 15px;
+    border-radius: 6px;
+    padding: 5px 18px;
     font-weight: 800;
     font-size: 11px;
     color: #1e293b;
     cursor: pointer;
 }
 
-/* 3. SCROLL AREA: WHITE CARDS ON GRAY */
+/* TASK LIST */
 .task-list-scroller {
     flex: 1;
     overflow-y: auto;
     padding: 15px;
-    background: #f1f5f9; /* The exact gray from mockup */
+    background: #f1f5f9;
     display: flex;
-    flex-direction: column; /* STACKS CARDS VERTICALLY */
+    flex-direction: column;
     gap: 10px;
 }
 
-
-/* ADD THIS TO THE BOTTOM OF YOUR TaskGrid.razor.css */
-
-/* Highlights the "Tasks Hub" title when "All" filter is active */
-.hub-title-group.active {
-    color: #2563eb !important;
+/* EMPTY STATE */
+.empty-msg {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-size: 12px;
 }
-
-/* Visual feedback so the user knows they can click the title */
-.hub-title-group {
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-}
-
-    .hub-title-group:hover {
-        opacity: 0.7;
-    }
-
-        /* Optional: Pulse the icon slightly on hover to match Sage X3 style */
-        .hub-title-group:hover i {
-            transform: scale(1.1);
-        }

@@ -28,7 +28,12 @@
                     <FluentTextField Label="Full Name" @bind-Value="contactModel.FullName" FullWidth="true" />
                     <ValidationMessage For="@(() => contactModel.FullName)" />
                 </div>
-                <FluentTextField Label="Linked Company (BPR Code)" @bind-Value="contactModel.Company" FullWidth="true" />
+                @* Make this Readonly if the email is pre-filled, ensuring they only add to a known BP *@
+                <FluentTextField Label="Linked Company (BPR Code)"
+                                 @bind-Value="contactModel.Company"
+                                 Readonly="@(!string.IsNullOrEmpty(PassedEmail))"
+                                 FullWidth="true" />
+
             </div>
         </div>
 

@@ -1,23 +1,23 @@
 ﻿.task-card {
     display: grid;
-    /* COLUMN WIDTHS MATCHING IMAGE DENSITY */
-    grid-template-columns: 1.5fr 1fr 1fr 180px;
+    /* 5 Columns: Identity | Status | Source Link | Complete | Sage Box */
+    grid-template-columns: 1.5fr 1fr 1.2fr 140px 45px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    padding: 10px 20px;
-    margin-bottom: 8px;
+    padding: 12px 20px;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    transition: all 0.2s ease;
 }
 
     .task-card:hover {
         border-color: #2563eb;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         background-color: #f8fafc;
     }
 
-/* COL 1: TITLE & COMPANY */
+/* COL 1 */
 .card-t {
     font-weight: 800;
     font-size: 13px;
@@ -31,8 +31,8 @@
     font-weight: 500;
 }
 
-/* COL 2: PRIORITY & DUE DATE */
-.priority-chip {
+/* COL 2 */
+.p-chip {
     font-size: 9px;
     font-weight: 900;
     padding: 2px 8px;
@@ -41,20 +41,19 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    width: fit-content;
 }
 
-    .priority-chip.urgent {
+    .p-chip.urgent {
         background: #fee2e2;
         color: #b91c1c;
     }
 
-    .priority-chip.high {
+    .p-chip.high {
         background: #dbeafe;
         color: #2563eb;
     }
 
-    .priority-chip.normal {
+    .p-chip.normal {
         background: #fef3c7;
         color: #92400e;
     }
@@ -63,26 +62,15 @@
     font-size: 11px;
     color: #64748b;
     font-weight: 700;
-    margin-top: 4px;
+    margin-top: 5px;
 }
-
-    .due-text i {
-        font-size: 10px;
-        margin-right: 4px;
-    }
 
 .red-alert {
     color: #ef4444 !important;
 }
 
-/* COL 3: SOURCE EMAIL */
-.source-email-group {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-ghost-sm {
+/* COL 3 */
+.btn-ghost-link {
     background: transparent;
     border: none;
     font-size: 11px;
@@ -103,19 +91,12 @@
     font-weight: 900;
 }
 
-/* COL 4: COMPLETE & BLUE SQUARE */
-.final-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
+/* COL 4 */
 .btn-outline-complete {
-    border: 1px solid #cbd5e1;
+    border: 1.5px solid #cbd5e1;
     background: white;
-    border-radius: 4px;
-    padding: 5px 12px;
+    border-radius: 6px;
+    padding: 6px 15px;
     font-size: 11px;
     font-weight: 800;
     color: #1e293b;
@@ -123,15 +104,17 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
+    width: 100%;
 }
 
-.btn-sage-blue-square {
+/* COL 5 */
+.btn-blue-square-icon {
     background: #2563eb;
     color: white;
     border: none;
     border-radius: 4px;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;

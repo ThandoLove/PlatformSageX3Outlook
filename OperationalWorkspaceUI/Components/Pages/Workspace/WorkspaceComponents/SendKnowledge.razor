@@ -5,134 +5,179 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.Workspace
-@using Microsoft.JSInterop
+@using System.Text.RegularExpressions
 
-@inject KnowledgeUIService KBService
 @inject NavigationManager NavManager
+@inject KnowledgeUIService KBService
+@inject Radzen.NotificationService Notifications
 
-<div class="kb-dashboard-container" style="background-color: #f3f4f6; min-height: 100vh; padding: 24px;">
+<div class="kb-page-container" style="padding: 20px; background-color: #f8fafc; min-height: 100vh; position: relative;">
     
-    <div class="dashboard-card shadow-sm" style="background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
-        
-        <div class="d-flex justify-content-between align-items-start mb-4">
-            <div>
-                <h2 style="font-weight: 700; color: #111827; margin: 0; font-size: 1.5rem;">Knowledge Base</h2>
-                
-                <div class="d-flex flex-column gap-3 mt-4">
-                    <div class="d-flex gap-2">
-                        @* SEARCH BAR *@
-                        <div style="width: 350px; position: relative;">
-                            <span style="position: absolute; left: 16px; top: 12px; color: #94a3b8;">🔍</span>
-                            <input type="text" class="form-control ps-5" 
-                                   style="height: 45px; border-radius: 8px; border: 1px solid #e2e8f0;" 
-                                   placeholder="Search Sage X3..." 
-                                   @bind="SearchQuery" @bind:event="oninput" />
-                        </div>
+    @* 1. HEADER SECTION: Bold Blue Underline *@
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="font-weight: 900; color: #002d5a; margin: 0; font-size: 1.8rem; border-bottom: 3px solid #002d5a; padding-bottom: 8px;">Knowledge Base</h1>
+        <FluentButton Appearance="Appearance.Accent" Style="background-color: #0061d5; font-weight: 600;" OnClick="CreateArticle">New Article</FluentButton>
+    </div>
 
-                        @* FIXED FILTER BUTTON WITH ICON *@
-                        <button class="btn btn-light border d-flex align-items-center gap-2" 
-                                style="height: 45px; border-radius: 8px; background: white; color: #475569; font-weight: 500;"
-                                @onclick="ToggleFilter">
-                            @* SVG Filter Icon *@
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                            </svg>
-                            Filter
-                        </button>
-                    </div>
-
-                    @* REVEALABLE FILTER TRAY *@
-                    @if (IsFilterOpen)
-                    {
-                        <div class="filter-tray d-flex gap-3 p-3 mb-2 animate-fade-in" style="background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                            <div class="filter-item">
-                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">SORT BY</label>
-                                <select class="form-select form-select-sm" @bind="SortOrder">
-                                    <option value="Newest">Newest First</option>
-                                    <option value="Views">Most Viewed</option>
-                                </select>
-                            </div>
-                            <div class="filter-item">
-                                <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">DATE RANGE</label>
-                                <select class="form-select form-select-sm">
-                                    <option>Last 30 Days</option>
-                                    <option>Last 6 Months</option>
-                                    <option>All Time</option>
-                                </select>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <button class="btn btn-primary px-4 py-2" style="background-color: #0061d5; border: none; border-radius: 6px; font-weight: 600;" @onclick="CreateArticle">
-                New Article
-            </button>
+    @* 2. FILTER BAR: All Categories and Sort Options *@
+    <div style="background: white; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+        <div style="position: relative; flex-grow: 1; max-width: 350px;">
+            <FluentSearch Placeholder="Search Sage X3 Articles..."
+                          @bind-Value="SearchQuery"
+                          @bind-Value:event="oninput"
+                          Style="width: 100%;" />
         </div>
 
-        @* CONTENT TABLE *@
-        <div class="row mt-4">
-            <div class="col-md-3 border-end">
-                <h5 style="font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 20px;">Categories</h5>
-                <ul class="list-unstyled kb-category-list">
-                    @foreach (var cat in Categories)
-                    {
-                        <li class="@(SelectedCategory == cat.Name ? "active" : "")" @onclick="() => SelectedCategory = cat.Name">
-                            <span class="cat-name">@cat.Name</span>
-                            <span class="cat-count">@cat.Count</span>
-                        </li>
-                    }
-                </ul>
-            </div>
+        <FluentSelect Items="@Categories.Select(c => c.Name)" @bind-Value="SelectedCategory" Label="Category" />
+        <FluentSelect Items="@(new[] { "Newest", "Most Viewed" })" @bind-Value="SortOrder" Label="Sort By" />
 
-            <div class="col-md-9 ps-4">
-                <div class="table-responsive">
-                    <table class="table table-hover" style="border: none;">
-                        <thead>
-                            <tr style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #f1f5f9;">
-                                <th class="pb-3 border-0">Article Title</th>
-                                <th class="pb-3 border-0">Category</th>
-                                <th class="pb-3 border-0">Last Updated</th>
-                                <th class="pb-3 border-0 text-end">Views</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var article in PaginatedArticles)
+        <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Filter())">Filter</FluentButton>
+    </div>
+
+    @* 3. DATA TABLE: Title, Category, Views, and Fixed Actions *@
+    <div style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+            <thead>
+                <tr style="color: #94a3b8; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #f1f5f9; text-align: left;">
+                    <th style="padding: 12px; width: 40px;"><FluentCheckbox /></th>
+                    <th style="padding: 12px;">ARTICLE TITLE</th>
+                    <th style="padding: 12px;">CATEGORY</th>
+                    <th style="padding: 12px; text-align: center;">VIEWS</th>
+                    <th style="padding: 12px; text-align: right;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var article in FilteredArticles)
+                {
+                    <tr style="border-bottom: 1px solid #f8fafc;" class="kb-row-hover">
+                        <td style="padding: 12px;"><FluentCheckbox /></td>
+                        <td style="padding: 12px;">
+                            <FluentButton Appearance="Appearance.Lightweight" Style="color: #0061d5; font-weight: 600; padding: 0;" OnClick="@(() => OpenPreview(article))">
+                                <FluentIcon Value="@(new Icons.Regular.Size20.Document())" Style="margin-right: 8px; vertical-align: middle;" />
+                                @article.Title
+                            </FluentButton>
+                        </td>
+                        <td style="padding: 12px; color: #64748b;">@article.Category</td>
+                        <td style="padding: 12px; color: #64748b; text-align: center;">@article.Views</td>
+                        <td style="padding: 12px; text-align: right;">
+                            <FluentButton Appearance="Appearance.Outline" Style="color: #475569; border: 1px solid #e2e8f0;" OnClick="@(() => OpenPreview(article))">Preview</FluentButton>
+                            <FluentButton Appearance="Appearance.Accent" Style="background-color: #008272; margin: 0 8px;" OnClick="@(() => OpenEmailForm(article))">Send</FluentButton>
+                            
+                            @* Restored Delete Button *@
+                            <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => DeleteArticle(article))">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                            </FluentButton>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* 4. MODAL OVERLAY: Preview, Send Form, and Success State *@
+    @if (SelectedArticle != null)
+    {
+        <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+            <div style="background: white; width: 650px; max-height: 85vh; border-radius: 12px; padding: 32px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow-y: auto;">
+                
+                @if (!IsSuccessMode)
+                {
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="color: #002d5a; margin: 0;">@(IsEmailMode ? "Send Article" : SelectedArticle.Title)</h2>
+                        <FluentButton Appearance="Appearance.Stealth" OnClick="CloseModal" Disabled="IsSending"><FluentIcon Value="@(new Icons.Regular.Size24.Dismiss())" /></FluentButton>
+                    </div>
+                    <hr style="margin: 20px 0; border-top: 1px solid #e2e8f0;" />
+
+                    @if (IsEmailMode)
+                    {
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <FluentTextField @bind-Value="RecipientEmail" Placeholder="recipient@company.com" Label="Recipient Email" Style="width: 100%;" @oninput="@(e => RecipientEmail = e.Value?.ToString() ?? "")" />
+                            @if (!string.IsNullOrEmpty(RecipientEmail) && !IsEmailValid)
                             {
-                                <tr style="cursor: pointer; border-bottom: 1px solid #f8fafc;" class="kb-row">
-                                    <td class="py-4 border-0 fw-bold" style="color: #2563eb;">@article.Title</td>
-                                    <td class="py-4 border-0" style="color: #64748b;">@article.Category</td>
-                                    <td class="py-4 border-0 text-muted">@article.LastUpdated.ToString("MMM dd, yyyy")</td>
-                                    <td class="py-4 border-0 text-end text-muted">@article.Views</td>
-                                </tr>
+                                <span style="color: #d32f2f; font-size: 0.75rem; margin-top: 4px; display: block;">Invalid email format.</span>
                             }
-                        </tbody>
-                    </table>
-                </div>
+                            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px;">
+                                <FluentButton Appearance="Appearance.Stealth" OnClick="CloseModal" Disabled="IsSending">Cancel</FluentButton>
+                                <FluentButton Appearance="Appearance.Accent" Style="background-color: #008272; min-width: 140px;" OnClick="SendAsAttachment" Disabled="@(!IsEmailValid || IsSending)">
+                                    @(IsSending ? "Sending..." : "Confirm Send")
+                                </FluentButton>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p style="line-height: 1.6; color: #1e293b;">@SelectedArticle.Content</p>
+                        <div style="text-align: right; margin-top: 32px;">
+                            <FluentButton Appearance="Appearance.Accent" OnClick="CloseModal">Close</FluentButton>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0;">
+                        <FluentIcon Value="@(new Icons.Filled.Size32.CheckmarkCircle())" Color="Color.Success" Style="width: 64px; height: 64px;" />
+                        <h2 style="color: #008272; margin-top: 20px;">Sent!</h2>
+                        <p>Closing window...</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @* 5. FOOTER: Browse Sage Button & Pagination *@
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 0 10px;">
+        <FluentAnchor Appearance="Appearance.Stealth"
+                      Href="https://your-sage-x3-url.com"
+                      Target="_blank"
+                      Style="color: #0061d5; font-weight: 600; text-decoration: none;">
+            Browse Sage X3 →
+        </FluentAnchor>
+
+        <div style="display: flex; align-items: center; gap: 15px; color: #64748b; font-size: 0.8rem;">
+            <span>1 of 1</span>
+            <div style="display: flex; gap: 5px;">
+                <FluentButton Appearance="Appearance.Stealth">Prev</FluentButton>
+                <FluentButton Appearance="Appearance.Stealth">Next</FluentButton>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .animate-fade-in { animation: fadeIn 0.2s ease-in; }
-    @@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    
-    .kb-category-list li { display: flex; justify-content: space-between; padding: 12px 16px; border-radius: 8px; cursor: pointer; color: #64748b; font-size: 0.9rem; transition: 0.2s; }
-    .kb-category-list li.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
-    .kb-category-list li:hover:not(.active) { background: #f8fafc; color: #1e293b; }
-    .kb-row:hover { background-color: #f8fafc !important; }
+    .kb-row-hover:hover {
+        background-color: #f8fafc;
+    }
 </style>
 
 @code {
-    private string SearchQuery = "";
-    private string SelectedCategory = "All Categories";
-    private string SortOrder = "Newest";
-    private bool IsFilterOpen = false;
-    private int CurrentPage = 1;
-    private int PageSize = 10;
+    private KbArticle? SelectedArticle;
+    private bool IsEmailMode, IsSuccessMode, IsSending;
+    private string RecipientEmail = "", SearchQuery = "", SelectedCategory = "All Categories", SortOrder = "Newest";
 
-    private void ToggleFilter() => IsFilterOpen = !IsFilterOpen;
+    private void OpenPreview(KbArticle article) { SelectedArticle = article; IsEmailMode = false; }
+    private void OpenEmailForm(KbArticle article) { SelectedArticle = article; IsEmailMode = true; }
+    private void CloseModal() { SelectedArticle = null; IsEmailMode = false; IsSuccessMode = false; IsSending = false; RecipientEmail = ""; }
+    private void CreateArticle() => NavManager.NavigateTo("/forms/send-knowledge");
+
+    private async Task SendAsAttachment()
+    {
+        if (SelectedArticle == null) return;
+        IsSending = true;
+        await Task.Delay(1200);
+        await KBService.SendKnowledgeAsync(new SendKnowledgeModel { SearchQuery = SelectedArticle.Title, Message = RecipientEmail });
+        IsSuccessMode = true; IsSending = false;
+        StateHasChanged();
+        await Task.Delay(2000);
+        CloseModal();
+    }
+
+    private void DeleteArticle(KbArticle article)
+    {
+        MasterArticles.Remove(article);
+        Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Deleted", Detail = "Article removed from list." });
+    }
+
+    private bool IsEmailValid => Regex.IsMatch(RecipientEmail ?? "", @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
 
     private List<CategoryItem> Categories = new() {
         new("All Categories", 24), new("Pricing Guidelines", 4), new("Product Documentation", 5),
@@ -140,23 +185,16 @@
     };
 
     private List<KbArticle> MasterArticles = new() {
-        new("Pricing Guidelines 2024", "Pricing Guidelines", DateTime.Parse("Apr 24, 2024"), 128),
-        new("Product Installation Guide", "Product Documentation", DateTime.Parse("Apr 23, 2024"), 96),
-        new("Frequently Asked Questions", "FAQ", DateTime.Parse("Apr 21, 2024"), 210),
-        new("How to Create a Sales Order", "How To Guides", DateTime.Parse("Apr 20, 2024"), 153)
+        new("Pricing Guidelines 2024", "Pricing Guidelines", DateTime.Parse("Apr 24, 2024"), 128, "Sage X3 pricing tiered structure for 2024."),
+        new("Product Installation Guide", "Product Documentation", DateTime.Parse("Apr 23, 2024"), 96, "Step-by-step server configuration..."),
+        new("Frequently Asked Questions", "FAQ", DateTime.Parse("Apr 21, 2024"), 210, "Top user permission answers..."),
+        new("How to Create a Sales Order", "How To Guides", DateTime.Parse("Apr 20, 2024"), 153, "Full O-WS interface instructions...")
     };
 
     private IEnumerable<KbArticle> FilteredArticles => MasterArticles
         .Where(a => (SelectedCategory == "All Categories" || a.Category == SelectedCategory) &&
-                    (string.IsNullOrWhiteSpace(SearchQuery) || a.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)))
-        .OrderByDescending(a => SortOrder == "Newest" ? a.LastUpdated : DateTime.MinValue)
-        .OrderByDescending(a => SortOrder == "Views" ? a.Views : 0);
+                    (string.IsNullOrWhiteSpace(SearchQuery) || a.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
 
-    private IEnumerable<KbArticle> PaginatedArticles => FilteredArticles.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-    private int TotalPages => (int)Math.Ceiling((double)FilteredArticles.Count() / PageSize);
-
-    private void CreateArticle() => NavManager.NavigateTo("/forms/send-knowledge");
-
-    public record KbArticle(string Title, string Category, DateTime LastUpdated, int Views);
+    public record KbArticle(string Title, string Category, DateTime LastUpdated, int Views, string Content);
     public record CategoryItem(string Name, int Count);
 }

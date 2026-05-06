@@ -2,6 +2,8 @@
 @using OperationalWorkspaceApplication.DTOs
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@inject NavigationManager NavManager
+
 
 @implements IDisposable
 @inject DashboardState State
@@ -54,7 +56,9 @@
 
     @* Footer Button *@
     <div class="kb-footer">
-        <FluentButton Appearance="Appearance.Lightweight" Class="footer-btn">
+        <FluentButton Appearance="Appearance.Lightweight"
+                      Class="footer-btn"
+                      OnClick="NavigateToKB">
             Open Full Knowledge Base
         </FluentButton>
     </div>
@@ -101,5 +105,11 @@
     public void Dispose()
     {
         State.OnChange -= HandleStateChanged;
+    }
+
+    private void NavigateToKB()
+    {
+        // Replace "/knowledge-base" with the actual route of your page
+        NavManager.NavigateTo("/knowledge-page");
     }
 }

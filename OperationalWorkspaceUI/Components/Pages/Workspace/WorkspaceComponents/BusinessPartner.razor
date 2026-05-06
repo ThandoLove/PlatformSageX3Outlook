@@ -1,90 +1,110 @@
-﻿@page "/business-partners"
+﻿@page "/contacts"
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
-@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
-@using OperationalWorkspaceUI.UIServices.System
-@using OperationalWorkspaceUI.UIServices.Workspace
+@inject NavigationManager NavigationService
 
-@inject BusinessPartnerUIService BPService
-@inject WorkspaceState WorkspaceState
-@inject NavigationService NavigationService
-@inject Radzen.NotificationService NotificationService
+<div class="sage-container">
+    <div class="sage-tabs">
+        <div class="tab @(activeTab == "list" ? "active" : "")" @onclick='() => activeTab = "list"'>Contacts</div>
+        <div class="tab @(activeTab == "recent" ? "active" : "")" @onclick='() => activeTab = "recent"'>Recent Activity</div>
+    </div>
 
+    @if (activeTab == "list")
+    {
+        <div class="sage-content animate-fade-in">
+            <div class="sage-header-row">
+                <div class="title-group">
+                    <h2 class="title">Contacts</h2>
+                    <p class="subtitle">Manage Sage X3 contact records</p>
+                </div>
+                <div class="action-group">
+                    <button class="btn-sage-blue" @onclick="Create">+ New Contact</button>
+                    <button class="btn-sage-white" @onclick="Refresh">Refresh</button>
+                </div>
+            </div>
 
+            <div class="sage-toolbar">
+                <div class="search-box">
+                    <span class="icon">🔍</span>
+                    <input type="text" placeholder="Search contacts..." @bind="SearchQuery" @bind:event="oninput" />
+                </div>
+                <button class="btn-filter" @onclick="() => IsFilterOpen = !IsFilterOpen">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                    Filter
+                </button>
+            </div>
 
-<WorkspaceHeader Title="Business Partners" Subtitle="Manage clients and contacts" />
+            @if (IsFilterOpen)
+            {
+                <div class="filter-tray animate-fade-in">
+                    <div class="filter-item">
+                        <label>STATUS</label>
+                        <select @bind="StatusFilter" class="sage-select">
+                            <option value="All">All Contacts</option>
+                            <option value="Active">Active Only</option>
+                            <option value="Inactive">Inactive Only</option>
+                        </select>
+                    </div>
+                </div>
+            }
 
-<WorkspaceToolbar>
-    <button class="btn btn-primary" @onclick="Create">+ New Client</button>
-    <button class="btn btn-outline-secondary" @onclick="Refresh">Refresh</button>
-</WorkspaceToolbar>
-
-<WorkspaceFilters>
-    <FormField Label="Search" @bind-Value="SearchQuery" />
-</WorkspaceFilters>
-
-<BpGrid TItem="ClientDto"
-        Items="FilteredClients"
-        IsLoading="IsLoading"
-        OnRowClick="@(client => Open(client))">
-    <HeaderContent>
-        <th>Code</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Status</th>
-        <th class="text-end">Revenue</th>
-    </HeaderContent>
-    <RowTemplate Context="client">
-        <td><span class="badge bg-light text-dark">@client.CustomerId</span></td>
-        <td><strong>@client.Name</strong></td>
-        <td>@client.Email</td>
-        <td>
-            <span class="badge @(client.Status == "Active" ? "bg-success" : "bg-secondary")">
-                @client.Status
-            </span>
-        </td>
-        <td class="text-end">@client.TotalRevenue.ToString("C")</td>
-    </RowTemplate>
-</BpGrid>
+            <table class="sage-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Company</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var contact in FilteredContacts)
+                    {
+                        <tr>
+                            <td class="name-link" @onclick="() => Open(contact)">@contact.FullName</td>
+                            <td>@contact.Company</td>
+                            <td class="email-text">@contact.Email</td>
+                            <td>@contact.Phone</td>
+                            @* --- THE BADGE DATA GOES HERE --- *@
+                            <td>
+                                <span class="badge @(contact.IsActive ? "active" : "inactive")">
+                                    @(contact.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
 
 @code {
+    private string activeTab = "list";
+    private bool IsFilterOpen = true;
     private string SearchQuery = string.Empty;
-    private bool IsLoading = true;
+    private string StatusFilter = "All";
+    
+    private List<ContactCreateDto> ContactsList = new();
 
-    private IEnumerable<ClientDto> FilteredClients =>
-        (WorkspaceState.Clients ?? Enumerable.Empty<ClientDto>())
-            .Where(c => string.IsNullOrWhiteSpace(SearchQuery)
-                     || c.Name.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)
-                     || c.CustomerId.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
-
-    protected override async Task OnInitializedAsync()
+    // --- THE INITIALIZED DATA GOES HERE ---
+    protected override void OnInitialized()
     {
-        await LoadData();
-    }
-
-    private async Task LoadData()
-    {
-        IsLoading = true;
-        await BPService.LoadClientsAsync();
-        IsLoading = false;
-    }
-
-    private async Task Refresh()
-    {
-        await LoadData();
-        NotificationService.Notify(new Radzen.NotificationMessage
+        ContactsList = new List<ContactCreateDto>
         {
-            Severity = Radzen.NotificationSeverity.Success,
-            Summary = "Success",
-            Detail = "Clients refreshed",
-            Duration = 4000
-        });
+            new() { FullName = "Sarah Johnson", Company = "Tech Innovations Inc.", Email = "sarah.j@tech.com", Phone = "(555) 123-4567", IsActive = true },
+            new() { FullName = "David Wilson", Company = "NextGen Tech", Email = "david.w@nextgen.com", Phone = "(555) 456-7890", IsActive = false }
+        };
     }
 
-    private void Create() => NavigationService.NavigateTo("/forms/create-client");
+    private IEnumerable<ContactCreateDto> FilteredContacts =>
+        ContactsList.Where(c =>
+            (StatusFilter == "All" || (StatusFilter == "Active" && c.IsActive) || (StatusFilter == "Inactive" && !c.IsActive)) &&
+            (string.IsNullOrWhiteSpace(SearchQuery) || c.FullName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
 
-    private void Open(ClientDto client) =>
-        NavigationService.NavigateTo($"/workspace/businesspartners/{client.Id}");
+    private void Create() => NavigationService.NavigateTo("/forms/add-contact");
+    private void Refresh() => StateHasChanged();
+    private void Open(ContactCreateDto contact) => NavigationService.NavigateTo($"/workspace/contacts/{contact.Email}");
 }

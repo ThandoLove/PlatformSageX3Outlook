@@ -10,7 +10,9 @@ namespace OperationalWorkspaceUI.State
 {
     public class WorkspaceState
     {
+        // 1. DATA PROPERTIES
         public List<ClientDto> Clients { get; set; } = new();
+        public List<ContactCreateDto> Contacts { get; set; } = new();
         public List<OrderDto> Orders { get; set; } = new();
         public List<TaskDto> Tasks { get; set; } = new();
         public List<ActivityDto> ActivityLogs { get; set; } = new();
@@ -21,7 +23,32 @@ namespace OperationalWorkspaceUI.State
         public List<OpenOrderDto> Quotes { get; set; } = new();
         public EmailInsightDto? SelectedEmail { get; set; }
 
+        // 2. STATE NOTIFICATION (Broadcast)
+        public event Action? OnChange;
+        public void Notify() => OnChange?.Invoke();
+
+        // 3. LOGGING LOGIC
+        public void LogActivity(string title, string action, string user = "Current User")
+        {
+            var newLog = new ActivityDto
+            {
+                Id = Guid.NewGuid(),
+                Title = title,
+                Action = action,
+                CreatedBy = user,
+                Timestamp = DateTime.Now
+            };
+
+            ActivityLogs.Insert(0, newLog);
+            Notify();
+        }
+
+        // 4. DATA RELOAD METHODS
         public void ReloadKnowledge(List<string> articles) => Knowledge = articles;
+        public void ReloadContacts(List<ContactCreateDto> contacts) => Contacts = contacts;
+        public void ReloadClients() { }
+        public void ReloadOrders() { }
+        public void ReloadTasks() { }
 
         public async Task LoadTasksAsync()
         {
@@ -29,28 +56,14 @@ namespace OperationalWorkspaceUI.State
 
             Tasks = new List<TaskDto>
             {
-                // TODAY (6 Tasks to match the "Today (6)" tab in the image)
-                new TaskDto { Id = Guid.NewGuid(), Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open, OutlookItemId = "AAMkAGEx..." },
+                new TaskDto { Id = Guid.NewGuid(), Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open },
                 new TaskDto { Id = Guid.NewGuid(), Title = "Setup Sage X3 Connector", CompanyName = "Sage Internal", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open },
                 new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Forecast Q3", CompanyName = "Global Systems", Priority = TaskPriority.High, DueDate = DateTime.Today, Status = TaskStatus.Open },
                 new TaskDto { Id = Guid.NewGuid(), Title = "Verify Invoice #8821", CompanyName = "Brightwave", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open },
                 new TaskDto { Id = Guid.NewGuid(), Title = "Submit Expense Report", CompanyName = "Finance Dept", Priority = TaskPriority.High, DueDate = DateTime.Today, Status = TaskStatus.Open },
-                new TaskDto { Id = Guid.NewGuid(), Title = "Daily Team Sync", CompanyName = "Operational Team", Priority = TaskPriority.Medium, DueDate = DateTime.Today, Status = TaskStatus.Open },
-
-                // OVERDUE
-                new TaskDto { Id = Guid.NewGuid(), Title = "Develop QTE-7823 for Client B", CompanyName = "Atlas Co.", Priority = TaskPriority.High, DueDate = DateTime.Today.AddDays(-1), Status = TaskStatus.Open },
-                new TaskDto { Id = Guid.NewGuid(), Title = "Fix Bug in Client Portal", CompanyName = "Brightwave Solutions", Priority = TaskPriority.Medium, DueDate = DateTime.Today.AddDays(-2), Status = TaskStatus.Assigned },
-                new TaskDto { Id = Guid.NewGuid(), Title = "Urgent Server Patch", CompanyName = "Infrastructure", Priority = TaskPriority.Urgent, DueDate = DateTime.Today.AddDays(-3), Status = TaskStatus.Open },
-
-                // UPCOMING
-                new TaskDto { Id = Guid.NewGuid(), Title = "Invoice Verification #459", CompanyName = "Greenfield Corp", Priority = TaskPriority.Low, DueDate = DateTime.Today.AddDays(1), Status = TaskStatus.Open },
-                new TaskDto { Id = Guid.NewGuid(), Title = "Design Mockups for New Feature", CompanyName = "Atlas Marketing", Priority = TaskPriority.Medium, DueDate = DateTime.Today.AddDays(4), Status = TaskStatus.Open },
-                new TaskDto { Id = Guid.NewGuid(), Title = "Quarterly Board Presentation", CompanyName = "Executive Team", Priority = TaskPriority.High, DueDate = DateTime.Today.AddDays(10), Status = TaskStatus.Open }
+                new TaskDto { Id = Guid.NewGuid(), Title = "Daily Team Sync", CompanyName = "Operational Team", Priority = TaskPriority.Medium, DueDate = DateTime.Today, Status = TaskStatus.Open }
             };
+            Notify();
         }
-
-        public void ReloadClients() { }
-        public void ReloadOrders() { }
-        public void ReloadTasks() { }
     }
 }
