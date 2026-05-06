@@ -14,9 +14,18 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 
-<FluentCard Style="width: 100%; height: 100%; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; display: flex; flex-direction: column;">
+<FluentCard Style="width: 100%; height: 100%; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; display: flex; flex-direction: column; position: relative;">
     
-    @* HEADER: Always visible *@
+    @* LIVE OVERLAY: Only shows when WorkspaceState.IsUploading is true *@
+    @if (WorkspaceState.IsUploading)
+    {
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px;">
+            <FluentProgressRing Style="width: 32px; height: 32px;" />
+            <span style="margin-top: 12px; font-size: 0.85rem; color: #005fb8; font-weight: 600;">Processing Upload...</span>
+        </div>
+    }
+
+    @* HEADER *@
     <div class="panel-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
         <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b;">Documents</h3>
         <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => UploadToEmail())">
@@ -26,14 +35,16 @@
 
     @* SEARCH *@
     <div style="margin-bottom: 12px;">
-        <FluentSearch Placeholder="Search files..." @bind-Value="_searchQuery" @bind-Value:event="oninput" Style="width: 100%;" />
+        <FluentSearch Placeholder="Search files..." @bind-Value="_searchQuery" @bind:event="oninput" Style="width: 100%;" />
     </div>
 
     @* DOCUMENT LIST *@
     <div class="document-list" style="flex-grow: 1; overflow-y: auto; min-height: 150px;">
         @if (WorkspaceState.Attachments == null)
         {
-            <p>Loading...</p>
+            <div style="display:flex; justify-content:center; padding: 20px;">
+                <FluentProgressRing Style="width:24px; height:24px;" />
+            </div>
         }
         else if (!FilteredAttachments.Any())
         {
@@ -54,7 +65,7 @@
         }
     </div>
 
-    @* FOOTER: THIS IS THE LINK TO THE PAGE IN WORKSPACE *@
+    @* FOOTER *@
     <div style="border-top: 1px solid #f1f5f9; padding-top: 12px;">
         <FluentButton Appearance="Appearance.Stealth"
                       Style="width: 100%; font-size: 0.8rem; color: #005fb8; justify-content: center;"
@@ -73,13 +84,15 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Sync with the global state event so the overlay appears instantly
+        WorkspaceState.OnChange += StateHasChanged;
+
         if (WorkspaceState.Attachments == null)
         {
             var fileNames = await AttachmentService.GetAttachmentsAsync();
             WorkspaceState.Attachments = fileNames.Select(name => new AttachmentDto(
                 Guid.NewGuid(), name, "application/octet-stream", 0, $"/files/{name}", "General", DateTime.UtcNow
             )).ToList();
-            StateHasChanged();
         }
     }
 
@@ -91,9 +104,22 @@
 
     private async Task UploadToEmail()
     {
-        // This triggers the PowerShell log you saw
-        await JS.InvokeVoidAsync("officeBridge.uploadCurrentDocument", "EMAIL_ATTACHMENT");
-        CustomToastService.ShowSuccess("Uploading...");
+        WorkspaceState.SetUploading(true);
+        try
+        {
+            await JS.InvokeVoidAsync("officeBridge.uploadCurrentDocument", "EMAIL_ATTACHMENT");
+            CustomToastService.ShowSuccess("Uploading...");
+        }
+        finally
+        {
+            WorkspaceState.SetUploading(false);
+        }
+    }
+
+    // Clean up to prevent memory leaks
+    public void Dispose()
+    {
+        WorkspaceState.OnChange -= StateHasChanged;
     }
 
     private Microsoft.FluentUI.AspNetCore.Components.Icon GetFileIcon(string name) => name.ToLower().EndsWith(".pdf") ? new Icons.Filled.Size20.DocumentPdf() : new Icons.Filled.Size20.DocumentBulletList();

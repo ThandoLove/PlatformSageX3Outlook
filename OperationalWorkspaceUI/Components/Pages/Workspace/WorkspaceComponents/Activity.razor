@@ -2,54 +2,141 @@
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceUI.State
-@inject DashboardState DashboardState
+@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.DTOs
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@implements IDisposable
+
+@inject WorkspaceState State
 @inject OperationalWorkspaceUI.UIServices.Workspace.ActivityUIService ActivityService
 
-@* REMOVED: workspace-container and 100vh styles to prevent layout clashing *@
-<div style="padding: 24px;">
+<div class="page-layout">
     
     @* HEADER SECTION *@
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+    <div class="activity-header">
         <div>
-            <h2 style="margin: 0; color: #1e293b; font-size: 1.75rem; font-weight: 700;">Activity Log</h2>
-            <p style="margin: 4px 0 0 0; color: #64748b;">System-wide activity tracking</p>
+            <h2 class="header-title">Activity Log</h2>
+            <p class="header-sub">System-wide activity tracking</p>
         </div>
-        <FluentButton Appearance="Appearance.Outline"
-                      IconStart="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size20.ArrowClockwise())"
-                      OnClick="Reload">
-            Refresh
-        </FluentButton>
+        <div class="header-actions">
+            <FluentButton Appearance="Appearance.Outline"
+                          IconStart="@(new Icons.Regular.Size20.ArrowClockwise())"
+                          OnClick="Reload">
+                Refresh
+            </FluentButton>
+        </div>
+    </div>
+
+    @* SEARCH & FILTER BAR *@
+    <div class="filter-bar">
+        <input type="text"
+               placeholder="Search logs..."
+               @bind="SearchQuery"
+               @bind:event="oninput"
+               class="search-input" />
+
+        <select @bind="SelectedAction" class="filter-select">
+            <option value="">All Actions</option>
+            @foreach (var action in UniqueActions)
+            {
+                <option value="@action">@action</option>
+            }
+        </select>
     </div>
 
     @* DATA LOADING LOGIC *@
-    @if (DashboardState.RecentActivities == null)
+    @if (State.ActivityLogs == null)
     {
-        <div style="display: flex; justify-content: center; padding: 100px;">
+        <div class="loading-container">
             <FluentProgressRing />
         </div>
     }
-    else if (!DashboardState.RecentActivities.Any())
+    else if (!FilteredLogs.Any())
     {
-        <FluentCard Style="padding: 40px; text-align: center;">
-            <p style="color: #64748b;">No activities found in the system log.</p>
+        <FluentCard Class="empty-card">
+            <FluentIcon Value="@(new Icons.Regular.Size32.Info())" Color="@Color.Neutral" />
+            <p>No activities found matching your criteria.</p>
         </FluentCard>
     }
     else
     {
-        <ActivityGrid Data="DashboardState.RecentActivities" />
+        @* DATA TABLE *@
+        <div class="table-container">
+            <table class="activity-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in FilteredLogs)
+                    {
+                        <tr>
+                            <td class="col-time">@log.Timestamp.ToString("g")</td>
+                            <td class="col-user"><strong>@log.CreatedBy</strong></td>
+                            <td class="col-action">
+                                <span class="badge @GetBadgeClass(log.Action)">
+                                    @log.Action
+                                </span>
+                            </td>
+                            <td class="col-target">@log.Title</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 </div>
 
 @code {
+    private string SearchQuery = "";
+    private string SelectedAction = "";
+
     protected override async Task OnInitializedAsync()
     {
-        // Load data on start
-        await Reload();
+        State.OnChange += StateHasChanged;
+
+        if (State.ActivityLogs == null || !State.ActivityLogs.Any())
+        {
+            await Reload();
+        }
     }
 
     private async Task Reload()
     {
-        DashboardState.RecentActivities = await ActivityService.GetActivitiesAsync();
-        StateHasChanged();
+        var logs = await ActivityService.GetActivitiesAsync();
+        State.ActivityLogs = logs.ToList();
+        State.Notify();
+    }
+
+    private IEnumerable<ActivityDto> FilteredLogs => State.ActivityLogs
+        .Where(l => (string.IsNullOrWhiteSpace(SearchQuery) ||
+                     l.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
+                     l.CreatedBy.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)))
+        .Where(l => string.IsNullOrWhiteSpace(SelectedAction) || l.Action == SelectedAction)
+        .OrderByDescending(l => l.Timestamp);
+
+    private List<string> UniqueActions => State.ActivityLogs
+        .Select(l => l.Action)
+        .Distinct()
+        .OrderBy(a => a)
+        .ToList();
+
+    private string GetBadgeClass(string action) => action.ToLower() switch
+    {
+        var a when a.Contains("delete") || a.Contains("removed") => "badge-danger",
+        var a when a.Contains("create") || a.Contains("added") || a.Contains("upload") => "badge-success",
+        var a when a.Contains("update") || a.Contains("edit") => "badge-warning",
+        var a when a.Contains("send") || a.Contains("email") || a.Contains("attach") => "badge-info",
+        _ => "badge-neutral"
+    };
+
+    public void Dispose()
+    {
+        State.OnChange -= StateHasChanged;
     }
 }

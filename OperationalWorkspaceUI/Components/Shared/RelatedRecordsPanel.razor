@@ -1,0 +1,60 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<div class="related-records-panel p-3 border rounded shadow-sm" style="background: white;">
+    <h5 style="font-size: 0.9rem; font-weight: 700; color: #002d5a; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+        @Title
+    </h5>
+    
+    <div class="list-group list-group-flush mt-2">
+        @if (Records != null && Records.Any())
+        {
+            @foreach (var record in Records)
+            {
+                <div class="list-group-item d-flex align-items-center justify-content-between"
+                     style="cursor: pointer; padding: 10px 0; border-bottom: 1px solid #f8fafc;"
+                     @onclick="() => OnRecordClicked.InvokeAsync(record)">
+                    
+                    <div class="d-flex align-items-center gap-2">
+                        @* DYNAMIC ICON LOGIC *@
+                        <FluentIcon Value="@GetRecordIcon(record)"
+                                    Color="@GetRecordColor(record)"
+                                    Size="IconSize.Size16" />
+                        
+                        <span style="font-size: 0.85rem; color: #1e293b; font-weight: 500;">@record</span>
+                    </div>
+
+                    <FluentIcon Value="@(new Icons.Regular.Size12.ChevronRight())" Color="Color.Neutral" />
+                </div>
+            }
+        }
+        else
+        {
+            <div style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 20px;">
+                No @Title.ToLower() found.
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Related Records";
+    [Parameter] public List<string> Records { get; set; } = new();
+    [Parameter] public EventCallback<string> OnRecordClicked { get; set; }
+
+    // Logic to pick the icon based on the text
+    private Icon GetRecordIcon(string name) => name.ToLower() switch
+    {
+        var n when n.EndsWith(".pdf") || n.Contains("qte") => new Icons.Regular.Size16.DocumentPdf(),
+        var n when n.Contains("inv") || n.Contains("invoice") => new Icons.Regular.Size16.Receipt(),
+        var n when n.Contains("contact") || n.Contains("person") => new Icons.Regular.Size16.Person(),
+        _ => new Icons.Regular.Size16.Open()
+    };
+
+    private Color GetRecordColor(string name) => name.ToLower() switch
+    {
+        var n when n.Contains("pdf") || n.Contains("qte") => Color.Error,
+        var n when n.Contains("inv") => Color.Success,
+        _ => Color.Accent
+    };
+}

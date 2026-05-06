@@ -1,0 +1,147 @@
+﻿/* activities.razor.css */
+
+/* BASE CONTAINER */
+.page-layout {
+    padding: 24px;
+}
+
+/* HEADER SECTION */
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    border-bottom: 3px solid #002d5a;
+    padding-bottom: 12px;
+}
+
+.header-title {
+    margin: 0;
+    color: #1e293b;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.header-sub {
+    margin: 4px 0 0 0;
+    color: #64748b;
+}
+
+/* SEARCH & FILTER BAR */
+.filter-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.search-input {
+    padding: 10px 15px;
+    width: 320px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* TABLE STYLING */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.activity-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .activity-table th {
+        background: #f9f9f9;
+        padding: 15px;
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #64748b;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .activity-table td {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+        text-align: left;
+        font-size: 0.9rem;
+        color: #1e293b;
+    }
+
+/* COLUMN SPECIFIC STYLES */
+.col-time {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.col-user {
+    font-weight: 600;
+}
+
+.col-target {
+    color: #64748b;
+    font-style: italic;
+}
+
+/* STATE STYLES */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    padding: 100px;
+}
+
+.empty-card {
+    padding: 40px;
+    text-align: center;
+    border-radius: 12px;
+    color: gray;
+}
+
+/* ACTION BADGE STYLES */
+.badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.badge-warning {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.badge-info {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.badge-neutral {
+    background: #f1f5f9;
+    color: #475569;
+}

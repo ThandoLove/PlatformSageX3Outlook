@@ -23,9 +23,19 @@ namespace OperationalWorkspaceUI.State
         public List<OpenOrderDto> Quotes { get; set; } = new();
         public EmailInsightDto? SelectedEmail { get; set; }
 
+        // GLOBAL FLAGS FOR DASHBOARD PREVIEWS
+        public bool IsUploading { get; set; }
+
         // 2. STATE NOTIFICATION (Broadcast)
         public event Action? OnChange;
         public void Notify() => OnChange?.Invoke();
+
+        // A helper to update the status and notify the dashboard instantly
+        public void SetUploading(bool status)
+        {
+            IsUploading = status;
+            Notify();
+        }
 
         // 3. LOGGING LOGIC
         public void LogActivity(string title, string action, string user = "Current User")

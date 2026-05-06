@@ -1,15 +1,22 @@
 ﻿@page "/attachments"
 @rendermode InteractiveServer
+
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.Components.Shared
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@inject WorkspaceState State
 @inject NavigationManager Nav
 @inject HttpClient Http
 
 <div class="attach-container">
+    @* HEADER *@
     <div class="page-title-header">
-        <h1>Documents</h1>
+        <h1 style="font-weight: 800; color: #002d5a; border-bottom: 3px solid #002d5a; padding-bottom: 8px;">Documents</h1>
     </div>
 
+    @* TOP BAR *@
     <div class="top-bar">
         <div class="header-left-actions">
             <div class="search-box">
@@ -30,15 +37,24 @@
         </div>
 
         <div class="upload-wrapper">
-            <InputFile id="fileInput" OnChange="HandleFileUpload" style="display:none" />
-            <label for="fileInput" class="btn-upload-primary">
-                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowUpload())" Color="Color.Fill" />
-                @(IsUploading ? "Uploading..." : "Upload")
+            <InputFile id="fileInput" OnChange="HandleFileUpload" style="display:none" disabled="@State.IsUploading" />
+            <label for="fileInput" class="btn-upload-primary" style="cursor: @(State.IsUploading ? "not-allowed" : "pointer"); opacity: @(State.IsUploading ? "0.6" : "1")">
+                @if (State.IsUploading)
+                {
+                    <FluentProgressRing Style="width: 16px; height: 16px; margin-right: 8px;" />
+                    <span>Uploading...</span>
+                }
+                else
+                {
+                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowUpload())" Color="Color.Fill" />
+                    <span>Upload</span>
+                }
             </label>
         </div>
     </div>
 
     <div class="main-layout">
+        @* LEFT: DOCUMENT LIST *@
         <div class="document-list-pane">
             <div class="pane-header">
                 <span class="title">Document List</span>
@@ -95,6 +111,7 @@
             </div>
         </div>
 
+        @* RIGHT: PREVIEW PANE *@
         <div class="document-preview-pane">
             <div class="pane-header">
                 <span class="title">Document Preview</span>
@@ -108,7 +125,7 @@
             {
                 <div class="preview-info">
                     <div class="preview-hero">
-                        <FluentIcon Value="@GetIcon(SelectedDoc.FileName)" Size="IconSize.Size32" Color="Color.Error" />
+                        <FluentIcon Value="@GetIcon(SelectedDoc.FileName)" Style="width:32px; height:32px;" Color="Color.Error" />
                         <span class="hero-filename">@SelectedDoc.FileName</span>
                     </div>
                     <div class="preview-meta">Version 1.0 — @FormatSize(SelectedDoc.FileSize)</div>
@@ -117,6 +134,18 @@
                         <div class="detail-row"><label>Source</label><span>Local</span></div>
                         <div class="detail-row"><label>Date</label><span>@SelectedDoc.UploadedAtUtc.ToShortDateString()</span></div>
                     </div>
+
+                    @* RELATED RECORDS SECTION *@
+                    <div style="margin: 20px 0; display: flex; flex-direction: column; gap: 15px;">
+                        <RelatedRecordsPanel Title="Linked Order"
+                                             Records="@(new List<string> { SelectedDoc.RelatedEntity })"
+                                             OnRecordClicked="@((n) => Nav.NavigateTo("/orders"))" />
+                        
+                        <RelatedRecordsPanel Title="Linked Tasks"
+                                             Records="@State.Tasks.Where(t => t.Title.Contains(SelectedDoc.FileName)).Select(t => t.Title).ToList()"
+                                             OnRecordClicked="@((n) => Nav.NavigateTo("/activities"))" />
+                    </div>
+
                     <button class="btn-attach-full">Attach to Record</button>
                     <button class="btn-delete-full" @onclick="() => DeleteDocument(SelectedDoc)">Delete</button>
                 </div>
@@ -138,17 +167,22 @@
     private int CurrentPage = 1;
     private int PageSize = 10;
     private AttachmentDto? SelectedDoc;
-    private bool IsUploading = false;
 
-    private List<AttachmentDto> MasterDocs = new() {
-        new(Guid.NewGuid(), "QTE-7789_Proposal.pdf", "Proposal", 1240000, "#", "Quote - QTE-7789", DateTime.Parse("Apr 24, 2024")),
-        new(Guid.NewGuid(), "SO-2024-00125_Contract.pdf", "Contract", 2450000, "#", "Sales Order - SO-2024-00125", DateTime.Parse("Apr 24, 2024")),
-        new(Guid.NewGuid(), "INV-2024-00567_Invoice.pdf", "Invoice", 960000, "#", "Invoice - INV-2024-00567", DateTime.Parse("Apr 24, 2024")),
-        new(Guid.NewGuid(), "TechInnovations_Brochure.pdf", "Brochure", 3150000, "#", "Account - Tech Innovations Inc.", DateTime.Parse("Apr 22, 2024"))
-    };
+    protected override void OnInitialized()
+    {
+        // Populate global state if empty
+        if (State.Attachments == null || !State.Attachments.Any())
+        {
+            State.Attachments = new List<AttachmentDto> {
+                new(Guid.NewGuid(), "QTE-7789_Proposal.pdf", "Proposal", 1240000, "#", "Quote - QTE-7789", DateTime.Now),
+                new(Guid.NewGuid(), "INV-2024-00567_Invoice.pdf", "Invoice", 960000, "#", "Invoice - INV-2024-00567", DateTime.Now)
+            };
+        }
+    }
 
-    private IEnumerable<AttachmentDto> FilteredData => MasterDocs
-        .Where(d => (SelectedType == "All" || d.ContentType == SelectedType) && (string.IsNullOrWhiteSpace(SearchQuery) || d.FileName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
+    private IEnumerable<AttachmentDto> FilteredData => State.Attachments
+        .Where(d => (SelectedType == "All" || d.ContentType == SelectedType) &&
+                    (string.IsNullOrWhiteSpace(SearchQuery) || d.FileName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
 
     private IEnumerable<AttachmentDto> PaginatedDocs => FilteredData.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
     private int TotalPages => (int)Math.Ceiling((double)FilteredData.Count() / PageSize);
@@ -157,35 +191,47 @@
     {
         var file = e.File;
         if (file == null) return;
-        IsUploading = true;
+
+        // START GLOBAL STATUS
+        State.SetUploading(true);
+
         try
         {
-            using var content = new MultipartFormDataContent();
-            var fileContent = new StreamContent(file.OpenReadStream(10 * 1024 * 1024));
-            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
-            content.Add(fileContent, "file", file.Name);
-            var response = await Http.PostAsync("api/attachment/upload?ownerId=U1&ownerType=G", content);
-            if (response.IsSuccessStatusCode)
-            {
-                var newDoc = new AttachmentDto(Guid.NewGuid(), file.Name, file.ContentType, file.Size, "#", "Local", DateTime.UtcNow);
-                MasterDocs.Insert(0, newDoc);
-                SelectedDoc = newDoc;
-            }
+            // Simulate processing time
+            await Task.Delay(1500);
+
+            var newDoc = new AttachmentDto(Guid.NewGuid(), file.Name, file.ContentType, file.Size, "#", "Unlinked", DateTime.UtcNow);
+            
+            State.Attachments.Insert(0, newDoc);
+            SelectedDoc = newDoc;
+
+            State.LogActivity(file.Name, "Uploaded Document", "Tia");
+            State.Notify();
         }
-        finally { IsUploading = false; StateHasChanged(); }
+        finally
+        {
+            // END GLOBAL STATUS
+            State.SetUploading(false);
+        }
     }
 
     private async Task DeleteDocument(AttachmentDto? doc)
     {
         if (doc == null) return;
-        var response = await Http.DeleteAsync($"api/attachment/delete?attachmentId={doc.Id}");
-        if (response.IsSuccessStatusCode) { MasterDocs.Remove(doc); if (SelectedDoc?.Id == doc.Id) SelectedDoc = null; StateHasChanged(); }
+        
+        State.Attachments.Remove(doc);
+        if (SelectedDoc?.Id == doc.Id) SelectedDoc = null;
+
+        State.LogActivity(doc.FileName, "Deleted Document", "Tia");
+        State.Notify();
     }
 
     private async Task BrowseSageX3()
     {
         var newDoc = new AttachmentDto(Guid.NewGuid(), "Sage_Manual.pdf", "PDF", 1048576, "sage", "Sage X3", DateTime.UtcNow);
-        MasterDocs.Insert(0, newDoc); StateHasChanged();
+        State.Attachments.Insert(0, newDoc);
+        State.LogActivity("Sage_Manual.pdf", "Browsed Sage X3", "Tia");
+        State.Notify();
     }
 
     private string FormatSize(long bytes) => bytes < 1048576 ? $"{(bytes / 1024.0):F1} KB" : $"{(bytes / 1048576.0):F1} MB";
@@ -193,7 +239,6 @@
     private Icon GetIcon(string filename)
     {
         if (filename.EndsWith(".pdf")) return new Icons.Regular.Size20.DocumentPdf();
-        if (filename.Contains("Contract")) return new Icons.Regular.Size20.Signature();
         return new Icons.Regular.Size20.Document();
     }
 }
