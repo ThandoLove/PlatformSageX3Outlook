@@ -1,77 +1,48 @@
 ﻿/* ========================================================= 
-   TOPBAR COMPONENT STYLING (Internal Content)
+   TOPBAR COMPONENT POLISH (Scoped)
    ========================================================= */
 
-.topbar {
-    /* Background and Height are inherited from MainLayout skeleton */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    width: 100%;
+/* High-density search bar polish */
+.search-input-group {
+    transition: background 0.2s, border-color 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-    /* THE FIX: Force content to be readable against Deep Navy */
-    .topbar h2 {
-        font-size: 1.1rem;
-        margin: 0;
-        font-weight: 600;
-        color: #ffffff; /* Forced white to stay visible on Navy */
+    .search-input-group:focus-within {
+        background: rgba(255, 255, 255, 0.2) !important;
+        border-color: rgba(255, 255, 255, 0.3);
     }
 
-.topbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+/* Make the dynamic title "Pop" */
+.page-dynamic-title {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-/* Topbar Icons/Buttons */
-.topbar-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8; /* Muted blue-grey */
-    cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    transition: color 0.2s;
+/* Connection Status pulse */
+.connection-status {
+    cursor: default;
+    user-select: none;
 }
 
-    .topbar-btn:hover {
-        color: var(--sage-blue); /* Light blue pop on hover */
+/* User Profile Hover effect */
+.user-profile-section {
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+    .user-profile-section:hover {
+        background: rgba(255, 255, 255, 0.1);
     }
 
-/* Search Bar inside Topbar */
-.topbar-search {
-    position: relative;
-    width: 300px;
+/* Ensure FluentSwitch text is white on the blue bar */
+::deep .fluent-switch-label {
+    color: rgba(255,255,255,0.9) !important;
+    font-size: 0.7rem !important;
 }
 
-    .topbar-search input {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.05); /* Subtle glass look */
-        border: 1px solid #1e293b;
-        border-radius: 6px;
-        padding: 6px 12px;
-        color: white;
-        font-size: 13px;
-    }
-
-        .topbar-search input::placeholder {
-            color: #475569;
-        }
-
-/* Profile Section */
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding-left: 15px;
-    border-left: 1px solid #1e293b;
-}
-
-.user-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #f1f5f9;
+/* Divider Transparency */
+.topbar-divider {
+    opacity: 0.4;
 }

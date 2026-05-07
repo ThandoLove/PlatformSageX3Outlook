@@ -27,8 +27,22 @@ namespace OperationalWorkspaceUI.State
             _activityService = activityService;
         }
 
+        // ==========================================
+        // ENVIRONMENT & MODE (THE LINKING MECHANISM)
+        // ==========================================
+        public bool IsAdminEnvironment { get; private set; }
+
+        public void SetEnvironment(bool isAdmin)
+        {
+            if (IsAdminEnvironment != isAdmin)
+            {
+                IsAdminEnvironment = isAdmin;
+                NotifyStateChanged();
+            }
+        }
+
         // =========================
-        // TASK SELECTION (FIXED)
+        // TASK SELECTION
         // =========================
         public TaskDto? SelectedTask { get; private set; }
 
@@ -67,6 +81,8 @@ namespace OperationalWorkspaceUI.State
         public List<TaskDto> AllTasks { get; set; } = new();
         public List<TaskDto> MyTasks { get; set; } = new();
 
+        // This is the core logic: The UI binds to CurrentTasks, 
+        // and this property decides which list to show.
         public List<TaskDto> CurrentTasks =>
             IsAdminEnvironment ? AllTasks : MyTasks;
 
@@ -80,40 +96,28 @@ namespace OperationalWorkspaceUI.State
             IsAdminEnvironment ? AllTickets : MyTickets;
 
         // =========================
-        // ACTIVITY
+        // ACTIVITY & AUDIT
         // =========================
         public List<ActivityDto> RecentActivities { get; set; } = new();
-
-        // =========================
-        // AUDIT LOGS
-        // =========================
         public List<AuditLogDto> AuditLogs { get; set; } = new();
+        public List<ActivityDto> CurrentActivities => RecentActivities;
+        public List<AuditLogDto> CurrentAuditLogs => AuditLogs;
 
         // =========================
-        // KNOWLEDGE BASE
+        // KNOWLEDGE & REPORTS
         // =========================
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
-
-        // =========================
-        // REPORTS (FIXED MISSING PART)
-        // =========================
         public List<ReportDto> AvailableReports { get; set; } = new();
-
-        // =========================
-        // CLIENTS (FIXED MISSING PART)
-        // =========================
         public List<ClientDto> TopClients { get; set; } = new();
 
         // =========================
-        // EMAIL + DASHBOARD
+        // CONTEXTUAL DATA
         // =========================
         public EmailInsightDto EmailContext { get; set; } = new();
         public DashboardDto DashboardData { get; set; } = new();
 
-        public bool IsAdminEnvironment { get; private set; }
-
         // =========================
-        // CRM / ERP / FINANCE
+        // CRM / ERP / FINANCE (Context Switchers)
         // =========================
         public AdminErpDto AdminErp { get; set; } = new();
         public AdminCrmDto AdminCrm { get; set; } = new();
@@ -123,12 +127,6 @@ namespace OperationalWorkspaceUI.State
         public EmployeeErpDto EmployeeErp { get; set; } = new();
         public EmployeeCRMDTO EmployeeCrm { get; set; } = new();
         public EmployeeFinanceDto EmployeeFinance { get; set; } = new();
-
-        // =========================
-        // HELPERS
-        // =========================
-        public List<AuditLogDto> CurrentAuditLogs => AuditLogs;
-        public List<ActivityDto> CurrentActivities => RecentActivities;
 
         public object CurrentCrm =>
             IsAdminEnvironment ? (object)AdminCrm : EmployeeCrm;
@@ -147,13 +145,35 @@ namespace OperationalWorkspaceUI.State
         }
 
         // =========================
-        // LOAD DASHBOARD
+        // LOAD DASHBOARD (PROFESSIONAL VERSION)
         // =========================
-        public async Task LoadDashboardAsync()
+        public async Task LoadDashboardAsync(bool isAdmin = false)
         {
+            // 1. Set the environment mode
+            IsAdminEnvironment = isAdmin;
+
+            // 2. Load core data via the service (Service should populate AllTasks or MyTasks)
             await _dashboardService.LoadDashboardAsync(this);
 
+            // 3. Load activities shared across views
             RecentActivities = await _activityService.GetActivitiesAsync();
+
+            // 4. Load Admin-Specific Extensions
+            if (IsAdminEnvironment)
+            {
+                await LoadAdminSpecificDataAsync();
+            }
+
+            // 5. Default Mock Data (If not already loaded)
+            EnsureDefaultData();
+
+            NotifyStateChanged();
+        }
+
+        private async Task LoadAdminSpecificDataAsync()
+        {
+            // In a real app, you would call your admin-only service methods here
+            // e.g., AuditLogs = await _adminService.GetAuditLogsAsync();
 
             if (!AuditLogs.Any())
             {
@@ -163,7 +183,11 @@ namespace OperationalWorkspaceUI.State
                     new AuditLogDto { Action = "Invoice Generated", Entity = "invoice", User = "System", Timestamp = DateTime.Now.AddHours(-1) }
                 };
             }
+            await Task.CompletedTask;
+        }
 
+        private void EnsureDefaultData()
+        {
             if (!KnowledgeBase.Any())
             {
                 KnowledgeBase = new List<KnowledgeDto>
@@ -172,8 +196,6 @@ namespace OperationalWorkspaceUI.State
                     new KnowledgeDto(Guid.NewGuid(), "Shipping FAQ", "Content", "Support", "Summary", "#")
                 };
             }
-
-            NotifyStateChanged();
         }
     }
 }

@@ -18,7 +18,7 @@ namespace OperationalWorkspaceUI.State
         public List<ActivityDto> ActivityLogs { get; set; } = new();
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
         public List<AttachmentDto> Attachments { get; set; } = new();
-        public List<TicketDto> Tickets { get; set; } = new(); // Added Tickets list
+        public List<TicketDto> Tickets { get; set; } = new();
         public List<UserDto> Users { get; set; } = new();
         public List<string> Knowledge { get; set; } = new();
         public List<OpenOrderDto> Quotes { get; set; } = new();
@@ -27,6 +27,7 @@ namespace OperationalWorkspaceUI.State
         // GLOBAL FLAGS FOR DASHBOARD PREVIEWS
         public bool IsUploading { get; set; }
         public bool IsSendingKnowledge { get; set; }
+        public bool IsLoadingTasks { get; set; } // Added for task sync tracking
 
         // --- CONSTRUCTOR: PRE-FILLS DATA ON START ---
         public WorkspaceState()
@@ -69,6 +70,13 @@ namespace OperationalWorkspaceUI.State
         public void SetSendingKnowledge(bool status)
         {
             IsSendingKnowledge = status;
+            Notify();
+        }
+
+        // Helper to update task status and notify listeners (TaskGrid, Dashboard)
+        public void SetLoadingTasks(bool status)
+        {
+            IsLoadingTasks = status;
             Notify();
         }
 

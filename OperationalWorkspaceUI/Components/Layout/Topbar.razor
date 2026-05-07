@@ -8,14 +8,14 @@
 
 <div class="sage-topbar-master">
     
-    @* ZONE 1: LEFT - Title & Dynamic Label *@
+    @* ZONE 1: LEFT - Branding & Dynamic Title *@
     <div class="zone-left">
         <span class="sage-brand-text">SAGE X3 CONTEXTUAL WORKSPACE</span>
         <div class="topbar-divider"></div>
         <span class="page-dynamic-title">@PageTitle</span>
     </div>
 
-    @* ZONE 2: MIDDLE - Search (The spacer that prevents overlap) *@
+    @* ZONE 2: MIDDLE - Search *@
     <div class="zone-middle">
         <div class="search-input-group">
             <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
@@ -50,50 +50,6 @@
 </div>
 
 <style>
-    .sage-topbar-master {
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #003366;
-        padding: 0 15px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* ZONE LAYOUT */
-    .zone-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-    .zone-middle { flex: 1; display: flex; justify-content: center; padding: 0 20px; }
-    .zone-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-
-    /* LEFT ELEMENTS */
-    .sage-brand-text {
-        font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.7);
-        text-transform: uppercase; letter-spacing: 0.05rem; white-space: nowrap;
-    }
-    .topbar-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.2); margin: 0 4px; }
-    .page-dynamic-title { font-size: 0.8rem; font-weight: 600; color: #ffffff; white-space: nowrap; }
-
-    /* MIDDLE ELEMENTS */
-    .search-input-group {
-        display: flex; align-items: center; background: rgba(255,255,255,0.12);
-        padding: 2px 10px; border-radius: 4px; width: 100%; max-width: 350px;
-    }
-    .topbar-search-input {
-        border: none; background: transparent; font-size: 0.75rem; color: #ffffff;
-        outline: none; width: 100%; padding-left: 8px;
-    }
-
-    /* RIGHT ELEMENTS */
-    .connection-status {
-        display: flex; align-items: center; gap: 6px; font-size: 0.7rem;
-        color: rgba(255,255,255,0.8); border-right: 1px solid rgba(255,255,255,0.2);
-        padding-right: 12px;
-    }
-    .conn-text { white-space: nowrap; }
-    .theme-toggle-container { margin: 0 5px; }
-    .user-profile-section { display: flex; align-items: center; color: white; }
 </style>
 
 @code {
@@ -115,36 +71,40 @@
 
     private async Task ToggleTheme(bool isDark)
     {
-        // 1. Update global state
+        // 1. Use the existing SetTheme method (this avoids the read-only error)
+        // This method usually handles both the boolean flip and the OnChange notification
         await UIState.SetTheme(isDark ? "dark-mode" : "light-mode");
-        // 2. Trigger JS for visual CSS class swap on the <body>
+    
+        // 2. Force the CSS class onto the body via the engine in App.razor
         await JS.InvokeVoidAsync("applyTheme", isDark ? "dark-mode" : "light-mode");
+    
+        // Note: No need for UIState.Notify() if SetTheme already calls the OnChange event
     }
+
 
     private void UpdatePageTitle()
     {
         var relativePath = Nav.ToBaseRelativePath(Nav.Uri).ToLower();
 
         if (relativePath.Contains("?"))
-            relativePath = relativePath.Split('?')[0];
+            relativePath = relativePath.Split('?')[0]; // FIXED: Get only the first part of the split
 
-        PageTitle = relativePath switch
-        {
-            "" or "dashboard" => "Dashboard",
-            "contacts" => "Contacts",
-            "accounts" => "Accounts",
-            "tickets" => "Tickets",
-            "activities" => "Activities",
-            "sales-orders" => "Orders",
-            "quotes" => "Quotes",
-            "invoices" => "Invoices",
-            "cases" => "Cases",
-            "kb" or "knowledge-page" => "Knowledge Base",
-            "tasks" => "My Tasks",
-            "admin" => "Admin",
-            "attachments" or "documents" => "Documents",
-            _ => "Workspace"
-        };
+        if (string.IsNullOrEmpty(relativePath) || relativePath.StartsWith("dashboard")) 
+            PageTitle = "Dashboard";
+        else if (relativePath.StartsWith("tickets")) 
+            PageTitle = "Tickets";
+        else if (relativePath.StartsWith("activities")) 
+            PageTitle = "Activities";
+        else if (relativePath.StartsWith("kb") || relativePath.StartsWith("knowledge")) 
+            PageTitle = "Knowledge Base";
+        else if (relativePath.StartsWith("tasks")) 
+            PageTitle = "My Tasks";
+        else if (relativePath.Contains("attachments") || relativePath.Contains("documents")) 
+            PageTitle = "Documents";
+        else if (relativePath.StartsWith("contacts")) 
+            PageTitle = "Contacts";
+        else 
+            PageTitle = "Workspace";
     }
 
     public void Dispose()

@@ -1,12 +1,14 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceUI.State
+@using Microsoft.FluentUI.AspNetCore.Components
 @inject TasksUIService TasksUIService
+@inject WorkspaceState State
 @inject IJSRuntime JS
 
 <div class="sidebar-wrapper @(IsCollapsed ? "collapsed" : "")">
     <div class="sidebar-header-main" @onclick="ToggleSidebar" style="cursor:pointer">
         <span>Task Details</span>
-        @* Dynamic Arrow: Points up when closed, down when open *@
         <i class="oi @(IsCollapsed ? "oi-chevron-top" : "oi-chevron-bottom")"
            style="transition: transform 0.3s ease;"></i>
     </div>
@@ -14,7 +16,7 @@
     @if (!IsCollapsed && Task != null)
     {
         <div class="sidebar-content animate-fade-in">
-            <!-- AGING WIDGET -->
+            <!-- 1. AGING WIDGET (RESTORED) -->
             <div class="side-card aging-card">
                 <div class="card-label">TASK AGING</div>
                 <div class="aging-grid">
@@ -22,32 +24,58 @@
                     <div class="stat-unit"><span class="stat-num blue-txt">1</span><span class="stat-lbl">DUE SOON</span></div>
                     <div class="ring-unit"><div class="green-ring-pretty">78%</div></div>
                 </div>
-                <div class="histo-viewport"><canvas id="agingHistogramCanvas"></canvas></div>
+                @* THE CANVAS FOR JS CHART *@
+                <div class="histo-viewport">
+                    <canvas id="agingHistogramCanvas"></canvas>
+                </div>
             </div>
 
-            <!-- RESPONSE WIDGET -->
+            <!-- 2. RESPONSE WIDGET (RESTORED) -->
             <div class="side-card response-row">
                 <div class="timer-red-ring-seamless">2.3h</div>
                 <div class="response-text">
                     <span class="lbl-bold">Avg. Response Time</span>
-                    <div class="spark-box">@for(int i=0;i<6;i++){ <div class="spark-bar-seamless"></div> }</div>
+                    @* Sparkline Bars *@
+                    <div class="spark-box">
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <div class="spark-bar-seamless"></div>
+                        }
+                    </div>
                 </div>
             </div>
 
-            @* FIXED: Delegate Button Logic *@
-            <button class="btn-blue-delegate-seamless" @onclick="HandleDelegate">
-                <span>Delegate Task</span>
-                <i class="oi oi-chevron-bottom"></i>
-            </button>
+            <!-- 3. DELEGATION SECTION (INTEGRATED) -->
+            <div class="side-card delegation-box" style="padding: 15px; background: rgba(59, 130, 246, 0.05); border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(59, 130, 246, 0.1);">
+                <div class="card-label" style="margin-bottom: 10px; font-weight: 700; font-size: 0.7rem; color: #1e293b;">DELEGATE TO TEAM MEMBER</div>
+                
+                <FluentSelect TOption="TeamMember"
+                              Items="@TeamMembers"
+                              OptionText="@(i => i.Name)"
+                              @bind-SelectedOption="@SelectedMember"
+                              Placeholder="Select a colleague..."
+                              Style="width: 100%; margin-bottom: 12px;" />
 
-            <!-- WORKLOAD -->
+                <button class="btn-blue-delegate-seamless"
+                        @onclick="HandleDelegate"
+                        disabled="@(SelectedMember == null)"
+                        style="width: 100%; cursor: @(SelectedMember == null ? "not-allowed" : "pointer"); opacity: @(SelectedMember == null ? "0.5" : "1")">
+                    <span>Confirm Delegation</span>
+                    <i class="oi oi-person"></i>
+                </button>
+            </div>
+
+            <!-- 4. WORKLOAD STATS (RESTORED) -->
             <div class="workload-stats-seamless">
-                <div class="task-count">6 Active Tasks</div>
+                <div class="task-count">@State.Tasks.Count(t => !t.Completed) Active Tasks</div>
                 <div class="icon-row-seamless">
-                    @for(int i=0;i<5;i++){ <i class="oi oi-person blue-p-icon"></i> }
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <i class="oi oi-person blue-p-icon"></i>
+                    }
                     <i class="oi oi-person grey-p-icon"></i>
                 </div>
-                <div class="footer-msg-seamless"><i class="oi oi-info"></i> Active Tasks</div>
+                <div class="footer-msg-seamless"><i class="oi oi-info"></i> System Workload</div>
             </div>
         </div>
     }
@@ -56,16 +84,55 @@
 @code {
     [Parameter] public TaskDto? Task { get; set; }
     private bool IsCollapsed = false;
+    private TeamMember? SelectedMember;
+
+    private List<TeamMember> TeamMembers = new()
+    {
+        new("Sarah Jenkins", "sarah.j@company.com"),
+        new("Mark Stevens", "mark.s@company.com"),
+        new("Tia Roberts", "tia.r@company.com"),
+        new("System Admin", "admin@company.com")
+    };
 
     private void ToggleSidebar() => IsCollapsed = !IsCollapsed;
 
-    private async Task HandleDelegate() {
-        if (Task != null) await TasksUIService.DelegateTaskAsync(Task.Id, "staff@company.com");
+    private async Task HandleDelegate()
+    {
+        if (Task != null && SelectedMember != null)
+        {
+            State.SetLoadingTasks(true);
+            try
+            {
+                await TasksUIService.DelegateTaskAsync(Task.Id, SelectedMember.Email);
+                
+                // Update master list directly
+                var masterTask = State.Tasks.FirstOrDefault(t => t.Id == Task.Id);
+                if (masterTask != null)
+                {
+                    masterTask.AssignedTo = SelectedMember.Email;
+                    masterTask.UpdatedDate = DateTime.Now;
+                }
+
+                State.LogActivity(Task.Title, $"Delegated to {SelectedMember.Name}", "Alex Turner");
+                State.Notify();
+                SelectedMember = null;
+            }
+            finally
+            {
+                State.SetLoadingTasks(false);
+            }
+        }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender) {
-        if (Task != null && !IsCollapsed) {
+    // 🔥 THIS IS WHAT LOADS THE CHARTS
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Task != null && !IsCollapsed)
+        {
+            // Re-calling the JS function from your charts.js
             await JS.InvokeVoidAsync("renderAgingHistogram", "agingHistogramCanvas", new[] { 2, 1, 0, 3 });
         }
     }
+
+    public record TeamMember(string Name, string Email);
 }

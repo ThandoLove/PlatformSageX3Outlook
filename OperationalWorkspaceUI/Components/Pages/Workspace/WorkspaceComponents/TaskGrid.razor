@@ -7,25 +7,35 @@
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<div class="hub-container force-interactive">
+<div class="hub-container force-interactive" style="position: relative;">
+
+    @* --- LIVE SYNC OVERLAY --- *@
+    @if (State.IsLoadingTasks)
+    {
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
+            <FluentProgressRing Style="width: 32px; height: 32px;" />
+            <span style="margin-top: 10px; font-weight: 600; color: #003366; font-size: 0.8rem;">Syncing Tasks...</span>
+        </div>
+    }
+
     <header class="hub-header">
         <div class="hub-title-group @(ActiveTab == "All" ? "active" : "")" @onclick='() => SelectFilter("All")'>
             <i class="oi oi-list-rich"></i><span>Tasks Grid</span>
         </div>
         
         <nav class="hub-tabs">
-            @* DYNAMIC TABS WITH LIVE COUNTS FROM STATE *@
+            @* DYNAMIC TABS: Now filtered by User (Alex Turner) *@
             <div class="tab-item @(ActiveTab == "Today" ? "active" : "")" @onclick='() => SelectFilter("Today")'>
-                Today (@State.Tasks.Count(t => t.DueDate?.Date == DateTime.Today && !t.Completed))
+                Today (@UserTasks.Count(t => t.DueDate?.Date == DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SelectFilter("Overdue")'>
-                Overdue (@State.Tasks.Count(t => t.DueDate?.Date < DateTime.Today && !t.Completed))
+                Overdue (@UserTasks.Count(t => t.DueDate?.Date < DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Upcoming" ? "active" : "")" @onclick='() => SelectFilter("Upcoming")'>
-                Upcoming (@State.Tasks.Count(t => t.DueDate?.Date > DateTime.Today && !t.Completed))
+                Upcoming (@UserTasks.Count(t => t.DueDate?.Date > DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SelectFilter("Completed")'>
-                Completed (@State.Tasks.Count(t => t.Completed))
+                Completed (@UserTasks.Count(t => t.Completed))
             </div>
         </nav>
     </header>
@@ -62,7 +72,6 @@
     <div class="task-list-scroller">
         @foreach (var task in GetFilteredTasks())
         {
-            @* Pass the task to your TaskItem card *@
             <TaskItem Task="task" OnSelect="OnTaskSelected" />
         }
     </div>
@@ -76,9 +85,15 @@
     private bool IsFilterOpen = false;
     private string PriorityFilter = "All";
 
+    // CORE LOGIC: Defines who the "Logged In" user is for this dashboard session
+    private string CurrentUserEmail = "alex.turner@company.com";
+
+    // Helper to get only tasks assigned to Alex
+    private IEnumerable<TaskDto> UserTasks => State.Tasks
+        .Where(t => t.AssignedTo == CurrentUserEmail || string.IsNullOrEmpty(t.AssignedTo));
+
     protected override void OnInitialized()
     {
-        // SYNC: Keep the grid and counts live
         State.OnChange += StateHasChanged;
     }
 
@@ -93,9 +108,10 @@
 
     private IEnumerable<TaskDto> GetFilteredTasks()
     {
-        // Pull directly from global state
-        var q = State.Tasks.AsEnumerable();
+        // 1. Start with Alex's tasks only
+        var q = UserTasks.AsEnumerable();
         
+        // 2. Apply Tab Filter
         q = ActiveTab switch
         {
             "Overdue" => q.Where(t => t.DueDate?.Date < DateTime.Today && !t.Completed),
@@ -105,6 +121,7 @@
             _ => q.Where(t => t.DueDate?.Date == DateTime.Today && !t.Completed)
         };
 
+        // 3. Apply Dropdown & Search Filters
         if (PriorityFilter != "All") q = q.Where(x => x.Priority.ToString() == PriorityFilter);
         if (!string.IsNullOrWhiteSpace(SearchQuery)) q = q.Where(t => t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
 

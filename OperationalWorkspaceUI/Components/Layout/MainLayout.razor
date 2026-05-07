@@ -17,54 +17,91 @@
 @inject ModalService ModalService
 @inject IToastUIService ToastService
 
-<div class="main-layout @UIState.CurrentTheme @(UIState.IsGlassMode ? "glass-mode" : "") @(UIState.IsDarkMode ? "dark-mode" : "")">
+@* --- 1. GLOBAL THEME HOOK --- *@
+<div class="app-container @(UIState.IsDarkMode ? "dark-mode" : "light-mode") @UIState.CurrentTheme">
+    
     @if (IsAppPage)
     {
-        <!-- LEFT: FIXED SIDEBAR -->
-        <Sidebar />
+        @* --- 2. TOPBAR: Spans 100% of browser width --- *@
+        <header class="global-header">
+            <Topbar />
+        </header>
 
-        <!-- CENTER: MAIN AREA -->
-        <main class="main-content">
-            @* --- TOPBAR AREA WITH GLOBAL THEME TOGGLE --- *@
-            <div class="top-row px-4" style="display: flex; justify-content: space-between; align-items: center; height: 50px; background: var(--topbar-bg); border-bottom: 1px solid var(--border-color);">
-                <Topbar />
-                
-                <div class="header-actions" style="display: flex; align-items: center; gap: 15px; padding-right: 20px;">
-                    @* GLOBAL THEME TOGGLE *@
-                    <div class="theme-toggle-wrapper">
-                        <FluentSwitch Value="@UIState.IsDarkMode"
-                                      ValueChanged="@(async (bool val) => await ToggleTheme(val))"
-                                      Label="@(UIState.IsDarkMode ? "Dark" : "Light")" />
-                    </div>
-                    <a href="https://sage.com" target="_blank" style="font-size: 0.8rem; text-decoration: none; color: var(--text-muted);">About Sage X3</a>
+        @* --- 3. WORKSPACE WRAPPER: Handles Sidebar, Body, and Right Panel --- *@
+        <div class="main-wrapper">
+            
+            <!-- LEFT: FIXED SIDEBAR -->
+            <Sidebar />
+
+            <!-- CENTER: PAGE CONTENT AREA -->
+            <main class="page-content">
+                <div class="content-body">
+                    @if (UIState.IsLoading)
+                    {
+                        <LoadingSpinner />
+                    }
+                    else
+                    {
+                        @Body
+                    }
                 </div>
-            </div>
+                
+                @* GLOBAL NOTIFICATIONS *@
+                <ToastNotification />
+            </main>
 
-            <div class="content-body">
-                @if (UIState.IsLoading)
-                {
-                    <LoadingSpinner />
-                }
-                else
-                {
-                    @Body
-                }
-            </div>
-
-            @* GLOBAL NOTIFICATIONS *@
-            <ToastNotification />
-        </main>
-
-        <!-- RIGHT: SAGE X3 CONTEXTUAL INSIGHTS -->
-        <RightPanel />
+            <!-- RIGHT: SAGE X3 CONTEXTUAL INSIGHTS -->
+            <RightPanel />
+        </div>
     }
     else
     {
+        @* Landing / Login Frame *@
         <div class="landing-frame">
             @Body
         </div>
     }
 </div>
+
+<style>
+    /* Structural CSS to ensure no overlapping or cutoff */
+    .app-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+    }
+
+    .global-header {
+        width: 100%;
+        height: 40px;
+        flex-shrink: 0;
+        z-index: 1000;
+        background-color: #003366;
+    }
+
+    .main-wrapper {
+        display: flex;
+        flex: 1;
+        width: 100%;
+        overflow: hidden; /* Prevents double scrollbars */
+    }
+
+    .page-content {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--bg-app);
+        transition: background-color 0.3s ease;
+    }
+
+    .content-body {
+        flex: 1;
+        padding: 0;
+    }
+</style>
 
 @code {
     private DotNetObjectReference<MainLayout>? _objRef;
@@ -81,15 +118,6 @@
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
-
-    private async Task ToggleTheme(bool isDark)
-    {
-        // 1. Update the Global State (this triggers the CSS class change in the top div)
-        await UIState.SetTheme(isDark ? "dark-mode" : "light-mode");
-        
-        // 2. Trigger the JS for any specific component re-paints (FluentUI, etc)
-        await JS.InvokeVoidAsync("applyTheme", isDark ? "dark-mode" : "light-mode");
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

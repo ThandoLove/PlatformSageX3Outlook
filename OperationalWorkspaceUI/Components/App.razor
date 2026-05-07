@@ -15,12 +15,12 @@
     <!-- 2. INTERNAL BLAZOR STYLES -->
     <link rel="stylesheet" href="/OperationalWorkspaceUI.styles.css" />
 
-    <!-- 3. CUSTOM CSS (Ordered so app.css has the final say on Dark Mode) -->
+    <!-- 3. CUSTOM CSS -->
     <link rel="stylesheet" href="css/Landing.css" />
     <link rel="stylesheet" href="css/Forms.css" />
     <link rel="stylesheet" href="css/Workspace.css" />
     <link rel="stylesheet" href="css/Components.css" />
-    @* Dashboard.css removed as discussed - styles moved to scoped razor.css *@
+    @* Must be last to override page-specific backgrounds *@
     <link rel="stylesheet" href="/css/app.css" />
     
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -48,20 +48,19 @@
     <FluentDesignTheme />
 
     <Routes @rendermode="InteractiveServer" />
-    
     <Modal @rendermode="InteractiveServer" />
-    
     <ReconnectModal />
 
-    <!-- 1. External / Custom JS -->
+    <!-- JS ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/charts.js"></script>
     <script src="/js/officeBridge.js"></script>
     <script src="/js/app.js"></script>
 
-    @* --- THEME TOGGLE ENGINE --- *@
+    @* --- THE THEME ENGINE (FIXED) --- *@
     <script>
         window.applyTheme = (theme) => {
+        console.log("SWITCHING TO: " + theme);
         const body = document.body;
         if (theme === 'dark-mode') {
         body.classList.add('dark-mode');
@@ -70,13 +69,13 @@
         body.classList.add('light-mode');
         body.classList.remove('dark-mode');
         }
-        }
+        };
     </script>
 
-    <!-- 2. Blazor LAST -->
+    <!-- BLAZOR CORE -->
     <script src="_framework/blazor.web.js"></script>
 
-    <!-- 3. Component libraries -->
+    <!-- LIBRARIES -->
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
 
@@ -92,7 +91,6 @@
         }
         });
         } else {
-        console.log("Office.js not available (browser mode)");
         window.history.pushState = window._historyCache.pushState;
         window.history.replaceState = window._historyCache.replaceState;
         }
