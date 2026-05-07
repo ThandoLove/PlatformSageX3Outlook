@@ -1,3 +1,6 @@
+/* ========================================================= 
+   GLOBAL THEME VARIABLES 
+   ========================================================= */
 :root {
     --sage-green: #00c853;
     --sage-blue: #003366;
@@ -8,12 +11,12 @@
     --text-muted: #64748b;
     --border-color: #e2e8f0;
     --card-header-bg: #f8fafc;
-    /* MODAL */
+    /* MODAL & BLUR */
     --modal-blur: 8px;
     --modal-overlay: rgba(248, 250, 252, 0.7);
 }
 
-/* This is the magic part. When the toggle adds this class, the variables flip */
+/* DARK THEME OVERRIDES: When .dark-mode is on the <body>, these take over */
 .dark-mode {
     --bg-app: #020617;
     --panel-bg: #0f172a;
@@ -24,24 +27,59 @@
     --modal-overlay: rgba(2, 6, 23, 0.7);
 }
 
-/* Apply variables to the body */
+/* ========================= GLOBAL BODY RULES ========================= */
 body {
     background-color: var(--bg-app);
     color: var(--text-main);
     margin: 0;
     font-family: 'Segoe UI', Tahoma, sans-serif;
     transition: background 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
 }
 
-/* Force every panel/card to follow the theme */
-.metric-card, .widget-wrapper, .timeline-card, .kb-widget-card, .grid-card, .modal-window {
+/* Ensure the main layout wrapper respects the background */
+.main-layout {
+    background-color: var(--bg-app);
+    min-height: 100vh;
+}
+
+/* ========================= COMPONENT THEMING ========================= */
+
+/* Force all card-like widgets to follow the current theme variables */
+.metric-card,
+.widget-wrapper,
+.timeline-card,
+.kb-widget-card,
+.grid-card,
+.modal-window,
+.modal-container {
     background: var(--panel-bg) !important;
     color: var(--text-main) !important;
     border: 1px solid var(--border-color) !important;
+    transition: background 0.3s ease;
 }
 
-    .card-header, .panel-header, .widget-wrapper h3 {
+    /* Unified Header Theming for Dark/Light mode */
+    .card-header,
+    .panel-header,
+    .widget-wrapper h3,
+    .kb-header-area {
         background: var(--card-header-bg) !important;
         color: var(--text-main) !important;
         border-bottom: 1px solid var(--border-color) !important;
+        font-weight: 600;
     }
+
+/* Muted Text logic */
+.metric-subtext, .kb-meta, .activity-sub {
+    color: var(--text-muted) !important;
+}
+
+/* ========================= TOPBAR & SIDEBAR (STAY DARK) ========================= */
+/* These usually stay 'Sage Blue' even in light mode for brand consistency */
+.sage-topbar-master,
+.sidebar,
+.sage-sidebar {
+    background-color: #003366 !important;
+    color: #ffffff !important;
+}

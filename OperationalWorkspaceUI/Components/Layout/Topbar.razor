@@ -4,44 +4,43 @@
 @implements IDisposable
 @inject UIState UIState
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
-<div class="sage-topbar-wrapper" style="height: 40px !important; display: flex; align-items: center; background-color: #003366; padding: 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+<div class="sage-topbar-master">
     
-    @* LEFT: Full Workspace Title + DYNAMIC Dashboard Label *@
-    <div class="topbar-left" style="display: flex; align-items: center; gap: 12px;">
-        
-        @* Full Workspace Title (Professional Small Font) *@
-        <span style="font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.05rem; white-space: nowrap;">
-            SAGE X3 CONTEXTUAL WORKSPACE
-        </span>
-
-        @* Vertical Divider *@
-        <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.2); margin: 0 4px;"></div>
-
-        @* DYNAMIC PAGE TITLE: This changes automatically based on the URL *@
-        <span style="font-size: 0.8rem; font-weight: 600; color: #ffffff; white-space: nowrap;">@PageTitle</span>
+    @* ZONE 1: LEFT - Title & Dynamic Label *@
+    <div class="zone-left">
+        <span class="sage-brand-text">SAGE X3 CONTEXTUAL WORKSPACE</span>
+        <div class="topbar-divider"></div>
+        <span class="page-dynamic-title">@PageTitle</span>
     </div>
 
-    @* MIDDLE: Search (Compact) *@
-    <div class="topbar-center" style="flex: 1; display: flex; justify-content: center; padding: 0 20px;">
-        <div class="search-input-group" style="display: flex; align-items: center; background: rgba(255,255,255,0.12); padding: 2px 10px; border-radius: 4px; width: 100%; max-width: 350px;">
+    @* ZONE 2: MIDDLE - Search (The spacer that prevents overlap) *@
+    <div class="zone-middle">
+        <div class="search-input-group">
             <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
                         CustomColor="#ffffff" />
-            <input type="text" placeholder="Search functions or data..."
-                   style="border: none; background: transparent; font-size: 0.75rem; color: #ffffff; outline: none; width: 100%; padding-left: 8px;" />
+            <input type="text" placeholder="Search functions or data..." class="topbar-search-input" />
         </div>
     </div>
 
-    @* RIGHT: Status + User Profile *@
-    <div class="topbar-right" style="display: flex; align-items: center; gap: 12px;">
-        <div class="connection-status" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: rgba(255,255,255,0.8); border-right: 1px solid rgba(255,255,255,0.2); padding-right: 12px;">
+    @* ZONE 3: RIGHT - Status, Toggle, and Profile *@
+    <div class="zone-right">
+        <div class="connection-status">
             <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
-            <span style="white-space: nowrap;">Connected to Sage X3</span>
+            <span class="conn-text">Connected</span>
         </div>
 
-        <div class="user-profile-section" style="display: flex; align-items: center; cursor: pointer;">
+        @* THE THEME TOGGLE *@
+        <div class="theme-toggle-container">
+            <FluentSwitch Value="@UIState.IsDarkMode" 
+                          ValueChanged="@ToggleTheme" 
+                          Label="@(UIState.IsDarkMode ? "Dark" : "Light")" />
+        </div>
+
+        <div class="user-profile-section">
             <FluentPersona Name="@DisplayName"
                            Status="@PresenceStatus.Available"
                            AvatarSize="24"
@@ -50,17 +49,61 @@
     </div>
 </div>
 
+<style>
+    .sage-topbar-master {
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #003366;
+        padding: 0 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* ZONE LAYOUT */
+    .zone-left { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .zone-middle { flex: 1; display: flex; justify-content: center; padding: 0 20px; }
+    .zone-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+    /* LEFT ELEMENTS */
+    .sage-brand-text {
+        font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.7);
+        text-transform: uppercase; letter-spacing: 0.05rem; white-space: nowrap;
+    }
+    .topbar-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.2); margin: 0 4px; }
+    .page-dynamic-title { font-size: 0.8rem; font-weight: 600; color: #ffffff; white-space: nowrap; }
+
+    /* MIDDLE ELEMENTS */
+    .search-input-group {
+        display: flex; align-items: center; background: rgba(255,255,255,0.12);
+        padding: 2px 10px; border-radius: 4px; width: 100%; max-width: 350px;
+    }
+    .topbar-search-input {
+        border: none; background: transparent; font-size: 0.75rem; color: #ffffff;
+        outline: none; width: 100%; padding-left: 8px;
+    }
+
+    /* RIGHT ELEMENTS */
+    .connection-status {
+        display: flex; align-items: center; gap: 6px; font-size: 0.7rem;
+        color: rgba(255,255,255,0.8); border-right: 1px solid rgba(255,255,255,0.2);
+        padding-right: 12px;
+    }
+    .conn-text { white-space: nowrap; }
+    .theme-toggle-container { margin: 0 5px; }
+    .user-profile-section { display: flex; align-items: center; color: white; }
+</style>
+
 @code {
     private string PageTitle { get; set; } = "Dashboard";
     private string DisplayName => !string.IsNullOrEmpty(UIState.UserName) ? UIState.UserName : "John Smith";
 
     protected override void OnInitialized()
     {
-        // Subscribe to navigation events
         Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
-        
-        // Initial title set
         UpdatePageTitle();
     }
 
@@ -70,16 +113,21 @@
         StateHasChanged();
     }
 
+    private async Task ToggleTheme(bool isDark)
+    {
+        // 1. Update global state
+        await UIState.SetTheme(isDark ? "dark-mode" : "light-mode");
+        // 2. Trigger JS for visual CSS class swap on the <body>
+        await JS.InvokeVoidAsync("applyTheme", isDark ? "dark-mode" : "light-mode");
+    }
+
     private void UpdatePageTitle()
     {
-        // Gets the part of the URL after the domain (e.g., "quotes")
         var relativePath = Nav.ToBaseRelativePath(Nav.Uri).ToLower();
 
-        // Clean up query strings if they exist
         if (relativePath.Contains("?"))
             relativePath = relativePath.Split('?')[0];
 
-        // Mapping URLs to Sidebar Names
         PageTitle = relativePath switch
         {
             "" or "dashboard" => "Dashboard",
@@ -91,17 +139,16 @@
             "quotes" => "Quotes",
             "invoices" => "Invoices",
             "cases" => "Cases",
-            "kb" => "knowledge-page",
+            "kb" or "knowledge-page" => "Knowledge Base",
             "tasks" => "My Tasks",
             "admin" => "Admin",
-            "documents"=>"attachments",
+            "attachments" or "documents" => "Documents",
             _ => "Workspace"
         };
     }
 
     public void Dispose()
     {
-        // Unsubscribe to prevent memory leaks
         Nav.LocationChanged -= HandleLocationChanged;
         UIState.OnChange -= StateHasChanged;
     }
