@@ -6,7 +6,7 @@
 @inject WorkspaceState State
 
 <div class="sage-app">
-    <!-- 1. TOP HEADER: ALEX TURNER SECTION (IMAGE MATCH) -->
+    <!-- 1. TOP HEADER: ALEX TURNER SECTION -->
     <header class="sage-header">
         <div class="user-block">
             <div class="avatar-ring">
@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        <!-- INTEGRATED SEARCH COMPONENT (IMAGE MATCH) -->
+        <!-- INTEGRATED SEARCH COMPONENT -->
         <div class="search-pill">
             <i class="oi oi-magnifying-glass search-icon"></i>
             <input type="text"
@@ -31,15 +31,14 @@
     </header>
 
     <main class="sage-body">
-        <!-- 2. LEFT COLUMN: THE TASKS HUB (SELF-FILTERING) -->
+        <!-- 2. LEFT COLUMN: THE TASKS HUB -->
         <section class="hub-main-container">
-            @* We pass the full state and search query. Grid handles tabs internally. *@
-            <TaskGrid Tasks="State.Tasks"
-                      SearchQuery="@SearchQuery"
+            @* FIX: Removed Tasks="State.Tasks" because TaskGrid now gets data from State internally *@
+            <TaskGrid SearchQuery="@SearchQuery"
                       OnTaskSelected="HandleTaskSelection" />
         </section>
 
-        <!-- 3. RIGHT COLUMN: THE SIDEBAR (KPI WIDGETS) -->
+        <!-- 3. RIGHT COLUMN: THE SIDEBAR -->
         <aside class="details-sidebar">
             <TaskDetailsPanel Task="SelectedTask" />
         </aside>

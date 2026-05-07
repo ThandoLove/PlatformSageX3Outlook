@@ -4,7 +4,7 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @implements IDisposable
-@inject DashboardState State
+@inject WorkspaceState WState
 
 <FluentCard Class="timeline-card">
     @* Panel Header *@
@@ -14,9 +14,9 @@
     </div>
 
     <div class="timeline-scroll-area">
-        @if (Activities != null && Activities.Any())
+        @if (WState.ActivityLogs != null && WState.ActivityLogs.Any())
         {
-            @foreach (var group in Activities.OrderByDescending(a => a.Timestamp).GroupBy(a => a.Timestamp.Date))
+            @foreach (var group in WState.ActivityLogs.OrderByDescending(a => a.Timestamp).GroupBy(a => a.Timestamp.Date))
             {
                 <div class="timeline-date-label">@GetDateHeader(group.Key)</div>
 
@@ -24,7 +24,6 @@
                     @foreach (var activity in group)
                     {
                         <div class="timeline-item">
-                            <!-- The vertical line marker -->
                             <div class="timeline-marker" style="background-color: @GetActivityColor(activity.Action);">
                                 <FluentIcon Value="@GetActivityIcon(activity.Action)" Color="@Color.Custom" CustomColor="white" />
                             </div>
@@ -59,15 +58,9 @@
 </FluentCard>
 
 @code {
-    [Parameter] public List<ActivityDto> Activities { get; set; } = new();
-
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
-        if (Activities == null || !Activities.Any())
-        {
-            Activities = State.RecentActivities;
-        }
+        WState.OnChange += StateHasChanged;
     }
 
     private string GetDateHeader(DateTime date)
@@ -79,19 +72,24 @@
 
     private Icon GetActivityIcon(string action) => action.ToLower() switch
     {
-        "email" or "created" => new Icons.Regular.Size16.Mail(),
-        "call" or "contacted" => new Icons.Regular.Size16.Call(),
-        "meeting" or "scheduled" => new Icons.Regular.Size16.CalendarLtr(),
-        _ => new Icons.Regular.Size16.CheckmarkCircle()
+        var a when a.Contains("email") || a.Contains("knowledge") => new Icons.Regular.Size16.Mail(),
+        var a when a.Contains("upload") || a.Contains("file") => new Icons.Regular.Size16.ArrowUpload(),
+        var a when a.Contains("task") || a.Contains("complete") => new Icons.Regular.Size16.CheckmarkCircle(),
+        var a when a.Contains("ticket") => new Icons.Regular.Size16.TicketDiagonal(),
+        _ => new Icons.Regular.Size16.Info() @* This is a safe backup icon *@
     };
+
 
     private string GetActivityColor(string action) => action.ToLower() switch
     {
-        "email" or "created" => "#3b82f6", // Sage Blue
-        "call" or "contacted" => "#14b8a6", // Teal
-        "meeting" or "scheduled" => "#f59e0b", // Orange
+        var a when a.Contains("upload") || a.Contains("created") => "#10b981",
+        var a when a.Contains("delete") || a.Contains("remove") => "#ef4444",
+        var a when a.Contains("task") || a.Contains("complete") => "#3b82f6",
         _ => "#64748b"
     };
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose()
+    {
+        WState.OnChange -= StateHasChanged;
+    }
 }

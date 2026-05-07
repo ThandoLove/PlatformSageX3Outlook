@@ -1,27 +1,31 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Mappers
+@using OperationalWorkspaceUI.State
+@using OperationalWorkspace.Domain.Enums
+@implements IDisposable
+@inject WorkspaceState State
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
 <div class="hub-container force-interactive">
     <header class="hub-header">
         <div class="hub-title-group @(ActiveTab == "All" ? "active" : "")" @onclick='() => SelectFilter("All")'>
-            <i class="oi oi-list-rich"></i><span>Tasks Hub</span>
+            <i class="oi oi-list-rich"></i><span>Tasks Grid</span>
         </div>
         
         <nav class="hub-tabs">
-            @* DYNAMIC TABS WITH LIVE COUNTS *@
+            @* DYNAMIC TABS WITH LIVE COUNTS FROM STATE *@
             <div class="tab-item @(ActiveTab == "Today" ? "active" : "")" @onclick='() => SelectFilter("Today")'>
-                Today (@Tasks.Count(t => t.DueDate?.Date == DateTime.Today && !t.Completed))
+                Today (@State.Tasks.Count(t => t.DueDate?.Date == DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SelectFilter("Overdue")'>
-                Overdue (@Tasks.Count(t => TaskRulesEngine.IsOverdue(t)))
+                Overdue (@State.Tasks.Count(t => t.DueDate?.Date < DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Upcoming" ? "active" : "")" @onclick='() => SelectFilter("Upcoming")'>
-                Upcoming (@Tasks.Count(t => t.DueDate?.Date > DateTime.Today && !t.Completed))
+                Upcoming (@State.Tasks.Count(t => t.DueDate?.Date > DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SelectFilter("Completed")'>
-                Completed (@Tasks.Count(t => t.Completed))
+                Completed (@State.Tasks.Count(t => t.Completed))
             </div>
         </nav>
     </header>
@@ -30,7 +34,6 @@
         <div class="sub-header-left">
             <div class="pill-dropdown">
                 <i class="oi oi-calendar"></i>
-                @* DYNAMIC PILL TEXT *@
                 <span>@ActiveTab (@GetFilteredTasks().Count())</span>
                 <i class="oi oi-chevron-bottom"></i>
             </div>
@@ -48,11 +51,10 @@
             <label>Priority:</label>
             <select @bind="PriorityFilter">
                 <option value="All">All Levels</option>
-                <option value="Urgent">Urgent (Warnings)</option>
-                <option value="High">High Priority</option>
-                <option value="Normal">Normal</option>
-                <option value="Low">Low Priority</option>
+                <option value="Urgent">Urgent</option>
+                <option value="High">High</option>
                 <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
             </select>
         </div>
     }
@@ -60,19 +62,25 @@
     <div class="task-list-scroller">
         @foreach (var task in GetFilteredTasks())
         {
+            @* Pass the task to your TaskItem card *@
             <TaskItem Task="task" OnSelect="OnTaskSelected" />
         }
     </div>
 </div>
 
 @code {
-    [Parameter] public List<TaskDto> Tasks { get; set; } = new();
     [Parameter] public string SearchQuery { get; set; } = "";
     [Parameter] public EventCallback<TaskDto> OnTaskSelected { get; set; }
 
     private string ActiveTab = "Today";
     private bool IsFilterOpen = false;
     private string PriorityFilter = "All";
+
+    protected override void OnInitialized()
+    {
+        // SYNC: Keep the grid and counts live
+        State.OnChange += StateHasChanged;
+    }
 
     private void ToggleFilter() => IsFilterOpen = !IsFilterOpen;
 
@@ -85,11 +93,12 @@
 
     private IEnumerable<TaskDto> GetFilteredTasks()
     {
-        var q = Tasks.AsEnumerable();
+        // Pull directly from global state
+        var q = State.Tasks.AsEnumerable();
         
         q = ActiveTab switch
         {
-            "Overdue" => q.Where(t => TaskRulesEngine.IsOverdue(t)),
+            "Overdue" => q.Where(t => t.DueDate?.Date < DateTime.Today && !t.Completed),
             "Upcoming" => q.Where(t => t.DueDate?.Date > DateTime.Today && !t.Completed),
             "Completed" => q.Where(t => t.Completed),
             "All" => q,
@@ -97,16 +106,15 @@
         };
 
         if (PriorityFilter != "All") q = q.Where(x => x.Priority.ToString() == PriorityFilter);
-
-        if (!string.IsNullOrWhiteSpace(SearchQuery))
-            q = q.Where(t => t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(SearchQuery)) q = q.Where(t => t.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
 
         return q;
     }
 
-    private void SelectFilter(string tabName)
+    private void SelectFilter(string tabName) => ActiveTab = tabName;
+
+    public void Dispose()
     {
-        ActiveTab = tabName;
-        StateHasChanged();
+        State.OnChange -= StateHasChanged;
     }
 }

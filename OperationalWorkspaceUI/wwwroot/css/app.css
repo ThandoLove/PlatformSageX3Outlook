@@ -1,348 +1,47 @@
 :root {
     --sage-green: #00c853;
-    --sage-blue: #0052cc;
-    --bg-dark: #020617;
-    --bg-light: #f8fafc;
-    --panel-dark: #0f172a;
-    --panel-light: #ffffff;
-    --text-dark: #e5e7eb;
-    --text-light: #111827;
-    /* MODAL GLOBAL SYNC */
+    --sage-blue: #003366;
+    /* LIGHT THEME (Default) */
+    --bg-app: #f3f2f1;
+    --panel-bg: #ffffff;
+    --text-main: #111827;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --card-header-bg: #f8fafc;
+    /* MODAL */
     --modal-blur: 8px;
-    --modal-overlay-light: rgba(248, 250, 252, 0.7);
-    --modal-overlay-dark: rgba(2, 6, 23, 0.7);
+    --modal-overlay: rgba(248, 250, 252, 0.7);
 }
 
-/* ========================= BODY THEMING ========================= */
+/* This is the magic part. When the toggle adds this class, the variables flip */
+.dark-mode {
+    --bg-app: #020617;
+    --panel-bg: #0f172a;
+    --text-main: #e5e7eb;
+    --text-muted: #94a3b8;
+    --border-color: #1e293b;
+    --card-header-bg: #1e293b;
+    --modal-overlay: rgba(2, 6, 23, 0.7);
+}
+
+/* Apply variables to the body */
 body {
-    background: var(--bg-dark);
-    color: var(--text-dark);
+    background-color: var(--bg-app);
+    color: var(--text-main);
     margin: 0;
     font-family: 'Segoe UI', Tahoma, sans-serif;
-    overflow-x: hidden;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-    body.light-mode {
-        background: var(--bg-light);
-        color: var(--text-light);
+/* Force every panel/card to follow the theme */
+.metric-card, .widget-wrapper, .timeline-card, .kb-widget-card, .grid-card, .modal-window {
+    background: var(--panel-bg) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+    .card-header, .panel-header, .widget-wrapper h3 {
+        background: var(--card-header-bg) !important;
+        color: var(--text-main) !important;
+        border-bottom: 1px solid var(--border-color) !important;
     }
-
-/* ========================= LANDING & HERO ========================= */
-.landing-page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.hero-section {
-    display: flex;
-    justify-content: space-between;
-    padding: 60px 80px;
-    gap: 60px;
-}
-
-/* ========================= DASHBOARD PREVIEW ========================= */
-.dashboard-preview {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    background: var(--panel-dark);
-}
-
-body.light-mode .dashboard-preview {
-    background: var(--panel-light);
-}
-
-/* ========================= GLOBAL SAGE MODAL ========================= */
-.modal-window {
-    position: relative;
-    background: var(--panel-light);
-    color: var(--text-light);
-    width: 95%;
-    max-width: 460px;
-    border-radius: 16px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-    padding: 40px;
-}
-
-/* ========================= SAGE DASHBOARD SIDEBAR FIX ========================= */
-.sidebar, .preview-sidebar, .sage-sidebar {
-    width: 240px !important;
-    flex: 0 0 240px !important;
-    background-color: #003366 !important;
-    height: 100vh;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid rgba(255,255,255,0.1);
-}
-
-/* ========================= SAGE TOPBAR FIX ========================= */
-.sage-topbar, .sage-topbar-wrapper {
-    height: 40px !important;
-    background-color: #003366 !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 0 15px !important;
-    color: #ffffff !important;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.sage-brand-text {
-    font-size: 0.7rem !important;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.7) !important;
-    letter-spacing: 0.05rem;
-    white-space: nowrap;
-}
-
-.topbar-left .page-title {
-    font-weight: 600;
-    color: #ffffff !important;
-    font-size: 0.85rem;
-    white-space: nowrap;
-}
-
-.topbar-divider {
-    width: 1px;
-    height: 16px;
-    background: rgba(255, 255, 255, 0.2);
-    margin: 0 4px;
-}
-
-.topbar-center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    padding: 0 20px;
-}
-
-.search-input-group {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.12) !important;
-    padding: 2px 10px;
-    border-radius: 4px;
-    width: 100%;
-    max-width: 350px;
-}
-
-.topbar-search {
-    border: none;
-    background: transparent;
-    font-size: 0.75rem;
-    outline: none;
-    width: 100%;
-    color: #ffffff !important;
-    padding-left: 8px;
-}
-
-    .topbar-search::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-    }
-
-.topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.connection-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.8) !important;
-    padding-right: 12px;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-    white-space: nowrap;
-}
-
-.user-profile-section {
-    display: flex;
-    align-items: center;
-    color: white !important;
-}
-
-/* ========================= DASHBOARD GRID & WIDGETS ========================= */
-.dashboard-wrapper {
-    padding: 16px;
-    background-color: #f3f2f1; /* Light gray from image */
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-height: 100vh;
-}
-
-/* KPI Metrics */
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
-}
-
-.metric-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 90px;
-}
-
-.metric-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: #64748b;
-    letter-spacing: 0.02rem;
-}
-
-.metric-value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 4px 0;
-}
-
-.metric-trend {
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-    .metric-trend.positive {
-        color: #10b981;
-    }
-
-    .metric-trend.negative {
-        color: #ef4444;
-    }
-
-.metric-subtext {
-    font-size: 0.7rem;
-    color: #94a3b8;
-}
-
-.status-optimal {
-    color: #003366 !important;
-}
-
-/* Row-Based Content Layout */
-.sage-dashboard-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    width: 100%;
-}
-
-    .sage-dashboard-row.single {
-        grid-template-columns: 1fr;
-    }
-
-.widget-wrapper {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-    /* Stop the "Huge" Header and Content */
-    .widget-wrapper h3, .widget-wrapper .card-header {
-        font-size: 0.85rem !important;
-        font-weight: 700 !important;
-        padding: 10px 16px !important;
-        margin: 0 !important;
-        background: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-        color: #1e293b;
-    }
-
-/* ========================= QUICK ACTIONS ROW FIX ========================= */
-/* Merged Fix: Keeps your 38px height but forces full-width alignment */
-.quick-actions-container {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 8px !important;
-    padding: 0 !important; /* Kills the extra white space from the screenshot */
-    margin: 8px 0 !important;
-    width: 100% !important;
-    background: transparent !important; /* Removes the white box background */
-}
-
-.action-tile {
-    flex: 1 !important; /* FORCES buttons to stretch and fill the row equally */
-    height: 38px !important; /* Kept your high-density height */
-    border: none !important;
-    border-radius: 4px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    cursor: pointer !important;
-    transition: opacity 0.2s;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Adds subtle professional depth */
-}
-
-
-    .action-tile:hover {
-        opacity: 0.9;
-    }
-
-    .action-tile span {
-        font-size: 0.75rem; /* MATCHES TARGET IMAGE FONT DENSITY */
-        font-weight: 600;
-        color: #ffffff;
-        white-space: nowrap;
-    }
-
-/* SAGE TARGET BRAND COLORS */
-.action-blue {
-    background-color: #0078d4;
-}
-
-.action-teal {
-    background-color: #008272;
-}
-
-.action-orange {
-    background-color: #f59e0b;
-}
-
-.action-indigo {
-    background-color: #4f46e5;
-}
-
-.action-navy {
-    background-color: #003366;
-}
-
-.action-green {
-    background-color: #10b981;
-}
-
-
-/* ========================= FOOTER ========================= */
-.landing-footer {
-    margin-top: auto;
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    padding: 20px;
-}
-

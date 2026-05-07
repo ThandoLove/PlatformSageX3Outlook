@@ -20,9 +20,10 @@
 
 <PageTitle>Sage X3 | Operational Dashboard</PageTitle>
 
+@* Note: Top div still uses AppUIState.IsDarkMode to react to the Global Toggle *@
 <div class="dashboard-wrapper @(AppUIState.IsDarkMode ? "dark-mode" : "")">
 
-    @* --- ROW 1: DYNAMIC KPI METRICS --- *@
+    @* --- ROW 1: DYNAMIC KPI CARDS --- *@
     <div class="metrics-grid">
 
         @{
@@ -30,35 +31,33 @@
             var customerName = customer?.Name ?? "No Customer Linked";
         }
 
-        <!-- OPEN ORDERS -->
-        <div class="metric-card">
-            <span class="metric-label">Open Orders</span>
-            <div class="metric-value">@DState.DashboardData.OpenOrders</div>
+        <!-- OPEN ORDERS CARD -->
+        <Card Title="Open Orders">
+            <div class="metric-value">@(WState.Orders?.Count ?? 0)</div>
             <span class="metric-subtext">@customerName</span>
-        </div>
+        </Card>
 
-        <!-- TICKETS -->
-        <div class="metric-card">
-            <span class="metric-label">Open Tickets</span>
-            <div class="metric-value">@(DState.CurrentTickets?.Count() ?? 0)</div>
+        <!-- OPEN TICKETS CARD (FILTERED) -->
+        <Card Title="Open Tickets">
+            <div class="metric-value">
+                @(WState.Tickets?.Count(t => t.Status != "Closed" && t.Status != "Resolved") ?? 0)
+            </div>
             <span class="metric-subtext">
-                @(DState.CurrentTickets?.Any(t => t.Priority == "High") == true ? "Urgent" : "Normal")
+                @(WState.Tickets?.Any(t => t.Priority == "High" && t.Status != "Closed") == true ? "Urgent Action Required" : "Active work items")
             </span>
-        </div>
+        </Card>
 
-        <!-- ACTIVITIES -->
-        <div class="metric-card">
-            <span class="metric-label">Recent Activity</span>
-            <div class="metric-value">@(DState.CurrentActivities?.Count() ?? 0)</div>
+        <!-- RECENT ACTIVITY CARD -->
+        <Card Title="Recent Activity">
+            <div class="metric-value">@(WState.ActivityLogs?.Count ?? 0)</div>
             <span class="metric-subtext">Updated Today</span>
-        </div>
+        </Card>
 
-        <!-- CUSTOMER STATUS -->
-        <div class="metric-card">
-            <span class="metric-label">Customer</span>
-            <div class="metric-value">@customerName</div>
-            <span class="metric-subtext">Active</span>
-        </div>
+        <!-- CUSTOMER STATUS CARD -->
+        <Card Title="Customer">
+            <div class="metric-value" style="font-size: 1.2rem;">@customerName</div>
+            <span class="metric-subtext">Active Status</span>
+        </Card>
     </div>
 
     @* --- ROW 2: CONTEXTUAL INSIGHTS --- *@
@@ -95,7 +94,7 @@
             <TasksPanel />
         </Card>
         <Card Title="Recent Activity">
-            <RecentActivityPanel Activities="@DState.CurrentActivities" />
+            <RecentActivityPanel />
         </Card>
     </div>
 
@@ -105,44 +104,29 @@
             <SystemHealthPanel Status="@DState.AdminHealth" />
         </Card>
         <Card Title="Active Tickets">
-            <TicketsPanel Tickets="@DState.CurrentTickets" />
+            <TicketsPanel />
         </Card>
     </div>
 
-    @* --- THEME TOGGLE --- *@
-    <div class="theme-toggle-fixed">
-        <FluentSwitch @bind-Value="IsDarkMode"
-                      Label="@(AppUIState.IsDarkMode ? "Dark Appearance" : "Light Appearance")" />
-    </div>
 </div>
 
 @code {
-    private bool IsDarkMode
-    {
-        get => AppUIState.IsDarkMode;
-        set
-        {
-            // Note: Ensure UIState methods are public
-            _ = AppUIState.SetTheme(value ? "dark-mode" : "light-mode");
-            _ = JS.InvokeVoidAsync("applyTheme", value ? "dark-mode" : "light-mode");
-        }
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        // 1. Initial Data Load from Dashboard Logic
+        // 1. Initial Data Load
         await DState.LoadDashboardAsync();
         
-        // 2. SUBSCRIBE: Listen to both States for a fully synced experience
-        // This ensures updates to Documents or Knowledge reflect on the dashboard tiles
+        // 2. SUBSCRIBE: Listen to states so the UI updates when the Global Toggle or data changes
         DState.OnChange += StateHasChanged;
         WState.OnChange += StateHasChanged;
+        AppUIState.OnChange += StateHasChanged; // Listen for theme changes specifically
     }
 
     public void Dispose()
     {
-        // 3. CLEANUP: Prevent memory leaks when navigating away
+        // 3. CLEANUP
         DState.OnChange -= StateHasChanged;
         WState.OnChange -= StateHasChanged;
+        AppUIState.OnChange -= StateHasChanged;
     }
 }

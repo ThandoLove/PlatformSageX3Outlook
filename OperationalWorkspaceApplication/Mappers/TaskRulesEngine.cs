@@ -107,13 +107,5 @@ namespace OperationalWorkspaceApplication.Mappers
     // ---------------------------------
     // SUPPORTING ENUM
     // ---------------------------------
-    public enum TaskDueState
-    {
-        NoDate,
-        DueToday,
-        DueSoon,
-        Future,
-        Overdue,
-        Completed
-    }
+    
 }

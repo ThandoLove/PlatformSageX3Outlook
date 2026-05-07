@@ -9,54 +9,52 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @implements IDisposable
-@inject DashboardState State
+@inject WorkspaceState WState 
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
+@inject HttpClient Http
 
-<div class="form-container">
-    <div class="page-header">
+<div class="form-container" style="padding: 20px;">
+    <div class="page-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
         <FluentButton Appearance="Appearance.Stealth"
                       IconStart="@(new Icons.Regular.Size20.ArrowLeft())"
                       OnClick="@(() => NavManager.NavigateTo("/tickets"))" />
-        <h2>@(TicketId == null ? "New Service Request" : $"Edit Ticket: {_ticket.TicketNumber}")</h2>
+        <h2 style="color: #002d5a; margin: 0;">@(TicketId == null ? "New Service Request" : $"Edit Ticket: {_ticket.TicketNumber}")</h2>
     </div>
 
-    @* Adding an explicit TModel helps resolve the lambda error *@
     <EditForm Model="@_ticket" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
         
         <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="5">
             
-            <div class="form-section">
-                <label class="section-title">REQUEST INFORMATION</label>
+            <div class="form-section" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">REQUEST INFORMATION</label>
                 <FluentGrid>
                     <FluentGridItem xs="12" sm="8">
                         <FluentTextField Label="Subject" @bind-Value="_ticket.Title" Required="true" Style="width: 100%;" />
                     </FluentGridItem>
                     <FluentGridItem xs="12" sm="4">
-                        @* FIXED: Explicit TOption and ValueExpression *@
                         <FluentSelect TOption="string"
                                       Label="Priority"
                                       @bind-Value="_ticket.Priority"
                                       Style="width: 100%;">
-                            <FluentOption TOption="string" Value="1">Low</FluentOption>
-                            <FluentOption TOption="string" Value="3">Medium</FluentOption>
-                            <FluentOption TOption="string" Value="5">Critical</FluentOption>
+                            <FluentOption TOption="string" Value="Low">Low</FluentOption>
+                            <FluentOption TOption="string" Value="Medium">Medium</FluentOption>
+                            <FluentOption TOption="string" Value="High">High</FluentOption>
                         </FluentSelect>
                     </FluentGridItem>
                 </FluentGrid>
             </div>
 
-            <div class="form-section">
-                <label class="section-title">SAGE X3 CONTEXT</label>
+            <div class="form-section" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">SAGE X3 CONTEXT</label>
                 <FluentGrid>
-                    @* These will now compile because you added them to the DTO *@
                     <FluentGridItem xs="12" sm="4">
-                        <FluentTextField Label="Site" @bind-Value="_ticket.SiteCode" Placeholder="e.g. AO011" Style="width: 100%;" />
+                        <FluentTextField Label="Customer Name" @bind-Value="_ticket.CustomerName" Placeholder="e.g. Tech Innovations" Style="width: 100%;" />
                     </FluentGridItem>
                     <FluentGridItem xs="12" sm="4">
-                        <FluentTextField Label="Customer Code" @bind-Value="_ticket.CustomerCode" Style="width: 100%;" />
+                        <FluentTextField Label="Site Code" @bind-Value="_ticket.SiteCode" Placeholder="e.g. AO011" Style="width: 100%;" />
                     </FluentGridItem>
                     <FluentGridItem xs="12" sm="4">
                         <FluentTextField Label="Machine Serial" @bind-Value="_ticket.MachineCode" Style="width: 100%;" />
@@ -64,19 +62,18 @@
                 </FluentGrid>
             </div>
 
-            <div class="form-section">
-                <label class="section-title">PROBLEM DESCRIPTION</label>
+            <div class="form-section" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">PROBLEM DESCRIPTION</label>
                 <FluentTextArea Label="Issue Details" @bind-Value="_ticket.Description" Rows="5" Style="width: 100%;" />
             </div>
 
-            <div class="form-footer">
-                @* Use full path for ButtonType to avoid Radzen conflict *@
+            <div class="form-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <FluentButton OnClick="@(() => NavManager.NavigateTo("/tickets"))">Cancel</FluentButton>
                 <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Submit"
                               Appearance="Appearance.Accent"
-                              Style="background-color: #005fb8;">
+                              Style="background-color: #005fb8; min-width: 150px;">
                     @(TicketId == null ? "Create in Sage X3" : "Update Sage X3")
                 </FluentButton>
-                <FluentButton OnClick="@(() => NavManager.NavigateTo("/tickets"))">Cancel</FluentButton>
             </div>
 
         </FluentStack>
@@ -87,15 +84,15 @@
     [Parameter] public Guid? TicketId { get; set; }
 
     private TicketDto _ticket = new();
-    private List<FluentInputFileEventArgs> _uploadedFiles = new();
 
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
+        WState.OnChange += StateHasChanged;
 
         if (TicketId.HasValue)
         {
-            var existing = State.CurrentTickets.FirstOrDefault(t => t.Id == TicketId.Value);
+            // Pull from the same WState list the grid uses
+            var existing = WState.Tickets.FirstOrDefault(t => t.Id == TicketId.Value);
             if (existing != null)
             {
                 _ticket = existing;
@@ -103,26 +100,43 @@
         }
         else
         {
-            _ticket = new TicketDto { Status = "Open", CreatedAt = DateTime.Now };
+            _ticket = new TicketDto { Status = "Open", CreatedAt = DateTime.Now, Priority = "Medium" };
         }
     }
-
-    private void OnUploadCompleted(IEnumerable<FluentInputFileEventArgs> files) => _uploadedFiles.AddRange(files);
 
     private async Task HandleSubmit()
     {
         if (TicketId == null)
         {
-            State.CurrentTickets.Add(_ticket);
-            ToastService.ShowSuccess("New Ticket Created.");
+            // 1. Finalize DTO Data
+            _ticket.Id = Guid.NewGuid();
+            _ticket.TicketNumber = $"TKT-{Random.Shared.Next(1000, 9999)}";
+
+            // 2. Simulate API Call (Comment this out if not using a real endpoint yet)
+            // var response = await Http.PostAsJsonAsync("api/tickets/create", _ticket);
+            
+            // 3. INTERNAL UPDATE: Add to the shared list
+            WState.Tickets.Add(_ticket);
+
+            // 4. THE SYNC: This forces the grid page and dashboard to refresh
+            WState.Notify();
+
+            ToastService.ShowSuccess("New Ticket Created and Synced.");
         }
         else
         {
+            // For updates, the object is already in the list (Reference type), 
+            // so we just notify the app of the change.
+            WState.Notify();
             ToastService.ShowSuccess("Ticket Updated.");
         }
         
+        // 5. Go back to the list
         NavManager.NavigateTo("/tickets");
     }
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose()
+    {
+        WState.OnChange -= StateHasChanged;
+    }
 }

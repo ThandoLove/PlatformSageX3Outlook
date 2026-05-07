@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks; // Ensure this is here
+using System.Threading.Tasks;
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
@@ -21,7 +21,23 @@ public sealed class ActivityService : IActivityService
         _logger = logger;
     }
 
-    // Using System.Threading.Tasks.Task explicitly to avoid conflict with Domain.Entities.Task
+    // NEW METHOD: Fetches all activities from the repository for the Activity Log page
+    public async System.Threading.Tasks.Task<IEnumerable<ActivityDto>> GetActivitiesAsync()
+    {
+        var activities = await _repo.GetAllAsync(default);
+
+        return activities.Select(a => new ActivityDto(
+            a.Id,
+            a.Title,
+            a.Description,
+            a.ActivityType,
+            a.RelatedEntityId ?? Guid.Empty,
+            a.CreatedAt,
+            a.CreatedBy,
+            a.Timestamp,
+            a.Action)).ToList();
+    }
+
     public async System.Threading.Tasks.Task<ActivityDto> CreateAsync(CreateActivityDto dto, string userEmail)
     {
         var entity = new Activity
@@ -86,13 +102,27 @@ public sealed class ActivityService : IActivityService
     public async System.Threading.Tasks.Task AttachEmailAsync(object model)
     {
         _logger.LogInformation("Attaching email to activity context.");
-        // Use Task.CompletedTask to satisfy the 'not all code paths return a value' error
         await System.Threading.Tasks.Task.CompletedTask;
     }
 
     public async System.Threading.Tasks.Task LogAsync(ActivityDto activity)
     {
         _logger.LogInformation("Logging activity: {Title}", activity.Title);
-        await System.Threading.Tasks.Task.CompletedTask;
+
+        // Ensure the activity is actually saved to the repo so it doesn't disappear
+        var entity = new Activity
+        {
+            Id = activity.Id,
+            Title = activity.Title,
+            Description = activity.Description,
+            ActivityType = activity.ActivityType,
+            RelatedEntityId = activity.RelatedEntityId,
+            CreatedBy = activity.CreatedBy,
+            CreatedAt = activity.CreatedAt,
+            Timestamp = activity.Timestamp,
+            Action = activity.Action
+        };
+
+        await _repo.AddAsync(entity, default);
     }
 }

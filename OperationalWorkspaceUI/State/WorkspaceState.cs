@@ -18,6 +18,7 @@ namespace OperationalWorkspaceUI.State
         public List<ActivityDto> ActivityLogs { get; set; } = new();
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
         public List<AttachmentDto> Attachments { get; set; } = new();
+        public List<TicketDto> Tickets { get; set; } = new(); // Added Tickets list
         public List<UserDto> Users { get; set; } = new();
         public List<string> Knowledge { get; set; } = new();
         public List<OpenOrderDto> Quotes { get; set; } = new();
@@ -27,18 +28,44 @@ namespace OperationalWorkspaceUI.State
         public bool IsUploading { get; set; }
         public bool IsSendingKnowledge { get; set; }
 
+        // --- CONSTRUCTOR: PRE-FILLS DATA ON START ---
+        public WorkspaceState()
+        {
+            // Seed Initial Attachments
+            Attachments = new List<AttachmentDto> {
+                new(Guid.NewGuid(), "QTE-7789_Proposal.pdf", "Proposal", 1240000, "#", "Quote - QTE-7789", DateTime.Now),
+                new(Guid.NewGuid(), "INV-2024-00567_Invoice.pdf", "Invoice", 960000, "#", "Invoice - INV-2024-00567", DateTime.Now)
+            };
+
+            // Seed Initial Knowledge Base
+            KnowledgeBase = new List<KnowledgeDto> {
+                new KnowledgeDto(Guid.NewGuid(), "Pricing Guidelines 2024", "Sage X3 pricing tiered structure for 2024.", "Pricing Guidelines", "#", "Sales"),
+                new KnowledgeDto(Guid.NewGuid(), "Product Installation Guide", "Step-by-step server configuration...", "Product Documentation", "#", "IT"),
+                new KnowledgeDto(Guid.NewGuid(), "Frequently Asked Questions", "Top user permission answers...", "FAQ", "#", "Support"),
+                new KnowledgeDto(Guid.NewGuid(), "How to Create a Sales Order", "Full O-WS interface instructions...", "How To Guides", "#", "Guides")
+            };
+
+            // Seed Initial Tickets
+            Tickets = new List<TicketDto> {
+                new TicketDto { Id = Guid.NewGuid(), TicketNumber = "TKT-1001", Title = "Sage X3 Connection Timeout", CustomerName = "Tech Innovations Inc.", Priority = "High", Status = "Open", CreatedAt = DateTime.Now.AddDays(-2) },
+                new TicketDto { Id = Guid.NewGuid(), TicketNumber = "TKT-1002", Title = "Invoice Export Error", CustomerName = "Global Systems", Priority = "Medium", Status = "In Progress", CreatedAt = DateTime.Now.AddDays(-1) },
+                new TicketDto { Id = Guid.NewGuid(), TicketNumber = "TKT-1003", Title = "New User Onboarding", CustomerName = "Brightwave", Priority = "Low", Status = "Resolved", CreatedAt = DateTime.Now }
+            };
+
+            // Start loading tasks automatically
+            _ = LoadTasksAsync();
+        }
+
         // 2. STATE NOTIFICATION (Broadcast)
         public event Action? OnChange;
         public void Notify() => OnChange?.Invoke();
 
-        // Helper to update document status and notify dashboard
         public void SetUploading(bool status)
         {
             IsUploading = status;
             Notify();
         }
 
-        // Helper to update knowledge status and notify dashboard
         public void SetSendingKnowledge(bool status)
         {
             IsSendingKnowledge = status;
@@ -48,30 +75,15 @@ namespace OperationalWorkspaceUI.State
         // 3. LOGGING LOGIC
         public void LogActivity(string title, string action, string user = "Current User")
         {
-            var newLog = new ActivityDto
-            {
-                Id = Guid.NewGuid(),
-                Title = title,
-                Action = action,
-                CreatedBy = user,
-                Timestamp = DateTime.Now
-            };
-
+            var newLog = new ActivityDto { Id = Guid.NewGuid(), Title = title, Action = action, CreatedBy = user, Timestamp = DateTime.Now };
             ActivityLogs.Insert(0, newLog);
             Notify();
         }
 
         // 4. DATA RELOAD METHODS
-        public void ReloadKnowledge(List<string> articles) => Knowledge = articles;
-        public void ReloadContacts(List<ContactCreateDto> contacts) => Contacts = contacts;
-        public void ReloadClients() { }
-        public void ReloadOrders() { }
-        public void ReloadTasks() { }
-
         public async Task LoadTasksAsync()
         {
-            await Task.Delay(200);
-
+            await Task.Delay(100);
             Tasks = new List<TaskDto>
             {
                 new TaskDto { Id = Guid.NewGuid(), Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open },
@@ -83,5 +95,11 @@ namespace OperationalWorkspaceUI.State
             };
             Notify();
         }
+
+        public void ReloadKnowledge(List<KnowledgeDto> articles) { KnowledgeBase = articles; Notify(); }
+        public void ReloadContacts(List<ContactCreateDto> contacts) { Contacts = contacts; Notify(); }
+        public void ReloadClients() { Notify(); }
+        public void ReloadOrders() { Notify(); }
+        public void ReloadTasks() { Notify(); }
     }
 }

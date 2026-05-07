@@ -13,5 +13,15 @@ namespace OperationalWorkspaceInfrastructure.Persistence.Repositories
         public async Task AddAsync(Activity a, CancellationToken ct) { await _db.Activities.AddAsync(a, ct); await _db.SaveChangesAsync(ct); }
         public async Task<Activity?> GetByIdAsync(Guid id, CancellationToken ct) => await _db.Activities.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
         public async Task<IEnumerable<Activity>> GetByRelatedEntityAsync(Guid rid, CancellationToken ct) => await _db.Activities.AsNoTracking().Where(x => x.RelatedEntityId == rid).ToListAsync(ct);
+
+        public async Task<IEnumerable<Activity>> GetAllAsync(CancellationToken ct = default)
+        {
+            // Use whatever your database variable is named (e.g., _context or _db)
+            return await _db.Activities
+                                 .OrderByDescending(a => a.Timestamp)
+                                 .ToListAsync(ct);
+        }
+
+
     }
 }

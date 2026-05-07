@@ -108,10 +108,21 @@
 
     private async Task Reload()
     {
-        var logs = await ActivityService.GetActivitiesAsync();
-        State.ActivityLogs = logs.ToList();
+        var databaseLogs = await ActivityService.GetActivitiesAsync();
+    
+        // Merge the database logs with what's already in memory
+        // This ensures your "live" actions from this session don't vanish
+        foreach (var log in databaseLogs)
+        {
+            if (!State.ActivityLogs.Any(l => l.Id == log.Id))
+            {
+                State.ActivityLogs.Add(log);
+            }
+        }
+    
         State.Notify();
     }
+
 
     private IEnumerable<ActivityDto> FilteredLogs => State.ActivityLogs
         .Where(l => (string.IsNullOrWhiteSpace(SearchQuery) ||

@@ -1,45 +1,63 @@
 ﻿@using OperationalWorkspace.Domain.Enums
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Mappers
+@using OperationalWorkspaceUI.State @* Added for WorkspaceState *@
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @implements IDisposable
-@inject DashboardState State
+@inject WorkspaceState WState 
+@* Changed from DashboardState to WorkspaceState *@
 
 <FluentCard Class="tasks-widget-card">
 
+    @* --- HEADER SECTION --- *@
     <div class="panel-header">
-        <h3>My Tasks</h3>
+        <div style="display: flex; flex-direction: column;">
+            <h3>My Tasks</h3>
+            @* --- WORKLOAD INDICATOR --- *@
+            @{
+                // Pointing to WState.Tasks
+                var totalWorkload = WState.Tasks.Sum(t => TaskRulesEngine.WorkloadScore(t));
+            }
+            <div class="workload-indicator">
+                <span class="intensity-label">Intensity Score: @totalWorkload</span>
+                @if (totalWorkload > 15)
+                {
+                    <span class="pressure-badge">High Pressure</span>
+                }
+            </div>
+        </div>
         <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
+    @* --- TABS WITH ENGINE COUNTS --- *@
     <div class="task-tabs">
         <div class="task-tab @(ActiveTab == "Pending" ? "active" : "")"
              @onclick='() => SetTab("Pending")'>
-            Pending (@State.CurrentTasks.Count(t => !t.Completed))
+            Pending (@WState.Tasks.Count(t => !t.Completed))
         </div>
 
         <div class="task-tab @(ActiveTab == "Overdue" ? "active" : "")"
              @onclick='() => SetTab("Overdue")'>
-            Overdue (@State.CurrentTasks.Count(t =>
-                            t.DueDate.HasValue &&
-                            t.DueDate.Value < DateTime.Now &&
-                            !t.Completed))
+            Overdue (@WState.Tasks.Count(t => TaskRulesEngine.IsOverdue(t)))
         </div>
 
         <div class="task-tab @(ActiveTab == "Completed" ? "active" : "")"
              @onclick='() => SetTab("Completed")'>
-            Done (@State.CurrentTasks.Count(t => t.Completed))
+            Done (@WState.Tasks.Count(t => t.Completed))
         </div>
     </div>
 
+    @* --- LIST SECTION --- *@
     <div class="task-list-container">
-
         @if (FilteredTasks.Any())
         {
             @foreach (var task in FilteredTasks)
             {
-                <div class="task-item @(task.Completed ? "task-done" : "")">
+                var dueState = TaskRulesEngine.GetDueState(task);
+                
+                <div class="task-item @(task.Completed ? "task-done" : "") @(dueState == TaskDueState.Overdue ? "task-overdue-border" : "")">
 
                     <FluentCheckbox Value="@task.Completed"
                                     ValueChanged="@((bool val) => HandleStatusChange(task, val))"
@@ -47,21 +65,19 @@
 
                     <div class="task-details">
                         <span class="task-title">@task.Title</span>
-
-                        <span class="task-due">
-                            Due: @FormatDueDate(task.DueDate)
+                        <span class="task-due @(TaskRulesEngine.IsOverdue(task) ? "red-alert" : "")">
+                            <i class="oi oi-clock"></i> @TaskRulesEngine.DueLabel(task)
                         </span>
                     </div>
 
                     <div>
-                        @if (task.Priority == TaskPriority.High)
+                        @if (task.Priority == TaskPriority.High || task.Priority == TaskPriority.Urgent)
                         {
-                            <FluentBadge BackgroundColor="#ef4444" Color="white">
-                                High
+                            <FluentBadge BackgroundColor="@(task.Priority == TaskPriority.Urgent ? "#991b1b" : "#ef4444")" Color="white">
+                                @TaskRulesEngine.PriorityLabel(task.Priority)
                             </FluentBadge>
                         }
                     </div>
-
                 </div>
             }
         }
@@ -73,7 +89,6 @@
                 <p>No tasks in this category.</p>
             </div>
         }
-
     </div>
 
     <div class="task-footer">
@@ -86,50 +101,45 @@
 
 </FluentCard>
 
-@code {
+<style>
+    .workload-indicator { margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+    .intensity-label { font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .pressure-badge { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; border: 1px solid #fecaca; }
+    .task-overdue-border { border-left: 4px solid #ef4444 !important; }
+    .red-alert { color: #ef4444 !important; font-weight: 700; }
+    .task-due { font-size: 0.75rem; color: #64748b; }
+</style>
 
+@code {
     private string ActiveTab = "Pending";
 
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
+        // Now listening to WState
+        WState.OnChange += StateHasChanged;
     }
 
     private void SetTab(string tab) => ActiveTab = tab;
 
     private IEnumerable<TaskDto> FilteredTasks => ActiveTab switch
     {
-        "Pending" => State.CurrentTasks.Where(t => !t.Completed),
-
-        "Overdue" => State.CurrentTasks.Where(t =>
-            t.DueDate.HasValue &&
-            t.DueDate.Value < DateTime.Now &&
-            !t.Completed),
-
-        "Completed" => State.CurrentTasks.Where(t => t.Completed),
-
-        _ => State.CurrentTasks
+        "Pending" => WState.Tasks.Where(t => !t.Completed),
+        "Overdue" => WState.Tasks.Where(t => TaskRulesEngine.IsOverdue(t)),
+        "Completed" => WState.Tasks.Where(t => t.Completed),
+        _ => WState.Tasks
     };
-
-    private string FormatDueDate(DateTime? date)
-    {
-        if (!date.HasValue) return "No Date";
-
-        var d = date.Value;
-        if (d.Date == DateTime.Today) return "Today";
-        if (d.Date == DateTime.Today.AddDays(1)) return "Tomorrow";
-
-        return d.ToString("MMM dd");
-    }
 
     private async Task HandleStatusChange(TaskDto task, bool isCompleted)
     {
         task.Completed = isCompleted;
-        State.NotifyStateChanged();
+        task.Status = isCompleted ? OperationalWorkspace.Domain.Enums.TaskStatus.Completed : OperationalWorkspace.Domain.Enums.TaskStatus.Open;
+        
+        // Notify WState so Row 1 KPI and this panel update instantly
+        WState.Notify();
     }
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
+        WState.OnChange -= StateHasChanged;
     }
 }

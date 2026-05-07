@@ -8,20 +8,28 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @implements IDisposable
-@inject DashboardState State
+@inject WorkspaceState WState
 @inject NavigationManager NavManager
 
 <div class="tickets-container">
     <div class="page-header">
         <div class="header-text">
-            <h2>Service Tickets</h2>
-            <p>Manage and track all customer service requests</p>
+            <h2>Support Tickets</h2>
+            <p>Manage and track all customer support requests</p>
         </div>
         <FluentButton Appearance="Appearance.Accent"
                       IconStart="@(new Icons.Regular.Size20.Add())"
                       OnClick="@(() => NavManager.NavigateTo(AppRoutes.Tickets + "/new"))">
             New Ticket
         </FluentButton>
+    </div>
+
+    @* TABS FOR FILTERING STATUS *@
+    <div style="margin-bottom: 15px;">
+        <FluentTabs @bind-ActiveTabId="@_activeTab" OnTabSelect="@HandleTabChange">
+            <FluentTab Id="active" Label="Active Requests" />
+            <FluentTab Id="closed" Label="Closed / Resolved" />
+        </FluentTabs>
     </div>
 
     <FluentCard Class="grid-card">
@@ -35,7 +43,11 @@
             </TemplateColumn>
 
             <TemplateColumn Title="Status">
-                <FluentBadge Appearance="Appearance.Neutral">@context.Status</FluentBadge>
+                <FluentBadge Appearance="Appearance.Neutral"
+                             Fill="@(context.Status == "Closed" || context.Status == "Resolved" ? "#64748b" : "#005fb8")"
+                             Color="white">
+                    @context.Status
+                </FluentBadge>
             </TemplateColumn>
 
             <PropertyColumn Property="@(t => t.CreatedAt.ToShortDateString())" Title="Created" Sortable="true" />
@@ -52,20 +64,28 @@
 </div>
 
 @code {
+    private string _activeTab = "active";
     private PaginationState _pagination = new PaginationState { ItemsPerPage = 10 };
-    private IQueryable<TicketDto>? FilteredTickets;
+
+    // Pointing directly to the global list in WorkspaceState with dynamic status filtering
+    private IQueryable<TicketDto> FilteredTickets => _activeTab == "active"
+        ? WState.Tickets.Where(t => t.Status != "Closed" && t.Status != "Resolved").AsQueryable()
+        : WState.Tickets.Where(t => t.Status == "Closed" || t.Status == "Resolved").AsQueryable();
 
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
-        // Mocking IQueryable from your State's list
-        FilteredTickets = State.CurrentTickets.AsQueryable();
+        // Listen for changes (like when a new ticket is added from the form page)
+        WState.OnChange += StateHasChanged;
     }
 
-    // Use the constant instead of a hardcoded string
+    private void HandleTabChange(FluentTab tab)
+    {
+        // Force refresh when switching tabs
+        StateHasChanged();
+    }
+
     private void EditTicket(TicketDto ticket) =>
         NavManager.NavigateTo($"{AppRoutes.Tickets}/edit/{ticket.Id}");
 
-
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose() => WState.OnChange -= StateHasChanged;
 }

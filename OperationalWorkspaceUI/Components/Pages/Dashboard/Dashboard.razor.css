@@ -1,8 +1,38 @@
 ﻿/* ========================================================= 
-   DASHBOARD.RAZOR.CSS - Component Details
+   DASHBOARD.RAZOR.CSS - Full Layout & Component Details
    ========================================================= */
 
-/* PANEL HEADERS (The top row with the chevron) */
+/* 1. THE GRID SYSTEM (Renamed to match your .dashboard-wrapper) */
+.dashboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--bg-light);
+    min-height: 100vh;
+}
+
+/* 2. KPI GRID (Row 1) */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+/* 3. COMPONENT ROWS (Rows 2-7) */
+.sage-dashboard-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+    /* Quick Actions / Single Column Rows */
+    .sage-dashboard-row.single {
+        grid-template-columns: 1fr;
+    }
+
+/* 4. PANEL HEADERS */
 .panel-header {
     display: flex;
     justify-content: space-between;
@@ -14,17 +44,9 @@
     color: var(--text-dark);
 }
 
-    .panel-header::after {
-        content: 'expand_more';
-        font-family: 'Material Icons';
-        color: var(--text-muted);
-        font-size: 1.2rem;
-        cursor: pointer;
-    }
-
-/* EMAIL INSIGHT (Blue AI Summary) */
+/* 5. EMAIL INSIGHT (AI Summary) */
 .ai-summary {
-    background: rgba(59, 130, 246, 0.05); /* Soft blue tint */
+    background: rgba(59, 130, 246, 0.05);
     border-left: 4px solid var(--sage-light-blue);
     padding: 12px;
     margin-top: 15px;
@@ -32,27 +54,7 @@
     color: var(--text-dark);
 }
 
-/* CRM SNAPSHOT (Red/Green text) */
-.snapshot-red {
-    color: #ef4444;
-    font-weight: 700;
-}
-
-.snapshot-green {
-    color: var(--sage-green);
-    font-weight: 700;
-}
-
-/* QUICK ACTIONS CONTAINER */
-.quick-actions-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    text-align: center;
-    border-radius:50%;
-}
-
-/* TIMELINE (The vertical line logic) */
+/* 6. TIMELINE LOGIC */
 .timeline-container {
     position: relative;
     padding-left: 20px;
@@ -62,7 +64,7 @@
 
 .timeline-marker {
     position: absolute;
-    left: -31px; /* Aligns dot perfectly to the line */
+    left: -31px;
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -73,7 +75,18 @@
     border: 2px solid var(--sage-light-blue);
 }
 
-/* LOADING STATES */
+/* 7. CRM SNAPSHOT */
+.snapshot-red {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+.snapshot-green {
+    color: var(--sage-green);
+    font-weight: 700;
+}
+
+/* 8. LOADING SPINNER */
 .sage-spinner {
     width: 28px;
     height: 28px;
@@ -86,5 +99,16 @@
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* 9. RESPONSIVE FIX */
+@media (max-width: 1024px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sage-dashboard-row {
+        grid-template-columns: 1fr;
     }
 }

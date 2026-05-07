@@ -17,7 +17,7 @@
 @inject ModalService ModalService
 @inject IToastUIService ToastService
 
-<div class="main-layout @UIState.CurrentTheme @(UIState.IsGlassMode ? "glass-mode" : "")">
+<div class="main-layout @UIState.CurrentTheme @(UIState.IsGlassMode ? "glass-mode" : "") @(UIState.IsDarkMode ? "dark-mode" : "")">
     @if (IsAppPage)
     {
         <!-- LEFT: FIXED SIDEBAR -->
@@ -25,7 +25,20 @@
 
         <!-- CENTER: MAIN AREA -->
         <main class="main-content">
-            <Topbar />
+            @* --- TOPBAR AREA WITH GLOBAL THEME TOGGLE --- *@
+            <div class="top-row px-4" style="display: flex; justify-content: space-between; align-items: center; height: 50px; background: var(--topbar-bg); border-bottom: 1px solid var(--border-color);">
+                <Topbar />
+                
+                <div class="header-actions" style="display: flex; align-items: center; gap: 15px; padding-right: 20px;">
+                    @* GLOBAL THEME TOGGLE *@
+                    <div class="theme-toggle-wrapper">
+                        <FluentSwitch Value="@UIState.IsDarkMode"
+                                      ValueChanged="@(async (bool val) => await ToggleTheme(val))"
+                                      Label="@(UIState.IsDarkMode ? "Dark" : "Light")" />
+                    </div>
+                    <a href="https://sage.com" target="_blank" style="font-size: 0.8rem; text-decoration: none; color: var(--text-muted);">About Sage X3</a>
+                </div>
+            </div>
 
             <div class="content-body">
                 @if (UIState.IsLoading)
@@ -38,7 +51,7 @@
                 }
             </div>
 
-            @* GLOBAL NOTIFICATIONS (SIDE-BAR CONTEXT) *@
+            @* GLOBAL NOTIFICATIONS *@
             <ToastNotification />
         </main>
 
@@ -53,14 +66,9 @@
     }
 </div>
 
-@* 🔥 STANDALONE MODAL WITH RENDER MODE 🔥 *@
-@* This must be outside the main-layout div and IsAppPage check so it works on the Landing Page *@
-
-
 @code {
     private DotNetObjectReference<MainLayout>? _objRef;
     
-    // Determines if we are in the Dashboard App or the Landing/Login screens
     private bool IsAppPage => !Nav.Uri.EndsWith("/login") && Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
 
     protected override async Task OnInitializedAsync()
@@ -74,9 +82,17 @@
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
 
+    private async Task ToggleTheme(bool isDark)
+    {
+        // 1. Update the Global State (this triggers the CSS class change in the top div)
+        await UIState.SetTheme(isDark ? "dark-mode" : "light-mode");
+        
+        // 2. Trigger the JS for any specific component re-paints (FluentUI, etc)
+        await JS.InvokeVoidAsync("applyTheme", isDark ? "dark-mode" : "light-mode");
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Only initialize Office Bridge if we are inside an App Page (Outlook Context)
         if (firstRender && IsAppPage)
         {
             _objRef = DotNetObjectReference.Create(this);
@@ -89,7 +105,6 @@
     {
         if (emailData == null) return;
 
-        // Auto-log activity for the incoming email
         await ActivityService.LogActivityAsync(
             title: $"Email from {emailData.SenderName}",
             action: "Email",
@@ -100,8 +115,6 @@
         await DashboardState.LoadDashboardAsync();
         
         StateHasChanged();
-        
-        // Show Sage-style Toast Notification
         ToastService.ShowInfo($"Workspace Synced: {emailData.SenderName}");
     }
 
