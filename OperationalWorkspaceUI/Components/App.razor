@@ -7,34 +7,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     
-    <!-- 1. EXTERNAL FRAMEWORKS -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/standard-base.css">
     <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.0.0/css/fabric.min.css">
-    
-    <!-- 2. INTERNAL BLAZOR STYLES -->
     <link rel="stylesheet" href="/OperationalWorkspaceUI.styles.css" />
 
-    <!-- 3. CUSTOM CSS -->
+    <!-- CUSTOM CSS -->
     <link rel="stylesheet" href="css/Landing.css" />
     <link rel="stylesheet" href="css/Forms.css" />
     <link rel="stylesheet" href="css/Workspace.css" />
     <link rel="stylesheet" href="css/Components.css" />
-    @* Must be last to override page-specific backgrounds *@
-    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="/css/app.css" /> @* Locked colors live here *@
     
     <link rel="icon" type="image/png" href="/favicon.png" />
 
-    <!-- HISTORY CACHE SCRIPTS -->
     <script type="text/javascript">
-            window._historyCache = {
-                replaceState: window.history.replaceState,
-                pushState: window.history.pushState
-            };
+            window._historyCache = { replaceState: window.history.replaceState, pushState: window.history.pushState };
     </script>
-    
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-    
     <script type="text/javascript">
         window.history.replaceState = window._historyCache.replaceState;
         window.history.pushState = window._historyCache.pushState;
@@ -45,47 +35,26 @@
 
 <body>
     <RadzenComponents />
-    <FluentDesignTheme />
 
     <Routes @rendermode="InteractiveServer" />
     <Modal @rendermode="InteractiveServer" />
     <ReconnectModal />
 
-    <!-- JS ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/charts.js"></script>
     <script src="/js/officeBridge.js"></script>
     <script src="/js/app.js"></script>
 
-    @* --- THE THEME ENGINE (FIXED) --- *@
-    <script>
-        window.applyTheme = (theme) => {
-        console.log("SWITCHING TO: " + theme);
-        const body = document.body;
-        if (theme === 'dark-mode') {
-        body.classList.add('dark-mode');
-        body.classList.remove('light-mode');
-        } else {
-        body.classList.add('light-mode');
-        body.classList.remove('dark-mode');
-        }
-        };
-    </script>
+    @* --- THEME ENGINE DELETED --- *@
 
-    <!-- BLAZOR CORE -->
     <script src="_framework/blazor.web.js"></script>
-
-    <!-- LIBRARIES -->
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
 
     <script>
         if (window.Office) {
         Office.onReady(function (info) {
-        if (info.host === Office.HostType.Outlook) {
-        console.log("Status: Running inside Outlook.");
-        } else {
-        console.log("Status: Running in Browser. Restoring navigation...");
+        if (info.host !== Office.HostType.Outlook) {
         window.history.pushState = window._historyCache.pushState;
         window.history.replaceState = window._historyCache.replaceState;
         }

@@ -15,7 +15,7 @@
         <span class="page-dynamic-title">@PageTitle</span>
     </div>
 
-    @* ZONE 2: MIDDLE - Search *@
+    @* ZONE 2: MIDDLE - Search (Acting as Flexible Spacer) *@
     <div class="zone-middle">
         <div class="search-input-group">
             <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
@@ -25,19 +25,12 @@
         </div>
     </div>
 
-    @* ZONE 3: RIGHT - Status, Toggle, and Profile *@
+    @* ZONE 3: RIGHT - Status and Profile (Toggle component DELETED) *@
     <div class="zone-right">
         <div class="connection-status">
             <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
-            <span class="conn-text">Connected</span>
-        </div>
-
-        @* THE THEME TOGGLE *@
-        <div class="theme-toggle-container">
-            <FluentSwitch Value="@UIState.IsDarkMode" 
-                          ValueChanged="@ToggleTheme" 
-                          Label="@(UIState.IsDarkMode ? "Dark" : "Light")" />
+            <span class="conn-text">Connected to Sage X3</span>
         </div>
 
         <div class="user-profile-section">
@@ -48,9 +41,6 @@
         </div>
     </div>
 </div>
-
-<style>
-</style>
 
 @code {
     private string PageTitle { get; set; } = "Dashboard";
@@ -69,41 +59,31 @@
         StateHasChanged();
     }
 
-    private async Task ToggleTheme(bool isDark)
-    {
-        // 1. Use the existing SetTheme method (this avoids the read-only error)
-        // This method usually handles both the boolean flip and the OnChange notification
-        await UIState.SetTheme(isDark ? "dark-mode" : "light-mode");
-    
-        // 2. Force the CSS class onto the body via the engine in App.razor
-        await JS.InvokeVoidAsync("applyTheme", isDark ? "dark-mode" : "light-mode");
-    
-        // Note: No need for UIState.Notify() if SetTheme already calls the OnChange event
-    }
-
+    // ToggleTheme Method deleted to stop color interference
 
     private void UpdatePageTitle()
     {
         var relativePath = Nav.ToBaseRelativePath(Nav.Uri).ToLower();
 
         if (relativePath.Contains("?"))
-            relativePath = relativePath.Split('?')[0]; // FIXED: Get only the first part of the split
+            relativePath = relativePath.Split('?')[0];
 
-        if (string.IsNullOrEmpty(relativePath) || relativePath.StartsWith("dashboard")) 
+        // Mapping Logic - Ensures sub-pages show correct parent title
+        if (string.IsNullOrEmpty(relativePath) || relativePath.StartsWith("dashboard"))
             PageTitle = "Dashboard";
-        else if (relativePath.StartsWith("tickets")) 
+        else if (relativePath.StartsWith("tickets"))
             PageTitle = "Tickets";
-        else if (relativePath.StartsWith("activities")) 
+        else if (relativePath.StartsWith("activities"))
             PageTitle = "Activities";
-        else if (relativePath.StartsWith("kb") || relativePath.StartsWith("knowledge")) 
+        else if (relativePath.StartsWith("kb") || relativePath.StartsWith("knowledge"))
             PageTitle = "Knowledge Base";
-        else if (relativePath.StartsWith("tasks")) 
+        else if (relativePath.StartsWith("tasks"))
             PageTitle = "My Tasks";
-        else if (relativePath.Contains("attachments") || relativePath.Contains("documents")) 
+        else if (relativePath.Contains("attachments") || relativePath.Contains("documents"))
             PageTitle = "Documents";
-        else if (relativePath.StartsWith("contacts")) 
+        else if (relativePath.StartsWith("contacts"))
             PageTitle = "Contacts";
-        else 
+        else
             PageTitle = "Workspace";
     }
 

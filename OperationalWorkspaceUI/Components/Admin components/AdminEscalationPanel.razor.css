@@ -1,0 +1,120 @@
+﻿.admin-escalation-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+    .admin-escalation-panel.is-escalated {
+        border-color: #ef4444;
+        background: #fff5f5;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+    }
+
+.escalation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.header-main {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.escalation-header h5 {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #1e293b;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.escalated-badge {
+    background: #ef4444;
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+    animation: pulse-red 2s infinite;
+}
+
+.reason-section label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+}
+
+.admin-textarea {
+    width: 100%;
+    min-height: 60px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.813rem;
+    resize: none;
+    margin-bottom: 0.75rem;
+}
+
+.btn-escalate-action {
+    width: 100%;
+    background: #1e293b;
+    color: white;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+    .btn-escalate-action:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+.btn-deescalate-action {
+    width: 100%;
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 0.6rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.audit-trail {
+    margin-top: 0.75rem;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 0.5rem;
+}
+
+    .audit-trail p {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        margin: 0;
+    }
+
+@keyframes pulse-red {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

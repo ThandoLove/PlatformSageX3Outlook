@@ -1,0 +1,80 @@
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceDomain.Enums
+@inject DashboardState State
+@implements IDisposable
+
+<div class="admin-toolbar">
+    <div class="toolbar-left">
+        <div class="search-container">
+            <i class="search-icon">🔍</i>
+            <input type="text"
+                   placeholder="Search corporate tasks (ID, Subject, Order #)..."
+                   @bind-value="SearchTerm"
+                   @bind-value:event="oninput" />
+        </div>
+    </div>
+
+    <div class="toolbar-right">
+        @* Filter by Employee *@
+        <div class="filter-group">
+            <label>Assigned To</label>
+            <select @onchange="HandleEmployeeChange">
+                <option value="">All Employees</option>
+                @foreach (var user in MockEmployees)
+                {
+                    <option value="@user">@user</option>
+                }
+            </select>
+        </div>
+
+        @* Filter by Department *@
+        <div class="filter-group">
+            <label>Department</label>
+            <select @onchange="HandleDepartmentChange">
+                <option value="All">All Departments</option>
+                <option value="Sales">Sales</option>
+                <option value="Support">Support</option>
+                <option value="Finance">Finance</option>
+            </select>
+        </div>
+
+        @* Quick Action Toggle *@
+        <button class="btn-refresh" @onclick="RefreshDashboard">
+            <i>🔄</i> Refresh Queue
+        </button>
+    </div>
+</div>
+
+@code {
+    private string _searchTerm = "";
+    private string SearchTerm
+    {
+        get => _searchTerm;
+        set { _searchTerm = value; ApplyFilters(); }
+    }
+
+    // Mock data for the dropdown - in production, fetch this from a UserService
+    private List<string> MockEmployees = new() { "John Doe", "Jane Smith", "Robert Brown", "Sarah Wilson" };
+
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+
+    private void HandleEmployeeChange(ChangeEventArgs e) => ApplyFilters();
+    private void HandleDepartmentChange(ChangeEventArgs e) => ApplyFilters();
+
+    private void ApplyFilters()
+    {
+        // Logic: Filter State.AllTasks based on the UI selections
+        // In a seasoned professional app, this might trigger a service call
+        // or a client-side filter logic inside DashboardState.
+        State.NotifyStateChanged();
+    }
+
+    private async Task RefreshDashboard()
+    {
+        await State.LoadDashboardAsync(isAdmin: true);
+    }
+
+    public void Dispose() => State.OnChange -= StateHasChanged;
+}
+

@@ -1,0 +1,83 @@
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Mappers
+@inject DashboardState State
+@implements IDisposable
+
+<div class="admin-escalation-panel @(Task?.IsEscalated == true ? "is-escalated" : "")">
+    <div class="escalation-header">
+        <div class="header-main">
+            <i class="warning-icon">⚠️</i>
+            <h5>Escalation Management</h5>
+        </div>
+        @if (Task?.IsEscalated == true)
+        {
+            <span class="escalated-badge">CRITICAL</span>
+        }
+    </div>
+
+    <div class="escalation-content">
+        @if (Task != null)
+        {
+            <div class="reason-section">
+                <label>Escalation Justification</label>
+                <textarea @bind="EscalationNote" 
+                          placeholder="Provide a mandatory reason for corporate escalation..." 
+                          class="admin-textarea"></textarea>
+            </div>
+
+            <div class="escalation-actions">
+                @if (!Task.IsEscalated)
+                {
+                    <button class="btn-escalate-action" 
+                            disabled="@(string.IsNullOrWhiteSpace(EscalationNote))"
+                            @onclick="PerformEscalation">
+                        Confirm Escalation
+                    </button>
+                }
+                else
+                {
+                    <button class="btn-deescalate-action" @onclick="ClearEscalation">
+                        Resolve & De-escalate
+                    </button>
+                }
+            </div>
+
+            <div class="audit-trail">
+                <p>Action will be logged to: <strong>System Audit Log</strong></p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public TaskDto? Task { get; set; }
+    private string EscalationNote { get; set; } = "";
+
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+
+    private void PerformEscalation()
+    {
+        if (Task == null || string.IsNullOrWhiteSpace(EscalationNote)) return;
+
+        // Update the Task Reference
+        Task.IsEscalated = true;
+        Task.Priority = TaskPriority.High; // Corporate policy: Escalated = High Priority
+        
+        // Update the state for the AdminQueuePanel and SlaMonitor
+        State.NotifyStateChanged();
+        
+        // Clear UI input
+        EscalationNote = "";
+    }
+
+    private void ClearEscalation()
+    {
+        if (Task == null) return;
+        Task.IsEscalated = false;
+        State.NotifyStateChanged();
+    }
+
+    public void Dispose() => State.OnChange -= StateHasChanged;
+}
+

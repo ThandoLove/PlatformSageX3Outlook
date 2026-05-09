@@ -1,24 +1,22 @@
-﻿/* --- 1. GLOBAL WRAPPER --- */
+﻿/* --- 1. GLOBAL WRAPPER (Locked) --- */
 .sage-app {
     display: flex;
     flex-direction: column;
-    height: 100%; /* 🔥 NOT 100vh */
+    height: 100%;
     background: #f8fafc;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 11px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden; /* 🔥 Kills the far-right browser scrollbar */
 }
-    
-
 
 /* --- 2. THE ALEX TURNER HEADER --- */
 .sage-header {
-    display: flex !important;
-    align-items: center !important;
-    background: white !important;
-    padding: 8px 24px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    height: 56px !important;
-    flex-shrink: 0 !important;
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 0 24px;
+    border-bottom: 1px solid #e2e8f0;
+    height: 56px;
+    flex-shrink: 0;
 }
 
 .user-block {
@@ -33,18 +31,18 @@
 }
 
     .avatar-ring img {
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        border: 2px solid #10b981;
+        object-fit: cover;
     }
 
 .online-dot {
     position: absolute;
     bottom: 1px;
     right: 1px;
-    width: 8px;
-    height: 8px;
+    width: 9px;
+    height: 9px;
     background: #10b981;
     border: 2px solid white;
     border-radius: 50%;
@@ -52,60 +50,68 @@
 
 .u-name {
     display: block;
-    font-weight: 700;
-    font-size: 13px;
-    color: #1e293b;
+    font-weight: 600; /* Modern weight */
+    font-size: 14px;
+    color: #0f172a;
 }
 
 .u-role {
     font-size: 11px;
     color: #64748b;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 /* MODERN SEARCH PILL */
 .search-pill {
-    background: #f1f5f9 !important;
-    border-radius: 8px !important;
-    flex: 1 !important;
-    max-width: 580px !important;
-    height: 34px !important;
-    display: flex !important;
-    align-items: center !important;
-    margin-left: 50px !important;
-    padding: 0 12px !important;
-    border: 1px solid #e2e8f0 !important;
+    background: #f1f5f9;
+    border-radius: 8px;
+    flex: 1;
+    max-width: 500px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    margin-left: 40px;
+    padding: 0 12px;
+    border: 1px solid #e2e8f0;
+    transition: border-color 0.2s;
 }
+
+    .search-pill:focus-within {
+        border-color: #2563eb;
+        background: white;
+    }
 
 .search-icon {
     color: #94a3b8;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .dropdown-icon {
-    color: #64748b;
+    color: #94a3b8;
     font-size: 10px;
     cursor: pointer;
+    margin-left: 10px;
 }
 
 .search-pill input {
-    border: none !important;
-    background: transparent !important;
-    width: 100% !important;
-    outline: none !important;
-    font-size: 11.5px !important;
-    padding: 0 10px !important;
-    color: #1e293b !important;
+    border: none;
+    background: transparent;
+    width: 100%;
+    outline: none;
+    font-size: 13px;
+    padding: 0 10px;
+    color: #1e293b;
 }
 
-/* --- 3. THE 2-COLUMN BODY --- */
+/* --- 3. THE 2-COLUMN BODY (Flattened) --- */
 .sage-body {
     display: flex;
     flex-direction: row;
     flex: 1;
-    padding: 15px;
-    gap: 15px;
-    min-height: 0; /* 🔥 CRITICAL FLEX FIX */
+    padding: 0; /* Removed padding to let children touch edges if needed */
+    gap: 0; /* Clean separation handled by borders */
+    min-height: 0; /* Critical for inner scrolling */
+    overflow: hidden;
 }
 
 /* LEFT HUB AREA */
@@ -113,14 +119,16 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* 🔥 allows inner scroll */
+    min-height: 0;
+    background: white;
 }
 
 /* RIGHT SIDEBAR AREA */
 .details-sidebar {
-    width: 280px !important; /* Exact width from mockup */
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 15px !important;
-    overflow-y: auto !important;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #e2e8f0;
+    background: #f8fafc;
+    min-height: 0;
 }

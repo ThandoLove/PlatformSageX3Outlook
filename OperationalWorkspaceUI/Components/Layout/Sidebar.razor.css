@@ -2,7 +2,7 @@
 .sage-sidebar {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100% !important;
     background-color: #003366; /* Deep Sage Blue */
     color: white;
     width: 240px;

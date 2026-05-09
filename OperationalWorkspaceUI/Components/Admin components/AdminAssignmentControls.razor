@@ -1,0 +1,101 @@
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Interfaces.IServices
+@using OperationalWorkspaceApplication.Mappers
+@inject DashboardState State
+@inject ITaskService TaskService
+@implements IDisposable
+
+<div class="admin-action-controls">
+    <div class="controls-header">
+        <i class="admin-shield-icon">🛡️</i>
+        <h5>Administrative Actions</h5>
+    </div>
+
+    <div class="action-body">
+        @if (Task != null)
+        {
+            <div class="control-group">
+                <label>Reassign Specialist</label>
+                <div class="input-with-button">
+                    <select @bind="SelectedUserId" class="admin-select">
+                        <option value="">Select Employee...</option>
+                        @foreach (var emp in MockSpecialists)
+                        {
+                            <option value="@emp.Id">@emp.Name (@emp.Department)</option>
+                        }
+                    </select>
+                    <button class="btn-primary-admin"
+                            @onclick="ExecuteReassignment"
+                            disabled="@(string.IsNullOrEmpty(SelectedUserId) || isProcessing)">
+                        @(isProcessing ? "..." : "Assign")
+                    </button>
+                </div>
+            </div>
+
+            <div class="quick-actions-row">
+                <button class="btn-outline-danger" @onclick="ExecuteEscalation" disabled="@isProcessing">
+                    Force Escalate
+                </button>
+                <button class="btn-outline-warning" @onclick="AdjustSla" disabled="@isProcessing">
+                    Extend SLA
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public TaskDto? Task { get; set; }
+    private string SelectedUserId { get; set; } = "";
+    private bool isProcessing = false;
+
+    // In production, this comes from an IUserService. For UI fidelity, we match the image specialists.
+    private List<(string Id, string Name, string Department)> MockSpecialists = new()
+    {
+        ("USR001", "John Doe", "Sales"),
+        ("USR002", "Jane Smith", "Support"),
+        ("USR003", "Sarah Wilson", "Logistics")
+    };
+
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+
+    private async Task ExecuteReassignment()
+    {
+        if (Task == null || string.IsNullOrEmpty(SelectedUserId)) return;
+
+        isProcessing = true;
+        try
+        {
+            // 1. Call Backend Service
+            var success = await TaskService.AssignTaskAsync(Task.Id, SelectedUserId);
+
+            if (success)
+            {
+                // 2. Update Global State (Cascades to all UI components)
+                var specialist = MockSpecialists.First(u => u.Id == SelectedUserId);
+                Task.AssignedToName = specialist.Name;
+                Task.Status = TaskStatus.InProgress;
+                
+                State.NotifyStateChanged();
+            }
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task ExecuteEscalation()
+    {
+        if (Task == null) return;
+        Task.IsEscalated = true;
+        State.NotifyStateChanged();
+        await System.Threading.Tasks.Task.Delay(100); // Simulate network
+    }
+
+    private void AdjustSla() => Task.DueDate = Task.DueDate.AddHours(24);
+
+    public void Dispose() => State.OnChange -= StateHasChanged;
+}
+

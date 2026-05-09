@@ -17,23 +17,21 @@
 @inject ModalService ModalService
 @inject IToastUIService ToastService
 
-@* --- 1. GLOBAL THEME HOOK --- *@
-<div class="app-container @(UIState.IsDarkMode ? "dark-mode" : "light-mode") @UIState.CurrentTheme">
+@* --- RESTORED TO SINGLE STABLE THEME (MATCHING IMAGE) --- *@
+<div class="app-container">
     
     @if (IsAppPage)
     {
-        @* --- 2. TOPBAR: Spans 100% of browser width --- *@
+        @* --- TOPBAR: Spans full width of screen --- *@
         <header class="global-header">
             <Topbar />
         </header>
 
-        @* --- 3. WORKSPACE WRAPPER: Handles Sidebar, Body, and Right Panel --- *@
+        @* --- WRAPPER: Flex layout for sidebar, content, and right panel --- *@
         <div class="main-wrapper">
             
-            <!-- LEFT: FIXED SIDEBAR -->
             <Sidebar />
 
-            <!-- CENTER: PAGE CONTENT AREA -->
             <main class="page-content">
                 <div class="content-body">
                     @if (UIState.IsLoading)
@@ -46,17 +44,14 @@
                     }
                 </div>
                 
-                @* GLOBAL NOTIFICATIONS *@
                 <ToastNotification />
             </main>
 
-            <!-- RIGHT: SAGE X3 CONTEXTUAL INSIGHTS -->
             <RightPanel />
         </div>
     }
     else
     {
-        @* Landing / Login Frame *@
         <div class="landing-frame">
             @Body
         </div>
@@ -64,28 +59,29 @@
 </div>
 
 <style>
-    /* Structural CSS to ensure no overlapping or cutoff */
+    /* Absolute Structural Layout - No Variables used here to prevent ghosting */
     .app-container {
         display: flex;
         flex-direction: column;
         height: 100vh;
         width: 100vw;
         overflow: hidden;
+        background-color: #f3f4f6; /* Hard-coded Light Grey Floor */
     }
 
     .global-header {
         width: 100%;
         height: 40px;
         flex-shrink: 0;
-        z-index: 1000;
-        background-color: #003366;
+        z-index: 2000;
+        background-color: #003366; /* Hard-coded Sage Navy */
     }
 
     .main-wrapper {
         display: flex;
         flex: 1;
-        width: 100%;
-        overflow: hidden; /* Prevents double scrollbars */
+        width: 100vw;
+        overflow: hidden;
     }
 
     .page-content {
@@ -93,8 +89,7 @@
         overflow-y: auto;
         display: flex;
         flex-direction: column;
-        background-color: var(--bg-app);
-        transition: background-color 0.3s ease;
+        background-color: transparent; /* Shows the Grey app-container floor */
     }
 
     .content-body {
@@ -113,8 +108,6 @@
         Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
         DashboardState.OnChange += StateHasChanged;
-        
-        await UIState.LoadThemeFromLocalStorage();
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
