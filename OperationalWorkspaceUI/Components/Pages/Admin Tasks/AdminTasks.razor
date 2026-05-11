@@ -1,5 +1,59 @@
-﻿<h3>AdminTasks</h3>
+﻿@page "/task-dashboard"
+@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.Components.AdminComponents
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspace.Domain.Enums
+@using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus
+@inject DashboardState State
+@implements IDisposable
+
+<div class="hub-viewport-lock">
+    @* --- TOP HEADER --- *@
+    <header class="hub-header">
+        <div class="header-left">
+            <h1>Tasks Hub</h1>
+            <button class="btn-new-task">+ New Task</button>
+        </div>
+        <div class="header-right">
+            <button class="btn-ghost">Filters</button>
+            <button class="btn-ghost">Group: Status <i class="oi oi-chevron-bottom"></i></button>
+            <span class="hub-dots">...</span>
+        </div>
+    </header>
+
+    <div class="hub-main-layout">
+        @* --- COLUMN 1: LEFT OVERSIGHT --- *@
+        <aside class="col-oversight">
+            <AdminSlaMonitor />
+            <AdminQueuePanel />
+        </aside>
+
+        @* --- COLUMN 2: CENTER KANBAN BOARD --- *@
+        <main class="col-board">
+            <div class="board-canvas">
+                <KanbanColumn Title="Inbox / Unassigned" Count="4" Tasks="@State.AllTasks.Where(t => t.Status == TaskStatus.Open)" OnSelect="State.SetSelectedTask" />
+                <KanbanColumn Title="In Progress" Count="5" Tasks="@State.AllTasks.Where(t => t.Status == TaskStatus.Assigned)" OnSelect="State.SetSelectedTask" />
+                <KanbanColumn Title="Waiting / Review" Count="0" Tasks="@State.AllTasks.Where(t => t.Status == TaskStatus.PendingApproval)" OnSelect="State.SetSelectedTask" />
+            </div>
+        </main>
+
+        @* --- COLUMN 3: RIGHT HIGH-FIDELITY DETAILS --- *@
+        <aside class="col-details">
+            <AdminTaskDetailsPanel Task="@(State.SelectedTask ?? State.AllTasks.FirstOrDefault(t => t.CompanyName == "Brightwave Solutions"))" />
+        </aside>
+    </div>
+</div>
 
 @code {
-
+    protected override void OnInitialized()
+    {
+        State.OnChange += StateHasChanged;
+        // EXACT IMAGE DUMMY DATA
+        State.AllTasks = new List<TaskDto> {
+            new TaskDto { Title = "Issue with Invoice INV-100123", CompanyName = "Brightwave Solutions", Priority = TaskPriority.Urgent, Status = TaskStatus.Assigned, AssignedTo = "Amit Patel", CreatedDate = new DateTime(2025, 5, 6, 9, 15, 0) },
+            new TaskDto { Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.High, Status = TaskStatus.Open, AssignedTo = "Deepa Patel" },
+            new TaskDto { Title = "Develop QTE-7823 Renewal", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Medium, Status = TaskStatus.Assigned, AssignedTo = "John Smith" }
+        };
+    }
+    public void Dispose() => State.OnChange -= StateHasChanged;
 }

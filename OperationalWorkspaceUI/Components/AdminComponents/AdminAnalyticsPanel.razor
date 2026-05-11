@@ -1,0 +1,82 @@
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@inject DashboardState State
+@implements IDisposable
+
+<div class="analytics-sidebar-locked">
+    @* --- TOP PERFORMANCE CARD --- *@
+    <div class="white-metrics-card">
+        <div class="timeframe-badge">Last 24 Hours</div>
+        
+        <div class="distribution-section">
+            <label class="section-label-tiny">WORKLOAD DISTRIBUTION</label>
+            
+            <div class="workload-row">
+                <span class="dept-name">Sales</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: 70%"></div>
+                </div>
+                <span class="dept-value">14</span>
+            </div>
+
+            <div class="workload-row">
+                <span class="dept-name">Support</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: 45%"></div>
+                </div>
+                <span class="dept-value">8</span>
+            </div>
+
+            <div class="workload-row">
+                <span class="dept-name">Finance</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: 25%"></div>
+                </div>
+                <span class="dept-value">5</span>
+            </div>
+        </div>
+
+        <div class="kpi-summary-grid">
+            <div class="kpi-box">
+                <label class="section-label-tiny">Avg. Resolution</label>
+                <div class="kpi-main">
+                    <span class="kpi-number">4.2h</span>
+                    <span class="kpi-trend pos">↓ 12%</span>
+                </div>
+            </div>
+            <div class="kpi-box">
+                <label class="section-label-tiny">Escalation Rate</label>
+                <div class="kpi-main">
+                    <span class="kpi-number">0%</span>
+                    <span class="kpi-trend neg">↑ 3%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* --- BOTTOM INTEGRATION CARD (NAVY) --- *@
+    <div class="navy-health-card">
+        <label class="section-label-tiny muted">Integration Status</label>
+        
+        <div class="health-row">
+            <span class="service-name">ERP (Sage X3)</span>
+            <span class="status-indicator online">Online</span>
+        </div>
+        
+        <div class="health-row">
+            <span class="service-name">CRM Sync</span>
+            <span class="status-indicator online">Active</span>
+        </div>
+        
+        <div class="health-row">
+            <span class="service-name">Email Listener</span>
+            <span class="status-indicator delayed">Delayed</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    public void Dispose() => State.OnChange -= StateHasChanged;
+}
+

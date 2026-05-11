@@ -1,0 +1,25 @@
+﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@inject DashboardState State
+@implements IDisposable
+
+<div class="queue-panel-locked">
+    @* --- SECTION HEADER --- *@
+    <div class="q-header">
+        <label>OPERATIONAL QUEUES</label>
+        <span class="total-count-pill">13 Total</span>
+    </div>
+
+    @* --- SINGLE QUEUE ROW (MATCHES IMAGE) --- *@
+    <div class="q-row">
+        <span class="status-dot-grey"></span>
+        <span class="queue-name-text">General Queue</span>
+        <span class="queue-badge-right">13</span>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    public void Dispose() => State.OnChange -= StateHasChanged;
+}
+

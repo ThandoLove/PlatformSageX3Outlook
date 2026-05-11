@@ -4,8 +4,11 @@
 @using OperationalWorkspace.Domain.Enums
 @implements IDisposable
 @inject WorkspaceState State
+@inject DashboardState AdminState  
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
+
+@* Added to track Admin context *@
 
 <div class="hub-container force-interactive" style="position: relative;">
 
@@ -24,18 +27,18 @@
         </div>
         
         <nav class="hub-tabs">
-            @* DYNAMIC TABS: Now filtered by User (Alex Turner) *@
+            @* DYNAMIC TABS: Uses 'SourceTasks' to reflect Admin or Employee context *@
             <div class="tab-item @(ActiveTab == "Today" ? "active" : "")" @onclick='() => SelectFilter("Today")'>
-                Today (@UserTasks.Count(t => t.DueDate?.Date == DateTime.Today && !t.Completed))
+                Today (@SourceTasks.Count(t => t.DueDate?.Date == DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Overdue" ? "active" : "")" @onclick='() => SelectFilter("Overdue")'>
-                Overdue (@UserTasks.Count(t => t.DueDate?.Date < DateTime.Today && !t.Completed))
+                Overdue (@SourceTasks.Count(t => t.DueDate?.Date < DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Upcoming" ? "active" : "")" @onclick='() => SelectFilter("Upcoming")'>
-                Upcoming (@UserTasks.Count(t => t.DueDate?.Date > DateTime.Today && !t.Completed))
+                Upcoming (@SourceTasks.Count(t => t.DueDate?.Date > DateTime.Today && !t.Completed))
             </div>
             <div class="tab-item @(ActiveTab == "Completed" ? "active" : "")" @onclick='() => SelectFilter("Completed")'>
-                Completed (@UserTasks.Count(t => t.Completed))
+                Completed (@SourceTasks.Count(t => t.Completed))
             </div>
         </nav>
     </header>
@@ -78,6 +81,9 @@
 </div>
 
 @code {
+    // FIX: This parameter stops the 'InvalidOperationException' in the Admin page
+    [Parameter] public IEnumerable<TaskDto>? Tasks { get; set; }
+
     [Parameter] public string SearchQuery { get; set; } = "";
     [Parameter] public EventCallback<TaskDto> OnTaskSelected { get; set; }
 
@@ -85,16 +91,18 @@
     private bool IsFilterOpen = false;
     private string PriorityFilter = "All";
 
-    // CORE LOGIC: Defines who the "Logged In" user is for this dashboard session
     private string CurrentUserEmail = "alex.turner@company.com";
 
-    // Helper to get only tasks assigned to Alex
-    private IEnumerable<TaskDto> UserTasks => State.Tasks
+    // UPDATED LOGIC:
+    // If Admin passes 'Tasks', use those. 
+    // Otherwise, filter 'State.Tasks' for Alex Turner (Standard Employee Dashboard).
+    private IEnumerable<TaskDto> SourceTasks => Tasks ?? State.Tasks
         .Where(t => t.AssignedTo == CurrentUserEmail || string.IsNullOrEmpty(t.AssignedTo));
 
     protected override void OnInitialized()
     {
         State.OnChange += StateHasChanged;
+        AdminState.OnChange += StateHasChanged; // Listen to Admin state too
     }
 
     private void ToggleFilter() => IsFilterOpen = !IsFilterOpen;
@@ -108,8 +116,8 @@
 
     private IEnumerable<TaskDto> GetFilteredTasks()
     {
-        // 1. Start with Alex's tasks only
-        var q = UserTasks.AsEnumerable();
+        // Start with the correctly contextualized source
+        var q = SourceTasks;
         
         // 2. Apply Tab Filter
         q = ActiveTab switch
@@ -133,5 +141,6 @@
     public void Dispose()
     {
         State.OnChange -= StateHasChanged;
+        AdminState.OnChange -= StateHasChanged;
     }
 }

@@ -2,6 +2,8 @@
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using OperationalWorkspaceApplication.Mappers
+@using OperationalWorkspaceApplication.Requests
+@using OperationalWorkspace.Domain.Enums
 @inject DashboardState State
 @inject ITaskService TaskService
 @implements IDisposable
@@ -18,16 +20,16 @@
             <div class="control-group">
                 <label>Reassign Specialist</label>
                 <div class="input-with-button">
-                    <select @bind="SelectedUserId" class="admin-select">
+                    <select @bind="SelectedRecipientEmail" class="admin-select">
                         <option value="">Select Employee...</option>
                         @foreach (var emp in MockSpecialists)
                         {
-                            <option value="@emp.Id">@emp.Name (@emp.Department)</option>
+                            <option value="@emp.Email">@emp.Name (@emp.Department)</option>
                         }
                     </select>
                     <button class="btn-primary-admin"
                             @onclick="ExecuteReassignment"
-                            disabled="@(string.IsNullOrEmpty(SelectedUserId) || isProcessing)">
+                            disabled="@(string.IsNullOrEmpty(SelectedRecipientEmail) || isProcessing)">
                         @(isProcessing ? "..." : "Assign")
                     </button>
                 </div>
@@ -47,38 +49,49 @@
 
 @code {
     [Parameter] public TaskDto? Task { get; set; }
-    private string SelectedUserId { get; set; } = "";
+    private string SelectedRecipientEmail { get; set; } = "";
     private bool isProcessing = false;
 
-    // In production, this comes from an IUserService. For UI fidelity, we match the image specialists.
-    private List<(string Id, string Name, string Department)> MockSpecialists = new()
+    // Matches your DelegateTaskRequest which requires an Email
+    private List<(string Name, string Email, string Department)> MockSpecialists = new()
     {
-        ("USR001", "John Doe", "Sales"),
-        ("USR002", "Jane Smith", "Support"),
-        ("USR003", "Sarah Wilson", "Logistics")
+        ("John Doe", "john.doe@company.com", "Sales"),
+        ("Jane Smith", "jane.smith@company.com", "Support"),
+        ("Sarah Wilson", "sarah.w@company.com", "Logistics")
     };
 
     protected override void OnInitialized() => State.OnChange += StateHasChanged;
 
     private async Task ExecuteReassignment()
     {
-        if (Task == null || string.IsNullOrEmpty(SelectedUserId)) return;
+        if (Task == null || string.IsNullOrEmpty(SelectedRecipientEmail)) return;
 
         isProcessing = true;
         try
         {
-            // 1. Call Backend Service
-            var success = await TaskService.AssignTaskAsync(Task.Id, SelectedUserId);
-
-            if (success)
+            // FIX 1: Map to DelegateAsync and use DelegateTaskRequest
+            var request = new DelegateTaskRequest
             {
-                // 2. Update Global State (Cascades to all UI components)
-                var specialist = MockSpecialists.First(u => u.Id == SelectedUserId);
-                Task.AssignedToName = specialist.Name;
-                Task.Status = TaskStatus.InProgress;
+                TaskId = Task.Id,
+                RecipientEmail = SelectedRecipientEmail
+            };
+
+            var response = await TaskService.DelegateAsync(request, default);
+
+            if (response != null)
+            {
+                var specialist = MockSpecialists.FirstOrDefault(u => u.Email == SelectedRecipientEmail);
+                Task.AssignedTo = specialist.Name ?? SelectedRecipientEmail;
+                
+                // FIX 2: Set status to 'Assigned' which exists in your enum
+                Task.Status = OperationalWorkspace.Domain.Enums.TaskStatus.Assigned;
                 
                 State.NotifyStateChanged();
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reassigning task: {ex.Message}");
         }
         finally
         {
@@ -91,11 +104,18 @@
         if (Task == null) return;
         Task.IsEscalated = true;
         State.NotifyStateChanged();
-        await System.Threading.Tasks.Task.Delay(100); // Simulate network
+        await System.Threading.Tasks.Task.Delay(100);
     }
 
-    private void AdjustSla() => Task.DueDate = Task.DueDate.AddHours(24);
+    private void AdjustSla()
+    {
+        // FIX 3: Null-safe check for nullable DateTime?
+        if (Task?.DueDate != null)
+        {
+            Task.DueDate = Task.DueDate.Value.AddHours(24);
+            State.NotifyStateChanged();
+        }
+    }
 
     public void Dispose() => State.OnChange -= StateHasChanged;
 }
-

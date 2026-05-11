@@ -1,0 +1,72 @@
+﻿
+.hub-task-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.pri-badge {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+    .pri-badge.urgent {
+        color: #ef4444;
+        background: #fee2e2;
+    }
+
+.sla-time {
+    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+    .sla-time.red {
+        color: #ef4444;
+    }
+
+.card-body h4 {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.card-body p {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin: 4px 0 10px 0;
+}
+
+.card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.usr {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+}
+
+

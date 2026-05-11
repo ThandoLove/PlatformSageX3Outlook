@@ -1,0 +1,101 @@
+﻿.hub-viewport-lock {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.hub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+    .hub-header h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+
+.btn-new-task {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-ghost {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 6px 14px;
+    border-radius: 6px;
+    color: #475569;
+    font-weight: 600;
+    font-size: 12px;
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.hub-dots {
+    margin-left: 15px;
+    color: #cbd5e1;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.hub-main-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 380px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.col-oversight {
+    padding: 20px;
+    border-right: 1px solid #e2e8f0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.col-board {
+    background: #f1f5f9;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+}
+
+.board-canvas {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    height: 100%;
+    align-items: flex-start;
+}
+
+.col-details {
+    border-left: 1px solid #e2e8f0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: white;
+}
+
+/* Kills ugly scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}

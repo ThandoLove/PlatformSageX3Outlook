@@ -1,0 +1,28 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspace.Domain.Enums
+
+<div class="hub-task-card" @onclick="() => OnSelect.InvokeAsync(Task)">
+    <div class="card-meta">
+        <span class="pri-badge @Task.Priority.ToString().ToLower()">@Task.Priority</span>
+        <span class="sla-time @(Task.Priority == TaskPriority.Urgent ? "red" : "")">
+            <i class="oi oi-clock"></i> @(Task.Priority == TaskPriority.Urgent ? "Overdue" : "< 1d")
+        </span>
+    </div>
+    <div class="card-body">
+        <h4>@Task.Title</h4>
+        <p>@Task.CompanyName</p>
+    </div>
+    <div class="card-foot">
+        <div class="usr"><span class="avatar">@Task.AssignedTo.Substring(0,1)@Task.AssignedTo.Split(' ').Last().Substring(0,1)</span> @Task.AssignedTo</div>
+        @* CLICKABLE OUTLOOK ICON *@
+        <a href="mailto:support@company.com" class="outlook-lnk" @onclick:stopPropagation="true">
+            <img src="https://wikimedia.org" width="14" />
+        </a>
+    </div>
+</div>
+
+@code {
+    [Parameter] public TaskDto Task { get; set; } = default!;
+    [Parameter] public EventCallback<TaskDto> OnSelect { get; set; }
+}
+

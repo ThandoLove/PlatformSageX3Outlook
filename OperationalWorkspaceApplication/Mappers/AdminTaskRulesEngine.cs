@@ -1,25 +1,28 @@
 ﻿using OperationalWorkspace.Domain.Enums;
 using OperationalWorkspaceApplication.DTOs;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus;
 
 namespace OperationalWorkspaceApplication.Mappers
 {
-{
     public static class AdminTaskRulesEngine
     {
         // 1. SLA BREACH CALCULATION (The Red "Overdue" logic)
-        public static bool IsSlaBreached(DateTime dueDate, TaskStatus status)
+        // FIX: Changed to DateTime? to match TaskDto
+        public static bool IsSlaBreached(DateTime? dueDate, TaskStatus status)
         {
-            if (status == TaskStatus.Completed) return false;
-            return DateTime.Now > dueDate;
+            if (status == TaskStatus.Completed || !dueDate.HasValue)
+                return false;
+
+            // If current time is past the due date, it's a breach
+            return DateTime.Now > dueDate.Value;
         }
 
         // 2. QUEUE GROUPING (For the AdminQueuePanel)
         public static string MapToAdminQueue(TaskDto task)
         {
+            if (task == null) return "General Queue";
+
             if (task.Priority == TaskPriority.High && IsSlaBreached(task.DueDate, task.Status))
                 return "Critical Priority";
 
@@ -29,11 +32,10 @@ namespace OperationalWorkspaceApplication.Mappers
             return "General Queue";
         }
 
-        // 3. ASSIGNMENT LOGIC (Determines if a task can be reallocated)
+        // 3. ASSIGNMENT LOGIC
         public static bool CanAdminReassign(TaskDto task)
         {
-            // Admins can reassign anything that isn't already finished
-            return task.Status != TaskStatus.Completed;
+            return task != null && task.Status != TaskStatus.Completed;
         }
     }
 }

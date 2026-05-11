@@ -1,0 +1,75 @@
+﻿
+/* 1. COLUMN CONTAINER - Fixed width to match image density */
+.kanban-column-fixed {
+    flex: 0 0 280px; /* Exact width from high-fidelity reference */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 280px;
+    background: transparent; /* Lets the board floor color show through */
+}
+
+/* 2. HEADER - Soft grey text with the vibrant blue pill */
+.column-header-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 0 4px;
+}
+
+.column-title-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b; /* Exact Slate Grey from image */
+    letter-spacing: -0.01em;
+}
+
+.status-badge-blue {
+    background: #3b82f6; /* Exact Vibrant Blue from image */
+    color: #ffffff;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+    .status-badge-blue i {
+        font-size: 8px;
+    }
+
+/* 3. TASK AREA - Internal vertical scrolling only */
+.column-task-stack {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+    scrollbar-width: none; /* Firefox: Hide scrollbar */
+}
+
+    .column-task-stack::-webkit-scrollbar {
+        display: none; /* Chrome/Safari: Hide scrollbar for that clean look */
+    }
+
+/* 4. FOOTER - Centered blue link matching image */
+.column-footer-link {
+    padding: 16px 0;
+    text-align: center;
+}
+
+    .column-footer-link a {
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 11px;
+        transition: opacity 0.2s;
+    }
+
+        .column-footer-link a:hover {
+            opacity: 0.7;
+        }
+
+

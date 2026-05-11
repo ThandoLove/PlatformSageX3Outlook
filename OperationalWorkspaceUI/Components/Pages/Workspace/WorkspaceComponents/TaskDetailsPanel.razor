@@ -4,6 +4,7 @@
 @using Microsoft.FluentUI.AspNetCore.Components
 @inject TasksUIService TasksUIService
 @inject WorkspaceState State
+@inject DashboardState AdminState
 @inject IJSRuntime JS
 
 <div class="sidebar-wrapper @(IsCollapsed ? "collapsed" : "")">
@@ -16,63 +17,124 @@
     @if (!IsCollapsed && Task != null)
     {
         <div class="sidebar-content animate-fade-in">
-            <!-- 1. AGING WIDGET (RESTORED) -->
-            <div class="side-card aging-card">
-                <div class="card-label">TASK AGING</div>
-                <div class="aging-grid">
-                    <div class="stat-unit"><span class="stat-num red-txt">2</span><span class="stat-lbl">OVERDUE</span></div>
-                    <div class="stat-unit"><span class="stat-num blue-txt">1</span><span class="stat-lbl">DUE SOON</span></div>
-                    <div class="ring-unit"><div class="green-ring-pretty">78%</div></div>
-                </div>
-                @* THE CANVAS FOR JS CHART *@
-                <div class="histo-viewport">
-                    <canvas id="agingHistogramCanvas"></canvas>
-                </div>
-            </div>
+            
+            @if (AdminState.IsAdminEnvironment)
+            {
+                <!-- =========================================================
+                     ADMIN MODE: HIGH-FIDELITY (MATCHES IMAGE 100%)
+                ========================================================= -->
+                
+                    <div class="header-flex" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <div class="alert-icon-red" style="background: #ef4444; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">!</div>
+                        <div class="header-titles">
+                            <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #1e293b;">@Task.Title</h3>
+                            <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b; font-weight: 600;">@Task.CompanyName</p>
+                        </div>
+                    </div>
 
-            <!-- 2. RESPONSE WIDGET (RESTORED) -->
-            <div class="side-card response-row">
-                <div class="timer-red-ring-seamless">2.3h</div>
-                <div class="response-text">
-                    <span class="lbl-bold">Avg. Response Time</span>
-                    @* Sparkline Bars *@
-                    <div class="spark-box">
-                        @for (int i = 0; i < 6; i++)
-                        {
-                            <div class="spark-bar-seamless"></div>
-                        }
+                <div class="side-card meta-info-table" style="padding: 12px;">
+                    <style>
+                        .meta-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+                        .meta-row label { color: #94a3b8; font-weight: 600; }
+                        .meta-row span, .meta-row div { color: #1e293b; font-weight: 700; }
+                        .txt-urgent { color: #ef4444 !important; }
+                    </style>
+                    <div class="meta-row"><label>Status</label><span>@Task.Status</span></div>
+                    <div class="meta-row"><label>Priority</label><span class="txt-urgent">@Task.Priority</span></div>
+                    <div class="meta-row"><label>SLA Remaining</label><span class="txt-urgent">Overdue by 5h 20m</span></div>
+                    <div class="meta-row">
+                        <label>Assigned To</label>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="background: #eff6ff; color: #2563eb; padding: 2px 4px; border-radius: 4px; font-size: 10px;">AP</span>
+                            @Task.AssignedTo
+                        </div>
+                    </div>
+                    <div class="meta-row"><label>Created</label><span>@Task.CreatedDate.ToString("MMM d, yyyy h:mm tt")</span></div>
+                    <div class="meta-row"><label>Source</label><span><i class="oi oi-envelope-closed"></i> Outlook Email</span></div>
+                </div>
+
+                <div class="details-section" style="margin-top: 16px;">
+                    <label class="group-label" style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; display: block;">CUSTOMER</label>
+                    <div class="customer-sage-box" style="display: flex; justify-content: space-between; align-items: center; background: white; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px;">
+                        <span style="font-size: 12px; font-weight: 700;">@Task.CompanyName</span>
+                        <a href="#" style="font-size: 11px; color: #2563eb; text-decoration: none; font-weight: 600;">Open in Sage X3 <i class="oi oi-external-link"></i></a>
                     </div>
                 </div>
-            </div>
 
-            <!-- 3. DELEGATION SECTION (INTEGRATED) -->
-            <div class="side-card delegation-box" style="padding: 15px; background: rgba(59, 130, 246, 0.05); border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(59, 130, 246, 0.1);">
-                <div class="card-label" style="margin-bottom: 10px; font-weight: 700; font-size: 0.7rem; color: #1e293b;">DELEGATE TO TEAM MEMBER</div>
-                
-                <FluentSelect TOption="TeamMember"
-                              Items="@TeamMembers"
-                              OptionText="@(i => i.Name)"
-                              @bind-SelectedOption="@SelectedMember"
-                              Placeholder="Select a colleague..."
-                              Style="width: 100%; margin-bottom: 12px;" />
+                <div class="details-section" style="margin-top: 16px;">
+                    <label class="group-label" style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; display: block;">SAGE X3 LINKS</label>
+                    <div class="sage-links-grid" style="display: grid; gap: 8px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 12px; color: #2563eb; font-weight: 600;"><i class="oi oi-person"></i> Customer: @Task.CompanyName <i class="oi oi-external-link" style="float: right;"></i></div>
+                        <div style="font-size: 12px; color: #2563eb; font-weight: 600;"><i class="oi oi-document"></i> Invoice: INV-100123 <i class="oi oi-external-link" style="float: right;"></i></div>
+                        <div style="font-size: 12px; color: #2563eb; font-weight: 600;"><i class="oi oi-cart"></i> Sales Order: SO-10293 <i class="oi oi-external-link" style="float: right;"></i></div>
+                        <div style="font-size: 12px; color: #2563eb; font-weight: 600;"><i class="oi oi-graph"></i> Opportunity: OP-00921 <i class="oi oi-external-link" style="float: right;"></i></div>
+                    </div>
+                </div>
 
-                <button class="btn-blue-delegate-seamless"
-                        @onclick="HandleDelegate"
-                        disabled="@(SelectedMember == null)"
-                        style="width: 100%; cursor: @(SelectedMember == null ? "not-allowed" : "pointer"); opacity: @(SelectedMember == null ? "0.5" : "1")">
-                    <span>Confirm Delegation</span>
-                    <i class="oi oi-person"></i>
-                </button>
-            </div>
+                <div class="details-section" style="margin-top: 16px;">
+                    <label class="group-label" style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; display: block;">ADMIN ACTIONS</label>
+                    <div class="admin-action-btns" style="display: grid; gap: 8px;">
+                        <style>
+                            .a-btn { width: 100%; text-align: left; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; font-weight: 600; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+                            .a-btn:hover { background: #f8fafc; }
+                            .red-border { color: #ef4444; border-color: #fee2e2; }
+                            .blue-txt { color: #2563eb; }
+                        </style>
+                        <button class="a-btn"><i class="oi oi-person"></i> Reassign Task</button>
+                        <button class="a-btn"><i class="oi oi-arrow-top"></i> Change Priority</button>
+                        <button class="a-btn red-border"><i class="oi oi-shield"></i> Escalate Task</button>
+                        <button class="a-btn blue-txt"><i class="oi oi-briefcase"></i> Convert to Case</button>
+                        <button class="a-btn blue-txt"><i class="oi oi-cart"></i> Convert to Sales Order</button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- =========================================================
+                     EMPLOYEE MODE: YOUR ORIGINAL DASHBOARD (UNCHANGED)
+                ========================================================= -->
+                <!-- 1. AGING WIDGET -->
+                <div class="side-card aging-card">
+                    <div class="card-label">TASK AGING</div>
+                    <div class="aging-grid">
+                        <div class="stat-unit"><span class="stat-num red-txt">2</span><span class="stat-lbl">OVERDUE</span></div>
+                        <div class="stat-unit"><span class="stat-num blue-txt">1</span><span class="stat-lbl">DUE SOON</span></div>
+                        <div class="ring-unit"><div class="green-ring-pretty">78%</div></div>
+                    </div>
+                    <div class="histo-viewport">
+                        <canvas id="agingHistogramCanvas"></canvas>
+                    </div>
+                </div>
 
-            <!-- 4. WORKLOAD STATS (RESTORED) -->
+                <!-- 2. RESPONSE WIDGET -->
+                <div class="side-card response-row">
+                    <div class="timer-red-ring-seamless">2.3h</div>
+                    <div class="response-text">
+                        <span class="lbl-bold">Avg. Response Time</span>
+                        <div class="spark-box">
+                            @for (int i = 0; i < 6; i++) { <div class="spark-bar-seamless"></div> }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. DELEGATION SECTION -->
+                <div class="side-card delegation-box" style="padding: 15px; background: rgba(59, 130, 246, 0.05); border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(59, 130, 246, 0.1);">
+                    <div class="card-label" style="margin-bottom: 10px; font-weight: 700; font-size: 0.7rem; color: #1e293b;">DELEGATE TO TEAM MEMBER</div>
+                    <FluentSelect TOption="TeamMember" Items="@TeamMembers" OptionText="@(i => i.Name)"
+                                  @bind-SelectedOption="@SelectedMember" Placeholder="Select a colleague..."
+                                  Style="width: 100%; margin-bottom: 12px;" />
+                    <button class="btn-blue-delegate-seamless" @onclick="HandleDelegate" disabled="@(SelectedMember == null)">
+                        <span>Confirm Delegation</span>
+                        <i class="oi oi-person"></i>
+                    </button>
+                </div>
+            }
+
+            <!-- SHARED WORKLOAD STATS -->
             <div class="workload-stats-seamless">
                 <div class="task-count">@State.Tasks.Count(t => !t.Completed) Active Tasks</div>
                 <div class="icon-row-seamless">
-                    @for (int i = 0; i < 5; i++)
-                    {
-                        <i class="oi oi-person blue-p-icon"></i>
-                    }
+                    @for (int i = 0; i < 5; i++) { <i class="oi oi-person blue-p-icon"></i> }
                     <i class="oi oi-person grey-p-icon"></i>
                 </div>
                 <div class="footer-msg-seamless"><i class="oi oi-info"></i> System Workload</div>
@@ -80,6 +142,7 @@
         </div>
     }
 </div>
+
 
 @code {
     [Parameter] public TaskDto? Task { get; set; }
@@ -104,32 +167,24 @@
             try
             {
                 await TasksUIService.DelegateTaskAsync(Task.Id, SelectedMember.Email);
-                
-                // Update master list directly
                 var masterTask = State.Tasks.FirstOrDefault(t => t.Id == Task.Id);
                 if (masterTask != null)
                 {
                     masterTask.AssignedTo = SelectedMember.Email;
                     masterTask.UpdatedDate = DateTime.Now;
                 }
-
                 State.LogActivity(Task.Title, $"Delegated to {SelectedMember.Name}", "Alex Turner");
                 State.Notify();
                 SelectedMember = null;
             }
-            finally
-            {
-                State.SetLoadingTasks(false);
-            }
+            finally { State.SetLoadingTasks(false); }
         }
     }
 
-    // 🔥 THIS IS WHAT LOADS THE CHARTS
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (Task != null && !IsCollapsed)
+        if (Task != null && !IsCollapsed && !AdminState.IsAdminEnvironment)
         {
-            // Re-calling the JS function from your charts.js
             await JS.InvokeVoidAsync("renderAgingHistogram", "agingHistogramCanvas", new[] { 2, 1, 0, 3 });
         }
     }

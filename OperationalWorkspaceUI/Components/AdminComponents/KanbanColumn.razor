@@ -1,0 +1,40 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+
+<div class="kanban-column-fixed">
+    @* --- COLUMN HEADER --- *@
+    <div class="column-header-row">
+        <span class="column-title-text">@Title</span>
+        <div class="status-badge-blue">
+            @if (IsDone)
+            {
+                <i class="oi oi-check"></i>
+            }
+            else
+            {
+                <span>@Count</span>
+            }
+        </div>
+    </div>
+
+    @* --- SCROLLABLE TASK STACK --- *@
+    <div class="column-task-stack">
+        @foreach (var task in Tasks)
+        {
+            <TaskCard Task="task" OnSelect="OnSelect" />
+        }
+    </div>
+
+    @* --- COLUMN FOOTER --- *@
+    <div class="column-footer-link">
+        <a href="javascript:void(0)">View all (@Count)</a>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public int Count { get; set; }
+    [Parameter] public IEnumerable<TaskDto> Tasks { get; set; } = new List<TaskDto>();
+    [Parameter] public EventCallback<TaskDto> OnSelect { get; set; }
+    [Parameter] public bool IsDone { get; set; }
+}
+

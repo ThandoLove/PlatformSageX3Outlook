@@ -1,0 +1,156 @@
+﻿
+.analytics-sidebar-locked {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* WHITE KPI CARD */
+.white-metrics-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.timeframe-badge {
+    font-size: 9px;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    width: fit-content;
+    margin: 0 0 24px auto;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.section-label-tiny {
+    font-size: 9px;
+    font-weight: 800;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+}
+
+    .section-label-tiny.muted {
+        color: #94a3b8;
+    }
+
+/* WORKLOAD BARS */
+.workload-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.dept-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    width: 55px;
+}
+
+.bar-track {
+    flex: 1;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: #2563eb; /* Corporate Blue */
+}
+
+.dept-value {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1e293b;
+    width: 20px;
+    text-align: right;
+}
+
+/* KPI GRID */
+.kpi-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.kpi-main {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.kpi-number {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.kpi-trend {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+    .kpi-trend.pos {
+        color: #10b981;
+    }
+    /* Green */
+    .kpi-trend.neg {
+        color: #ef4444;
+    }
+/* Red */
+
+/* NAVY HEALTH CARD */
+.navy-health-card {
+    background: #1e293b; /* Exact Midnight Slate */
+    border-radius: 12px;
+    padding: 20px;
+    color: #ffffff;
+}
+
+.health-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+    .health-row:last-child {
+        border-bottom: none;
+    }
+
+.service-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.status-indicator {
+    font-size: 11px;
+    font-weight: 800;
+}
+
+    .status-indicator.online {
+        color: #10b981;
+    }
+
+    .status-indicator.delayed {
+        color: #f59e0b;
+    }
+/* Exact Orange */
+

@@ -37,6 +37,9 @@ namespace OperationalWorkspaceApplication.DTOs
         public string SourceEmailSubject { get; set; } = "";
         public string SourceSender { get; set; } = "";
         public string Category { get; set; } = ""; // Sales, Support, Finance
+
+       
+        public bool IsEscalated { get; set; }
     }
 }
 
