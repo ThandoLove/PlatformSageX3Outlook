@@ -13,6 +13,9 @@ using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
 using OperationalWorkspaceInfrastructure.Services;
+using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
+using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
+using OperationalWorkspaceInfrastructure.Persistence;
 using OperationalWorkspaceShared.Validators;
 using System.Text;
 
@@ -57,15 +60,16 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
 
 // --- 3. INFRASTRUCTURE & SAGE X3 ---
+// --- 3. INFRASTRUCTURE & SAGE X3 ---
 var sageConfig = builder.Configuration.GetSection("SageX3");
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddScoped<ISageRestService, MockSageRestService>();
+    builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
 }
 else
 {
-    builder.Services.AddHttpClient<ISageRestService, SageRestService>(client => {
+    builder.Services.AddHttpClient<ISageX3Client, SageX3Client>(client => {
         client.BaseAddress = new Uri(sageConfig["RestBaseUrl"] ?? "https://localhost");
     });
 }
@@ -75,7 +79,11 @@ builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.Sage
 
 var attachmentPath = builder.Configuration["SageX3:AttachmentPath"] ?? "C:\\Temp\\SageAttachments";
 builder.Services.AddSingleton(attachmentPath);
-builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// 🔥 FIX: Break the ambiguity by calling both static extension methods explicitly
+InfrastructureServiceRegistration.AddInfrastructureServices(builder.Services, builder.Configuration);
+DependencyInjection.AddInfrastructureServices(builder.Services, builder.Configuration);
+
 
 // --- 4. CORS POLICY (Corrected Origins) ---
 builder.Services.AddCors(options =>
@@ -105,6 +113,15 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IIntegrationService, IntegrationService>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
     builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
+    // 🔴 STANDBY CONFIG: UnifiedService safely registers here without interfering with active mock workflows
+    builder.Services.AddScoped<UnifiedService>(provider =>
+        new UnifiedService(
+            activityRepo: provider.GetService<IActivityRepository>()!,
+            sageClient: provider.GetRequiredService<ISageX3Client>(),
+            dbContext: provider.GetRequiredService<IntegrationDbContext>(),
+            logger: provider.GetRequiredService<ILogger<UnifiedService>>()
+        ));
 }
 
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
