@@ -1,14 +1,11 @@
 ﻿
 /* 1. COLUMN CONTAINER - Fixed width to match image density */
 .kanban-column-fixed {
-    flex: 0 0 280px; /* Exact width from high-fidelity reference */
+    flex: 0 0 320px;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    min-width: 280px;
-    background: transparent; /* Lets the board floor color show through */
 }
-
 /* 2. HEADER - Soft grey text with the vibrant blue pill */
 .column-header-row {
     display: flex;
@@ -46,6 +43,7 @@
 .column-task-stack {
     flex: 1;
     overflow-y: auto;
+    padding-bottom: 20px;
     padding-right: 8px;
     scrollbar-width: none; /* Firefox: Hide scrollbar */
 }

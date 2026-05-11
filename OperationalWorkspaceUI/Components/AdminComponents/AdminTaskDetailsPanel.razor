@@ -1,90 +1,174 @@
-﻿@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspace.Domain.Enums
+﻿@using OperationalWorkspace.Domain.Enums
 @using OperationalWorkspaceUI.State
-@inject DashboardState State
+@using OperationalWorkspaceApplication.DTOs
+@inject DashboardState DashboardState
 
-@if (CurrentTask != null)
-{
-    <div class="fidelity-details-panel">
-        @* --- HEADER --- *@
+<div class="task-details-panel @(Task == null ? "hidden" : "")">
+
+    @if (Task != null)
+    {
+        <!-- HEADER -->
         <div class="details-header">
-            <div class="red-alert-icon">!</div>
-            <div class="header-text">
-                <h3>@CurrentTask.Title</h3>
-                <p>@CurrentTask.CompanyName</p>
+
+            <div class="alert-icon">
+                !
             </div>
-            <button class="close-btn" @onclick="() => State.SetSelectedTask(null)">&times;</button>
+
+            <div class="header-content">
+                <h3>@Task.Title</h3>
+                <p>@Task.CompanyName</p>
+            </div>
+
+            <button class="close-btn"
+                    @onclick="() => DashboardState.SetSelectedTask(null)">
+                &times;
+            </button>
+
         </div>
 
-        @* --- METADATA GRID --- *@
-        <div class="fidelity-table">
-            <div class="f-row">
+        <!-- METADATA -->
+        <div class="metadata-grid">
+
+            <div class="meta-row">
                 <label>Status</label>
-                <span class="v-blue">@CurrentTask.Status</span>
+                <span class="value-blue">@Task.Status</span>
             </div>
-            <div class="f-row">
+
+            <div class="meta-row">
                 <label>Priority</label>
-                <span class="v-red">@CurrentTask.Priority</span>
+                <span class="value-red">@Task.Priority</span>
             </div>
-            <div class="f-row">
+
+            <div class="meta-row">
                 <label>SLA Remaining</label>
-                <span class="v-red">Overdue by 5h 20m</span>
+                <span class="value-red">Overdue by 5h 20m</span>
             </div>
-            <div class="f-row">
+
+            <div class="meta-row">
                 <label>Assigned To</label>
-                <div class="assignee">
-                    <span class="avatar">AP</span> @CurrentTask.AssignedTo
+
+                <div class="assignee-wrap">
+                    <span class="avatar-box">AP</span>
+                    <span>@Task.AssignedTo</span>
                 </div>
             </div>
-            <div class="f-row">
+
+            <div class="meta-row">
                 <label>Created</label>
-                <span>@CurrentTask.CreatedDate.ToString("MMM d, yyyy h:mm tt")</span>
+                <span>@Task.CreatedDate.ToString("MMM dd, yyyy hh:mm tt")</span>
             </div>
-            <div class="f-row">
+
+            <div class="meta-row">
                 <label>Source</label>
-                <span>
-                    <img src="https://wikimedia.org" width="14" style="margin-right: 4px; vertical-align: middle;" /> 
-                    Outlook Email
+
+                <div class="source-wrap">
+                    <span>📧</span>
+                    <span>Outlook Email</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CUSTOMER -->
+        <div class="details-section">
+
+            <label class="section-label">
+                CUSTOMER
+            </label>
+
+            <div class="customer-card">
+
+                <span class="customer-name">
+                    @Task.CompanyName
                 </span>
+
+                <a href="javascript:void(0)"
+                       class="sage-link">
+                    Open in Sage X3
+                </a>
+
             </div>
+
         </div>
 
-        @* --- CUSTOMER SNAPSHOT --- *@
-        <div class="fidelity-section">
-            <label class="sec-label">CUSTOMER</label>
-            <div class="cust-card">
-                <span class="bold">@CurrentTask.CompanyName</span>
-                <a href="#" class="sage-link">Open in Sage X3 <i class="oi oi-external-link"></i></a>
+        <!-- SAGE LINKS -->
+        <div class="details-section">
+
+            <label class="section-label">
+                SAGE X3 LINKS
+            </label>
+
+            <div class="link-list">
+
+                <div class="link-item">
+                    <span>Customer</span>
+                    <span class="blue-link">@Task.CompanyName</span>
+                </div>
+
+                <div class="link-item">
+                    <span>Invoice</span>
+                    <span class="blue-link">INV-100123</span>
+                </div>
+
+                <div class="link-item">
+                    <span>Sales Order</span>
+                    <span class="blue-link">SO-10293</span>
+                </div>
+
+                <div class="link-item">
+                    <span>Opportunity</span>
+                    <span class="blue-link">OP-00921</span>
+                </div>
+
             </div>
+
         </div>
 
-        @* --- SAGE X3 LINKS (AS BLUE TEXT LINKS) --- *@
-        <div class="fidelity-section">
-            <label class="sec-label">SAGE X3 LINKS</label>
-            <div class="sage-links-list">
-                <a href="#"><i class="oi oi-person"></i> Customer: <span class="blue">@CurrentTask.CompanyName</span> <i class="oi oi-external-link"></i></a>
-                <a href="#"><i class="oi oi-document"></i> Invoice: <span class="blue">INV-100123</span> <i class="oi oi-external-link"></i></a>
-                <a href="#"><i class="oi oi-cart"></i> Sales Order: <span class="blue">SO-10293</span> <i class="oi oi-external-link"></i></a>
-                <a href="#"><i class="oi oi-graph"></i> Opportunity: <span class="blue">OP-00921</span> <i class="oi oi-external-link"></i></a>
+        <!-- ACTIONS -->
+        <div class="details-section">
+
+            <label class="section-label">
+                ADMIN ACTIONS
+            </label>
+
+            <div class="admin-action-list">
+
+                <button class="action-btn">
+                    Reassign Task
+                </button>
+
+                <button class="action-btn">
+                    Change Priority
+                </button>
+
+                <button class="action-btn danger">
+                    Escalate Task
+                </button>
+
+                <button class="action-btn">
+                    Convert to Case
+                </button>
+
+                <button class="action-btn">
+                    Convert to Sales Order
+                </button>
+
             </div>
+
         </div>
 
-        @* --- ADMIN ACTIONS (AS TEXT LINKS) --- *@
-        <div class="fidelity-section">
-            <label class="sec-label">ADMIN ACTIONS</label>
-            <div class="admin-links-list">
-                <a href="#"><i class="oi oi-person"></i> Reassign Task</a>
-                <a href="#"><i class="oi oi-arrow-top"></i> Change Priority</a>
-                <a href="#" class="red-lnk"><i class="oi oi-shield"></i> Escalate Task</a>
-                <a href="#"><i class="oi oi-briefcase"></i> Convert to Case</a>
-                <a href="#"><i class="oi oi-cart"></i> Convert to Sales Order</a>
-            </div>
-        </div>
-    </div>
-}
+        <!-- ASSIGNMENT PANEL -->
+        <AdminAssignmentControls Task="Task" />
+
+        <!-- ESCALATION PANEL -->
+        <AdminEscalationPanel Task="Task" />
+    }
+
+</div>
 
 @code {
-    // FIX: Renamed from 'Task' to 'CurrentTask' to avoid System.Threading conflict
-    [Parameter] public TaskDto? CurrentTask { get; set; }
-}
 
+    [Parameter]
+    public TaskDto? Task { get; set; }
+
+}

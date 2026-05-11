@@ -55,7 +55,7 @@
 
 .hub-main-layout {
     display: grid;
-    grid-template-columns: 280px 1fr 380px;
+    grid-template-columns: 320px 1fr 460px;
     flex: 1;
     overflow: hidden;
 }
@@ -98,4 +98,31 @@
 ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 10px;
+}
+
+
+.hub-main-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr 380px;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+
+.col-oversight,
+.col-board,
+.col-details {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.col-oversight {
+    overflow-y: auto;
+}
+
+.col-board {
+    overflow-x: auto;
+}
+
+.col-details {
+    overflow-y: auto;
 }
