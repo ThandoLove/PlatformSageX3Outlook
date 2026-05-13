@@ -37,6 +37,13 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
 
 // --- 2. JWT AUTHENTICATION ---
+
+/* 
+   FUTURE AZURE AD SETUP:
+   1. Install NuGet: Microsoft.Identity.Web
+   2. Replace the code below with:
+   builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+*/
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

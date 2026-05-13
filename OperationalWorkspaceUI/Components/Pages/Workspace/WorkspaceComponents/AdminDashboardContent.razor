@@ -1,0 +1,244 @@
+﻿```razor
+@using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
+
+@inject AdminDashboardUIService DashboardService
+@inject DashboardState DashboardState
+
+<div class="admin-dashboard-root">
+
+    <!-- HEADER -->
+    <div class="dashboard-header">
+
+        <div>
+            <h1>Admin Dashboard</h1>
+            <p>
+                Monitor workspace activity, integrations,
+                users and operational health.
+            </p>
+        </div>
+
+        <div class="dashboard-actions">
+
+            <button class="primary-btn">
+                + Create User
+            </button>
+
+            <button class="secondary-btn"
+                    @onclick="RefreshDashboard">
+
+                Export Report
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- KPI GRID -->
+    <div class="kpi-grid">
+
+        <div class="kpi-card">
+
+            <div class="kpi-icon">👥</div>
+
+            <div class="kpi-content">
+                <span>Total Users</span>
+                <h2>1,284</h2>
+                <small>+12% this month</small>
+            </div>
+
+        </div>
+
+        <div class="kpi-card">
+
+            <div class="kpi-icon">📈</div>
+
+            <div class="kpi-content">
+                <span>Open Workflows</span>
+                <h2>342</h2>
+                <small>18 awaiting approval</small>
+            </div>
+
+        </div>
+
+        <div class="kpi-card">
+
+            <div class="kpi-icon">🔌</div>
+
+            <div class="kpi-content">
+                <span>ERP Connections</span>
+
+                <h2>
+                    @(DashboardState.AdminHealth.SageX3Connected
+                        ? "Online"
+                        : "Offline")
+                </h2>
+
+                <small>
+                    API:
+                    @DashboardState.AdminHealth.APIHealthStatus
+                </small>
+
+            </div>
+
+        </div>
+
+        <div class="kpi-card">
+
+            <div class="kpi-icon">⚠</div>
+
+            <div class="kpi-content">
+                <span>Failed Transactions</span>
+
+                <h2>
+                    @DashboardState.AdminHealth.FailedTransactions
+                </h2>
+
+                <small>
+                    @DashboardState.AdminHealth.PendingSyncJobs
+                    pending jobs
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="admin-grid">
+
+        <!-- SYSTEM HEALTH PANEL -->
+        <section class="dashboard-card dashboard-span-2">
+
+            <SystemHealthPanel Status="@DashboardState.AdminHealth" />
+
+        </section>
+
+        <!-- RECENT ACTIVITY -->
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h3>Recent Activity</h3>
+            </div>
+
+            <div class="activity-list">
+
+                @foreach (var log in RecentLogs.Take(5))
+                {
+                    <div class="activity-item">
+
+                        <div class="activity-dot"></div>
+
+                        <div class="activity-content">
+
+                            <strong>
+                                @log.Action
+                            </strong>
+
+                            <span>
+                                @log.User •
+                                @log.Timestamp.ToString("g")
+                            </span>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </section>
+
+        <!-- CURRENT USER -->
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h3>Current Session</h3>
+            </div>
+
+            <div class="current-user-card">
+
+                <div class="user-avatar">
+                    @GetInitials()
+                </div>
+
+                <div class="user-info">
+
+                    <strong>
+                        @CurrentUser?.Name
+                    </strong>
+
+                    <span>
+                        @CurrentUser?.Role
+                    </span>
+
+                    <small>
+                        Environment:
+                        @CurrentUser?.Environment
+                    </small>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+@code {
+
+    private List<AuditLogDto> RecentLogs = new();
+
+    private UserDto? CurrentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        DashboardState.OnChange += StateHasChanged;
+
+        await LoadDashboard();
+    }
+
+    private async Task LoadDashboard()
+    {
+        CurrentUser =
+            await DashboardService.GetCurrentUserAsync();
+
+        RecentLogs =
+            await DashboardService.GetRecentLogsAsync();
+
+        await DashboardState.LoadDashboardAsync();
+    }
+
+    private async Task RefreshDashboard()
+    {
+        await LoadDashboard();
+    }
+
+    private string GetInitials()
+    {
+        if (CurrentUser == null)
+            return "AD";
+
+        var parts = CurrentUser.Name.Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 1)
+            return parts[0][0].ToString().ToUpper();
+
+        return $"{parts[0][0]}{parts[1][0]}"
+            .ToUpper();
+    }
+
+    public void Dispose()
+    {
+        DashboardState.OnChange -= StateHasChanged;
+    }
+
+}
+```

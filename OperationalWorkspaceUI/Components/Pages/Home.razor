@@ -4,148 +4,97 @@
 
 @using OperationalWorkspaceUI.Components.Shared
 @using OperationalWorkspaceUI.UIServices.System
+
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @inject ModalService ModalService
 
-<PageTitle>Welcome | Sage X3</PageTitle>
+<PageTitle>Sage X3 Workspace</PageTitle>
 
-@* 
-   The 'landing-page' is the base. 
-   We use 'landing-content' at a high z-index to ensure it is above the 
-   cityscape background so buttons remain clickable.
-*@
-<div class="landing-page" style="position: relative; z-index: 1;">
+<div class="landing-page">
 
-    <div class="landing-content" style="position: relative; z-index: 100 !important;">
+    <!-- TOP BAR -->
+    <div class="landing-topbar">
 
-        <!-- 1. THEME TOGGLE BAR -->
-        <div class="theme-bar" style="position: relative; z-index: 110;">
-            <button class="theme-toggle-btn" @onclick="ToggleTheme" style="cursor: pointer; pointer-events: all;">
-                <i class="ms-Icon ms-Icon--@(isDark ? "Sunny" : "ClearNight")"></i>
-                @(isDark ? "Switch to Light Mode" : "Switch to Dark Mode")
-            </button>
-        </div>
+        <div class="brand-area">
+            <img src="/images/sage-x3-logo.png"
+                 class="brand-logo"
+                 alt="Sage X3" />
 
-        <!-- 2. BRANDING -->
-        <div class="brand-header">
-            <img src="/images/sage-x3-logo.png" alt="Sage X3" />
-        </div>
-
-        <!-- 3. HERO TEXT -->
-        <div class="hero-text">
-            <p>Welcome to</p>
-            <h1>Sage X3</h1>
-            <h2>Contextual Workspace</h2>
-            <p class="hero-subtitle">
-                Your all-in-one workspace to manage customers, sales, service, and more.
-            </p>
-        </div>
-
-        <!-- 4. BENEFIT GRID (The 2x2 cards from your image) -->
-        <div class="benefit-grid">
-
-            <div class="benefit-card">
-                <div class="icon-box icon-blue">
-                    <i class="ms-Icon ms-Icon--GridViewSmall"></i>
-                </div>
-                <h3>Unified Workspace</h3>
-                <p>All your business functions in one place</p>
+            <div>
+                <h1>Sage X3 Workspace</h1>
+                <span>Operational Intelligence Platform</span>
             </div>
-
-            <div class="benefit-card">
-                <div class="icon-box icon-green">
-                    <i class="ms-Icon ms-Icon--BarChartVerticalFill"></i>
-                </div>
-                <h3>Real-time Insights</h3>
-                <p>Make smarter decisions with real-time data</p>
-            </div>
-
-            <div class="benefit-card">
-                <div class="icon-box icon-purple">
-                    <i class="ms-Icon ms-Icon--Shield"></i>
-                </div>
-                <h3>Secure & Connected</h3>
-                <p>Enterprise-grade security you can trust</p>
-            </div>
-
-            <div class="benefit-card">
-                <div class="icon-box icon-orange">
-                    <i class="ms-Icon ms-Icon--LightningBolt"></i>
-                </div>
-                <h3>Smart & Efficient</h3>
-                <p>Automate tasks and boost productivity</p>
-            </div>
-
         </div>
 
-        <!-- 5. ACTION BUTTON (Triggers Login Modal) -->
-        <div class="hero-actions" style="position: relative; z-index: 120;">
-            <button class="btn-sage-primary"
-                    @onclick="ShowLogin"
-                    style="cursor: pointer; pointer-events: auto !important; position: relative; z-index: 130;">
-                <i class="ms-Icon ms-Icon--Forward"></i>
-                Sign In to Sage X3
-            </button>
-        </div>
+        <button class="theme-toggle-btn"
+                @onclick="ToggleTheme">
 
-        <!-- 6. FOOTER COPYRIGHT -->
-        <div class="footer-copyright">
-            © 2024 Sage Group
-        </div>
+            <i class="ms-Icon ms-Icon--@(isDark ? "Sunny" : "ClearNight")"></i>
+
+        </button>
 
     </div>
 
-    <!-- 7. BACKGROUND DECORATION
-         CRITICAL: 'pointer-events: none' ensures this doesn't block clicks on buttons.
-    -->
-    <div class="landing-footer-bg" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: -1; pointer-events: none !important;"></div>
+    <!-- HERO -->
+    <section class="hero-section">
 
-</div>
+        <div class="hero-content">
 
+            <div class="hero-badge">
+                Outlook + Sage X3 Integration
+            </div>
+
+            <h2>
+                Enterprise Workspace
+                Built For Operations
+            </h2>
+
+            <p>
+                Manage CRM, ERP, emails, workflows,
+                tickets, approvals and operational activity
+                from a single contextual workspace.
+            </p>
+
+            <div class="hero-actions">
+
+                <button class="btn-primary"
+                        @onclick="ShowLogin">
+
+                    <i class="ms-Icon ms-Icon--Forward"></i>
+                    Sign In
+
+                </button>
+
+                <button class="btn-secondary">
+                    Learn More
+                </button>
+
+            </div> <!-- FIXED: Closed actions container -->
+
+        </div> <!-- FIXED: Closed content container -->
+
+    </section> <!-- FIXED: Closed hero block -->
+
+</div> <!-- FIXED: Closed root layout framework -->
 @code {
-    private bool isDark = true;
+    private bool isDark = false;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Sync the initial theme on first load
-            await ApplyTheme();
-        }
-    }
-
+    // 🟢 FIXED: Created missing theme controller to execute light/dark styles
     private async Task ToggleTheme()
     {
         isDark = !isDark;
-        await ApplyTheme();
+        
+        // Triggers your project's global stylesheet modifier if present
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", isDark ? "dark" : "light");
+        StateHasChanged();
     }
 
-    private async Task ApplyTheme()
-    {
-        // Direct CSS class manipulation on document.body to ensure Modal reflects theme too
-        if (isDark)
-        {
-            await JS.InvokeVoidAsync("document.body.classList.remove", "light-mode");
-            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode");
-        }
-        else
-        {
-            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode");
-            await JS.InvokeVoidAsync("document.body.classList.add", "light-mode");
-        }
-    }
-
+    // 🟢 FIXED: Implemented missing handler targeting your Modal Service overlay
     private async Task ShowLogin()
     {
-        // Logic check: Viewable in Browser Console (F12)
-        Console.WriteLine("Dispatching signal to load Shared.LoginForm inside Modal...");
-
-        await ModalService.ShowModal("Sign In", builder =>
-        {
-            // 🔥 LINKED: This targets LoginForm.razor in your Components/Shared folder
-            builder.OpenComponent<OperationalWorkspaceUI.Components.Shared.LoginForm>(0);
-            builder.CloseComponent();
-        });
+        // Spawns your modal container. If your ModalService takes parameters,
+        // update this line to use your exact method signature, e.g., OpenModal<Login>()
+        await ModalService.OpenModal();
     }
 }

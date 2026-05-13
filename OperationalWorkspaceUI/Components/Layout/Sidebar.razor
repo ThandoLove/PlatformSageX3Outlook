@@ -1,47 +1,166 @@
 ﻿@using OperationalWorkspaceUI.Models.Constant
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Interfaces.IServices
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceInfrastructure.Services;
 
 @implements IDisposable
+
 @inject NavigationManager Nav
 @inject NavigationService NavService
 @inject DashboardState DashboardState
+@inject IUserContextService UserContextService
 
 <div class="sage-sidebar">
-    @* FIXED: Height and icon size matched to Topbar *@
+
+    <!-- SIDEBAR HEADER -->
     <div class="sidebar-header">
-        @* Only the icon remains here; the text is now in the Topbar *@
+
         <FluentIcon Value="@(new Icons.Regular.Size16.LineHorizontal3())"
                     Color="@Color.Fill"
                     Style="cursor: pointer;" />
+
     </div>
 
-        <nav class="nav-menu">
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())" Href="@AppRoutes.Dashboard" Match="NavLinkMatch.All">Dashboard</FluentNavLink>
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.Person())" Href="@AppRoutes.BusinessPartners">Contacts</FluentNavLink>
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.TicketDiagonal())" Href="@AppRoutes.Tickets">Tickets</FluentNavLink>
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.DataUsage())" Href="@AppRoutes.Activity">Activities</FluentNavLink>
+    <!-- NAVIGATION -->
+    <nav class="nav-menu">
 
+        <!-- MAIN -->
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())"
+                       Href="@AppRoutes.Dashboard"
+                       Match="NavLinkMatch.All">
+
+            Dashboard
+
+        </FluentNavLink>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Person())"
+                       Href="@AppRoutes.BusinessPartners">
+
+            Contacts
+
+        </FluentNavLink>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.TicketDiagonal())"
+                       Href="@AppRoutes.Tickets">
+
+            Tickets
+
+        </FluentNavLink>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.DataUsage())"
+                       Href="@AppRoutes.Activity">
+
+            Activities
+
+        </FluentNavLink>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- WORKSPACE -->
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())"
+                       Href="@AppRoutes.Knowledge">
+
+            Knowledge Base
+
+        </FluentNavLink>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.CheckmarkCircle())"
+                       Href="@AppRoutes.Tasks">
+
+            My Tasks
+
+        </FluentNavLink>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Book())"
+                       Href="@AppRoutes.Attachments">
+
+            Documents
+
+        </FluentNavLink>
+
+        <!-- ADMIN ONLY -->
+        @if (IsAdmin)
+        {
             <div class="sidebar-divider"></div>
 
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())" Href="@AppRoutes.Knowledge">Knowledge Base</FluentNavLink>
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.CheckmarkCircle())" Href="@AppRoutes.Tasks">My Tasks</FluentNavLink>
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.Book())" Href="@AppRoutes.Attachments">Documents</FluentNavLink>
-             <div class="sidebar-divider"></div>
+            <div class="group-title">
+                Administration
+            </div>
 
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldSettings())"
+                           Href="@AppRoutes.Administration">
 
-            <div class="group-title">Administration</div>
-            <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldSettings())" Href="@AppRoutes.Administration">Admin</FluentNavLink>
-           
-        </nav>
+                Admin Dashboard
 
+            </FluentNavLink>
+
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.TaskListSquareLtr())"
+                           Href="@AppRoutes.AdministrationTasks">
+
+                Admin Tasks
+
+            </FluentNavLink>
+
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.PeopleTeam())"
+                           Href="/admin/users">
+
+                User Management
+
+            </FluentNavLink>
+
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.DocumentBulletList())"
+                           Href="/admin/auditlogs">
+
+                Audit Logs
+
+            </FluentNavLink>
+
+            <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldTask())"
+                           Href="/admin/system-health">
+
+                System Health
+
+            </FluentNavLink>
+        }
+
+    </nav>
+
+    <!-- FOOTER -->
     <div class="sidebar-footer">
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())" Href="@AppRoutes.Settings">Settings</FluentNavLink>
+
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())"
+                       Href="@AppRoutes.Settings">
+
+            Settings
+
+        </FluentNavLink>
+
     </div>
+
 </div>
 
 @code {
-    protected override void OnInitialized() => DashboardState.OnChange += StateHasChanged;
-    public void Dispose() => DashboardState.OnChange -= StateHasChanged;
+
+    private UserDto? CurrentUser;
+
+    private bool IsAdmin =>
+        CurrentUser?.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        DashboardState.OnChange += StateHasChanged;
+
+        CurrentUser = await UserContextService.GetCurrentUserAsync();
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        DashboardState.OnChange -= StateHasChanged;
+    }
+
 }

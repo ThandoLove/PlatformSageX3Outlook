@@ -1,0 +1,68 @@
+﻿.landing-page {
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, rgba(37,99,235,0.15), transparent 30%), linear-gradient(to bottom, #020617, #0f172a);
+    color: white;
+    padding: 40px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.landing-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 60px;
+}
+
+.brand-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.brand-logo {
+    width: 52px;
+    height: 52px;
+}
+
+.brand-area h1 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.brand-area span {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.theme-toggle-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    cursor: pointer;
+}
+
+.hero-section {
+    display: grid;
+    grid-template-columns: 1fr 500px;
+    gap: 60px;
+    align-items: center;
+    min-height: 70vh;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(59,130,246,0.15);
+    color: #93c5fd;
+    font-size: 0.8rem;
+    margin-bottom: 24px;
+}
+
+.hero-content h2 {
+    font-size: 3.4rem;
+}

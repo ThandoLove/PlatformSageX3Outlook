@@ -1,0 +1,225 @@
+﻿@using OperationalWorkspaceUI.UIServices.Workspace
+@* =========================================================
+   FILE: SettingsContent.razor
+   ========================================================= *@
+
+@inject SettingsUIService SettingsService
+
+<div class="settings-root">
+
+    <!-- HEADER -->
+    <div class="settings-header">
+
+        <div>
+            <h1>Settings</h1>
+            <p>Manage workspace preferences, integrations, security and notifications.</p>
+        </div>
+
+    </div>
+
+    <!-- SETTINGS GRID -->
+    <div class="settings-grid">
+
+        <!-- PROFILE -->
+        <section class="settings-card">
+
+            <div class="card-header">
+                <h3>Profile Settings</h3>
+            </div>
+
+            <div class="profile-section">
+
+                <img src="https://i.pravatar.cc/90" class="profile-avatar" />
+
+                <div>
+                    <h4>John Smith</h4>
+                    <span>Sales Representative</span>
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" value="John Smith" />
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" value="john.smith@company.com" />
+            </div>
+
+            <div class="form-group">
+                <label>Department</label>
+                <input type="text" value="Sales" />
+            </div>
+
+            <button class="primary-btn">
+                Save Changes
+            </button>
+
+        </section>
+
+        <!-- NOTIFICATIONS -->
+        <section class="settings-card">
+
+            <div class="card-header">
+                <h3>Notifications</h3>
+            </div>
+
+            <div class="toggle-row">
+                <div>
+                    <strong>Email Notifications</strong>
+                    <span>Receive updates by email</span>
+                </div>
+
+                <label class="switch">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <div>
+                    <strong>Workflow Alerts</strong>
+                    <span>Approval and escalation alerts</span>
+                </div>
+
+                <label class="switch">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <div>
+                    <strong>CRM Notifications</strong>
+                    <span>Customer activity updates</span>
+                </div>
+
+                <label class="switch">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+        </section>
+
+        <!-- SECURITY -->
+        <section class="settings-card">
+
+            <div class="card-header">
+                <h3>Security</h3>
+            </div>
+
+            <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" />
+            </div>
+
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" />
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" />
+            </div>
+
+            <div class="toggle-row">
+                <div>
+                    <strong>Two-Factor Authentication</strong>
+                    <span>Enable additional login protection</span>
+                </div>
+
+                <label class="switch">
+                    <input type="checkbox" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button class="primary-btn">
+                Update Security
+            </button>
+
+        </section>
+
+        <!-- INTEGRATIONS -->
+        <section class="settings-card">
+
+            <div class="card-header">
+                <h3>Integrations</h3>
+            </div>
+
+            <div class="integration-row">
+
+                <div>
+                    <strong>Sage X3 ERP</strong>
+                    <span>Connected</span>
+                </div>
+
+                <span class="status-pill active">
+                    Active
+                </span>
+
+            </div>
+
+            <div class="integration-row">
+
+                <div>
+                    <strong>Microsoft Outlook</strong>
+                    <span>Connected</span>
+                </div>
+
+                <span class="status-pill active">
+                    Active
+                </span>
+
+            </div>
+
+            <div class="integration-row">
+
+                <div>
+                    <strong>Creatio CRM</strong>
+                    <span>Optional Integration</span>
+                </div>
+
+                <button class="secondary-btn">
+                    Configure
+                </button>
+
+            </div>
+
+            <div class="integration-row">
+
+                <div>
+                    <strong>Teams Integration</strong>
+                    <span>Optional</span>
+                </div>
+
+                <button class="secondary-btn">
+                    Connect
+                </button>
+                <button class="primary-btn"
+                        @onclick="SaveSettings">
+
+                    Save Changes
+
+                </button>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+@code {
+
+    private async Task SaveSettings()
+    {
+        await SettingsService.SaveSettingsAsync();
+    }
+
+}

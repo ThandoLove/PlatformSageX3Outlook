@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
+using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
@@ -22,6 +23,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ------------------ 1. SYSTEM ------------------
 builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddHttpContextAccessor();
 
 // 🔥 AUTHENTICATION FIXED
 builder.Services.AddAuthorizationCore();
@@ -48,6 +51,7 @@ builder.Services.AddScoped<DashboardState>();
 builder.Services.AddScoped<WorkspaceState>();
 builder.Services.AddScoped<EmailContextState>();
 builder.Services.AddScoped<UIState>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 
 // ------------------ 4. API CLIENT ------------------
 builder.Services.AddHttpClient("ApiClient", client =>
@@ -69,6 +73,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmailSyncService>();
 builder.Services.AddScoped<ActivityUIService>();
 builder.Services.AddScoped<AttachmentUIService>();
+builder.Services.AddScoped<SettingsUIService>();
+builder.Services.AddScoped<AdminDashboardUIService>();
 
 
 

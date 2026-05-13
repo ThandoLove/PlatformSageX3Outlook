@@ -21,10 +21,19 @@ public class MockSageX3Client : ISageX3Client
         => Task.FromResult(8);
 
     public Task<InventoryItemDto?> GetItemDetailsAsync(Guid id, CancellationToken ct = default)
-        => Task.FromResult<InventoryItemDto?>(new InventoryItemDto { Id = id, Name = "Mock Item", Sku = "MOCK-SKU" });
+        => Task.FromResult<InventoryItemDto?>(new InventoryItemDto
+        {
+            Id = id,
+            ItemCode = "MOCK-SKU",
+            ItemDescription = "Mock Item",
+            Description = "Mock Item"
+        });
 
     public Task<IReadOnlyList<InventoryItemDto>> GetWarehouseStockAsync(string wh, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<InventoryItemDto>>(new List<InventoryItemDto> { new() { Sku = "MOCK-WH-SKU" } });
+        => Task.FromResult<IReadOnlyList<InventoryItemDto>>(new List<InventoryItemDto>
+        {
+            new() { ItemCode = "MOCK-WH-SKU", WarehouseCode = wh }
+        });
 
     public Task<StockAvailabilityResponse> VerifyStockLevelsAsync(CheckStockRequest r, CancellationToken ct = default)
         => Task.FromResult(new StockAvailabilityResponse(true, 10));

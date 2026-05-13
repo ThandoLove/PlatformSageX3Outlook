@@ -27,7 +27,8 @@ public class UserContextService : IUserContextService
         {
             Id = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0",
             Name = user?.Identity?.Name ?? "Anonymous",
-            Role = user?.FindFirst(ClaimTypes.Role)?.Value ?? "None",
+            //Role = user?.FindFirst(ClaimTypes.Role)?.Value ?? "None",((put this to control the role later)))//
+            Role = user?.FindFirst(ClaimTypes.Role)?.Value ?? "Admin",
             Environment = environment,
             TenantId = tenantId
         });
