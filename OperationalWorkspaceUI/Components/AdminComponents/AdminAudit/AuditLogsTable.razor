@@ -1,0 +1,99 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<div class="audit-table-card">
+
+    <table class="audit-table">
+
+        <thead>
+
+            <tr>
+
+                <th>User</th>
+
+                <th>Action</th>
+
+                <th>Entity</th>
+
+                <th>Timestamp</th>
+
+                <th></th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var log in Logs.OrderByDescending(x => x.Timestamp))
+            {
+                <tr class="@(SelectedLog == log ? "audit-row-active" : "")"
+                    @onclick="() => SelectedLogChanged.InvokeAsync(log)">
+
+                    <td>
+
+                        <div class="audit-user-cell">
+
+                            <div class="audit-avatar">
+                                @log.User.Substring(0, 1)
+                            </div>
+
+                            <div>
+
+                                <div class="audit-user-name">
+                                    @log.User
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    <td>
+
+                        <span class="audit-action-pill">
+                            @log.Action
+                        </span>
+
+                    </td>
+
+                    <td>
+                        @log.Entity
+                    </td>
+
+                    <td>
+                        @log.Timestamp.ToString("MMM dd yyyy HH:mm")
+                    </td>
+
+                    <td>
+
+                        <FluentButton Appearance="Appearance.Lightweight">
+
+                            <FluentIcon Value="@(new Icons.Regular.Size20.MoreHorizontal())" />
+
+                        </FluentButton>
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public List<AuditLogDto> Logs { get; set; } = new();
+
+    [Parameter]
+    public AuditLogDto? SelectedLog { get; set; }
+
+    [Parameter]
+    public EventCallback<AuditLogDto> SelectedLogChanged { get; set; }
+}

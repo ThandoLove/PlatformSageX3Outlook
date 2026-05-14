@@ -1,0 +1,221 @@
+﻿.health-shell {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: #f8fafc;
+    min-height: 100%;
+}
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.health-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .health-toolbar h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .health-toolbar p {
+        margin-top: 6px;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+.toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* =========================================================
+   METRICS
+========================================================= */
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+    border: 1px solid #e2e8f0;
+}
+
+    .metric-card label {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .metric-card h2 {
+        margin-top: 10px;
+        margin-bottom: 8px;
+        font-size: 30px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+.metric-positive {
+    color: #16a34a;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.metric-warning {
+    color: #d97706;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.metric-neutral {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.health-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.health-card,
+.activity-card {
+    background: white;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    padding: 22px;
+}
+
+.card-header {
+    margin-bottom: 18px;
+}
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+/* =========================================================
+   SERVICE ITEMS
+========================================================= */
+
+.service-list,
+.queue-list,
+.infra-list,
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.service-item,
+.queue-item,
+.infra-item,
+.integration-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+    .service-item strong {
+        display: block;
+        color: #0f172a;
+        font-size: 14px;
+    }
+
+    .service-item span {
+        font-size: 12px;
+        color: #64748b;
+    }
+
+/* =========================================================
+   STATUS PILLS
+========================================================= */
+
+.status-pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+    .status-pill.online {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .status-pill.warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .status-pill.offline {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+/* =========================================================
+   INTEGRATION GRID
+========================================================= */
+
+.integration-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+.activity-item {
+    padding: 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    font-size: 13px;
+    color: #334155;
+}
+
+.healthy-text {
+    color: #16a34a;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+
+    .metrics-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .health-grid {
+        grid-template-columns: 1fr;
+    }
+}

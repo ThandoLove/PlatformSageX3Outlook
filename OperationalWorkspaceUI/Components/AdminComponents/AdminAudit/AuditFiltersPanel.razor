@@ -1,0 +1,27 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+
+
+<div class="audit-filters-panel">
+
+    <h3>Filters</h3>
+
+    <!-- 🟢 FIXED: Explicitly specified TOption="string" to resolve compiler type inference breaks -->
+    <FluentSelect TValue="string" TOption="string">
+        <FluentOption TValue="string" TOption="string" Value="@("")">All Actions</FluentOption>
+        <FluentOption TValue="string" TOption="string" Value="@("Create")">Create</FluentOption>
+        <FluentOption TValue="string" TOption="string" Value="@("Update")">Update</FluentOption>
+        <FluentOption TValue="string" TOption="string" Value="@("Delete")">Delete</FluentOption>
+        <FluentOption TValue="string" TOption="string" Value="@("Login")">Login</FluentOption>
+    </FluentSelect>
+
+    <!-- 🟢 FIXED: Explicitly specified both TValue and TOption matching type parameters -->
+    <FluentSelect TValue="string" TOption="string">
+        <FluentOption TValue="string" TOption="string" Value="@("")">All Entities</FluentOption>
+        <FluentOption TValue="string" TOption="string" Value="@("Ticket")">Ticket</FluentOption>
+        <FluentOption TValue="string" TOption="string" Value="@("Invoice")">Invoice</FluentOption>
+        <FluentOption TValue="string" TOption="string" Value="@("User")">User</FluentOption>
+    </FluentSelect>
+
+    <FluentCheckbox Label="Critical Only" />
+
+</div>

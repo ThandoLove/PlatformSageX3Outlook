@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
+using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
@@ -91,6 +92,7 @@ builder.Services.AddScoped<IBusinessPartnerService, MockUnifiedService>();
 builder.Services.AddScoped<IInventoryService, MockUnifiedService>();
 builder.Services.AddScoped<ITaskService, MockUnifiedService>();
 builder.Services.AddScoped<IInvoiceService, MockUnifiedService>();
+builder.Services.AddScoped<IAuditLogService, MockAuditService>();
 builder.Services.AddScoped<KnowledgeUIService>();
 
 var app = builder.Build();

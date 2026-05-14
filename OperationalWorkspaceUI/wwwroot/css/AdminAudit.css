@@ -1,0 +1,250 @@
+﻿.audit-shell {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    background: #f6f8fb;
+    min-height: 100%;
+}
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.audit-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+    .audit-toolbar h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .audit-toolbar p {
+        margin-top: 6px;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+.audit-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.audit-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.audit-stat-card {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+    .audit-stat-card label {
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    .audit-stat-card h2 {
+        margin-top: 10px;
+        font-size: 28px;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.audit-grid {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr) 340px;
+    gap: 18px;
+    min-height: 700px;
+}
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.audit-filters-panel {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+    .audit-filters-panel h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.audit-table-card {
+    background: white;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .audit-table thead {
+        background: #f8fafc;
+    }
+
+    .audit-table th {
+        padding: 16px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .audit-table td {
+        padding: 16px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+
+.audit-row-active {
+    background: #f8fbff;
+}
+
+/* =========================================================
+   USER CELL
+========================================================= */
+
+.audit-user-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.audit-avatar,
+.audit-details-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #dbeafe;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.audit-user-name {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+/* =========================================================
+   PILLS
+========================================================= */
+
+.audit-action-pill {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* =========================================================
+   DETAILS PANEL
+========================================================= */
+
+.audit-details-panel {
+    background: white;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.audit-details-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+    .audit-details-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .audit-details-header p {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+.audit-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .audit-section label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+    }
+
+/* =========================================================
+   TIMELINE
+========================================================= */
+
+.audit-timeline-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.timeline-item {
+    padding: 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    font-size: 13px;
+}
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+.hidden {
+    display: none;
+}

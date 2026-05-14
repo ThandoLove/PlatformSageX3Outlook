@@ -1,0 +1,49 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+
+<div class="audit-details-panel @(Log == null ? "hidden" : "")">
+
+    @if (Log != null)
+    {
+        <div class="audit-details-header">
+
+            <div class="audit-details-avatar">
+                @Log.User.Substring(0,1)
+            </div>
+
+            <div>
+
+                <h3>@Log.Action</h3>
+
+                <p>@Log.User</p>
+
+            </div>
+
+        </div>
+
+        <div class="audit-section">
+
+            <label>Entity</label>
+
+            <span>@Log.Entity</span>
+
+        </div>
+
+        <div class="audit-section">
+
+            <label>Timestamp</label>
+
+            <span>@Log.Timestamp.ToString("f")</span>
+
+        </div>
+
+        <AuditActivityTimeline />
+
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public AuditLogDto? Log { get; set; }
+}

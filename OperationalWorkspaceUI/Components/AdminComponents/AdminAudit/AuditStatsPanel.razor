@@ -1,0 +1,31 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+
+<div class="audit-stats-grid">
+
+    <div class="audit-stat-card">
+        <label>Total Events</label>
+        <h2>@Logs.Count</h2>
+    </div>
+
+    <div class="audit-stat-card">
+        <label>Critical Events</label>
+        <h2>@Logs.Count(x => x.Action.Contains("Delete"))</h2>
+    </div>
+
+    <div class="audit-stat-card">
+        <label>User Logins</label>
+        <h2>@Logs.Count(x => x.Action.Contains("Login"))</h2>
+    </div>
+
+    <div class="audit-stat-card">
+        <label>Today's Activity</label>
+        <h2>@Logs.Count(x => x.Timestamp.Date == DateTime.UtcNow.Date)</h2>
+    </div>
+
+</div>
+
+@code {
+
+    [Parameter]
+    public List<AuditLogDto> Logs { get; set; } = new();
+}

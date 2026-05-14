@@ -1,0 +1,33 @@
+﻿
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<div class="audit-toolbar">
+
+    <div>
+
+        <h1>Audit Logs</h1>
+
+        <p>
+            Monitor security events, user actions, integrations,
+            and system activity.
+        </p>
+
+    </div>
+
+    <div class="audit-toolbar-actions">
+
+        <FluentTextField Placeholder="Search audit logs..."
+                         Style="width: 280px;" />
+
+        <FluentButton Appearance="Appearance.Accent">
+
+            <FluentIcon Value="@(new Icons.Regular.Size20.ArrowDownload())" />
+
+            Export Logs
+
+        </FluentButton>
+
+    </div>
+
+</div>

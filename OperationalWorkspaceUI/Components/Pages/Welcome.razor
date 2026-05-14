@@ -1,73 +1,159 @@
 @page "/welcome"
+@layout EmptyLayout
 @rendermode InteractiveServer
 
-@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Components.Authorization
+@implements IAsyncDisposable
+
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
-<h3>Welcome to OperationalWorkspace</h3>
+<PageTitle>Initializing Workspace</PageTitle>
 
-<div class="login-panel">
-    <p>Please sign in to continue.</p>
-    <div>
-        <label>Username</label>
-        <input @bind="Username" />
+<div class="bootstrap-shell">
+
+    <div class="bootstrap-card">
+
+        <img src="/images/sage-x3-logo.png"
+             class="bootstrap-logo" />
+
+        <h2>Connecting Outlook Workspace</h2>
+
+        <p>
+            Preparing contextual operational environment...
+        </p>
+
+        <div class="bootstrap-status">
+
+            <div class="status-row">
+                <span>Office.js</span>
+                <span>@OfficeStatus</span>
+            </div>
+
+            <div class="status-row">
+                <span>Outlook Context</span>
+                <span>@ContextStatus</span>
+            </div>
+
+            <div class="status-row">
+                <span>Email Detection</span>
+                <span>@EmailStatus</span>
+            </div>
+
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(CurrentSubject))
+        {
+            <div class="email-preview">
+
+                <label>Detected Email</label>
+
+                <div class="preview-box">
+                    @CurrentSubject
+                </div>
+
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="bootstrap-error">
+                @ErrorMessage
+            </div>
+        }
+
     </div>
-    <div>
-        <label>Password</label>
-        <input type="password" @bind="Password" />
-    </div>
-    <div class="mt-2">
-        <button class="btn btn-primary" @onclick="OnLogin">Sign in</button>
-    </div>
-    <div class="mt-3">
-        <button class="btn btn-secondary" @onclick="ReadOfficeItem">Detect email context</button>
-        <div class="mt-1"><small>Detected subject: @DetectedSubject</small></div>
-    </div>
-    @if (!string.IsNullOrEmpty(Message))
-    {
-        <div class="mt-2 text-danger">@Message</div>
-    }
+
 </div>
 
 @code {
-    private string Username { get; set; } = string.Empty;
-    private string Password { get; set; } = string.Empty;
-    private string Message { get; set; } = string.Empty;
 
-    private string DetectedSubject { get; set; } = string.Empty;
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
-    private void OnLogin()
+    private DotNetObjectReference<Welcome>? _reference;
+
+    private string OfficeStatus = "Initializing...";
+    private string ContextStatus = "Waiting...";
+    private string EmailStatus = "Waiting...";
+
+    private string CurrentSubject = string.Empty;
+
+    private string? ErrorMessage;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Minimal placeholder authentication for developer testing.
-        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
-        {
-            Message = "Enter username and password.";
+        if (!firstRender)
             return;
-        }
 
-        // TODO: Replace with real authentication against your API.
-        // For now navigate to the app home after "successful" login.
-        Navigation.NavigateTo("/");
-    }
-
-    private async Task ReadOfficeItem()
-    {
         try
         {
-            // Read the window.initialOfficeItem object populated by dashboard.html/compose.html
-            var json = await JS.InvokeAsync<string>("eval", "JSON.stringify(window['initialOfficeItem'] || {})");
-            if (!string.IsNullOrEmpty(json))
+            OfficeStatus = "Connecting...";
+
+            _reference =
+                DotNetObjectReference.Create(this);
+
+            await JS.InvokeVoidAsync(
+                "officeBridge.initialize",
+                _reference);
+
+            OfficeStatus = "Connected";
+
+            ContextStatus = "Listening";
+
+            StateHasChanged();
+
+            await Task.Delay(1500);
+
+            if (AuthenticationStateTask is not null)
             {
-                using var doc = System.Text.Json.JsonDocument.Parse(json);
-                if (doc.RootElement.TryGetProperty("subject", out var subj))
+                var authState =
+                    await AuthenticationStateTask;
+
+                if (authState.User.Identity?.IsAuthenticated == true)
                 {
-                    DetectedSubject = subj.GetString() ?? string.Empty;
+                    Nav.NavigateTo("/dashboard");
+                }
+                else
+                {
+                    Nav.NavigateTo("/");
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            DetectedSubject = string.Empty;
+            OfficeStatus = "Failed";
+
+            ErrorMessage =
+                $"Bootstrap failed: {ex.Message}";
         }
+
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task OnEmailReceived(EmailContext context)
+    {
+        CurrentSubject = context.Subject;
+
+        EmailStatus = "Connected";
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _reference?.Dispose();
+
+        await Task.CompletedTask;
+    }
+
+    public class EmailContext
+    {
+        public string SenderEmail { get; set; } = string.Empty;
+
+        public string SenderName { get; set; } = string.Empty;
+
+        public string Subject { get; set; } = string.Empty;
     }
 }

@@ -1,0 +1,43 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Interfaces.IServices
+
+@inject IAuditLogService AuditLogService
+
+<div class="audit-shell">
+
+    <AuditToolbar />
+
+    <AuditStatsPanel Logs="Logs" />
+
+    <div class="audit-grid">
+
+        <AuditFiltersPanel />
+
+        <AuditLogsTable Logs="Logs"
+                        SelectedLog="SelectedLog"
+                        SelectedLogChanged="HandleLogSelected" />
+
+        <AuditDetailsPanel Log="SelectedLog" />
+
+    </div>
+
+</div>
+
+@code {
+
+    private List<AuditLogDto> Logs = new();
+
+    private AuditLogDto? SelectedLog;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Logs = await AuditLogService.GetAllAuditLogsAsync();
+
+        SelectedLog = Logs.FirstOrDefault();
+    }
+
+    private void HandleLogSelected(AuditLogDto log)
+    {
+        SelectedLog = log;
+    }
+}

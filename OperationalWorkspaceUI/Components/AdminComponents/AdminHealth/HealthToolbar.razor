@@ -1,0 +1,29 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<div class="health-toolbar">
+
+    <div>
+
+        <h1>System Health</h1>
+
+        <p>
+            Monitor infrastructure, Sage X3 integrations,
+            sync queues, APIs, and platform reliability.
+        </p>
+
+    </div>
+
+    <div class="toolbar-actions">
+
+        <FluentButton Appearance="Appearance.Accent">
+
+            <FluentIcon Value="@(new Icons.Regular.Size20.ArrowClockwise())" />
+
+            Refresh Status
+
+        </FluentButton>
+
+    </div>
+
+</div>
