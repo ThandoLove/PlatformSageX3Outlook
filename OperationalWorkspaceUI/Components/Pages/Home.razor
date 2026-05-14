@@ -93,8 +93,12 @@
     // 🟢 FIXED: Implemented missing handler targeting your Modal Service overlay
     private async Task ShowLogin()
     {
-        // Spawns your modal container. If your ModalService takes parameters,
-        // update this line to use your exact method signature, e.g., OpenModal<Login>()
-        await ModalService.OpenModal();
+        await ModalService.ShowModal("Sign In", builder =>
+        {
+            builder.OpenComponent<
+                OperationalWorkspaceUI.Components.Shared.LoginForm>(0);
+
+            builder.CloseComponent();
+        });
     }
 }

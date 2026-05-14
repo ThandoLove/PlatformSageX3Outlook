@@ -1,0 +1,65 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+
+
+<div class="users-shell">
+
+    <UserToolbar />
+
+    <UserStatsPanel />
+
+    <div class="users-workspace-grid">
+
+        <UserFiltersPanel />
+
+        <UserTable Users="Users"
+                   SelectedUser="SelectedUser"
+                   SelectedUserChanged="HandleUserSelected" />
+
+        <UserDetailsPanel User="SelectedUser" />
+
+    </div>
+
+</div>
+
+@code {
+
+    private UserDto? SelectedUser;
+
+    private List<UserDto> Users = new()
+    {
+        new()
+        {
+            Id = "1",
+            Name = "System Administrator",
+            Role = "Admin",
+            Environment = "Production"
+        },
+
+        new()
+        {
+            Id = "2",
+            Name = "Operations Manager",
+            Role = "Manager",
+            Environment = "Production"
+        },
+
+        new()
+        {
+            Id = "3",
+            Name = "Support Agent",
+            Role = "User",
+            Environment = "Production"
+        }
+    };
+
+    protected override void OnInitialized()
+    {
+        SelectedUser = Users.FirstOrDefault();
+    }
+
+    private void HandleUserSelected(UserDto user)
+    {
+        SelectedUser = user;
+    }
+}
+

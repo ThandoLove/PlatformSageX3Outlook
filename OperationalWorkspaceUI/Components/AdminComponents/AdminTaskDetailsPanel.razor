@@ -1,6 +1,7 @@
 ﻿@using OperationalWorkspace.Domain.Enums
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
+
 @inject DashboardState DashboardState
 
 <div class="task-details-panel @(Task == null ? "hidden" : "")">
@@ -69,99 +70,127 @@
 
         </div>
 
-        <!-- CUSTOMER -->
-        <div class="details-section">
+        <!-- TABS -->
+        <div class="details-tabs">
 
-            <label class="section-label">
-                CUSTOMER
-            </label>
+            <button class="tab-btn @(activeTab == "overview" ? "active" : "")"
+                    @onclick='() => activeTab = "overview"'>
 
-            <div class="customer-card">
+                Overview
 
-                <span class="customer-name">
-                    @Task.CompanyName
-                </span>
+            </button>
 
-                <a href="javascript:void(0)"
-                       class="sage-link">
-                    Open in Sage X3
-                </a>
+            <button class="tab-btn @(activeTab == "links" ? "active" : "")"
+                    @onclick='() => activeTab = "links"'>
 
-            </div>
+                Sage Links
 
-        </div>
+            </button>
 
-        <!-- SAGE LINKS -->
-        <div class="details-section">
+            <button class="tab-btn @(activeTab == "actions" ? "active" : "")"
+                    @onclick='() => activeTab = "actions"'>
 
-            <label class="section-label">
-                SAGE X3 LINKS
-            </label>
+                Actions
 
-            <div class="link-list">
-
-                <div class="link-item">
-                    <span>Customer</span>
-                    <span class="blue-link">@Task.CompanyName</span>
-                </div>
-
-                <div class="link-item">
-                    <span>Invoice</span>
-                    <span class="blue-link">INV-100123</span>
-                </div>
-
-                <div class="link-item">
-                    <span>Sales Order</span>
-                    <span class="blue-link">SO-10293</span>
-                </div>
-
-                <div class="link-item">
-                    <span>Opportunity</span>
-                    <span class="blue-link">OP-00921</span>
-                </div>
-
-            </div>
+            </button>
 
         </div>
 
-        <!-- ACTIONS -->
-        <div class="details-section">
+        <!-- OVERVIEW TAB -->
+        @if (activeTab == "overview")
+        {
+            <div class="details-section">
 
-            <label class="section-label">
-                ADMIN ACTIONS
-            </label>
+                <label class="section-label">
+                    CUSTOMER
+                </label>
 
-            <div class="admin-action-list">
+                <div class="customer-card">
 
-                <button class="action-btn">
-                    Reassign Task
-                </button>
+                    <span class="customer-name">
+                        @Task.CompanyName
+                    </span>
 
-                <button class="action-btn">
-                    Change Priority
-                </button>
+                    <a href="javascript:void(0)"
+                           class="sage-link">
 
-                <button class="action-btn danger">
-                    Escalate Task
-                </button>
+                        Open in Sage X3
 
-                <button class="action-btn">
-                    Convert to Case
-                </button>
+                    </a>
 
-                <button class="action-btn">
-                    Convert to Sales Order
-                </button>
+                </div>
+
+            </div>
+        }
+
+        <!-- LINKS TAB -->
+        @if (activeTab == "links")
+        {
+            <div class="details-section">
+
+                <label class="section-label">
+                    SAGE X3 LINKS
+                </label>
+
+                <div class="link-list">
+
+                    <div class="link-item">
+                        <span>Customer</span>
+                        <span class="blue-link">@Task.CompanyName</span>
+                    </div>
+
+                    <div class="link-item">
+                        <span>Invoice</span>
+                        <span class="blue-link">INV-100123</span>
+                    </div>
+
+                    <div class="link-item">
+                        <span>Sales Order</span>
+                        <span class="blue-link">SO-10293</span>
+                    </div>
+
+                    <div class="link-item">
+                        <span>Opportunity</span>
+                        <span class="blue-link">OP-00921</span>
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
+        <!-- ACTIONS TAB -->
+        @if (activeTab == "actions")
+        {
+            <div class="details-section">
+
+                <label class="section-label">
+                    ADMIN ACTIONS
+                </label>
+
+                <div class="admin-action-list">
+
+                    <button class="action-btn">
+                        Reassign Task
+                    </button>
+
+                    <button class="action-btn">
+                        Change Priority
+                    </button>
+
+                    <button class="action-btn danger">
+                        Escalate Task
+                    </button>
+
+                </div>
 
             </div>
 
-        </div>
+            <AdminAssignmentControls Task="Task" />
 
-        <!-- ASSIGNMENT PANEL -->
-        <AdminAssignmentControls Task="Task" />
+            <AdminEscalationPanel Task="Task" />
+        }
 
-        <!-- ESCALATION PANEL -->
-        <AdminEscalationPanel Task="Task" />
     }
 
 </div>
@@ -170,5 +199,7 @@
 
     [Parameter]
     public TaskDto? Task { get; set; }
+
+    private string activeTab = "overview";
 
 }

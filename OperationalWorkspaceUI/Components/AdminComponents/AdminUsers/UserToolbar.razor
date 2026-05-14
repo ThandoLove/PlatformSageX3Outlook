@@ -1,0 +1,27 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<div class="users-toolbar">
+
+    <div>
+        <h1>User Management</h1>
+        <p>Manage users, permissions, environments, and access policies.</p>
+    </div>
+
+    <div class="toolbar-actions">
+
+        <FluentTextField Placeholder="Search users..."
+                         Style="width: 280px;" />
+
+        <FluentButton Appearance="Appearance.Accent">
+                        
+            <FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" />
+
+            Add User
+
+        </FluentButton>
+
+</div>
+
+</div>
+        

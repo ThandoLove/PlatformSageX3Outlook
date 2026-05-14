@@ -1,0 +1,46 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+
+<div class="details-panel @(User == null ? "hidden" : "")">
+
+    @if (User != null)
+    {
+        <div class="details-header">
+
+            <div class="details-avatar">
+                @User.Name.Substring(0, 1)
+            </div>
+
+            <div>
+                <h3>@User.Name</h3>
+                <p>@User.Role</p>
+            </div>
+
+        </div>
+
+        <div class="details-section">
+
+            <label>Environment</label>
+            <span>@User.Environment</span>
+
+        </div>
+
+        <div class="details-section">
+
+            <label>Account Status</label>
+            <span class="status-active">Active</span>
+
+        </div>
+
+        <UserRoleEditor />
+
+        <UserActivityPanel />
+    }
+
+</div>
+
+@code {
+
+    [Parameter]
+    public UserDto? User { get; set; }
+}
+
