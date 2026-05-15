@@ -1,4 +1,5 @@
-﻿using OperationalWorkspaceUI.State;
+﻿
+using OperationalWorkspaceUI.State;
 using OperationalWorkspaceApplication.DTOs;
 using System.Net.Http.Json;
 
@@ -13,15 +14,52 @@ public class DashboardUIService
         _httpClient = httpClient;
     }
 
+    // =========================================================
+    // REAL SYSTEM HEALTH API CALL
+    // =========================================================
+    public async Task<AdminSystemHealthDto> GetSystemHealthAsync()
+    {
+        try
+        {
+            return await _httpClient
+                .GetFromJsonAsync<AdminSystemHealthDto>(
+                    "api/system-health")
+                ?? new AdminSystemHealthDto();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"System Health API Error: {ex.Message}");
+
+            return new AdminSystemHealthDto
+            {
+                SageX3Connected = false,
+                APIHealthStatus = "Offline",
+                FailedTransactions = -1,
+                PendingSyncJobs = -1
+            };
+        }
+    }
+
+    // =========================================================
+    // MAIN DASHBOARD LOAD
+    // =========================================================
     public async Task LoadDashboardAsync(DashboardState state)
     {
-        string userRole = state.IsAdminEnvironment ? "Admin" : "Employee";
+        string userRole =
+            state.IsAdminEnvironment
+                ? "Admin"
+                : "Employee";
 
         try
         {
-            state.AllTasks = await FetchTasksAsync(userRole);
-            state.RecentActivities = await FetchActivitiesAsync();
-            state.AllTickets = await FetchTicketsAsync(userRole);
+            state.AllTasks =
+                await FetchTasksAsync(userRole);
+
+            state.RecentActivities =
+                await FetchActivitiesAsync();
+
+            state.AllTickets =
+                await FetchTicketsAsync(userRole);
 
             if (state.IsAdminEnvironment)
             {
@@ -34,12 +72,19 @@ public class DashboardUIService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading Sage X3 data: {ex.Message}");
+            Console.WriteLine(
+                $"Error loading dashboard data: {ex.Message}");
         }
     }
 
+    // =========================================================
+    // ADMIN DATA
+    // =========================================================
     private async Task LoadAdminData(DashboardState state)
     {
+        // =========================================
+        // ERP SUMMARY
+        // =========================================
         state.AdminErp = new AdminErpDto
         {
             TotalOrdersToday = 42,
@@ -47,21 +92,31 @@ public class DashboardUIService
             StockAlerts = 3
         };
 
+        // =========================================
+        // FINANCE SUMMARY
+        // =========================================
         state.AdminFinance = new AdminFinanceDto
         {
             TotalRevenue = 450000.00m,
             OverdueAmount = 12500.00m
         };
 
-        state.AdminHealth = new AdminSystemHealthDto
-        {
-            SageX3Connected = true,
-            APIHealthStatus = "Healthy"
-        };
+        // =========================================
+        // REAL SYSTEM HEALTH
+        // =========================================
+        state.AdminHealth =
+            await GetSystemHealthAsync();
 
-        state.AuditLogs = await FetchAuditLogsAsync();
+        // =========================================
+        // AUDIT LOGS
+        // =========================================
+        state.AuditLogs =
+            await FetchAuditLogsAsync();
     }
 
+    // =========================================================
+    // EMPLOYEE DATA
+    // =========================================================
     private async Task LoadEmployeeData(DashboardState state)
     {
         state.EmployeeErp = new EmployeeErpDto
@@ -71,13 +126,21 @@ public class DashboardUIService
         };
 
         state.AdminErp = new AdminErpDto();
+
         state.AdminHealth = new AdminSystemHealthDto();
+
         state.AdminFinance = new AdminFinanceDto();
+
         state.AuditLogs = new List<AuditLogDto>();
     }
 
+    // =========================================================
+    // TICKETS
+    // =========================================================
     private async Task<List<TicketDto>> FetchTicketsAsync(string role)
     {
+        await Task.Delay(50);
+
         return new List<TicketDto>
         {
             new TicketDto
@@ -89,6 +152,7 @@ public class DashboardUIService
                 Priority = "5",
                 CreatedAt = DateTime.Now.AddDays(-1)
             },
+
             new TicketDto
             {
                 Id = Guid.NewGuid(),
@@ -101,8 +165,13 @@ public class DashboardUIService
         };
     }
 
+    // =========================================================
+    // TASKS
+    // =========================================================
     private async Task<List<TaskDto>> FetchTasksAsync(string role)
     {
+        await Task.Delay(50);
+
         return new List<TaskDto>
         {
             new TaskDto
@@ -113,6 +182,7 @@ public class DashboardUIService
                 DueDate = DateTime.Now.AddDays(2),
                 Completed = false
             },
+
             new TaskDto
             {
                 Id = Guid.NewGuid(),
@@ -124,8 +194,13 @@ public class DashboardUIService
         };
     }
 
+    // =========================================================
+    // ACTIVITIES
+    // =========================================================
     private async Task<List<ActivityDto>> FetchActivitiesAsync()
     {
+        await Task.Delay(50);
+
         return new List<ActivityDto>
         {
             new ActivityDto
@@ -134,6 +209,7 @@ public class DashboardUIService
                 Action = "Created",
                 Timestamp = DateTime.Now
             },
+
             new ActivityDto
             {
                 Title = "Ticket #101",
@@ -143,8 +219,13 @@ public class DashboardUIService
         };
     }
 
+    // =========================================================
+    // AUDIT LOGS
+    // =========================================================
     private async Task<List<AuditLogDto>> FetchAuditLogsAsync()
     {
+        await Task.Delay(50);
+
         return new List<AuditLogDto>
         {
             new AuditLogDto
@@ -154,6 +235,7 @@ public class DashboardUIService
                 Entity = "Auth",
                 Timestamp = DateTime.Now
             },
+
             new AuditLogDto
             {
                 User = "Manager",
@@ -164,3 +246,4 @@ public class DashboardUIService
         };
     }
 }
+

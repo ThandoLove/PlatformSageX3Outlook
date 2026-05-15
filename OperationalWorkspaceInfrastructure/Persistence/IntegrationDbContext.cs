@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OperationalWorkspace.Domain.Entities;
-using OperationalWorkspaceInfrastructure.Persistence;
+using OperationalWorkspaceApplication.Interfaces.IServices;
+using System.Text.Json;
 
-// Aliases to resolve conflicts
+// Aliases
 using Attachment = OperationalWorkspace.Domain.Entities.Attachment;
 using TaskEntity = OperationalWorkspace.Domain.Entities.TaskEntity;
 
@@ -12,8 +14,18 @@ namespace OperationalWorkspaceInfrastructure.Persistence;
 
 public class IntegrationDbContext : DbContext
 {
-    public IntegrationDbContext(DbContextOptions<IntegrationDbContext> options)
-        : base(options) { }
+    private readonly IAuditLogService _auditService;
+    private readonly IHttpContextAccessor _http;
+
+    public IntegrationDbContext(
+        DbContextOptions<IntegrationDbContext> options,
+        IAuditLogService auditService,
+        IHttpContextAccessor http)
+        : base(options)
+    {
+        _auditService = auditService;
+        _http = http;
+    }
 
     public DbSet<BusinessPartner> BusinessPartners => Set<BusinessPartner>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
@@ -29,6 +41,7 @@ public class IntegrationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<BusinessPartner>().HasKey(bp => bp.Id);
         modelBuilder.Entity<Invoice>().HasKey(i => i.InvoiceId);
         modelBuilder.Entity<SalesOrder>().HasKey(o => o.Id);
@@ -37,22 +50,65 @@ public class IntegrationDbContext : DbContext
         modelBuilder.Entity<AuditLogEntry>().HasKey(a => a.Id);
         modelBuilder.Entity<Attachment>().HasKey(a => a.Id);
     }
-}
 
-// FIX: This version DOES NOT require the SqlServer package to compile
-public static class DependencyInjection
-{
-    public static IServiceCollection AddInfrastructureServices(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        services.AddDbContext<IntegrationDbContext>(options =>
-        {
-            // We use the base options to avoid the 'UseSqlServer' missing reference error
-            // This allows the DI container to function even if the SQL package is broken
-            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-        });
+        var auditEntries = new List<AuditLogEntry>();
 
-        return services;
+        var user = _http.HttpContext?.User?.Identity?.Name ?? "System";
+        var traceId = _http.HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString();
+
+        foreach (var entry in ChangeTracker.Entries())
+        {
+            if (entry.State == EntityState.Unchanged)
+                continue;
+
+            var audit = new AuditLogEntry
+            {
+                Id = Guid.NewGuid(),
+                UserName = user,
+                TraceId = traceId,
+                EntityName = entry.Entity.GetType().Name,
+                OccurredAtUtc = DateTime.UtcNow,
+                EventType = entry.State.ToString()
+            };
+
+            // BEFORE STATE
+            if (entry.State == EntityState.Modified || entry.State == EntityState.Deleted)
+            {
+                var before = new Dictionary<string, object?>();
+
+                foreach (var prop in entry.OriginalValues.Properties)
+                {
+                    before[prop.Name] = entry.OriginalValues[prop];
+                }
+
+                audit.OldValues = JsonSerializer.Serialize(before);
+            }
+
+            // AFTER STATE
+            if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
+            {
+                var after = new Dictionary<string, object?>();
+
+                foreach (var prop in entry.CurrentValues.Properties)
+                {
+                    after[prop.Name] = entry.CurrentValues[prop];
+                }
+
+                audit.NewValues = JsonSerializer.Serialize(after);
+            }
+
+            auditEntries.Add(audit);
+        }
+
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        if (auditEntries.Count > 0)
+        {
+            await _auditService.LogBulkAsync(auditEntries);
+        }
+
+        return result;
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace OperationalWorkspaceAPI.Middleware;
+﻿using System.Security.Claims;
+
+namespace OperationalWorkspaceAPI.Middleware;
 
 public sealed class RbacMiddleware
 {
@@ -13,35 +15,36 @@ public sealed class RbacMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // 1. Skip check for non-protected paths (like Health Checks)
-        if (context.Request.Path.StartsWithSegments("/health"))
+        var path = context.Request.Path.Value ?? "";
+
+        // ==============================
+        // PUBLIC ROUTES ONLY
+        // ==============================
+        if (path.StartsWith("/health") ||
+            path.StartsWith("/api/v1/Auth"))
         {
             await _next(context);
             return;
         }
 
-        // 2. Identification check
+        // ==============================
+        // AUTH CHECK ONLY
+        // ==============================
         if (context.User.Identity?.IsAuthenticated != true)
         {
-            _logger.LogWarning("ACCESS DENIED: Unauthenticated request to {Path}", context.Request.Path);
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsync("Authentication Required.");
             return;
         }
 
-        // 3. Role Enforcement logic (Example: Admin required for DELETE/POST)
-        var roles = context.User.FindAll(System.Security.Claims.ClaimTypes.Role).Select(r => r.Value);
-        var method = context.Request.Method;
+        // ==============================
+        // LOG ACCESS (NO BLOCKING)
+        // ==============================
+        var user = context.User.Identity?.Name ?? "Unknown";
 
-        if ((method == "DELETE" || method == "POST") && !roles.Contains("Admin"))
-        {
-            _logger.LogWarning("FORBIDDEN: User {User} attempted {Method} without Admin role.",
-                context.User.Identity.Name, method);
-
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            await context.Response.WriteAsync("Access Denied: Admin Role Required.");
-            return;
-        }
+        _logger.LogInformation(
+            "API ACCESS: User {User} accessed {Path}",
+            user, path);
 
         await _next(context);
     }

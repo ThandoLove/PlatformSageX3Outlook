@@ -1,11 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using OperationalWorkspace.Domain.Entities;
+﻿using OperationalWorkspace.Domain.Entities;
 
 namespace OperationalWorkspaceApplication.Interfaces.IRepository;
 
 public interface IAccountRepository
 {
-    Task<LoginUser?> FindAccountByUsernameAsync(string username);
+    Task<UserAccount?> FindAccountByUsernameAsync(string username);
+    Task<UserAccount?> FindAccountByIdAsync(string id);
+
+    Task UpdateAsync(UserAccount user);
+
+    Task SaveRefreshTokenAsync(RefreshToken token);
+    Task<RefreshToken?> GetRefreshTokenAsync(string token);
+    Task UpdateRefreshTokenAsync(RefreshToken stored);
 }

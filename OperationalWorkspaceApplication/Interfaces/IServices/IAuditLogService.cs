@@ -1,4 +1,5 @@
-﻿using OperationalWorkspaceApplication.DTOs;
+﻿using OperationalWorkspace.Domain.Entities;
+using OperationalWorkspaceApplication.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,6 +12,10 @@ namespace OperationalWorkspaceApplication.Interfaces.IServices
         Task<List<ActivityDto>> GetRecentActivityForUserAsync(string userId);
         Task<List<AuditLogDto>> GetAllAuditLogsAsync();
         Task<List<AuditLogDto>> GetAllRecentLogsAsync();
+        Task LogBulkAsync(List<AuditLogEntry> entries);
+
+        
+
     }
     // CODE END
 }

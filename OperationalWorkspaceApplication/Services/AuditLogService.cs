@@ -14,11 +14,26 @@ public class AuditLogService : IAuditLogService
         _repo = repo;
     }
 
+    // ==============================
+    // REQUIRED: BULK LOGGING (FIX FOR YOUR ERROR)
+    // ==============================
+    public async Task LogBulkAsync(List<AuditLogEntry> entries)
+    {
+        await _repo.AddRangeAsync(entries);
+    }
+
+    // ==============================
+    // USER ACTIVITY (LAST 7 DAYS)
+    // ==============================
     public async Task<List<ActivityDto>> GetRecentActivityForUserAsync(string userId)
     {
-        if (!Guid.TryParse(userId, out var userGuid)) return new List<ActivityDto>();
+        if (!Guid.TryParse(userId, out var userGuid))
+            return new List<ActivityDto>();
 
-        var logs = await _repo.GetByUserAsync(userGuid, DateTime.UtcNow.AddDays(-7));
+        var logs = await _repo.GetByUserAsync(
+            userGuid,
+            DateTime.UtcNow.AddDays(-7),
+            DateTime.UtcNow);
 
         return logs.Select(l => new ActivityDto(
             l.Id,
@@ -27,35 +42,44 @@ public class AuditLogService : IAuditLogService
             l.EventType,
             l.EntityId ?? Guid.Empty,
             l.OccurredAtUtc,
-            l.PerformedByUserName ?? "System",
+            l.UserName ?? "System",
             l.OccurredAtUtc,
             l.EventType
         )).ToList();
     }
 
-    // 1. Implementation for GetAllAuditLogsAsync (Interface Member)
+    // ==============================
+    // FULL AUDIT LOG (LAST 30 DAYS)
+    // ==============================
     public async Task<List<AuditLogDto>> GetAllAuditLogsAsync()
     {
-        var logs = await _repo.GetByEventTypeAsync("ALL", DateTime.UtcNow.AddDays(-30)); // Longer history
+        var logs = await _repo.GetByUserAsync(
+            Guid.Empty,
+            DateTime.UtcNow.AddDays(-30),
+            DateTime.UtcNow);
 
         return logs.Select(l => new AuditLogDto
         {
-            User = l.PerformedByUserName ?? "System",
+            User = l.UserName ?? "System",
             Action = l.EventType,
             Entity = l.EntityName,
             Timestamp = l.OccurredAtUtc
         }).ToList();
     }
 
-    // 2. Implementation for GetAllRecentLogsAsync (Interface Member)
-    // This fixes the 'does not implement' error you just received
+    // ==============================
+    // RECENT ACTIVITY (LAST 24 HOURS)
+    // ==============================
     public async Task<List<AuditLogDto>> GetAllRecentLogsAsync()
     {
-        var logs = await _repo.GetByEventTypeAsync("ALL", DateTime.UtcNow.AddDays(-1)); // Just last 24h
+        var logs = await _repo.GetByUserAsync(
+            Guid.Empty,
+            DateTime.UtcNow.AddDays(-1),
+            DateTime.UtcNow);
 
         return logs.Select(l => new AuditLogDto
         {
-            User = l.PerformedByUserName ?? "System",
+            User = l.UserName ?? "System",
             Action = l.EventType,
             Entity = l.EntityName,
             Timestamp = l.OccurredAtUtc

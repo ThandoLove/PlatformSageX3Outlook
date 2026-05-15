@@ -105,7 +105,7 @@ public sealed class InventoryService : IInventoryService
         {
             EventType = "Adjustment",
             Description = $"Item {item.ItemCode} adjusted by {currentUser.Name}. Change: {request.QuantityChange}",
-            CreatedAt = _clock.UtcNow
+            OccurredAtUtc = _clock.UtcNow
         }, ct);
 
         await _unitOfWork.SaveChangesAsync(ct);

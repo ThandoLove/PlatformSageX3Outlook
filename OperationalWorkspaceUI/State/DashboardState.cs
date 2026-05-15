@@ -28,7 +28,7 @@ namespace OperationalWorkspaceUI.State
         }
 
         // ==========================================
-        // ENVIRONMENT & MODE (THE LINKING MECHANISM)
+        // ENVIRONMENT & MODE
         // ==========================================
         public bool IsAdminEnvironment { get; private set; }
 
@@ -81,8 +81,6 @@ namespace OperationalWorkspaceUI.State
         public List<TaskDto> AllTasks { get; set; } = new();
         public List<TaskDto> MyTasks { get; set; } = new();
 
-        // This is the core logic: The UI binds to CurrentTasks, 
-        // and this property decides which list to show.
         public List<TaskDto> CurrentTasks =>
             IsAdminEnvironment ? AllTasks : MyTasks;
 
@@ -100,8 +98,12 @@ namespace OperationalWorkspaceUI.State
         // =========================
         public List<ActivityDto> RecentActivities { get; set; } = new();
         public List<AuditLogDto> AuditLogs { get; set; } = new();
-        public List<ActivityDto> CurrentActivities => RecentActivities;
-        public List<AuditLogDto> CurrentAuditLogs => AuditLogs;
+
+        public List<ActivityDto> CurrentActivities =>
+            RecentActivities;
+
+        public List<AuditLogDto> CurrentAuditLogs =>
+            AuditLogs;
 
         // =========================
         // KNOWLEDGE & REPORTS
@@ -117,11 +119,13 @@ namespace OperationalWorkspaceUI.State
         public DashboardDto DashboardData { get; set; } = new();
 
         // =========================
-        // CRM / ERP / FINANCE (Context Switchers)
+        // CRM / ERP / FINANCE / HEALTH
         // =========================
         public AdminErpDto AdminErp { get; set; } = new();
         public AdminCrmDto AdminCrm { get; set; } = new();
         public AdminFinanceDto AdminFinance { get; set; } = new();
+
+        // 🔥 REAL SYSTEM HEALTH OBJECT
         public AdminSystemHealthDto AdminHealth { get; set; } = new();
 
         public EmployeeErpDto EmployeeErp { get; set; } = new();
@@ -129,10 +133,14 @@ namespace OperationalWorkspaceUI.State
         public EmployeeFinanceDto EmployeeFinance { get; set; } = new();
 
         public object CurrentCrm =>
-            IsAdminEnvironment ? (object)AdminCrm : EmployeeCrm;
+            IsAdminEnvironment
+                ? (object)AdminCrm
+                : EmployeeCrm;
 
         public object CurrentFinance =>
-            IsAdminEnvironment ? (object)AdminFinance : EmployeeFinance;
+            IsAdminEnvironment
+                ? (object)AdminFinance
+                : EmployeeFinance;
 
         // =========================
         // EVENTS
@@ -145,55 +153,122 @@ namespace OperationalWorkspaceUI.State
         }
 
         // =========================
-        // LOAD DASHBOARD (PROFESSIONAL VERSION)
+        // LOAD DASHBOARD
         // =========================
         public async Task LoadDashboardAsync(bool isAdmin = false)
         {
-            // 1. Set the environment mode
-            IsAdminEnvironment = isAdmin;
-
-            // 2. Load core data via the service (Service should populate AllTasks or MyTasks)
-            await _dashboardService.LoadDashboardAsync(this);
-
-            // 3. Load activities shared across views
-            RecentActivities = await _activityService.GetActivitiesAsync();
-
-            // 4. Load Admin-Specific Extensions
-            if (IsAdminEnvironment)
+            try
             {
-                await LoadAdminSpecificDataAsync();
+                // =====================================
+                // 1. SET ENVIRONMENT
+                // =====================================
+                IsAdminEnvironment = isAdmin;
+
+                // =====================================
+                // 2. LOAD CORE DASHBOARD DATA
+                // =====================================
+                await _dashboardService.LoadDashboardAsync(this);
+
+                // =====================================
+                // 3. LOAD ACTIVITY FEED
+                // =====================================
+                RecentActivities =
+                    await _activityService.GetActivitiesAsync();
+
+                // =====================================
+                // 4. LOAD REAL SYSTEM HEALTH
+                // =====================================
+                if (IsAdminEnvironment)
+                {
+                    AdminHealth =
+                        await _dashboardService
+                            .GetSystemHealthAsync();
+                }
+                else
+                {
+                    // Employees should not see full system metrics
+                    AdminHealth = new AdminSystemHealthDto();
+                }
+
+                // =====================================
+                // 5. LOAD ADMIN EXTENSIONS
+                // =====================================
+                if (IsAdminEnvironment)
+                {
+                    await LoadAdminSpecificDataAsync();
+                }
+
+                // =====================================
+                // 6. ENSURE FALLBACK DATA
+                // =====================================
+                EnsureDefaultData();
+
+                // =====================================
+                // 7. REFRESH UI
+                // =====================================
+                NotifyStateChanged();
             }
-
-            // 5. Default Mock Data (If not already loaded)
-            EnsureDefaultData();
-
-            NotifyStateChanged();
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"DashboardState Load Error: {ex.Message}");
+            }
         }
 
+        // =========================
+        // ADMIN DATA
+        // =========================
         private async Task LoadAdminSpecificDataAsync()
         {
-            // In a real app, you would call your admin-only service methods here
-            // e.g., AuditLogs = await _adminService.GetAuditLogsAsync();
-
             if (!AuditLogs.Any())
             {
                 AuditLogs = new List<AuditLogDto>
                 {
-                    new AuditLogDto { Action = "User Login", Entity = "auth", User = "Admin", Timestamp = DateTime.Now.AddMinutes(-5) },
-                    new AuditLogDto { Action = "Invoice Generated", Entity = "invoice", User = "System", Timestamp = DateTime.Now.AddHours(-1) }
+                    new AuditLogDto
+                    {
+                        Action = "User Login",
+                        Entity = "auth",
+                        User = "Admin",
+                        Timestamp = DateTime.Now.AddMinutes(-5)
+                    },
+
+                    new AuditLogDto
+                    {
+                        Action = "Invoice Generated",
+                        Entity = "invoice",
+                        User = "System",
+                        Timestamp = DateTime.Now.AddHours(-1)
+                    }
                 };
             }
+
             await Task.CompletedTask;
         }
 
+        // =========================
+        // FALLBACK DATA
+        // =========================
         private void EnsureDefaultData()
         {
             if (!KnowledgeBase.Any())
             {
                 KnowledgeBase = new List<KnowledgeDto>
                 {
-                    new KnowledgeDto(Guid.NewGuid(), "Pricing Guide", "Content", "Sales", "Summary", "#"),
-                    new KnowledgeDto(Guid.NewGuid(), "Shipping FAQ", "Content", "Support", "Summary", "#")
+                    new KnowledgeDto(
+                        Guid.NewGuid(),
+                        "Pricing Guide",
+                        "Content",
+                        "Sales",
+                        "Summary",
+                        "#"),
+
+                    new KnowledgeDto(
+                        Guid.NewGuid(),
+                        "Shipping FAQ",
+                        "Content",
+                        "Support",
+                        "Summary",
+                        "#")
                 };
             }
         }

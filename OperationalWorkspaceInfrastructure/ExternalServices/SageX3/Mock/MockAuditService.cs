@@ -1,4 +1,5 @@
-﻿using OperationalWorkspaceApplication.DTOs;
+﻿using OperationalWorkspace.Domain.Entities;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using System;
 using System.Collections.Generic;
@@ -9,15 +10,21 @@ namespace OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 
 public class MockAuditService : IAuditLogService
 {
-    // Retains your existing system logging signature
+    // Optional legacy method (not required by interface, but safe)
     public Task LogAsync(string message, CancellationToken cancellationToken = default)
         => Task.CompletedTask;
 
-    // =========================================================================
-    // 🟢 IMPLEMENTING YOUR EXACT IAUDITLOGSERVICE CONTRACT
-    // =========================================================================
+    // =========================================================
+    // REQUIRED BY IAuditLogService
+    // =========================================================
 
-    // 🌟 Matches your contract: Returns a list of ActivityDto
+    public Task LogBulkAsync(List<AuditLogEntry> entries)
+        => Task.CompletedTask;
+
+    // =========================================================
+    // USER ACTIVITY
+    // =========================================================
+
     public async Task<List<ActivityDto>> GetRecentActivityForUserAsync(string userId)
     {
         return await Task.FromResult(new List<ActivityDto>
@@ -35,21 +42,39 @@ public class MockAuditService : IAuditLogService
         });
     }
 
-    // 🌟 Matches your contract: Returns a list of AuditLogDto
+    // =========================================================
+    // FULL AUDIT LOGS
+    // =========================================================
+
     public async Task<List<AuditLogDto>> GetAllAuditLogsAsync()
     {
         return await Task.FromResult(new List<AuditLogDto>
         {
-            new() { Action = "System Startup", User = "System", Entity = "Core", Timestamp = DateTime.UtcNow.AddDays(-1) }
+            new()
+            {
+                Action = "System Startup",
+                User = "System",
+                Entity = "Core",
+                Timestamp = DateTime.UtcNow.AddDays(-1)
+            }
         });
     }
 
-    // 🌟 Matches your contract: Returns a list of AuditLogDto
+    // =========================================================
+    // RECENT LOGS
+    // =========================================================
+
     public async Task<List<AuditLogDto>> GetAllRecentLogsAsync()
     {
         return await Task.FromResult(new List<AuditLogDto>
         {
-            new() { Action = "API Handshake", User = "SageX3Client", Entity = "Integration", Timestamp = DateTime.UtcNow.AddSeconds(-45) }
+            new()
+            {
+                Action = "API Handshake",
+                User = "SageX3Client",
+                Entity = "Integration",
+                Timestamp = DateTime.UtcNow.AddSeconds(-45)
+            }
         });
     }
 }

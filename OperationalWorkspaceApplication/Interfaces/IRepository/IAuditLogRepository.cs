@@ -1,6 +1,7 @@
 ﻿using OperationalWorkspace.Domain.Entities;
-using OperationalWorkspaceApplication.IServices; // Add this using
 using OperationalWorkspaceApplication.Audit; // Add this using for AuditLogSearchCriteria
+using OperationalWorkspaceApplication.DTOs;
+using OperationalWorkspaceApplication.IServices; // Add this using
 using Task = System.Threading.Tasks.Task;
 
 namespace OperationalWorkspaceApplication.Interfaces.IRepository;
@@ -27,4 +28,7 @@ public interface IAuditLogRepository
     // Advanced Search
     Task<PagedResult<AuditLogEntry>> SearchAsync(
         AuditLogSearchCriteria criteria, CancellationToken cancellationToken = default);
+  
+    
 }
+

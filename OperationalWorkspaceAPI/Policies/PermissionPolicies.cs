@@ -1,8 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using System.Runtime.Intrinsics.X86;
-
-
-// Policies/PermissionPolicies.cs
 
 namespace OperationalWorkspaceAPI.Policies;
 
@@ -10,9 +6,34 @@ public static class PermissionPolicies
 {
     public static void Register(AuthorizationOptions options)
     {
-        options.AddPolicy("AdminOnly", policy => policy.RequireRole(RolePolicies.Admin));
-        options.AddPolicy("ERPWrite", policy => policy.RequireRole(RolePolicies.Admin, RolePolicies.Manager));
+        // ==========================
+        // ROLE FALLBACK POLICIES
+        // ==========================
+        options.AddPolicy("AdminOnly", policy =>
+            policy.RequireRole("Admin"));
+
+        options.AddPolicy("ManagerOrAbove", policy =>
+            policy.RequireRole("Admin", "Manager"));
+
+        // ==========================
+        // ERP MODULE POLICIES
+        // ==========================
+        options.AddPolicy("CanCreate", policy =>
+            policy.RequireAssertion(context =>
+                context.User.IsInRole("Admin") ||
+                context.User.IsInRole("Manager") ||
+                context.User.IsInRole("User")));
+
+        options.AddPolicy("CanApprove", policy =>
+            policy.RequireRole("Admin", "Manager"));
+
+        options.AddPolicy("CanView", policy =>
+            policy.RequireRole("Admin", "Manager", "User", "ERPUser"));
+
+        options.AddPolicy("CanInvoice", policy =>
+            policy.RequireRole("Admin", "ERPUser"));
+
+        options.AddPolicy("CanInventory", policy =>
+            policy.RequireRole("Admin", "ERPUser"));
     }
 }
-
-

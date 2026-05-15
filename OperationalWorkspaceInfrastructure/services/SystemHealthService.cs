@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
-
-using Microsoft.EntityFrameworkCore;
-
-using OperationalWorkspaceInfrastructure.Persistence;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
+using OperationalWorkspaceInfrastructure.Persistence;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace OperationalWorkspaceApplication.Services;
+namespace OperationalWorkspaceInfrastructure.services;
 
 public class SystemHealthService : ISystemHealthService
 {

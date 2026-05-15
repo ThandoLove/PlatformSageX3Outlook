@@ -34,4 +34,8 @@
 	  
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Persistence\Multitenancy\" />
+  </ItemGroup>
+
 </Project>

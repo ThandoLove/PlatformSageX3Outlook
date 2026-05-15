@@ -15,44 +15,47 @@ namespace OperationalWorkspaceInfrastructure.DependencyInjection;
 
 public static class InfrastructureServiceRegistration
 {
-    // FIX: This provides the method Program.cs is calling
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // 1. Register the DbContext. If DefaultConnection isn't configured or SqlServer
-        // cannot be used in this dev environment, fall back to a lightweight
-        // non-SQL registration so the UI can run without a real database.
         var conn = configuration.GetConnectionString("DefaultConnection");
+
         if (!string.IsNullOrWhiteSpace(conn))
         {
             try
             {
                 services.AddDbContext<IntegrationDbContext>(options =>
-                    options.UseSqlServer(conn, b => b.MigrationsAssembly(typeof(IntegrationDbContext).Assembly.FullName)));
+                    options.UseSqlServer(
+                        conn,
+                        b => b.MigrationsAssembly(typeof(IntegrationDbContext).Assembly.FullName)
+                    ));
             }
             catch (Exception ex)
             {
-                // If SQL provider isn't available, fallback to a safe registration
-                Console.Error.WriteLine($"Warning: UseSqlServer failed, falling back to non-SQL DbContext. {ex.Message}");
+                Console.Error.WriteLine(
+                    $"Warning: UseSqlServer failed, falling back to non-SQL DbContext. {ex.Message}"
+                );
+
                 services.AddDbContext<IntegrationDbContext>(options =>
                 {
-                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
                 });
             }
         }
         else
         {
-            // No connection string provided => use EF InMemory provider for development
-            Console.WriteLine("Info: No DefaultConnection provided. IntegrationDbContext configured to use InMemory DB for development.");
+            Console.WriteLine(
+                "Info: No DefaultConnection provided. IntegrationDbContext configured to use InMemory DB for development."
+            );
+
             services.AddDbContext<IntegrationDbContext>(options =>
             {
                 options.UseInMemoryDatabase("DevInMemory");
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
             });
         }
 
-        // 2. Call the layer registration below (repositories, external services)
         services.AddInfrastructureLayer();
 
         return services;

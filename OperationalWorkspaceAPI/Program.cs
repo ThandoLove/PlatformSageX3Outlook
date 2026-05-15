@@ -2,8 +2,10 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OperationalWorkspaceAPI.ApiExtensions;
+using OperationalWorkspaceAPI.AuditAPI;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
+using OperationalWorkspaceAPI.SecurityAPI;
 using OperationalWorkspaceAPI.Services;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
@@ -11,11 +13,13 @@ using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
-using OperationalWorkspaceInfrastructure.Persistence.Repositories;
-using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.Persistence;
+using OperationalWorkspaceInfrastructure.Persistence.Repositories;
+using OperationalWorkspaceInfrastructure.SecurityInfrastructure;
+using OperationalWorkspaceInfrastructure.services;
+using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceShared.Validators;
 using System.Text;
 
@@ -31,9 +35,12 @@ builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
+
+
+builder.Services.AddScoped<ISecurityContext, SecurityContext>();
+builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
 
 // --- 2. JWT AUTHENTICATION ---
@@ -81,6 +88,15 @@ else
     });
 }
 
+builder.Services.AddHttpClient<
+    ISageX3IdentityService,
+    SageX3IdentityService>(client =>
+    {
+        client.BaseAddress = new Uri(
+            sageConfig["RestBaseUrl"] ?? "https://localhost");
+    });
+
+
 builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.SageSecurityOptions>(
     builder.Configuration.GetSection("SageSecurityOptions"));
 
@@ -89,7 +105,7 @@ builder.Services.AddSingleton(attachmentPath);
 
 // 🔥 FIX: Break the ambiguity by calling both static extension methods explicitly
 InfrastructureServiceRegistration.AddInfrastructureServices(builder.Services, builder.Configuration);
-DependencyInjection.AddInfrastructureServices(builder.Services, builder.Configuration);
+
 
 
 // --- 4. CORS POLICY (Corrected Origins) ---
@@ -109,6 +125,7 @@ builder.Services.AddCors(options =>
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<MockUnifiedService>();
+
     builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUnifiedService>());
@@ -117,12 +134,18 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
+
     builder.Services.AddScoped<IAuditLogService, MockAuditService>();
+
+    // ✅ ADD IT HERE
+    builder.Services.AddScoped<ISystemHealthService, MockSystemHealthService>();
+
     builder.Services.AddScoped<IIntegrationService, IntegrationService>();
     builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
     builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+    builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 
-    // 🔴 STANDBY CONFIG: UnifiedService safely registers here without interfering with active mock workflows
+
     builder.Services.AddScoped<UnifiedService>(provider =>
         new UnifiedService(
             activityRepo: provider.GetService<IActivityRepository>()!,
@@ -131,8 +154,14 @@ if (builder.Environment.IsDevelopment())
             logger: provider.GetRequiredService<ILogger<UnifiedService>>()
         ));
 }
+else
+{
+    // ✅ REAL HEALTH SERVICE
+    builder.Services.AddScoped<ISystemHealthService, SystemHealthService>();
+}
 
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 
@@ -157,10 +186,17 @@ app.UseRouting();
 app.UseCors("OutlookAddInPolicy");
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
+app.UseMiddleware<TenantIsolationMiddleware>();
+
+app.UseMiddleware<AuditEnrichmentMiddleware>();
+
 app.UseMiddleware<RbacMiddleware>();
+
 app.UseMiddleware<AuditLoggingMiddleware>();
+
 app.UseMiddleware<RequestLoggingMiddleware>();
 
 // Fallback to the Blazor index.html for any non-API routes
