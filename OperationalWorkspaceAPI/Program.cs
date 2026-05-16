@@ -25,169 +25,401 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. CORE INFRASTRUCTURE ---
+
+// ======================================================
+// 1. CORE INFRASTRUCTURE
+// ======================================================
+
 builder.Services.AddApiLayer();
+
 builder.Services.AddWorkspaceSwagger();
+
 builder.Services.AddDistributedMemoryCache();
 
-// FLUENTVALIDATION: Register validators and enable auto-validation
-builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+builder.Services.AddControllersWithViews();
 
-builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 
 
-builder.Services.AddScoped<ISecurityContext, SecurityContext>();
-builder.Services.AddScoped<ITenantContext, TenantContext>();
-builder.Services.AddScoped<IUserContextService, UserContextService>();
-builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
-builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
+// ======================================================
+// 2. VALIDATION
+// ======================================================
 
-// --- 2. JWT AUTHENTICATION ---
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
-/* 
-   FUTURE AZURE AD SETUP:
-   1. Install NuGet: Microsoft.Identity.Web
-   2. Replace the code below with:
-   builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+builder.Services.AddScoped<
+    IValidator<LoginRequestDto>,
+    LoginRequestValidator>();
+
+
+// ======================================================
+// 3. SECURITY CONTEXT SERVICES
+// ======================================================
+
+builder.Services.AddScoped<
+    ISecurityContext,
+    SecurityContext>();
+
+builder.Services.AddScoped<
+    ITenantContext,
+    TenantContext>();
+
+builder.Services.AddScoped<
+    IUserContextService,
+    UserContextService>();
+
+builder.Services.AddScoped<
+    IDistributedTokenCacheService,
+    DistributedTokenCacheService>();
+
+
+// ======================================================
+// 4. JWT AUTHENTICATION
+// ======================================================
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    throw new InvalidOperationException(
+        "JWT Key not configured.");
+}
+
+if (jwtKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JWT Key must be at least 32 characters long.");
+}
+
+/*
+ FUTURE AZURE AD SETUP:
+ Install:
+ Microsoft.Identity.Web
+
+ Replace JWT config with:
+ builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
 */
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+
+builder.Services
+    .AddAuthentication(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "fallback_secret_key_for_dev_only_32_chars"))
-    };
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+
+                ValidIssuer =
+                    builder.Configuration["Jwt:Issuer"],
+
+                ValidAudience =
+                    builder.Configuration["Jwt:Audience"],
+
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtKey))
+            };
+    });
+
+
+// ======================================================
+// 5. AUTHORIZATION
+// ======================================================
+
+builder.Services.AddAuthorization(options =>
+{
+    PermissionPolicies.Register(options);
 });
 
-builder.Services.AddAuthorization(options => PermissionPolicies.Register(options));
 
-// --- 3. INFRASTRUCTURE & SAGE X3 ---
-// --- 3. INFRASTRUCTURE & SAGE X3 ---
-var sageConfig = builder.Configuration.GetSection("SageX3");
+// ======================================================
+// 6. SAGE X3 CONFIGURATION
+// ======================================================
+
+var sageConfig =
+    builder.Configuration.GetSection("SageX3");
+
+
+// ======================================================
+// 7. SAGE X3 CLIENTS
+// ======================================================
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
+    builder.Services.AddScoped<
+        ISageX3Client,
+        MockSageX3Client>();
 }
 else
 {
-    builder.Services.AddHttpClient<ISageX3Client, SageX3Client>(client => {
-        client.BaseAddress = new Uri(sageConfig["RestBaseUrl"] ?? "https://localhost");
-    });
+    builder.Services.AddHttpClient<
+        ISageX3Client,
+        SageX3Client>(client =>
+        {
+            client.BaseAddress =
+                new Uri(
+                    sageConfig["RestBaseUrl"]
+                    ?? "https://localhost");
+        });
 }
+
+
+// ======================================================
+// SAGE REST SERVICE
+// ======================================================
+
+builder.Services.AddHttpClient<
+    ISageRestService,
+    SageRestService>(client =>
+    {
+        client.BaseAddress =
+            new Uri(
+                sageConfig["RestBaseUrl"]
+                ?? "https://localhost");
+    });
+
+// ======================================================
+// 8. SAGE IDENTITY SERVICE
+// ======================================================
 
 builder.Services.AddHttpClient<
     ISageX3IdentityService,
     SageX3IdentityService>(client =>
     {
-        client.BaseAddress = new Uri(
-            sageConfig["RestBaseUrl"] ?? "https://localhost");
+        client.BaseAddress =
+            new Uri(
+                sageConfig["RestBaseUrl"]
+                ?? "https://localhost");
     });
 
 
-builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.SageSecurityOptions>(
-    builder.Configuration.GetSection("SageSecurityOptions"));
+// ======================================================
+// 9. OPTIONS CONFIGURATION
+// ======================================================
 
-var attachmentPath = builder.Configuration["SageX3:AttachmentPath"] ?? "C:\\Temp\\SageAttachments";
+builder.Services.Configure<
+    OperationalWorkspaceInfrastructure.Configuration
+        .SageSecurityOptions>(
+            builder.Configuration.GetSection(
+                "SageSecurityOptions"));
+
+
+// ======================================================
+// 10. ATTACHMENT STORAGE
+// ======================================================
+
+var attachmentPath =
+    builder.Configuration["SageX3:AttachmentPath"]
+    ?? "C:\\Temp\\SageAttachments";
+
 builder.Services.AddSingleton(attachmentPath);
 
-// 🔥 FIX: Break the ambiguity by calling both static extension methods explicitly
-InfrastructureServiceRegistration.AddInfrastructureServices(builder.Services, builder.Configuration);
+
+// ======================================================
+// 11. INFRASTRUCTURE SERVICES
+// ======================================================
+
+InfrastructureServiceRegistration
+    .AddInfrastructureServices(
+        builder.Services,
+        builder.Configuration);
 
 
+// ======================================================
+// 12. CORS
+// ======================================================
 
-// --- 4. CORS POLICY (Corrected Origins) ---
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("OutlookAddInPolicy", policy =>
-    {
-        // 7173 matches your UI's HTTPS port from launchsettings
-        policy.WithOrigins("https://localhost:7173", "http://localhost:5065")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+    options.AddPolicy(
+        "OutlookAddInPolicy",
+        policy =>
+        {
+            policy
+                .WithOrigins(
+                    "https://localhost:7173",
+                    "http://localhost:5065")
+
+                .AllowAnyHeader()
+
+                .AllowAnyMethod()
+
+                .AllowCredentials();
+        });
 });
 
-// --- 5. DEPENDENCY INJECTION ---
+
+// ======================================================
+// 13. APPLICATION SERVICES
+// ======================================================
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<MockUnifiedService>();
 
-    builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
-    builder.Services.AddScoped<IAuditLogService, MockAuditService>();
+    builder.Services.AddScoped<IActivityService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
 
-    // ✅ ADD IT HERE
-    builder.Services.AddScoped<ISystemHealthService, MockSystemHealthService>();
+    builder.Services.AddScoped<IEmailService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
 
-    builder.Services.AddScoped<IIntegrationService, IntegrationService>();
-    builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-    builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-    builder.Services.AddScoped<IAuditLogger, AuditLogger>();
+    builder.Services.AddScoped<IKnowledgeService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
+
+    builder.Services.AddScoped<IInvoiceService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
+
+    builder.Services.AddScoped<ISalesService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
+
+    builder.Services.AddScoped<IBusinessPartnerService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
+
+    builder.Services.AddScoped<IInventoryService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
+
+    builder.Services.AddScoped<ITaskService>(sp =>
+        sp.GetRequiredService<MockUnifiedService>());
+
+
+    builder.Services.AddScoped<
+        IAuditLogService,
+        MockAuditService>();
+
+
+    builder.Services.AddScoped<
+        ISystemHealthService,
+        MockSystemHealthService>();
+
+
+    builder.Services.AddScoped<
+        IIntegrationService,
+        IntegrationService>();
+
+
+    builder.Services.AddScoped<
+        IAuditLogRepository,
+        AuditLogRepository>();
+
+
+    builder.Services.AddScoped<
+        IAccountRepository,
+        AccountRepository>();
+
+
+    builder.Services.AddScoped<
+        IAuditLogger,
+        AuditLogger>();
 
 
     builder.Services.AddScoped<UnifiedService>(provider =>
         new UnifiedService(
-            activityRepo: provider.GetService<IActivityRepository>()!,
-            sageClient: provider.GetRequiredService<ISageX3Client>(),
-            dbContext: provider.GetRequiredService<IntegrationDbContext>(),
-            logger: provider.GetRequiredService<ILogger<UnifiedService>>()
+            activityRepo:
+                provider.GetService<IActivityRepository>()!,
+
+            sageClient:
+                provider.GetRequiredService<ISageX3Client>(),
+
+            dbContext:
+                provider.GetRequiredService<IntegrationDbContext>(),
+
+            logger:
+                provider.GetRequiredService<
+                    ILogger<UnifiedService>>()
         ));
 }
 else
 {
-    // ✅ REAL HEALTH SERVICE
-    builder.Services.AddScoped<ISystemHealthService, SystemHealthService>();
+    builder.Services.AddScoped<
+        ISystemHealthService,
+        SystemHealthService>();
 }
 
-builder.Services.AddScoped<ITicketRepository, TicketRepository>();
+
+// ======================================================
+// 14. REPOSITORIES
+// ======================================================
+
+builder.Services.AddScoped<
+    ITicketRepository,
+    TicketRepository>();
+
+
+// ======================================================
+// 15. TOKEN SERVICE
+// ======================================================
+
 builder.Services.AddScoped<JwtTokenService>();
+
+
+// ======================================================
+// 16. BUILD APPLICATION
+// ======================================================
 
 var app = builder.Build();
 
-// --- 6. MIDDLEWARE PIPELINE (Order is Critical) ---
+
+// ======================================================
+// 17. MIDDLEWARE PIPELINE
+// ======================================================
+
 app.UseMiddleware<RequestCorrelationMiddleware>();
+
 app.UseMiddleware<PerformanceTrackingMiddleware>();
+
 
 if (app.Environment.IsDevelopment())
 {
     app.UseWorkspaceSwagger();
-    app.UseWebAssemblyDebugging(); // Enable debugging for Blazor WASM
+
+    app.UseWebAssemblyDebugging();
 }
+
 
 app.UseHttpsRedirection();
 
-// 🔥 CRITICAL: These allow the API to host the Blazor WebAssembly files
+
+// ======================================================
+// HOST BLAZOR WASM FILES
+// ======================================================
+
 app.UseBlazorFrameworkFiles();
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
+
+// ======================================================
+// CORS
+// ======================================================
+
 app.UseCors("OutlookAddInPolicy");
+
+
+// ======================================================
+// AUTHENTICATION / AUTHORIZATION
+// ======================================================
 
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+
+// ======================================================
+// CUSTOM MIDDLEWARE
+// ======================================================
 
 app.UseMiddleware<TenantIsolationMiddleware>();
 
@@ -199,8 +431,18 @@ app.UseMiddleware<AuditLoggingMiddleware>();
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 
-// Fallback to the Blazor index.html for any non-API routes
+
+// ======================================================
+// ROUTING
+// ======================================================
+
 app.MapControllers();
+
 app.MapFallbackToFile("index.html");
+
+
+// ======================================================
+// RUN APPLICATION
+// ======================================================
 
 app.Run();
