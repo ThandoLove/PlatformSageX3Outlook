@@ -1,4 +1,5 @@
 // CODE START
+
 using FluentValidation;
 using Majorsoft.Blazor.Extensions.BrowserStorage;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -18,100 +19,248 @@ using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.ToastUIService;
 using OperationalWorkspaceUI.UIServices.Workspace;
 using Radzen;
-using ToastService = OperationalWorkspaceUI.UIServices.ToastUIService.ToastService;
+using ToastService =
+    OperationalWorkspaceUI
+        .UIServices
+        .ToastUIService
+        .ToastService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
+// ======================================================
+// 1. SYSTEM SERVICES
+// ======================================================
 
-// ------------------ 1. SYSTEM ------------------
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddHttpContextAccessor();
 
-// 🔥 AUTHENTICATION FIXED
+
+// ======================================================
+// 2. AUTHENTICATION & AUTHORIZATION
+// ======================================================
+
+// 🔥 REQUIRED FOR BLAZOR AUTHORIZATION
 builder.Services.AddAuthorizationCore();
+
+// 🔥 REQUIRED FOR <CascadingAuthenticationState>
 builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
-builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+// 🔥 CUSTOM AUTH STATE PROVIDER
+builder.Services.AddScoped<
+    AuthenticationStateProvider,
+    CustomAuthenticationStateProvider>();
 
-// ------------------ 2. UI ------------------
-builder.Services.AddRazorComponents()
+// 🔥 AUTH SERVICE
+builder.Services.AddScoped<AuthService>();
+
+
+// ======================================================
+// 3. VALIDATION
+// ======================================================
+
+builder.Services.AddValidatorsFromAssemblyContaining<
+    LoginRequestValidator>();
+
+
+// ======================================================
+// 4. UI FRAMEWORKS
+// ======================================================
+
+builder.Services
+    .AddRazorComponents()
     .AddInteractiveServerComponents(options =>
     {
-        options.DetailedErrors = true; // 🔥 THIS SHOWS THE REAL ERROR IN F12 CONSOLE
+        // 🔥 SHOWS REAL ERRORS IN DEVTOOLS
+        options.DetailedErrors = true;
     });
 
 builder.Services.AddFluentUIComponents();
+
 builder.Services.AddRadzenComponents();
+
 builder.Services.AddScoped<Radzen.NotificationService>();
+
 builder.Services.AddScoped<Radzen.DialogService>();
+
 builder.Services.AddBrowserStorage();
 
-// ------------------ 3. STATE ------------------
+
+// ======================================================
+// 5. APPLICATION STATE
+// ======================================================
+
 builder.Services.AddScoped<DashboardState>();
+
 builder.Services.AddScoped<WorkspaceState>();
+
 builder.Services.AddScoped<EmailContextState>();
+
 builder.Services.AddScoped<UIState>();
-builder.Services.AddScoped<IUserContextService, UserContextService>();
 
-// ------------------ 4. API CLIENT ------------------
-builder.Services.AddHttpClient("ApiClient", client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7123");
-});
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
+builder.Services.AddScoped<
+    IUserContextService,
+    UserContextService>();
 
-// ------------------ 5. UI SERVICES ------------------
+builder.Services.AddScoped<SageStateService>();
+
+
+// ======================================================
+// 6. API CLIENT
+// ======================================================
+
+builder.Services.AddHttpClient(
+    "ApiClient",
+    client =>
+    {
+        client.BaseAddress =
+            new Uri(
+                builder.Configuration["ApiBaseUrl"]
+                ?? "https://localhost:7123");
+    });
+
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IHttpClientFactory>()
+        .CreateClient("ApiClient"));
+
+
+// ======================================================
+// 7. UI SERVICES
+// ======================================================
+
 builder.Services.AddScoped<DashboardUIService>();
+
 builder.Services.AddScoped<EmailContextUIService>();
+
 builder.Services.AddScoped<QuickActionUIService>();
+
 builder.Services.AddScoped<BusinessPartnerUIService>();
+
 builder.Services.AddScoped<OrdersUIService>();
+
 builder.Services.AddScoped<TasksUIService>();
+
 builder.Services.AddScoped<ModalService>();
+
 builder.Services.AddScoped<NavigationService>();
-builder.Services.AddScoped<AuthService>();
+
 builder.Services.AddScoped<EmailSyncService>();
+
 builder.Services.AddScoped<ActivityUIService>();
+
 builder.Services.AddScoped<AttachmentUIService>();
+
 builder.Services.AddScoped<SettingsUIService>();
+
 builder.Services.AddScoped<AdminDashboardUIService>();
 
-
-
-// 🔥 TOAST SERVICE FIXED (Matches MainLayout @inject)
-builder.Services.AddScoped<IToastUIService, ToastService>();
-builder.Services.AddScoped<ToastService>(); // Register concrete class too just in case
-
-// ------------------ 6. BACKEND SERVICES ------------------
-builder.Services.AddScoped<IActivityService, MockUnifiedService>();
-builder.Services.AddScoped<IEmailService, MockUnifiedService>();
-builder.Services.AddScoped<IKnowledgeService, MockUnifiedService>();
-builder.Services.AddScoped<ISalesService, MockUnifiedService>();
-builder.Services.AddScoped<IBusinessPartnerService, MockUnifiedService>();
-builder.Services.AddScoped<IInventoryService, MockUnifiedService>();
-builder.Services.AddScoped<ITaskService, MockUnifiedService>();
-builder.Services.AddScoped<IInvoiceService, MockUnifiedService>();
-builder.Services.AddScoped<IAuditLogService, MockAuditService>();
 builder.Services.AddScoped<KnowledgeUIService>();
+
+
+// ======================================================
+// 8. TOAST SERVICES
+// ======================================================
+
+builder.Services.AddScoped<
+    IToastUIService,
+    ToastService>();
+
+builder.Services.AddScoped<ToastService>();
+
+
+// ======================================================
+// 9. BACKEND MOCK SERVICES
+// ======================================================
+
+builder.Services.AddScoped<
+    IActivityService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    IEmailService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    IKnowledgeService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    ISalesService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    IBusinessPartnerService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    IInventoryService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    ITaskService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    IInvoiceService,
+    MockUnifiedService>();
+
+builder.Services.AddScoped<
+    IAuditLogService,
+    MockAuditService>();
+
+
+// ======================================================
+// 10. BUILD APPLICATION
+// ======================================================
 
 var app = builder.Build();
 
-// ------------------ 7. PIPELINE ------------------
+
+// ======================================================
+// 11. INITIALIZE AUTH STATE
+// ======================================================
+
+//using (var scope = app.Services.CreateScope())
+//    var authService =
+  //      scope.ServiceProvider
+ //           .GetRequiredService<AuthService>();
+//
+//}
+
+
+// ======================================================
+// 12. PIPELINE
+// ======================================================
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler(
+        "/Error",
+        createScopeForErrors: true);
+
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
+
 app.UseAntiforgery();
 
-// Ensure this matches your App.razor
+
+// ======================================================
+// 13. MAP RAZOR COMPONENTS
+// ======================================================
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+
+// ======================================================
+// 14. RUN APPLICATION
+// ======================================================
+
 app.Run();
+
+// CODE END

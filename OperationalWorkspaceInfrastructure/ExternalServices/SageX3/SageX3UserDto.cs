@@ -12,4 +12,6 @@ public class SageX3UserDto
     public string Role { get; set; }=string.Empty;
 
     public bool IsActive { get; set; }
+    public List<string> Permissions { get; internal set; } = new List<string>();
+    public string Username { get; internal set; } = string.Empty;
 }

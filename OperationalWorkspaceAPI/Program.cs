@@ -1,448 +1,367 @@
+using System.Threading.RateLimiting;
+using System.Text;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+
 using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.AuditAPI;
+using OperationalWorkspaceAPI.Authentication;
 using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
 using OperationalWorkspaceAPI.SecurityAPI;
 using OperationalWorkspaceAPI.Services;
+
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
+
 using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.Persistence;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
+using OperationalWorkspaceInfrastructure.Resilience;
 using OperationalWorkspaceInfrastructure.SecurityInfrastructure;
 using OperationalWorkspaceInfrastructure.services;
 using OperationalWorkspaceInfrastructure.Services;
+
 using OperationalWorkspaceShared.Validators;
-using System.Text;
+
+using Polly;
+using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 // ======================================================
 // 1. CORE INFRASTRUCTURE
 // ======================================================
-
 builder.Services.AddApiLayer();
-
 builder.Services.AddWorkspaceSwagger();
-
 builder.Services.AddDistributedMemoryCache();
-
 builder.Services.AddControllersWithViews();
-
 builder.Services.AddHttpContextAccessor();
 
+// ======================================================
+// 2. RATE LIMITING
+// ======================================================
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("GlobalPolicy", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 10;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+
+    options.AddFixedWindowLimiter("LoginPolicy", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 2;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+
+    options.AddFixedWindowLimiter("SagePolicy", opt =>
+    {
+        opt.PermitLimit = 30;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 5;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+});
 
 // ======================================================
-// 2. VALIDATION
+// 3. VALIDATION
 // ======================================================
-
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
-
-builder.Services.AddScoped<
-    IValidator<LoginRequestDto>,
-    LoginRequestValidator>();
-
+builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
 
 // ======================================================
-// 3. SECURITY CONTEXT SERVICES
+// 4. SECURITY CONTEXT
 // ======================================================
-
-builder.Services.AddScoped<
-    ISecurityContext,
-    SecurityContext>();
-
-builder.Services.AddScoped<
-    ITenantContext,
-    TenantContext>();
-
-builder.Services.AddScoped<
-    IUserContextService,
-    UserContextService>();
-
-builder.Services.AddScoped<
-    IDistributedTokenCacheService,
-    DistributedTokenCacheService>();
-
+builder.Services.AddScoped<ISecurityContext, SecurityContext>();
+builder.Services.AddScoped<ITenantContext, TenantContext>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
 
 // ======================================================
-// 4. JWT AUTHENTICATION
+// 5. AUTH PROVIDER
 // ======================================================
+builder.Services.AddScoped<IAuthProvider, JwtAuthProvider>();
 
+// ======================================================
+// 6. JWT AUTH
+// ======================================================
 var jwtKey = builder.Configuration["Jwt:Key"];
 
 if (string.IsNullOrWhiteSpace(jwtKey))
-{
-    throw new InvalidOperationException(
-        "JWT Key not configured.");
-}
+    throw new InvalidOperationException("JWT Key not configured.");
 
 if (jwtKey.Length < 32)
-{
-    throw new InvalidOperationException(
-        "JWT Key must be at least 32 characters long.");
-}
-
-/*
- FUTURE AZURE AD SETUP:
- Install:
- Microsoft.Identity.Web
-
- Replace JWT config with:
- builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
-*/
+    throw new InvalidOperationException("JWT Key must be at least 32 characters long.");
 
 builder.Services
     .AddAuthentication(options =>
     {
-        options.DefaultAuthenticateScheme =
-            JwtBearerDefaults.AuthenticationScheme;
-
-        options.DefaultChallengeScheme =
-            JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters =
-            new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-
-                ValidIssuer =
-                    builder.Configuration["Jwt:Issuer"],
-
-                ValidAudience =
-                    builder.Configuration["Jwt:Audience"],
-
-                IssuerSigningKey =
-                    new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtKey))
-            };
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
     });
 
-
 // ======================================================
-// 5. AUTHORIZATION
+// 7. AUTHORIZATION
 // ======================================================
-
 builder.Services.AddAuthorization(options =>
 {
     PermissionPolicies.Register(options);
 });
 
+// ======================================================
+// 8. SAGE CONFIGURATION
+// ======================================================
+var sageConfig = builder.Configuration.GetSection("SageX3");
+var baseUrl = sageConfig["RestBaseUrl"];
+
+if (string.IsNullOrWhiteSpace(baseUrl))
+    throw new InvalidOperationException("SageX3 RestBaseUrl is not configured.");
 
 // ======================================================
-// 6. SAGE X3 CONFIGURATION
+// 9. POLLY RESILIENCE
 // ======================================================
+var sagePolicy = HttpPolicyExtensions
+    .HandleTransientHttpError()
+    .WaitAndRetryAsync(3, retry => TimeSpan.FromSeconds(Math.Pow(2, retry)));
 
-var sageConfig =
-    builder.Configuration.GetSection("SageX3");
-
+var sageCircuitBreaker = HttpPolicyExtensions
+    .HandleTransientHttpError()
+    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
 
 // ======================================================
-// 7. SAGE X3 CLIENTS
+// 10. SAGE CLIENTS
 // ======================================================
-
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddScoped<
-        ISageX3Client,
-        MockSageX3Client>();
+    builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
+    builder.Services.AddScoped<ISageX3IdentityService, MockSageX3IdentityService>();
 }
 else
 {
-    builder.Services.AddHttpClient<
-        ISageX3Client,
-        SageX3Client>(client =>
+    builder.Services
+        .AddHttpClient<ISageX3IdentityService, SageX3IdentityService>(client =>
         {
-            client.BaseAddress =
-                new Uri(
-                    sageConfig["RestBaseUrl"]
-                    ?? "https://localhost");
-        });
+            client.BaseAddress = new Uri(baseUrl);
+            client.Timeout = TimeSpan.FromSeconds(30);
+        })
+        .AddPolicyHandler(sagePolicy)
+        .AddPolicyHandler(sageCircuitBreaker);
 }
 
-
 // ======================================================
-// SAGE REST SERVICE
+// 11. SAGE REST SERVICE
 // ======================================================
-
-builder.Services.AddHttpClient<
-    ISageRestService,
-    SageRestService>(client =>
+builder.Services
+    .AddHttpClient<ISageRestService, SageRestService>(client =>
     {
-        client.BaseAddress =
-            new Uri(
-                sageConfig["RestBaseUrl"]
-                ?? "https://localhost");
-    });
+        client.BaseAddress = new Uri(baseUrl);
+        client.Timeout = TimeSpan.FromSeconds(30);
+    })
+    .AddPolicyHandler(sagePolicy)
+    .AddPolicyHandler(sageCircuitBreaker);
 
 // ======================================================
-// 8. SAGE IDENTITY SERVICE
+// 12. OPTIONS
 // ======================================================
-
-builder.Services.AddHttpClient<
-    ISageX3IdentityService,
-    SageX3IdentityService>(client =>
-    {
-        client.BaseAddress =
-            new Uri(
-                sageConfig["RestBaseUrl"]
-                ?? "https://localhost");
-    });
-
+builder.Services.Configure<OperationalWorkspaceInfrastructure.Configuration.SageSecurityOptions>(
+    builder.Configuration.GetSection("SageSecurityOptions"));
 
 // ======================================================
-// 9. OPTIONS CONFIGURATION
+// 13. ATTACHMENT STORAGE
 // ======================================================
-
-builder.Services.Configure<
-    OperationalWorkspaceInfrastructure.Configuration
-        .SageSecurityOptions>(
-            builder.Configuration.GetSection(
-                "SageSecurityOptions"));
-
-
-// ======================================================
-// 10. ATTACHMENT STORAGE
-// ======================================================
-
 var attachmentPath =
     builder.Configuration["SageX3:AttachmentPath"]
-    ?? "C:\\Temp\\SageAttachments";
+    ?? "C:\\SecureStorage\\SageAttachments";
 
 builder.Services.AddSingleton(attachmentPath);
 
+// ======================================================
+// 14. INFRASTRUCTURE
+// ======================================================
+InfrastructureServiceRegistration.AddInfrastructureServices(
+    builder.Services,
+    builder.Configuration);
 
 // ======================================================
-// 11. INFRASTRUCTURE SERVICES
+// 15. AUDIT
 // ======================================================
-
-InfrastructureServiceRegistration
-    .AddInfrastructureServices(
-        builder.Services,
-        builder.Configuration);
-
+builder.Services.AddScoped<IAuditLogger, AuditLogger>();
+builder.Services.AddScoped<AuditContext>();
 
 // ======================================================
-// 12. CORS
+// 16. CORS
 // ======================================================
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(
-        "OutlookAddInPolicy",
-        policy =>
+    options.AddPolicy("OutlookAddInPolicy", policy =>
+    {
+        if (builder.Environment.IsDevelopment())
         {
-            policy
-                .WithOrigins(
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins(
+                    "https://outlook.office.com",
+                    "https://outlook.office365.com",
                     "https://localhost:7173",
-                    "http://localhost:5065")
-
-                .AllowAnyHeader()
-
-                .AllowAnyMethod()
-
+                    "http://localhost:5065",
+                    "https://your-production-domain.com"
+                )
+                .WithMethods("GET", "POST", "PUT", "DELETE")
+                .WithHeaders("Authorization", "Content-Type")
                 .AllowCredentials();
-        });
+        }
+    });
 });
 
-
 // ======================================================
-// 13. APPLICATION SERVICES
+// 17. APPLICATION SERVICES
 // ======================================================
-
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<MockUnifiedService>();
 
+    builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
-    builder.Services.AddScoped<IActivityService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-    builder.Services.AddScoped<IEmailService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-    builder.Services.AddScoped<IKnowledgeService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-    builder.Services.AddScoped<IInvoiceService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-    builder.Services.AddScoped<ISalesService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-    builder.Services.AddScoped<IBusinessPartnerService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-    builder.Services.AddScoped<IInventoryService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-    builder.Services.AddScoped<ITaskService>(sp =>
-        sp.GetRequiredService<MockUnifiedService>());
-
-
-    builder.Services.AddScoped<
-        IAuditLogService,
-        MockAuditService>();
-
-
-    builder.Services.AddScoped<
-        ISystemHealthService,
-        MockSystemHealthService>();
-
-
-    builder.Services.AddScoped<
-        IIntegrationService,
-        IntegrationService>();
-
-
-    builder.Services.AddScoped<
-        IAuditLogRepository,
-        AuditLogRepository>();
-
-
-    builder.Services.AddScoped<
-        IAccountRepository,
-        AccountRepository>();
-
-
-    builder.Services.AddScoped<
-        IAuditLogger,
-        AuditLogger>();
-
-
-    builder.Services.AddScoped<UnifiedService>(provider =>
-        new UnifiedService(
-            activityRepo:
-                provider.GetService<IActivityRepository>()!,
-
-            sageClient:
-                provider.GetRequiredService<ISageX3Client>(),
-
-            dbContext:
-                provider.GetRequiredService<IntegrationDbContext>(),
-
-            logger:
-                provider.GetRequiredService<
-                    ILogger<UnifiedService>>()
-        ));
+    builder.Services.AddScoped<IAuditLogService, MockAuditService>();
+    builder.Services.AddScoped<ISystemHealthService, MockSystemHealthService>();
 }
 else
 {
-    builder.Services.AddScoped<
-        ISystemHealthService,
-        SystemHealthService>();
+    builder.Services.AddScoped<ISystemHealthService, SystemHealthService>();
 }
 
+// ======================================================
+// 18. REPOSITORIES
+// ======================================================
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
 // ======================================================
-// 14. REPOSITORIES
+// 19. BUSINESS SERVICES
 // ======================================================
-
-builder.Services.AddScoped<
-    ITicketRepository,
-    TicketRepository>();
-
-
-// ======================================================
-// 15. TOKEN SERVICE
-// ======================================================
-
+builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<JwtTokenService>();
 
-
 // ======================================================
-// 16. BUILD APPLICATION
+// 20. BUILD APP
 // ======================================================
-
 var app = builder.Build();
 
+// ======================================================
+// 21. FORWARDED HEADERS
+// ======================================================
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto
+});
 
 // ======================================================
-// 17. MIDDLEWARE PIPELINE
+// 22. GLOBAL EXCEPTION HANDLING
 // ======================================================
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
-app.UseMiddleware<RequestCorrelationMiddleware>();
+// ======================================================
+// 23. HTTPS + SECURITY HEADERS
+// ======================================================
+app.UseHttpsRedirection();
+app.UseEnterpriseSecurityHeaders();
+// ======================================================
+// 24. STATIC FILES
+// ======================================================
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
 
-app.UseMiddleware<PerformanceTrackingMiddleware>();
-
-
+// ======================================================
+// SWAGGER (only in Development)
+// ======================================================
 if (app.Environment.IsDevelopment())
 {
     app.UseWorkspaceSwagger();
-
-    app.UseWebAssemblyDebugging();
 }
 
-
-app.UseHttpsRedirection();
-
-
 // ======================================================
-// HOST BLAZOR WASM FILES
+// 25. ROUTING
 // ======================================================
-
-app.UseBlazorFrameworkFiles();
-
-app.UseStaticFiles();
-
 app.UseRouting();
 
+// ======================================================
+// 26. RATE LIMITING
+// ======================================================
+app.UseRateLimiter();
 
 // ======================================================
-// CORS
+// 27. CORS
 // ======================================================
-
 app.UseCors("OutlookAddInPolicy");
 
-
 // ======================================================
-// AUTHENTICATION / AUTHORIZATION
+// 28. AUTH
 // ======================================================
-
 app.UseAuthentication();
-
 app.UseAuthorization();
 
-
 // ======================================================
-// CUSTOM MIDDLEWARE
+// 29. SECURITY + AUDIT PIPELINE
 // ======================================================
-
-app.UseMiddleware<TenantIsolationMiddleware>();
-
-app.UseMiddleware<AuditEnrichmentMiddleware>();
-
-app.UseMiddleware<RbacMiddleware>();
-
-app.UseMiddleware<AuditLoggingMiddleware>();
-
+//app.UseMiddleware<TenantIsolationMiddleware>();//
+app.UseMiddleware<RequestCorrelationMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
-
+app.UseMiddleware<AuditEnrichmentMiddleware>();
+app.UseMiddleware<AuditLoggingMiddleware>();
+app.UseMiddleware<PerformanceTrackingMiddleware>();
 
 // ======================================================
-// ROUTING
+// 30. ENDPOINTS
 // ======================================================
-
 app.MapControllers();
-
 app.MapFallbackToFile("index.html");
 
-
 // ======================================================
-// RUN APPLICATION
+// 31. RUN
 // ======================================================
-
 app.Run();

@@ -1,6 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 
 namespace OperationalWorkspaceAPI.Controllers;
@@ -10,6 +11,7 @@ namespace OperationalWorkspaceAPI.Controllers;
 /// Inherits from ApiController to use standardized Success/Failure responses.
 /// </summary>
 [Authorize] // Requires valid JWT Token
+[EnableRateLimiting("SagePolicy")]
 public class SageX3Controller : ApiController
 {
     private readonly ISageRestService _sageService;

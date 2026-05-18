@@ -8,6 +8,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ namespace OperationalWorkspaceAPI.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[EnableRateLimiting("AuthPolicy")]
 public class AuthController : ApiController
 {
     private readonly IAccountRepository _repo;

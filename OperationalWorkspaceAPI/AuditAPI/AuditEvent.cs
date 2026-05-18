@@ -27,4 +27,6 @@ public sealed class AuditEvent
     public string? ErrorMessage { get; set; }
 
     public DateTime TimestampUtc { get; set; }
+    public string Entity { get; internal set; } = string.Empty;
+    public string EntityId { get; internal set; } = string.Empty;
 }

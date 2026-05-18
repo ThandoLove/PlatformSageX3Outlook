@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-// Namespaces updated to match your folder structure
+
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceShared.Validators;
 using System;

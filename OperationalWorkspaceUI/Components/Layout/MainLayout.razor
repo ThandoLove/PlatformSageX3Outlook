@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.Models.Email
 @using OperationalWorkspaceUI.UIServices.System
@@ -7,6 +8,7 @@
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.Components.Shared
 @using Microsoft.JSInterop
+
 @implements IDisposable
 
 @inject UIState UIState
@@ -16,24 +18,23 @@
 @inject NavigationManager Nav
 @inject ModalService ModalService
 @inject IToastUIService ToastService
+@inject AuthService AuthService
 
-@* --- RESTORED TO SINGLE STABLE THEME (MATCHING IMAGE) --- *@
 <div class="app-container">
-    
+
     @if (IsAppPage)
     {
-        @* --- TOPBAR: Spans full width of screen --- *@
         <header class="global-header">
             <Topbar />
         </header>
 
-        @* --- WRAPPER: Flex layout for sidebar, content, and right panel --- *@
         <div class="main-wrapper">
-            
+
             <Sidebar />
 
             <main class="page-content">
                 <div class="content-body">
+
                     @if (UIState.IsLoading)
                     {
                         <LoadingSpinner />
@@ -42,12 +43,14 @@
                     {
                         @Body
                     }
+
                 </div>
-                
+
                 <ToastNotification />
             </main>
 
             <RightPanel />
+
         </div>
     }
     else
@@ -56,75 +59,63 @@
             @Body
         </div>
     }
+
 </div>
 
-<style>
-    /* Absolute Structural Layout - No Variables used here to prevent ghosting */
-    .app-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        width: 100vw;
-        overflow: hidden;
-        background-color: #f3f4f6; /* Hard-coded Light Grey Floor */
-    }
 
-    .global-header {
-        width: 100%;
-        height: 40px;
-        flex-shrink: 0;
-        z-index: 2000;
-        background-color: #003366; /* Hard-coded Sage Navy */
-    }
-
-    .main-wrapper {
-        display: flex;
-        flex: 1;
-        width: 100vw;
-        overflow: hidden;
-    }
-
-    .page-content {
-        flex: 1;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        background-color: transparent; /* Shows the Grey app-container floor */
-    }
-
-    .content-body {
-        flex: 1;
-        padding: 0;
-    }
-</style>
 
 @code {
-    private DotNetObjectReference<MainLayout>? _objRef;
-    
-    private bool IsAppPage => !Nav.Uri.EndsWith("/login") && Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
 
-    protected override async Task OnInitializedAsync()
+    private DotNetObjectReference<MainLayout>? _objRef;
+
+    private bool IsAppPage =>
+        !Nav.Uri.EndsWith("/login") &&
+        Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
+
+    protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
         UIState.OnChange += StateHasChanged;
         DashboardState.OnChange += StateHasChanged;
     }
 
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => StateHasChanged();
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && IsAppPage)
+        if (!firstRender)
+            return;
+
+        if (!IsAppPage)
+            return;
+
+        try
         {
+            // ======================================================
+            // SAFE AUTH INIT (NOW CORRECT PLACE)
+            // ======================================================
+            await AuthService.InitializeAsync();
+
+            // ======================================================
+            // OFFICE JS INITIALIZATION
+            // ======================================================
             _objRef = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"MainLayout init error: {ex.Message}");
         }
     }
 
     [JSInvokable]
     public async Task OnEmailReceived(EmailInsightDto emailData)
     {
-        if (emailData == null) return;
+        if (emailData == null)
+            return;
 
         await ActivityService.LogActivityAsync(
             title: $"Email from {emailData.SenderName}",
@@ -134,8 +125,9 @@
 
         DashboardState.EmailContext = emailData;
         await DashboardState.LoadDashboardAsync();
-        
+
         StateHasChanged();
+
         ToastService.ShowInfo($"Workspace Synced: {emailData.SenderName}");
     }
 
@@ -144,6 +136,7 @@
         Nav.LocationChanged -= HandleLocationChanged;
         UIState.OnChange -= StateHasChanged;
         DashboardState.OnChange -= StateHasChanged;
+
         _objRef?.Dispose();
     }
 }

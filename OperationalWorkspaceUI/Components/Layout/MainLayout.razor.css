@@ -1,63 +1,116 @@
-/* ROOT CONTAINER - The 3-column split */
-.main-layout {
+/* ======================================================
+   ROOT APP LAYOUT (GLOBAL CONTAINER)
+   ====================================================== */
+
+.app-container {
     display: flex;
-    width: 100%;
-    min-height: 100vh; /* ✅ FIX: allow page to grow */
-    overflow: visible; /* ✅ FIX: allow scrolling */
-    background-color: #f1f5f9;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-color: #f3f4f6;
 }
 
-/* SIDEBAR SKELETON - Deep Navy */
+/* ======================================================
+   TOP HEADER (GLOBAL APP BAR)
+   ====================================================== */
+
+.global-header {
+    width: 100%;
+    height: 40px;
+    flex-shrink: 0;
+    z-index: 2000;
+    background-color: #003366;
+    display: flex;
+    align-items: center;
+}
+
+/* ======================================================
+   MAIN LAYOUT WRAPPER (SIDEBAR + CONTENT + RIGHT PANEL)
+   ====================================================== */
+
+.main-wrapper {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    min-height: 0; /* IMPORTANT for proper flex scrolling */
+    overflow: hidden;
+}
+
+/* ======================================================
+   SIDEBAR (LEFT NAV)
+   ====================================================== */
+
 ::deep .sidebar {
     width: 60px;
-    height: 100vh; /* ✅ OK: sidebar can stay fixed */
+    height: 100%;
     flex-shrink: 0;
     background-color: #020617;
     border-right: 1px solid #1e293b;
     z-index: 100;
 }
 
-/* CENTER COLUMN */
-.main-content {
+/* ======================================================
+   CENTER CONTENT AREA
+   ====================================================== */
+
+.page-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow-y: auto; /* ✅ FIX: enable scrolling */
     min-width: 0;
+    min-height: 0; /* CRITICAL FIX for scrolling */
+    overflow: hidden;
 }
 
-/* 🔥 CRITICAL FIX (you were missing this completely) */
+/* ======================================================
+   CONTENT SCROLL AREA (MAIN PAGE BODY)
+   ====================================================== */
+
 .content-body {
     flex: 1;
-    overflow-y: auto; /* ✅ THIS enables page scroll */
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
 }
 
-/* TOPBAR SKELETON - Deep Navy */
+/* ======================================================
+   TOPBAR (INSIDE HEADER COMPONENT)
+   ====================================================== */
+
 ::deep .topbar {
-    height: 60px;
-    flex-shrink: 0;
+    height: 40px;
+    width: 100%;
     background-color: #020617;
     border-bottom: 1px solid #1e293b;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 16px;
     color: #ffffff;
 }
 
-/* PAGE CONTAINER - Scrollable middle */
-.page-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-}
+/* ======================================================
+   RIGHT PANEL (INSIGHTS / CRM PANEL)
+   ====================================================== */
 
-/* RIGHT PANEL - Sage Insights */
 ::deep .right-panel {
     width: 320px;
+    height: 100%;
+    flex-shrink: 0;
     background: #ffffff;
     border-left: 1px solid #e2e8f0;
-    flex-shrink: 0;
-    height: 100vh; /* ✅ OK to keep fixed */
     overflow-y: auto;
+}
+
+/* ======================================================
+   LANDING PAGE MODE (LOGIN / PUBLIC SCREENS)
+   ====================================================== */
+
+.landing-frame {
+    width: 100%;
+    height: 100vh;
+    background: #f3f4f6;
+    overflow: auto;
 }

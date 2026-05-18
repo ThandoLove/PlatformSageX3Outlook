@@ -1,12 +1,35 @@
 ﻿
 
+using System.Collections.Generic;
+
 namespace OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
 
 public interface ISageX3IdentityService
 {
-    Task<SageX3UserDto?> AuthenticateAsync(string email, string password);
+    // ======================================================
+    // AUTHENTICATE USER AGAINST SAGE X3
+    // ======================================================
 
-    Task<bool> ValidateUserAccessAsync(string userId, string company, string dataset);
+    Task<SageX3UserDto?> AuthenticateAsync(
+        string email,
+        string password,
+        CancellationToken cancellationToken = default);
 
-    Task<List<string>> GetUserPermissionsAsync(string userId);
+    // ======================================================
+    // VALIDATE TENANT ACCESS
+    // ======================================================
+
+    Task<bool> ValidateUserAccessAsync(
+        string userId,
+        string company,
+        string dataset,
+        CancellationToken cancellationToken = default);
+
+    // ======================================================
+    // LOAD USER PERMISSIONS
+    // ======================================================
+
+    Task<List<string>> GetUserPermissionsAsync(
+        string userId,
+        CancellationToken cancellationToken = default);
 }
