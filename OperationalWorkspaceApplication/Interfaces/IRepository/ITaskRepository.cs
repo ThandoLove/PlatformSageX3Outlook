@@ -1,25 +1,22 @@
-﻿
+﻿using OperationalWorkspace.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks; // This is for the async 'Task' keyword
-using OperationalWorkspace.Domain.Entities; // This is for your 'Task' entity
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Interfaces.IRepository;
 
 public interface ITaskRepository
 {
-    // Use System.Threading.Tasks.Task for the return type
-    // Use OperationalWorkspace.Domain.Entities.Task for the parameter
-    System.Threading.Tasks.Task AddAsync(OperationalWorkspace.Domain.Entities.TaskEntity task, CancellationToken ct);
+    Task AddAsync(TaskEntity task, CancellationToken ct);
 
-    System.Threading.Tasks.Task<OperationalWorkspace.Domain.Entities.TaskEntity?> GetByIdAsync(Guid id, CancellationToken ct);
+    Task<TaskEntity?> GetByIdAsync(Guid id, CancellationToken ct);
 
-    System.Threading.Tasks.Task UpdateAsync(OperationalWorkspace.Domain.Entities.TaskEntity task, CancellationToken ct);
+    Task UpdateAsync(TaskEntity task, CancellationToken ct);
 
-    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.TaskEntity>> GetByUserAsync(string userId, CancellationToken ct);
+    Task<IReadOnlyList<TaskEntity>> GetByUserAsync(string userId, CancellationToken ct);
 
-    // NEW: Retrieval methods for extended service functionality
-    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.TaskEntity>> GetAllAsync(CancellationToken ct);
-    System.Threading.Tasks.Task<IReadOnlyList<OperationalWorkspace.Domain.Entities.TaskEntity>> GetPendingApprovalsAsync(string? userId, CancellationToken ct);
+    Task<IReadOnlyList<TaskEntity>> GetAllAsync(CancellationToken ct);
+
+    Task<IReadOnlyList<TaskEntity>> GetPendingApprovalsAsync(string? userId, CancellationToken ct);
 }

@@ -1,13 +1,8 @@
-using System.Threading.RateLimiting;
-using System.Text;
-
 using FluentValidation;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
-
 using OperationalWorkspaceAPI.ApiExtensions;
 using OperationalWorkspaceAPI.AuditAPI;
 using OperationalWorkspaceAPI.Authentication;
@@ -15,12 +10,10 @@ using OperationalWorkspaceAPI.Middleware;
 using OperationalWorkspaceAPI.Policies;
 using OperationalWorkspaceAPI.SecurityAPI;
 using OperationalWorkspaceAPI.Services;
-
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
-
 using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
@@ -31,11 +24,11 @@ using OperationalWorkspaceInfrastructure.Resilience;
 using OperationalWorkspaceInfrastructure.SecurityInfrastructure;
 using OperationalWorkspaceInfrastructure.services;
 using OperationalWorkspaceInfrastructure.Services;
-
 using OperationalWorkspaceShared.Validators;
-
 using Polly;
 using Polly.Extensions.Http;
+using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -270,13 +263,43 @@ if (builder.Environment.IsDevelopment())
 else
 {
     builder.Services.AddScoped<ISystemHealthService, SystemHealthService>();
+    builder.Services.AddScoped<IActivityService, ActivityService>();
+
+    builder.Services.AddScoped<IEmailService, EmailService>();
+
+    builder.Services.AddScoped<IKnowledgeService, KnowledgeService>();
+
+    builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+
+    builder.Services.AddScoped<ISalesService, SalesService>();
+
+    builder.Services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
+
+    builder.Services.AddScoped< IInventoryService, InventoryService>();
+
+    builder.Services.AddScoped<ITaskService, TaskService>();
+
+    builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+
+    builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+
+    builder.Services.AddScoped<IOrderService, OrderService>();
 }
 
 // ======================================================
 // 18. REPOSITORIES
 // ======================================================
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
+builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
+builder.Services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
+builder.Services.AddScoped<IEmailRepository, EmailRepository>();
+builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IKnowledgeRepository, KnowledgeRepository>();
+builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
 // ======================================================

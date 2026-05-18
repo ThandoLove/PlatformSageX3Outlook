@@ -9,7 +9,8 @@ public sealed class EmailInsightDto
 
 
     // Core Identification
-    public Guid BusinessPartnerId { get; init; }
+    // BusinessPartnerId is an integer key in the domain model
+    public int BusinessPartnerId { get; init; }
     public string BusinessPartnerCode { get; init; } = string.Empty;
     public string BusinessPartnerName { get; init; } = string.Empty;
 

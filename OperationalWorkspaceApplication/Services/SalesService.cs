@@ -7,7 +7,7 @@ using OperationalWorkspaceApplication.Responses;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.IServices;
 
-namespace OperationalWorkspace.Application.Services;
+namespace OperationalWorkspaceApplication.Services;
 
 public sealed class SalesService : ISalesService
 {

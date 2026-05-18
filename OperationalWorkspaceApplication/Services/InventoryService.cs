@@ -7,7 +7,7 @@ using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using System.Linq;
 
-namespace OperationalWorkspace.Application.Services;
+namespace OperationalWorkspaceApplication.Services;
 
 public sealed class InventoryService : IInventoryService
 {

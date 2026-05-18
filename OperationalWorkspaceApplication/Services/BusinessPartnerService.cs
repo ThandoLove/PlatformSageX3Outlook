@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 
-namespace OperationalWorkspace.Application.Services;
+namespace OperationalWorkspaceApplication.Services;
 
 public sealed class BusinessPartnerService : IBusinessPartnerService
 {
