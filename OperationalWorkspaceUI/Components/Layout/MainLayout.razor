@@ -1,11 +1,9 @@
 ﻿@inherits LayoutComponentBase
-
 @using OperationalWorkspaceUI.State
-@using OperationalWorkspaceUI.Models.Email
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.ToastUIService
-@using OperationalWorkspaceUI.Components.Pages.Forms
+
 @using OperationalWorkspaceUI.Components.Shared
 @using Microsoft.JSInterop
 
@@ -20,6 +18,10 @@
 @inject IToastUIService ToastService
 @inject AuthService AuthService
 
+// NEW
+@inject AppStateContainer AppState
+@inject EventBus EventBus
+
 <div class="app-container">
 
     @if (IsAppPage)
@@ -33,9 +35,10 @@
             <Sidebar />
 
             <main class="page-content">
+
                 <div class="content-body">
 
-                    @if (UIState.IsLoading)
+                    @if (UIState.IsLoading || AppState.IsBusy)
                     {
                         <LoadingSpinner />
                     }
@@ -47,6 +50,7 @@
                 </div>
 
                 <ToastNotification />
+
             </main>
 
             <RightPanel />
@@ -62,80 +66,212 @@
 
 </div>
 
-
-
 @code {
 
     private DotNetObjectReference<MainLayout>? _objRef;
 
+    private bool _initialized;
+
     private bool IsAppPage =>
         !Nav.Uri.EndsWith("/login") &&
-        Nav.Uri.TrimEnd('/').Length > Nav.BaseUri.TrimEnd('/').Length;
+        Nav.Uri.TrimEnd('/').Length >
+        Nav.BaseUri.TrimEnd('/').Length;
+
+    // ======================================================
+    // INITIALIZATION
+    // ======================================================
 
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
-        UIState.OnChange += StateHasChanged;
-        DashboardState.OnChange += StateHasChanged;
+
+        UIState.OnChange += RefreshUI;
+
+        DashboardState.OnChange += RefreshUI;
+
+        AppState.OnChange += RefreshUI;
+
+        // ======================================================
+        // EVENT BUS SUBSCRIPTIONS
+        // ======================================================
+
+        EventBus.Subscribe(
+            "EMAIL_RECEIVED",
+            async (data) =>
+            {
+                if (data is EmailInsightDto email)
+                {
+                    await HandleIncomingEmail(email);
+                }
+            });
     }
 
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        StateHasChanged();
-    }
+    // ======================================================
+    // AFTER RENDER
+    // ======================================================
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(
+        bool firstRender)
     {
-        if (!firstRender)
+        if (!firstRender || _initialized)
+        {
             return;
+        }
 
-        if (!IsAppPage)
-            return;
+        _initialized = true;
 
         try
         {
             // ======================================================
-            // SAFE AUTH INIT (NOW CORRECT PLACE)
+            // AUTH RESTORE
             // ======================================================
+
             await AuthService.InitializeAsync();
 
             // ======================================================
-            // OFFICE JS INITIALIZATION
+            // OFFICE JS INIT
             // ======================================================
-            _objRef = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
+
+            if (IsAppPage)
+            {
+                _objRef =
+                    DotNetObjectReference
+                        .Create(this);
+
+                await JS.InvokeVoidAsync(
+                    "officeBridge.initialize",
+                    _objRef);
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"MainLayout init error: {ex.Message}");
+            Console.WriteLine(
+                $"MainLayout init error: {ex.Message}");
         }
     }
 
+    // ======================================================
+    // OFFICE EMAIL CALLBACK
+    // ======================================================
+
     [JSInvokable]
-    public async Task OnEmailReceived(EmailInsightDto emailData)
+    public async Task OnEmailReceived(
+        EmailInsightDto emailData)
     {
         if (emailData == null)
+        {
             return;
+        }
 
-        await ActivityService.LogActivityAsync(
-            title: $"Email from {emailData.SenderName}",
-            action: "Email",
-            createdBy: "System"
-        );
+        // ======================================================
+        // PUBLISH THROUGH EVENT BUS
+        // ======================================================
 
-        DashboardState.EmailContext = emailData;
-        await DashboardState.LoadDashboardAsync();
+        EventBus.Publish(
+            "EMAIL_RECEIVED",
+            emailData);
 
-        StateHasChanged();
-
-        ToastService.ShowInfo($"Workspace Synced: {emailData.SenderName}");
+        await Task.CompletedTask;
     }
+
+    // ======================================================
+    // CENTRALIZED EMAIL HANDLER
+    // ======================================================
+
+    private async Task HandleIncomingEmail(
+        EmailInsightDto emailData)
+    {
+        try
+        {
+            // ======================================================
+            // PREVENT UI RACE CONDITIONS
+            // ======================================================
+
+            AppState.SetBusy(true);
+
+            // ======================================================
+            // UPDATE CENTRALIZED APP STATE
+            // ======================================================
+
+            AppState.SetCurrentEmail(
+                 emailData.Id.ToString(),
+                emailData.Subject ?? "Unknown Subject");
+            // ======================================================
+            // ACTIVITY LOGGING
+            // ======================================================
+
+            await ActivityService.LogActivityAsync(
+                title:
+                    $"Email from {emailData.SenderName}",
+                action: "Email",
+                createdBy: "System");
+
+            // ======================================================
+            // UPDATE DASHBOARD STATE
+            // ======================================================
+
+            DashboardState.EmailContext =
+                emailData;
+
+            await DashboardState
+                .LoadDashboardAsync();
+
+            // ======================================================
+            // UI FEEDBACK
+            // ======================================================
+
+            ToastService.ShowInfo(
+                $"Workspace Synced: {emailData.SenderName}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Email sync error: {ex.Message}");
+
+            ToastService.ShowError(
+                "Failed to sync workspace");
+        }
+        finally
+        {
+            AppState.SetBusy(false);
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    // ======================================================
+    // NAVIGATION EVENTS
+    // ======================================================
+
+    private void HandleLocationChanged(
+        object? sender,
+        LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    // ======================================================
+    // SAFE UI REFRESH
+    // ======================================================
+
+    private void RefreshUI()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    // ======================================================
+    // CLEANUP
+    // ======================================================
 
     public void Dispose()
     {
         Nav.LocationChanged -= HandleLocationChanged;
-        UIState.OnChange -= StateHasChanged;
-        DashboardState.OnChange -= StateHasChanged;
+
+        UIState.OnChange -= RefreshUI;
+
+        DashboardState.OnChange -= RefreshUI;
+
+        AppState.OnChange -= RefreshUI;
 
         _objRef?.Dispose();
     }

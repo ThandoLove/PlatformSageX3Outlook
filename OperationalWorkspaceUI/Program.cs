@@ -1,5 +1,3 @@
-// CODE START
-
 using FluentValidation;
 using Majorsoft.Blazor.Extensions.BrowserStorage;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -19,11 +17,7 @@ using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.ToastUIService;
 using OperationalWorkspaceUI.UIServices.Workspace;
 using Radzen;
-using ToastService =
-    OperationalWorkspaceUI
-        .UIServices
-        .ToastUIService
-        .ToastService;
+using ToastService = OperationalWorkspaceUI.UIServices.ToastUIService.ToastService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,19 +35,22 @@ builder.Services.AddHttpContextAccessor();
 // 2. AUTHENTICATION & AUTHORIZATION
 // ======================================================
 
-// 🔥 REQUIRED FOR BLAZOR AUTHORIZATION
+// REQUIRED FOR BLAZOR AUTHORIZATION
 builder.Services.AddAuthorizationCore();
 
-// 🔥 REQUIRED FOR <CascadingAuthenticationState>
+// REQUIRED FOR <CascadingAuthenticationState>
 builder.Services.AddCascadingAuthenticationState();
 
-// 🔥 CUSTOM AUTH STATE PROVIDER
+// CUSTOM AUTH STATE PROVIDER
 builder.Services.AddScoped<
     AuthenticationStateProvider,
     CustomAuthenticationStateProvider>();
 
-// 🔥 AUTH SERVICE
+// AUTH SERVICE
 builder.Services.AddScoped<AuthService>();
+
+// TOKEN REFRESH COORDINATOR
+builder.Services.AddScoped<TokenRefreshCoordinator>();
 
 
 // ======================================================
@@ -72,7 +69,6 @@ builder.Services
     .AddRazorComponents()
     .AddInteractiveServerComponents(options =>
     {
-        // 🔥 SHOWS REAL ERRORS IN DEVTOOLS
         options.DetailedErrors = true;
     });
 
@@ -91,6 +87,7 @@ builder.Services.AddBrowserStorage();
 // 5. APPLICATION STATE
 // ======================================================
 
+// EXISTING STATE
 builder.Services.AddScoped<DashboardState>();
 
 builder.Services.AddScoped<WorkspaceState>();
@@ -99,11 +96,17 @@ builder.Services.AddScoped<EmailContextState>();
 
 builder.Services.AddScoped<UIState>();
 
+builder.Services.AddScoped<SageStateService>();
+
+// NEW CENTRALIZED STATE
+builder.Services.AddScoped<AppStateContainer>();
+
+// EVENT BUS
+builder.Services.AddScoped<EventBus>();
+
 builder.Services.AddScoped<
     IUserContextService,
     UserContextService>();
-
-builder.Services.AddScoped<SageStateService>();
 
 
 // ======================================================
@@ -218,19 +221,7 @@ var app = builder.Build();
 
 
 // ======================================================
-// 11. INITIALIZE AUTH STATE
-// ======================================================
-
-//using (var scope = app.Services.CreateScope())
-//    var authService =
-  //      scope.ServiceProvider
- //           .GetRequiredService<AuthService>();
-//
-//}
-
-
-// ======================================================
-// 12. PIPELINE
+// 11. PIPELINE
 // ======================================================
 
 if (!app.Environment.IsDevelopment())
@@ -250,7 +241,7 @@ app.UseAntiforgery();
 
 
 // ======================================================
-// 13. MAP RAZOR COMPONENTS
+// 12. MAP RAZOR COMPONENTS
 // ======================================================
 
 app.MapRazorComponents<App>()
@@ -258,9 +249,7 @@ app.MapRazorComponents<App>()
 
 
 // ======================================================
-// 14. RUN APPLICATION
+// 13. RUN APPLICATION
 // ======================================================
 
 app.Run();
-
-// CODE END
