@@ -6,20 +6,21 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Actions
-@using OperationalWorkspaceUI.UIServices.System
+
 
 @inject EmailContextState EmailState
+@inject AppStateContainer AppState
 @inject QuickActionUIService Actions
 @inject Radzen.NotificationService Notifications
 @inject NavigationManager NavManager
 
 <FormSection Title="Attach Email to Sage Record"
              SubmitLabel="Attach to Sage X3"
-             IsPrefilled="@(EmailState.CurrentEmail != null)"
+             IsPrefilled="@(AppState.CurrentEmail != null)"
              OnSubmit="HandleSubmit"
              OnCancel="HandleCancel">
 
-    @if (EmailState.CurrentEmail == null)
+    @if (AppState.CurrentEmail == null)
     {
         <div class="dashboard-placeholder">
             @* FIXED: Swapped MailSettings for Mail, which exists in Size48 *@
@@ -39,8 +40,8 @@
                 @* FIXED: Changed Typography.Caption to Typography.Body *@
                 <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">SOURCE EMAIL</FluentLabel>
                 <div style="background-color: #f9f9f9; padding: 12px; border-radius: 4px; border: 1px solid #edebe9;">
-                    <FluentTextField Label="Subject" Value="@EmailState.CurrentEmail.Subject" Readonly="true" FullWidth="true" />
-                    <FluentTextField Label="From" Value="@EmailState.CurrentEmail.From" Readonly="true" FullWidth="true" Style="margin-top: 8px;" />
+                    <FluentTextField Label="Subject" Value="@AppState.CurrentEmail.Subject" Readonly="true" FullWidth="true" />
+                    <FluentTextField Label="From" Value="@AppState.CurrentEmail.From" Readonly="true" FullWidth="true" Style="margin-top: 8px;" />
                 </div>
             </div>
 

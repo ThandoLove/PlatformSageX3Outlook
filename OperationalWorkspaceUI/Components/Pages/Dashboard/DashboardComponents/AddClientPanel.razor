@@ -1,23 +1,25 @@
 ﻿@using OperationalWorkspaceUI.UIServices.Actions
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.State
 @using Radzen
 @inject QuickActionUIService QuickActions
 @inject EmailContextState EmailState
+@inject AppStateContainer AppState
 @inject Radzen.NotificationService NotificationService
 
 <div class="panel add-client-panel">
     <h5>Add / Link Client</h5>
 
-    @if (EmailState.CurrentEmail == null)
+    @if (AppState.CurrentEmail == null)
     {
         <p>No email selected.</p>
     }
     else
     {
         <div class="client-preview">
-            <p><b>Email:</b> @EmailState.CurrentEmail.From</p>
+            <p><b>Email:</b> @AppState.CurrentEmail.From</p>
             @* FIXED: Used BusinessPartnerName as a substitute for SenderName *@
-            <p><b>Name (Detected):</b> @EmailState.CurrentEmail.BusinessPartnerName</p>
+            <p><b>Name (Detected):</b> @AppState.CurrentEmail.BusinessPartnerName</p>
         </div>
 
         <div class="actions">

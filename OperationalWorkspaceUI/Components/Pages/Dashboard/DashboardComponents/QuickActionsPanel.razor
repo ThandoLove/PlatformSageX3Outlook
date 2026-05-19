@@ -6,6 +6,7 @@
 
 @inject OperationalWorkspaceUI.State.EmailContextState EmailState
 @inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
+@inject AppStateContainer AppState
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
 
@@ -50,7 +51,7 @@
 @code {
     private async Task OpenModal<TComponent>(string title) where TComponent : IComponent
     {
-        if (EmailState.CurrentEmail == null)
+        if (AppState.CurrentEmail == null)
         {
             ToastService.ShowError("Please select an email first.");
             return;
@@ -59,8 +60,8 @@
         await ModalService.ShowModal(title, builder =>
         {
             builder.OpenComponent<TComponent>(0);
-            builder.AddAttribute(1, "Email", EmailState.CurrentEmail.SenderEmail);
-            builder.AddAttribute(2, "FullName", EmailState.CurrentEmail.SenderName);
+            builder.AddAttribute(1, "Email", AppState.CurrentEmail.SenderEmail);
+            builder.AddAttribute(2, "FullName", AppState.CurrentEmail.SenderName);
             builder.CloseComponent();
         });
     }

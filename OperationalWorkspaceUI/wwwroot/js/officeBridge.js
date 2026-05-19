@@ -1,149 +1,283 @@
 /**
- * officeBridge.js - ENTERPRISE EVENT-DRIVEN VERSION
- * Connects Outlook (Office.js), Blazor Server, and Sage X3
- * NOW includes CRM automation engine (SAFE ADD-ON LAYER)
+ * officeBridge.js
+ * ENTERPRISE HARDENED VERSION
+ * Outlook + Blazor + Sage X3 Integration Layer
  */
 
 window.officeBridge = {
+
+    // ======================================================
+    // RUNTIME STATE
+    // ======================================================
+
     _dotNetHelper: null,
+
     _isInitialized: false,
+
+    _isInitializing: false,
+
+    _isProcessingEmail: false,
+
     _itemChangedHandler: null,
 
-    // ======================================================
-    // 1. INITIALIZATION (UNCHANGED CORE LOGIC)
-    // ======================================================
-    initialize: function (dotNetHelper) {
+    enableAutomation: true,
 
-        if (this._isInitialized) return;
+    // ======================================================
+    // INITIALIZATION
+    // ======================================================
+
+    initialize: async function (dotNetHelper) {
+
+        // ======================================================
+        // PREVENT DUPLICATE INITIALIZATION
+        // ======================================================
+
+        if (this._isInitialized || this._isInitializing) {
+            return;
+        }
+
+        this._isInitializing = true;
 
         this._dotNetHelper = dotNetHelper;
 
-        Office.onReady((info) => {
-            if (info.host === Office.HostType.Outlook) {
+        try {
 
-                this._isInitialized = true;
-                console.log("Sage X3 Outlook Bridge: Ready.");
+            // ======================================================
+            // WAIT FOR OFFICE
+            // ======================================================
 
-                if (Office?.context?.mailbox?.item) {
-                    this.checkSender();
-                }
+            await Office.onReady();
 
-                this._itemChangedHandler = () => {
-                    this.checkSender();
+            if (Office.context.host !== Office.HostType.Outlook) {
+                console.warn("Not running inside Outlook");
+                return;
+            }
+
+            console.log(
+                "Sage X3 Outlook Bridge: Initializing");
+
+            // ======================================================
+            // ITEM CHANGED HANDLER
+            // ======================================================
+
+            this._itemChangedHandler =
+                async () => {
+
+                    await this.checkSender();
                 };
 
-                Office.context.mailbox.addHandlerAsync(
-                    Office.EventType.ItemChanged,
-                    this._itemChangedHandler
-                );
+            // ======================================================
+            // REGISTER OUTLOOK EVENT
+            // ======================================================
+
+            Office.context.mailbox.addHandlerAsync(
+                Office.EventType.ItemChanged,
+                this._itemChangedHandler,
+                (result) => {
+
+                    if (
+                        result.status ===
+                        Office.AsyncResultStatus.Failed
+                    ) {
+
+                        console.error(
+                            "Failed to register ItemChanged handler:",
+                            result.error.message
+                        );
+                    }
+                    else {
+
+                        console.log(
+                            "ItemChanged handler registered");
+                    }
+                });
+
+            // ======================================================
+            // INITIAL EMAIL LOAD
+            // ======================================================
+
+            if (Office?.context?.mailbox?.item) {
+
+                await this.checkSender();
             }
-        });
-    },
 
-    // ======================================================
-    // 2. CONTEXT EXTRACTION (UNCHANGED CORE LOGIC)
-    // ======================================================
-    checkSender: function () {
+            this._isInitialized = true;
 
-        if (!this._isInitialized || !this._dotNetHelper) return;
-        if (!Office?.context?.mailbox?.item) return;
+            console.log(
+                "Sage X3 Outlook Bridge: Ready");
+        }
+        catch (e) {
 
-        const item = Office.context.mailbox.item;
+            console.error(
+                "officeBridge initialize failed:",
+                e);
+        }
+        finally {
 
-        try {
-            const context = {
-                senderEmail: this._getSenderEmail(item),
-                senderName: this._getSenderName(item),
-                subject: item.subject || "No Subject"
-            };
-
-            // Send to Blazor FIRST (UNCHANGED FLOW)
-            this._dotNetHelper.invokeMethodAsync(
-                'OnEmailReceived',
-                context
-            )
-                .then(() => {
-
-                    // ======================================================
-                    // 🟢 NEW ADDITION: CRM AUTOMATION ENGINE TRIGGER
-                    // ======================================================
-                    this.crmEngine(context);
-
-                })
-                .catch(err =>
-                    console.error("Blazor OnEmailReceived failed:", err)
-                );
-
-        } catch (e) {
-            console.error("officeBridge: Failed to extract context", e);
+            this._isInitializing = false;
         }
     },
 
     // ======================================================
-    // 3. SAGE X3 NAVIGATION (UNCHANGED)
+    // EMAIL CONTEXT EXTRACTION
     // ======================================================
-    openSageRecord: function (functionCode, recordKey) {
 
-        const safeFunction = encodeURIComponent(functionCode);
-        const safeKey = encodeURIComponent(recordKey);
+    checkSender: async function () {
+
+        // ======================================================
+        // PREVENT OVERLAPPING EXECUTION
+        // ======================================================
+
+        if (this._isProcessingEmail) {
+            return;
+        }
+
+        this._isProcessingEmail = true;
+
+        try {
+
+            if (!this._dotNetHelper) {
+                return;
+            }
+
+            if (!Office?.context?.mailbox?.item) {
+                return;
+            }
+
+            const item =
+                Office.context.mailbox.item;
+
+            const context = {
+
+                senderEmail:
+                    this._getSenderEmail(item),
+
+                senderName:
+                    this._getSenderName(item),
+
+                subject:
+                    item.subject || "No Subject"
+            };
+
+            // ======================================================
+            // SEND TO BLAZOR
+            // ======================================================
+
+            await this._dotNetHelper
+                .invokeMethodAsync(
+                    "OnEmailReceived",
+                    context
+                );
+
+            // ======================================================
+            // CRM ENGINE
+            // ======================================================
+
+            this.crmEngine(context);
+        }
+        catch (e) {
+
+            console.error(
+                "checkSender failed:",
+                e);
+        }
+        finally {
+
+            this._isProcessingEmail = false;
+        }
+    },
+
+    // ======================================================
+    // SAGE NAVIGATION
+    // ======================================================
+
+    openSageRecord: function (
+        functionCode,
+        recordKey
+    ) {
+
+        const safeFunction =
+            encodeURIComponent(functionCode);
+
+        const safeKey =
+            encodeURIComponent(recordKey);
 
         const sageUrl =
             `https://your-sage-server.com/${safeFunction}?key=${safeKey}`;
 
         window.open(
             sageUrl,
-            '_blank',
-            'noopener,noreferrer'
+            "_blank",
+            "noopener,noreferrer"
         );
     },
 
     // ======================================================
-    // 4. ATTACH DOCUMENT (FIXED + SAFE)
+    // DOCUMENT ATTACHMENT
     // ======================================================
-    attachDocument: function (entityType, fileName) {
 
-        if (!Office?.context?.mailbox?.item) return;
+    attachDocument: function (
+        entityType,
+        fileName
+    ) {
+
+        if (!Office?.context?.mailbox?.item) {
+            return;
+        }
 
         const fileUrl =
             `https://your-sage-x3-server.com/${encodeURIComponent(entityType)}/${encodeURIComponent(fileName)}`;
 
-        Office.context.mailbox.item.addFileAttachmentAsync(
-            fileUrl,
-            fileName,
-            { asyncContext: null },
-            (asyncResult) => {
+        Office.context.mailbox.item
+            .addFileAttachmentAsync(
+                fileUrl,
+                fileName,
+                { asyncContext: null },
+                (asyncResult) => {
 
-                if (asyncResult.status === Office.AsyncResultStatus.Failed) {
+                    if (
+                        asyncResult.status ===
+                        Office.AsyncResultStatus.Failed
+                    ) {
 
-                    console.error("Attachment failed:", asyncResult.error.message);
+                        console.error(
+                            "Attachment failed:",
+                            asyncResult.error.message
+                        );
 
-                    this.showToast(
-                        `Failed to attach ${fileName}`,
-                        "error"
-                    );
+                        this.showToast(
+                            `Failed to attach ${fileName}`,
+                            "error"
+                        );
+                    }
+                    else {
 
-                } else {
-
-                    this.showToast(
-                        `${fileName} attached to email.`,
-                        "success"
-                    );
-                }
-            }
-        );
+                        this.showToast(
+                            `${fileName} attached successfully`,
+                            "success"
+                        );
+                    }
+                });
     },
 
     // ======================================================
-    // 5. EXPORT REPORT (UNCHANGED)
+    // REPORT EXPORT
     // ======================================================
-    exportReport: function (reportCode, format) {
 
-        this.showToast(`Generating ${reportCode}...`, "info");
+    exportReport: function (
+        reportCode,
+        format
+    ) {
+
+        this.showToast(
+            `Generating ${reportCode}...`,
+            "info"
+        );
 
         setTimeout(() => {
 
             this.showToast(
-                `${reportCode} is ready for download.`,
+                `${reportCode} ready for download`,
                 "success"
             );
 
@@ -151,32 +285,51 @@ window.officeBridge = {
     },
 
     // ======================================================
-    // 6. TOAST BRIDGE (UNCHANGED)
+    // TOAST BRIDGE
     // ======================================================
-    showToast: function (message, type) {
 
-        if (!this._dotNetHelper) return;
+    showToast: function (
+        message,
+        type
+    ) {
+
+        if (!this._dotNetHelper) {
+            return;
+        }
 
         try {
-            this._dotNetHelper.invokeMethodAsync(
-                'ShowToastFromJs',
-                message,
-                type
-            );
-        } catch (e) {
-            console.warn("Toast failed:", e);
+
+            this._dotNetHelper
+                .invokeMethodAsync(
+                    "ShowToastFromJs",
+                    message,
+                    type
+                );
+        }
+        catch (e) {
+
+            console.warn(
+                "Toast bridge failed:",
+                e);
         }
     },
 
     // ======================================================
-    // 7. INTERNAL HELPERS (UNCHANGED)
+    // HELPERS
     // ======================================================
+
     _getSenderEmail: function (item) {
 
-        if (item.itemType === Office.MailboxEnums.ItemType.Message) {
-            return item.from?.emailAddress ||
+        if (
+            item.itemType ===
+            Office.MailboxEnums.ItemType.Message
+        ) {
+
+            return (
+                item.from?.emailAddress ||
                 item.sender?.emailAddress ||
-                "";
+                ""
+            );
         }
 
         return "";
@@ -184,127 +337,220 @@ window.officeBridge = {
 
     _getSenderName: function (item) {
 
-        if (item.itemType === Office.MailboxEnums.ItemType.Message) {
-            return item.from?.displayName ||
+        if (
+            item.itemType ===
+            Office.MailboxEnums.ItemType.Message
+        ) {
+
+            return (
+                item.from?.displayName ||
                 item.sender?.displayName ||
-                "";
+                ""
+            );
         }
 
         return "";
     },
 
     // ======================================================
-    // 🟢 8. CRM EVENT-DRIVEN AUTOMATION ENGINE (NEW ADDITION)
+    // CRM AUTOMATION ENGINE
     // ======================================================
-    enableAutomation: true,
 
     crmEngine: function (context) {
 
-        if (!this.enableAutomation) return;
+        if (!this.enableAutomation) {
+            return;
+        }
 
         try {
-            console.log("[CRM Engine] Processing context:", context);
 
-            const email = context.senderEmail?.toLowerCase() || "";
+            console.log(
+                "[CRM Engine] Processing:",
+                context);
+
+            const email =
+                context.senderEmail
+                    ?.toLowerCase() || "";
 
             const isInternal =
                 email.includes("@yourcompany.com");
 
             const isExternal =
-                !isInternal && email.includes("@");
+                !isInternal &&
+                email.includes("@");
 
             if (isExternal) {
-                this._handleExternalEmail(context);
+
+                this._handleExternalEmail(
+                    context);
             }
 
             if (isInternal) {
-                this._handleInternalEmail(context);
-            }
 
-        } catch (e) {
-            console.error("CRM Engine error:", e);
+                this._handleInternalEmail(
+                    context);
+            }
+        }
+        catch (e) {
+
+            console.error(
+                "CRM Engine failed:",
+                e);
         }
     },
 
     // ======================================================
-    // 🟢 CRM HANDLER: EXTERNAL EMAILS (NEW)
+    // EXTERNAL EMAIL HANDLER
     // ======================================================
-    _handleExternalEmail: function (context) {
 
-        console.log("[CRM] External email detected");
+    _handleExternalEmail: function (
+        context
+    ) {
+
+        console.log(
+            "[CRM] External email detected");
 
         this.showToast(
-            "External contact detected - evaluating CRM match...",
+            "External contact detected",
             "info"
         );
-
-        // FUTURE EXTENSIONS (SAFE PLACEHOLDERS):
-        // - Sage X3 contact lookup
-        // - Lead detection
-        // - AI classification
-        // - Auto-ticket suggestion
     },
 
     // ======================================================
-    // 🟢 CRM HANDLER: INTERNAL EMAILS (NEW)
+    // INTERNAL EMAIL HANDLER
     // ======================================================
-    _handleInternalEmail: function (context) {
 
-        console.log("[CRM] Internal email detected");
+    _handleInternalEmail: function (
+        context
+    ) {
+
+        console.log(
+            "[CRM] Internal email detected");
 
         this.showToast(
             "Internal communication logged",
             "info"
         );
-
-        // FUTURE EXTENSIONS:
-        // - audit logging
-        // - workflow tracking
-        // - approvals
     },
 
     // ======================================================
-    // 9. CLEANUP (UNCHANGED BUT SAFE)
+    // CLEANUP
     // ======================================================
+
     dispose: function () {
 
         try {
-            if (Office?.context?.mailbox && this._itemChangedHandler) {
 
-                Office.context.mailbox.removeHandlerAsync(
-                    Office.EventType.ItemChanged,
-                    { handler: this._itemChangedHandler }
-                );
+            // ======================================================
+            // REMOVE OUTLOOK EVENT HANDLER
+            // ======================================================
+
+            if (
+                Office?.context?.mailbox &&
+                this._itemChangedHandler
+            ) {
+
+                Office.context.mailbox
+                    .removeHandlerAsync(
+                        Office.EventType.ItemChanged,
+                        {
+                            handler:
+                                this._itemChangedHandler
+                        },
+                        (result) => {
+
+                            if (
+                                result.status ===
+                                Office.AsyncResultStatus.Failed
+                            ) {
+
+                                console.warn(
+                                    "Failed removing handler:",
+                                    result.error.message
+                                );
+                            }
+                            else {
+
+                                console.log(
+                                    "ItemChanged handler removed");
+                            }
+                        });
             }
-        } catch (e) {
-            console.warn("Dispose cleanup failed:", e);
+        }
+        catch (e) {
+
+            console.warn(
+                "Office cleanup failed:",
+                e);
         }
 
+        // ======================================================
+        // RELEASE DOTNET REFERENCE
+        // ======================================================
+
+        try {
+
+            if (this._dotNetHelper) {
+
+                this._dotNetHelper.dispose?.();
+            }
+        }
+        catch (e) {
+
+            console.warn(
+                "DotNet cleanup failed:",
+                e);
+        }
+
+        // ======================================================
+        // RESET RUNTIME STATE
+        // ======================================================
+
         this._dotNetHelper = null;
+
         this._isInitialized = false;
+
+        this._isInitializing = false;
+
+        this._isProcessingEmail = false;
+
         this._itemChangedHandler = null;
 
-        console.log("Sage X3 Outlook Bridge: Disposed.");
+        console.log(
+            "Sage X3 Outlook Bridge: Disposed");
     }
 };
 
+// ======================================================
+// OUTLOOK HELPERS
+// ======================================================
 
-// ======================================================
-// OUTLOOK HELPERS (UNCHANGED)
-// ======================================================
 window.outlookInterop = {
 
     getCurrentEmailId: function () {
+
         try {
-            return Office?.context?.mailbox?.item?.itemId || null;
-        } catch {
+
+            return (
+                Office?.context
+                    ?.mailbox
+                    ?.item
+                    ?.itemId || null
+            );
+        }
+        catch {
+
             return null;
         }
     },
 
     displayEmail: function (itemId) {
-        if (!itemId) return;
 
-        Office.context.mailbox.displayItemAsync(itemId);
+        if (!itemId) {
+            return;
+        }
+
+        Office.context.mailbox
+            .displayItemAsync(itemId);
     }
 };

@@ -1,10 +1,11 @@
 ﻿@inherits LayoutComponentBase
+
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.ToastUIService
-
-@using OperationalWorkspaceUI.Components.Shared
+@using OperationalWorkspaceApplication.Services
 @using Microsoft.JSInterop
 
 @implements IDisposable
@@ -14,13 +15,12 @@
 @inject ActivityUIService ActivityService
 @inject IJSRuntime JS
 @inject NavigationManager Nav
-@inject ModalService ModalService
 @inject IToastUIService ToastService
 @inject AuthService AuthService
 
-// NEW
 @inject AppStateContainer AppState
 @inject EventBus EventBus
+@inject EmailEnrichmentService EmailEnrichmentService
 
 <div class="app-container">
 
@@ -69,209 +69,69 @@
 @code {
 
     private DotNetObjectReference<MainLayout>? _objRef;
-
     private bool _initialized;
+    private Action? _unsubscribeEmail;
 
     private bool IsAppPage =>
-        !Nav.Uri.EndsWith("/login") &&
-        Nav.Uri.TrimEnd('/').Length >
-        Nav.BaseUri.TrimEnd('/').Length;
-
-    // ======================================================
-    // INITIALIZATION
-    // ======================================================
+        !Nav.Uri.EndsWith("/login");
 
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
 
         UIState.OnChange += RefreshUI;
-
         DashboardState.OnChange += RefreshUI;
-
         AppState.OnChange += RefreshUI;
 
-        // ======================================================
-        // EVENT BUS SUBSCRIPTIONS
-        // ======================================================
-
-        EventBus.Subscribe(
-            "EMAIL_RECEIVED",
-            async (data) =>
+        _unsubscribeEmail =
+            EventBus.Subscribe("EMAIL_RECEIVED", async data =>
             {
                 if (data is EmailInsightDto email)
                 {
-                    await HandleIncomingEmail(email);
+                    await EmailEnrichmentService.EnrichAsync(email);
                 }
             });
     }
 
-    // ======================================================
-    // AFTER RENDER
-    // ======================================================
-
-    protected override async Task OnAfterRenderAsync(
-        bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || _initialized)
-        {
-            return;
-        }
+        if (!firstRender || _initialized) return;
 
         _initialized = true;
 
-        try
+        await AuthService.InitializeAsync();
+
+        if (IsAppPage)
         {
-            // ======================================================
-            // AUTH RESTORE
-            // ======================================================
-
-            await AuthService.InitializeAsync();
-
-            // ======================================================
-            // OFFICE JS INIT
-            // ======================================================
-
-            if (IsAppPage)
-            {
-                _objRef =
-                    DotNetObjectReference
-                        .Create(this);
-
-                await JS.InvokeVoidAsync(
-                    "officeBridge.initialize",
-                    _objRef);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(
-                $"MainLayout init error: {ex.Message}");
+            _objRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
         }
     }
 
-    // ======================================================
-    // OFFICE EMAIL CALLBACK
-    // ======================================================
-
     [JSInvokable]
-    public async Task OnEmailReceived(
-        EmailInsightDto emailData)
+    public async Task OnEmailReceived(EmailInsightDto emailData)
     {
-        if (emailData == null)
-        {
-            return;
-        }
+        if (emailData == null) return;
 
-        // ======================================================
-        // PUBLISH THROUGH EVENT BUS
-        // ======================================================
-
-        EventBus.Publish(
-            "EMAIL_RECEIVED",
-            emailData);
-
+        EventBus.Publish("EMAIL_RECEIVED", emailData);
         await Task.CompletedTask;
     }
 
-    // ======================================================
-    // CENTRALIZED EMAIL HANDLER
-    // ======================================================
-
-    private async Task HandleIncomingEmail(
-        EmailInsightDto emailData)
-    {
-        try
-        {
-            // ======================================================
-            // PREVENT UI RACE CONDITIONS
-            // ======================================================
-
-            AppState.SetBusy(true);
-
-            // ======================================================
-            // UPDATE CENTRALIZED APP STATE
-            // ======================================================
-
-            AppState.SetCurrentEmail(
-                 emailData.Id.ToString(),
-                emailData.Subject ?? "Unknown Subject");
-            // ======================================================
-            // ACTIVITY LOGGING
-            // ======================================================
-
-            await ActivityService.LogActivityAsync(
-                title:
-                    $"Email from {emailData.SenderName}",
-                action: "Email",
-                createdBy: "System");
-
-            // ======================================================
-            // UPDATE DASHBOARD STATE
-            // ======================================================
-
-            DashboardState.EmailContext =
-                emailData;
-
-            await DashboardState
-                .LoadDashboardAsync();
-
-            // ======================================================
-            // UI FEEDBACK
-            // ======================================================
-
-            ToastService.ShowInfo(
-                $"Workspace Synced: {emailData.SenderName}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(
-                $"Email sync error: {ex.Message}");
-
-            ToastService.ShowError(
-                "Failed to sync workspace");
-        }
-        finally
-        {
-            AppState.SetBusy(false);
-
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    // ======================================================
-    // NAVIGATION EVENTS
-    // ======================================================
-
-    private void HandleLocationChanged(
-        object? sender,
-        LocationChangedEventArgs e)
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    // ======================================================
-    // SAFE UI REFRESH
-    // ======================================================
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+        => InvokeAsync(StateHasChanged);
 
     private void RefreshUI()
-    {
-        InvokeAsync(StateHasChanged);
-    }
-
-    // ======================================================
-    // CLEANUP
-    // ======================================================
+        => InvokeAsync(StateHasChanged);
 
     public void Dispose()
     {
         Nav.LocationChanged -= HandleLocationChanged;
 
         UIState.OnChange -= RefreshUI;
-
         DashboardState.OnChange -= RefreshUI;
-
         AppState.OnChange -= RefreshUI;
+
+        _unsubscribeEmail?.Invoke();
 
         _objRef?.Dispose();
     }

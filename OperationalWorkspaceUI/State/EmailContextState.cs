@@ -1,71 +1,49 @@
-﻿using OperationalWorkspaceApplication.DTOs;
+﻿namespace OperationalWorkspaceUI.State;
 
-namespace OperationalWorkspaceUI.State
+public class EmailContextState
 {
-   
-    public class EmailContextState
+    // ======================================================
+    // VIEW/UI STATE ONLY
+    // ======================================================
+
+    private bool _isLoading;
+
+    public bool IsLoading
     {
-        private bool _isLoading;
-        public bool IsLoading
+        get => _isLoading;
+        set
         {
-            get => _isLoading;
-            set { _isLoading = value; NotifyStateChanged(); }
+            _isLoading = value;
+
+            NotifyStateChanged();
         }
+    }
 
+    // ======================================================
+    // OPTIONAL UI HELPERS
+    // ======================================================
 
-        private EmailInsightDto? _currentEmail;
-        private ClientDto? _matchedClient;
-        private List<OrderDto> _linkedOrders = new();
-        private List<TaskDto> _linkedTasks = new();
+    public string InitialSubject { get; set; }
+        = string.Empty;
 
-        // Event for components to subscribe to when state changes
-        public event Action? OnChange;
+    public string InitialBody { get; set; }
+        = string.Empty;
 
-        public EmailInsightDto? CurrentEmail
-        {
-            get => _currentEmail;
-            set
-            {
-                _currentEmail = value;
-                NotifyStateChanged();
-            }
-        }
+    public string InitialFrom { get; set; }
+        = string.Empty;
 
-        public ClientDto? MatchedClient
-        {
-            get => _matchedClient;
-            set
-            {
-                _matchedClient = value;
-                NotifyStateChanged();
-            }
-        }
+    // ======================================================
+    // EVENTS
+    // ======================================================
 
-        public List<OrderDto> LinkedOrders
-        {
-            get => _linkedOrders;
-            set
-            {
-                _linkedOrders = value ?? new List<OrderDto>();
-                NotifyStateChanged();
-            }
-        }
+    public event Action? OnChange;
 
-        public List<TaskDto> LinkedTasks
-        {
-            get => _linkedTasks;
-            set
-            {
-                _linkedTasks = value ?? new List<TaskDto>();
-                NotifyStateChanged();
-            }
-        }
+    // ======================================================
+    // INTERNAL
+    // ======================================================
 
-        // Optional: the raw initial mailbox item loaded from Office.js
-        public string InitialSubject { get; set; } = string.Empty;
-        public string InitialBody { get; set; } = string.Empty;
-        public string InitialFrom { get; set; } = string.Empty;
-
-        private void NotifyStateChanged() => OnChange?.Invoke();
+    private void NotifyStateChanged()
+    {
+        OnChange?.Invoke();
     }
 }

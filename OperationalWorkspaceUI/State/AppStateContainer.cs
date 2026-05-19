@@ -1,23 +1,36 @@
-﻿
+﻿using OperationalWorkspaceApplication.DTOs;
+
 namespace OperationalWorkspaceUI.State;
 
 public class AppStateContainer
 {
     // ======================================================
-    // AUTH
+    // AUTH STATE
     // ======================================================
 
     public bool IsAuthenticated { get; private set; }
-
     public string? AccessToken { get; private set; }
 
     // ======================================================
     // EMAIL CONTEXT
     // ======================================================
 
-    public string? CurrentEmailId { get; private set; }
+    public EmailInsightDto? CurrentEmail { get; private set; }
 
-    public string? CurrentSubject { get; private set; }
+    public string? CurrentEmailId =>
+        CurrentEmail?.Id.ToString();
+
+    public string? CurrentSubject =>
+        CurrentEmail?.Subject;
+
+    // ======================================================
+    // CRM STATE
+    // ======================================================
+
+    public ClientDto? MatchedClient { get; private set; }
+
+    public List<OrderDto> LinkedOrders { get; private set; } = new();
+    public List<TaskDto> LinkedTasks { get; private set; } = new();
 
     // ======================================================
     // UI STATE
@@ -32,56 +45,70 @@ public class AppStateContainer
     public event Action? OnChange;
 
     // ======================================================
-    // AUTH METHODS
+    // AUTH
     // ======================================================
 
     public void SetAuthentication(string token)
     {
         IsAuthenticated = true;
         AccessToken = token;
-
-        NotifyStateChanged();
+        Notify();
     }
 
     public void ClearAuthentication()
     {
         IsAuthenticated = false;
         AccessToken = null;
-
-        NotifyStateChanged();
+        Notify();
     }
 
     // ======================================================
-    // EMAIL METHODS
+    // EMAIL (FIXED NULL SAFETY)
     // ======================================================
 
-    public void SetCurrentEmail(
-        string emailId,
-        string subject)
+    public void SetCurrentEmail(EmailInsightDto email)
     {
-        CurrentEmailId = emailId;
-        CurrentSubject = subject;
+        CurrentEmail = email;
+        Notify();
+    }
 
-        NotifyStateChanged();
+    public void ClearCurrentEmail()
+    {
+        CurrentEmail = null;
+        Notify();
     }
 
     // ======================================================
-    // UI METHODS
+    // CRM
+    // ======================================================
+
+    public void SetMatchedClient(ClientDto? client)
+    {
+        MatchedClient = client;
+        Notify();
+    }
+
+    public void SetLinkedOrders(List<OrderDto>? orders)
+    {
+        LinkedOrders = orders ?? new();
+        Notify();
+    }
+
+    public void SetLinkedTasks(List<TaskDto>? tasks)
+    {
+        LinkedTasks = tasks ?? new();
+        Notify();
+    }
+
+    // ======================================================
+    // UI
     // ======================================================
 
     public void SetBusy(bool busy)
     {
         IsBusy = busy;
-
-        NotifyStateChanged();
+        Notify();
     }
 
-    // ======================================================
-    // INTERNAL
-    // ======================================================
-
-    private void NotifyStateChanged()
-    {
-        OnChange?.Invoke();
-    }
+    private void Notify() => OnChange?.Invoke();
 }

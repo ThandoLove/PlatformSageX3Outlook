@@ -7,11 +7,12 @@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Workspace
-@using OperationalWorkspaceUI.UIServices.System
+
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.Models.Forms
 
 @inject EmailContextState EmailState
+@inject AppStateContainer AppState
 @inject OrdersUIService OrderService
 @inject Radzen.NotificationService Notifications
 @inject NavigationManager NavManager
@@ -77,10 +78,10 @@
 
     protected override void OnInitialized()
     {
-        if (EmailState.CurrentEmail != null)
+        if (AppState.CurrentEmail != null)
         {
-            Model.ClientEmail = EmailState.CurrentEmail.From;
-            Model.Description = EmailState.CurrentEmail.Subject;
+            Model.ClientEmail = AppState.CurrentEmail.From;
+            Model.Description = AppState.CurrentEmail.Subject;
             isPrefilled = true;
         }
     }
