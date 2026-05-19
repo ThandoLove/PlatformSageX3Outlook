@@ -1,57 +1,49 @@
-using System.IdentityModel.Tokens.Jwt;
+using Majorsoft.Blazor.Extensions.BrowserStorage;
+using Microsoft.AspNetCore.Components;
+using OperationalWorkspaceApplication.ApplicationState;
+using OperationalWorkspaceApplication.DTOs;
+
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Security.Claims;
 using System.Text.Json;
-using Majorsoft.Blazor.Extensions.BrowserStorage;
-using Microsoft.AspNetCore.Components.Authorization;
-using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceUI.Security;
 
 namespace OperationalWorkspaceUI.UIServices.System;
 
 public class AuthService
 {
     private readonly HttpClient _http;
+    private readonly NavigationManager _nav;
     private readonly ILocalStorageService _storage;
-    private readonly AuthenticationStateProvider _authStateProvider;
+    private readonly AppStateContainer _appState;
 
-    private const string TOKEN_KEY = "access_token";
+    private const string AccessTokenKey = "access_token";
+    private const string RefreshTokenKey = "refresh_token";
 
     public AuthService(
         HttpClient http,
+        NavigationManager nav,
         ILocalStorageService storage,
-        AuthenticationStateProvider authStateProvider)
+        AppStateContainer appState)
     {
         _http = http;
+        _nav = nav;
         _storage = storage;
-        _authStateProvider = authStateProvider;
+        _appState = appState;
     }
 
     // ======================================================
-    // INIT SESSION
+    // INIT SESSION (RESTORE LOGIN ON STARTUP)
     // ======================================================
 
     public async Task InitializeAsync()
     {
-        var token =
-            await _storage.GetItemAsync<string>(TOKEN_KEY);
+        var token = await _storage.GetItemAsync<string>(AccessTokenKey);
 
         if (string.IsNullOrWhiteSpace(token))
-        {
             return;
-        }
 
-        // restore auth header
-        _http.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", token);
-
-        // notify blazor auth state
-        if (_authStateProvider
-            is CustomAuthenticationStateProvider customAuth)
-        {
-            customAuth.NotifyUserAuthentication(token);
-        }
+        SetAuthHeader(token);
+        _appState.SetAuthentication(token);
     }
 
     // ======================================================
@@ -60,26 +52,20 @@ public class AuthService
 
     public async Task<bool> LoginAsync(LoginRequestDto dto)
     {
-        var response =
-            await _http.PostAsJsonAsync(
-                "/api/v1/auth/login",
-                dto);
+        var response = await _http.PostAsJsonAsync(
+            "/api/v1/auth/login",
+            dto);
 
         if (!response.IsSuccessStatusCode)
-        {
             return false;
-        }
 
-        var json =
-            await response.Content
-                .ReadFromJsonAsync<JsonElement>();
+        // SAFE: works with ANY backend shape (no AuthResultDto needed)
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
 
-        if (!json.TryGetProperty("data", out var data))
-        {
-            return false;
-        }
-
-        if (!data.TryGetProperty("token", out var tokenElement))
+        if (!json.TryGetProperty("accessToken", out var tokenElement) &&
+            !json.TryGetProperty("token", out tokenElement) &&
+            !(json.TryGetProperty("data", out var data) &&
+              data.TryGetProperty("token", out tokenElement)))
         {
             return false;
         }
@@ -87,29 +73,56 @@ public class AuthService
         var token = tokenElement.GetString();
 
         if (string.IsNullOrWhiteSpace(token))
+            return false;
+
+        await StoreSessionAsync(token);
+
+        return true;
+    }
+
+    // ======================================================
+    // REFRESH TOKEN
+    // ======================================================
+
+    public async Task<bool> TryRefreshTokenAsync()
+    {
+        try
+        {
+            var refreshToken =
+                await _storage.GetItemAsync<string>(RefreshTokenKey);
+
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                return false;
+
+            var response = await _http.PostAsJsonAsync(
+                "/api/v1/auth/refresh",
+                new { refreshToken });
+
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+            if (!json.TryGetProperty("accessToken", out var tokenElement) &&
+                !(json.TryGetProperty("data", out var data) &&
+                  data.TryGetProperty("accessToken", out tokenElement)))
+            {
+                return false;
+            }
+
+            var newToken = tokenElement.GetString();
+
+            if (string.IsNullOrWhiteSpace(newToken))
+                return false;
+
+            await StoreSessionAsync(newToken);
+
+            return true;
+        }
+        catch
         {
             return false;
         }
-
-        // save token
-        await _storage.SetItemAsync(
-            TOKEN_KEY,
-            token);
-
-        // set auth header
-        _http.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue(
-                "Bearer",
-                token);
-
-        // notify blazor auth system
-        if (_authStateProvider
-            is CustomAuthenticationStateProvider customAuth)
-        {
-            customAuth.NotifyUserAuthentication(token);
-        }
-
-        return true;
     }
 
     // ======================================================
@@ -118,23 +131,32 @@ public class AuthService
 
     public async Task LogoutAsync()
     {
-        await _storage.RemoveItemAsync(TOKEN_KEY);
-
         _http.DefaultRequestHeaders.Authorization = null;
 
-        if (_authStateProvider
-            is CustomAuthenticationStateProvider customAuth)
-        {
-            customAuth.NotifyUserLogout();
-        }
+        _appState.ClearAuthentication();
+
+        await _storage.RemoveItemAsync(AccessTokenKey);
+        await _storage.RemoveItemAsync(RefreshTokenKey);
+
+        _nav.NavigateTo("/login");
     }
 
     // ======================================================
-    // GET TOKEN
+    // INTERNAL HELPERS
     // ======================================================
 
-    public async Task<string?> GetTokenAsync()
+    private async Task StoreSessionAsync(string token)
     {
-        return await _storage.GetItemAsync<string>(TOKEN_KEY);
+        await _storage.SetItemAsync(AccessTokenKey, token);
+
+        SetAuthHeader(token);
+
+        _appState.SetAuthentication(token);
+    }
+
+    private void SetAuthHeader(string token)
+    {
+        _http.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
     }
 }

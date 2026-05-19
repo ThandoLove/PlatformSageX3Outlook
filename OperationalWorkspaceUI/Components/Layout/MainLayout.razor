@@ -2,10 +2,10 @@
 
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.ApplicationState
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.ToastUIService
-@using OperationalWorkspaceApplication.Services
 @using Microsoft.JSInterop
 
 @implements IDisposable
@@ -13,14 +13,13 @@
 @inject UIState UIState
 @inject DashboardState DashboardState
 @inject ActivityUIService ActivityService
-@inject IJSRuntime JS
-@inject NavigationManager Nav
-@inject IToastUIService ToastService
-@inject AuthService AuthService
-
 @inject AppStateContainer AppState
 @inject EventBus EventBus
-@inject EmailEnrichmentService EmailEnrichmentService
+@inject AuthService AuthService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@inject IToastUIService ToastService
+@inject HttpClient Http
 
 <div class="app-container">
 
@@ -83,12 +82,25 @@
         DashboardState.OnChange += RefreshUI;
         AppState.OnChange += RefreshUI;
 
+        // EMAIL EVENT FLOW (NO DIRECT SERVICE CALL)
         _unsubscribeEmail =
             EventBus.Subscribe("EMAIL_RECEIVED", async data =>
             {
                 if (data is EmailInsightDto email)
                 {
-                    await EmailEnrichmentService.EnrichAsync(email);
+                    UIState.IsLoading = true;
+
+                    try
+                    {
+                        // OPTION B: CALL API ONLY
+                        await Http.PostAsJsonAsync(
+                            $"api/email/{email.Id}/enrich",
+                            email);
+                    }
+                    finally
+                    {
+                        UIState.IsLoading = false;
+                    }
                 }
             });
     }

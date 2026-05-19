@@ -10,6 +10,7 @@ using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
 using OperationalWorkspaceUI.State;
+using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceUI.UIServices.Actions;
 using OperationalWorkspaceUI.UIServices.DashboardUI;
 using OperationalWorkspaceUI.UIServices.EmailService;
@@ -23,33 +24,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // ======================================================
-// 1. SYSTEM SERVICES
+// 1. SYSTEM
 // ======================================================
 
 builder.Services.AddDistributedMemoryCache();
-
 builder.Services.AddHttpContextAccessor();
 
 
 // ======================================================
-// 2. AUTHENTICATION & AUTHORIZATION
+// 2. AUTH
 // ======================================================
 
-// REQUIRED FOR BLAZOR AUTHORIZATION
 builder.Services.AddAuthorizationCore();
-
-// REQUIRED FOR <CascadingAuthenticationState>
 builder.Services.AddCascadingAuthenticationState();
 
-// CUSTOM AUTH STATE PROVIDER
-builder.Services.AddScoped<
-    AuthenticationStateProvider,
-    CustomAuthenticationStateProvider>();
-
-// AUTH SERVICE
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthService>();
-
-// TOKEN REFRESH COORDINATOR
 builder.Services.AddScoped<TokenRefreshCoordinator>();
 
 
@@ -57,75 +47,52 @@ builder.Services.AddScoped<TokenRefreshCoordinator>();
 // 3. VALIDATION
 // ======================================================
 
-builder.Services.AddValidatorsFromAssemblyContaining<
-    LoginRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 
 // ======================================================
 // 4. UI FRAMEWORKS
 // ======================================================
 
-builder.Services
-    .AddRazorComponents()
-    .AddInteractiveServerComponents(options =>
-    {
-        options.DetailedErrors = true;
-    });
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents(o => o.DetailedErrors = true);
 
 builder.Services.AddFluentUIComponents();
-
 builder.Services.AddRadzenComponents();
 
 builder.Services.AddScoped<Radzen.NotificationService>();
-
 builder.Services.AddScoped<Radzen.DialogService>();
 
 builder.Services.AddBrowserStorage();
 
 
 // ======================================================
-// 5. APPLICATION STATE
+// 5. STATE
 // ======================================================
 
-// EXISTING STATE
 builder.Services.AddScoped<DashboardState>();
-
 builder.Services.AddScoped<WorkspaceState>();
-
 builder.Services.AddScoped<EmailContextState>();
-
 builder.Services.AddScoped<UIState>();
-
 builder.Services.AddScoped<SageStateService>();
 
-// NEW CENTRALIZED STATE
 builder.Services.AddScoped<AppStateContainer>();
-
-// EVENT BUS
 builder.Services.AddScoped<EventBus>();
-
-builder.Services.AddScoped<
-    IUserContextService,
-    UserContextService>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 
 
 // ======================================================
-// 6. API CLIENT
+// 6. HTTP CLIENT
 // ======================================================
 
-builder.Services.AddHttpClient(
-    "ApiClient",
-    client =>
-    {
-        client.BaseAddress =
-            new Uri(
-                builder.Configuration["ApiBaseUrl"]
-                ?? "https://localhost:7123");
-    });
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    client.BaseAddress =
+        new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7123");
+});
 
 builder.Services.AddScoped(sp =>
-    sp.GetRequiredService<IHttpClientFactory>()
-        .CreateClient("ApiClient"));
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"));
 
 
 // ======================================================
@@ -133,115 +100,77 @@ builder.Services.AddScoped(sp =>
 // ======================================================
 
 builder.Services.AddScoped<DashboardUIService>();
-
 builder.Services.AddScoped<EmailContextUIService>();
-
 builder.Services.AddScoped<QuickActionUIService>();
-
 builder.Services.AddScoped<BusinessPartnerUIService>();
-
 builder.Services.AddScoped<OrdersUIService>();
-
 builder.Services.AddScoped<TasksUIService>();
-
 builder.Services.AddScoped<ModalService>();
-
 builder.Services.AddScoped<NavigationService>();
-
 builder.Services.AddScoped<EmailSyncService>();
-
 builder.Services.AddScoped<ActivityUIService>();
-
 builder.Services.AddScoped<AttachmentUIService>();
-
 builder.Services.AddScoped<SettingsUIService>();
-
 builder.Services.AddScoped<AdminDashboardUIService>();
-
 builder.Services.AddScoped<KnowledgeUIService>();
 
 
 // ======================================================
-// 8. TOAST SERVICES
+// 8. EMAIL ENRICHMENT (FIXED CLEAN)
 // ======================================================
 
-builder.Services.AddScoped<
-    IToastUIService,
-    ToastService>();
+builder.Services.AddScoped<EmailEnrichmentService>();
 
+// ONLY ONCE per interface (IMPORTANT FIX)
+builder.Services.AddScoped<IBusinessPartnerService, MockUnifiedService>();
+builder.Services.AddScoped<ITaskService, MockUnifiedService>();
+builder.Services.AddScoped<IActivityService, MockUnifiedService>();
+builder.Services.AddScoped<IEmailService, MockUnifiedService>();
+builder.Services.AddScoped<IKnowledgeService, MockUnifiedService>();
+builder.Services.AddScoped<ISalesService, MockUnifiedService>();
+builder.Services.AddScoped<IInventoryService, MockUnifiedService>();
+builder.Services.AddScoped<IInvoiceService, MockUnifiedService>();
+
+
+// ======================================================
+// 9. TOAST
+// ======================================================
+
+builder.Services.AddScoped<IToastUIService, ToastService>();
 builder.Services.AddScoped<ToastService>();
 
 
 // ======================================================
-// 9. BACKEND MOCK SERVICES
+// 10. AUDIT
 // ======================================================
 
-builder.Services.AddScoped<
-    IActivityService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    IEmailService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    IKnowledgeService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    ISalesService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    IBusinessPartnerService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    IInventoryService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    ITaskService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    IInvoiceService,
-    MockUnifiedService>();
-
-builder.Services.AddScoped<
-    IAuditLogService,
-    MockAuditService>();
+builder.Services.AddScoped<IAuditLogService, MockAuditService>();
 
 
 // ======================================================
-// 10. BUILD APPLICATION
+// 11. BUILD
 // ======================================================
 
 var app = builder.Build();
 
 
 // ======================================================
-// 11. PIPELINE
+// 12. PIPELINE
 // ======================================================
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler(
-        "/Error",
-        createScopeForErrors: true);
-
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseAntiforgery();
 
 
 // ======================================================
-// 12. MAP RAZOR COMPONENTS
+// 13. ROUTING
 // ======================================================
 
 app.MapRazorComponents<App>()
@@ -249,7 +178,7 @@ app.MapRazorComponents<App>()
 
 
 // ======================================================
-// 13. RUN APPLICATION
+// 14. RUN
 // ======================================================
 
 app.Run();

@@ -1,8 +1,9 @@
-﻿@using OperationalWorkspaceApplication.DTOs
+﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.ApplicationState
+@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.EmailService
-@using Microsoft.FluentUI.AspNetCore.Components
-@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @implements IDisposable
 
@@ -100,7 +101,7 @@
                     <span class="value">
 
                         @(
-                            AppState.MatchedClient?.Name
+                            AppState.MatchedClient?.FullName
                             ?? "Unknown Entity"
                          )
 

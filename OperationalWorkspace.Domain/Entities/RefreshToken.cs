@@ -9,6 +9,8 @@ public class RefreshToken
     public Guid Id { get; set; }
     public string UserId { get; set; } = Guid.NewGuid().ToString();
     public string Token { get; set; } = string.Empty;
-    public DateTime ExpiresAt { get; set; }
+    public DateTime ExpiresAtUtc { get; set; }
     public bool IsRevoked { get; set; }
+
+    public DateTime CreatedAtUtc { get; set; }
 }

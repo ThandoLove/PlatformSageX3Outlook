@@ -9,8 +9,6 @@ namespace OperationalWorkspaceUI.State
         public string UserName { get; set; } = "John Smith"; // Mock default
        
 
-
-
         private readonly IJSRuntime _js;
 
         public UIState(IJSRuntime js)

@@ -3,8 +3,8 @@
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.ApplicationState
 
-@implements IAsyncDisposable
 @implements IDisposable
 
 @inject DashboardState DashboardState
@@ -53,13 +53,9 @@
                 <FluentCard>
                     <h3>Email Insight</h3>
 
-                    <p>
-                        @AppState.CurrentEmail.SenderName
-                    </p>
+                    <p>@AppState.CurrentEmail.SenderName</p>
 
-                    <p>
-                        @(CurrentPartner?.Company ?? "Unknown")
-                    </p>
+                    <p>@(CurrentPartner?.Company ?? "Unknown")</p>
                 </FluentCard>
             }
         }
@@ -71,7 +67,6 @@
     private BusinessPartnerSnapshotDto? CurrentPartner;
     private bool IsLoading;
     private bool IsCollapsed;
-    private DotNetObjectReference<RightPanel>? _objRef;
 
     protected override void OnInitialized()
     {
@@ -94,6 +89,7 @@
         AppState.ClearCurrentEmail();
     }
 
+    // Called from JS (ONLY if you wire it later)
     [JSInvokable]
     public async Task HandleEmailSelection(EmailBridgeContext context)
     {
@@ -102,7 +98,6 @@
 
         await DashboardState.LoadOrderDetailsAsync(null);
 
-        // ✅ FIXED (NO DIRECT PROPERTY ASSIGNMENT)
         AppState.SetCurrentEmail(new EmailInsightDto
         {
             SenderEmail = context.SenderEmail,
@@ -124,12 +119,6 @@
     public void Dispose()
     {
         DashboardState.OnChange -= Refresh;
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _objRef?.Dispose();
-        return ValueTask.CompletedTask;
     }
 
     public class EmailBridgeContext

@@ -118,7 +118,7 @@ public class AuthController : ApiController
             Id = Guid.NewGuid(),
             UserId = userAccount.Id.ToString(),
             Token = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ExpiresAtUtc = DateTime.UtcNow.AddDays(7),
             IsRevoked = false
         });
 
@@ -146,7 +146,7 @@ public class AuthController : ApiController
     {
         var stored = await _repo.GetRefreshTokenAsync(dto.RefreshToken);
 
-        if (stored == null || stored.IsRevoked || stored.ExpiresAt < DateTime.UtcNow)
+        if (stored == null || stored.IsRevoked || stored.ExpiresAtUtc < DateTime.UtcNow)
             return Failure("Invalid refresh token.", 401);
 
         var userAccount = await _repo.FindAccountByIdAsync(stored.UserId);
@@ -171,7 +171,7 @@ public class AuthController : ApiController
             Id = Guid.NewGuid(),
             UserId = userAccount.Id.ToString(),
             Token = newRefreshToken,
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            ExpiresAtUtc = DateTime.UtcNow.AddDays(7),
             IsRevoked = false
         });
 

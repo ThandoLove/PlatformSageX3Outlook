@@ -1,18 +1,19 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
 
-namespace OperationalWorkspaceUI.State;
+namespace OperationalWorkspaceApplication.ApplicationState;
 
 public class AppStateContainer
 {
     // ======================================================
-    // AUTH STATE
+    // AUTH
     // ======================================================
 
     public bool IsAuthenticated { get; private set; }
+
     public string? AccessToken { get; private set; }
 
     // ======================================================
-    // EMAIL CONTEXT
+    // EMAIL
     // ======================================================
 
     public EmailInsightDto? CurrentEmail { get; private set; }
@@ -24,16 +25,19 @@ public class AppStateContainer
         CurrentEmail?.Subject;
 
     // ======================================================
-    // CRM STATE
+    // CRM
     // ======================================================
 
-    public ClientDto? MatchedClient { get; private set; }
+    public BusinessPartnerSnapshotDto? MatchedClient { get; private set; }
 
-    public List<OrderDto> LinkedOrders { get; private set; } = new();
-    public List<TaskDto> LinkedTasks { get; private set; } = new();
+    public List<OpenOrderDto> LinkedOrders { get; private set; }
+        = new();
+
+    public List<TaskDto> LinkedTasks { get; private set; }
+        = new();
 
     // ======================================================
-    // UI STATE
+    // UI
     // ======================================================
 
     public bool IsBusy { get; private set; }
@@ -51,30 +55,37 @@ public class AppStateContainer
     public void SetAuthentication(string token)
     {
         IsAuthenticated = true;
+
         AccessToken = token;
+
         Notify();
     }
 
     public void ClearAuthentication()
     {
         IsAuthenticated = false;
+
         AccessToken = null;
+
         Notify();
     }
 
     // ======================================================
-    // EMAIL (FIXED NULL SAFETY)
+    // EMAIL
     // ======================================================
 
-    public void SetCurrentEmail(EmailInsightDto email)
+    public void SetCurrentEmail(
+        EmailInsightDto email)
     {
         CurrentEmail = email;
+
         Notify();
     }
 
     public void ClearCurrentEmail()
     {
         CurrentEmail = null;
+
         Notify();
     }
 
@@ -82,21 +93,29 @@ public class AppStateContainer
     // CRM
     // ======================================================
 
-    public void SetMatchedClient(ClientDto? client)
+    public void SetMatchedClient(
+        BusinessPartnerSnapshotDto? client)
     {
         MatchedClient = client;
+
         Notify();
     }
 
-    public void SetLinkedOrders(List<OrderDto>? orders)
+    public void SetLinkedOrders(
+        List<OpenOrderDto>? orders)
     {
-        LinkedOrders = orders ?? new();
+        LinkedOrders =
+            orders ?? new List<OpenOrderDto>();
+
         Notify();
     }
 
-    public void SetLinkedTasks(List<TaskDto>? tasks)
+    public void SetLinkedTasks(
+        List<TaskDto>? tasks)
     {
-        LinkedTasks = tasks ?? new();
+        LinkedTasks =
+            tasks ?? new List<TaskDto>();
+
         Notify();
     }
 
@@ -107,8 +126,33 @@ public class AppStateContainer
     public void SetBusy(bool busy)
     {
         IsBusy = busy;
+
         Notify();
     }
 
-    private void Notify() => OnChange?.Invoke();
+    // ======================================================
+    // FULL CONTEXT RESET
+    // ======================================================
+
+    public void ClearEmailContext()
+    {
+        CurrentEmail = null;
+
+        MatchedClient = null;
+
+        LinkedOrders.Clear();
+
+        LinkedTasks.Clear();
+
+        Notify();
+    }
+
+    // ======================================================
+    // INTERNAL
+    // ======================================================
+
+    private void Notify()
+    {
+        OnChange?.Invoke();
+    }
 }

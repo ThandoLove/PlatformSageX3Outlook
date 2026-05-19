@@ -1,38 +1,53 @@
-﻿
-namespace OperationalWorkspaceUI.Security;
+﻿namespace OperationalWorkspaceUI.Security;
 
 public class TokenRefreshCoordinator
 {
-    private bool _refreshInProgress;
+    // ======================================================
+    // LOCKING
+    // ======================================================
 
-    private Task<string?>? _refreshTask;
+    private readonly SemaphoreSlim _refreshLock =
+        new(1, 1);
+
+    // ======================================================
+    // ACTIVE REFRESH TASK
+    // ======================================================
+
+    private Task<bool>? _activeRefreshTask;
 
     // ======================================================
     // SINGLE REFRESH PIPELINE
     // ======================================================
 
-    public async Task<string?> ExecuteAsync(
-        Func<Task<string?>> refreshAction)
+    public async Task<bool> ExecuteAsync(
+        Func<Task<bool>> refreshAction)
     {
-        // another refresh already running
-        if (_refreshInProgress &&
-            _refreshTask != null)
-        {
-            return await _refreshTask;
-        }
-
-        _refreshInProgress = true;
-
-        _refreshTask = refreshAction();
+        await _refreshLock.WaitAsync();
 
         try
         {
-            return await _refreshTask;
+            // ======================================================
+            // EXISTING REFRESH RUNNING
+            // ======================================================
+
+            if (_activeRefreshTask != null &&
+                !_activeRefreshTask.IsCompleted)
+            {
+                return await _activeRefreshTask;
+            }
+
+            // ======================================================
+            // START NEW REFRESH
+            // ======================================================
+
+            _activeRefreshTask =
+                refreshAction();
+
+            return await _activeRefreshTask;
         }
         finally
         {
-            _refreshInProgress = false;
-            _refreshTask = null;
+            _refreshLock.Release();
         }
     }
 }

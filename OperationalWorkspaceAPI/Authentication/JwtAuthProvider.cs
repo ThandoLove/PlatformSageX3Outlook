@@ -1,14 +1,25 @@
 ﻿using Microsoft.AspNetCore.Identity;
+
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
+
 using OperationalWorkspaceInfrastructure.SecurityInfrastructure;
 
 namespace OperationalWorkspaceAPI.Authentication;
 
 public class JwtAuthProvider : IAuthProvider
 {
+    // ======================================================
+    // DEPENDENCIES
+    // ======================================================
+
     private readonly IAccountRepository _accounts;
 
     private readonly JwtTokenService _jwt;
+
+    // ======================================================
+    // CONSTRUCTOR
+    // ======================================================
 
     public JwtAuthProvider(
         IAccountRepository accounts,
@@ -19,6 +30,10 @@ public class JwtAuthProvider : IAuthProvider
         _jwt = jwt;
     }
 
+    // ======================================================
+    // AUTHENTICATE USER
+    // ======================================================
+
     public async Task<AuthResult> AuthenticateAsync(
         string username,
         string password)
@@ -28,15 +43,18 @@ public class JwtAuthProvider : IAuthProvider
         // ======================================================
 
         var user =
-            await _accounts.FindAccountByUsernameAsync(
-                username);
+            await _accounts
+                .FindAccountByUsernameAsync(
+                    username);
 
         if (user == null)
         {
             return new AuthResult
             {
                 Success = false,
-                ErrorMessage = "Invalid credentials"
+
+                ErrorMessage =
+                    "Invalid credentials"
             };
         }
 
@@ -53,21 +71,24 @@ public class JwtAuthProvider : IAuthProvider
                 user.PasswordHash,
                 password);
 
-        if (result != PasswordVerificationResult.Success)
+        if (result !=
+            PasswordVerificationResult.Success)
         {
             return new AuthResult
             {
                 Success = false,
-                ErrorMessage = "Invalid credentials"
+
+                ErrorMessage =
+                    "Invalid credentials"
             };
         }
 
         // ======================================================
-        // GENERATE JWT
+        // GENERATE ACCESS + REFRESH TOKENS
         // ======================================================
 
-        var token =
-            _jwt.GenerateToken(user);
+        var tokens =
+            _jwt.GenerateTokens(user);
 
         // ======================================================
         // RETURN SUCCESS
@@ -76,7 +97,15 @@ public class JwtAuthProvider : IAuthProvider
         return new AuthResult
         {
             Success = true,
-            Token = token
+
+            AccessToken =
+                tokens.AccessToken,
+
+            RefreshToken =
+                tokens.RefreshToken,
+
+            ExpiresAtUtc =
+                tokens.ExpiresAtUtc
         };
     }
 }
