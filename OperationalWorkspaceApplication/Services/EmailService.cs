@@ -24,9 +24,9 @@ namespace OperationalWorkspaceApplication.Services
             _builder = builder ?? throw new ArgumentNullException(nameof(builder));
         }
 
-        // ----------------------------
+        // ---------------------------------------------------------------------
         // 1. STORE EMAIL
-        // ----------------------------
+        // ---------------------------------------------------------------------
         public async Task<bool> SyncEmailAsync(EmailInsightDto dto)
         {
             if (await _repo.ExistsAsync(dto.MessageId))
@@ -44,11 +44,13 @@ namespace OperationalWorkspaceApplication.Services
             return true;
         }
 
-        // ----------------------------
-        // 2. GET BASIC EMAIL
-        // ----------------------------
-        public async Task<EmailInsightDto?> GetEmailByIdAsync(string emailId)
+        // ---------------------------------------------------------------------
+        // 2. GET BASIC EMAIL (Updated parameter to matching Guid contract format)
+        // ---------------------------------------------------------------------
+        public async Task<EmailInsightDto?> GetEmailByIdAsync(Guid emailId)
         {
+            // Maps the Guid token out to a clean structural string tracking key
+            var stringId = emailId.ToString();
             var email = await _repo.GetByMessageIdAsync(emailId);
 
             if (email == null)
@@ -63,23 +65,25 @@ namespace OperationalWorkspaceApplication.Services
             };
         }
 
-        // ----------------------------
-        // 3. ⭐ REAL INTELLIGENCE ENTRY POINT
-        // ----------------------------
-        public async Task<EmailContextDto?> GetEmailContextAsync(string emailId)
+        // ---------------------------------------------------------------------
+        // 3. ⭐ REAL INTELLIGENCE ENTRY POINT (Updated signature to Guid)
+        // ---------------------------------------------------------------------
+        public async Task<EmailContextDto?> GetEmailContextAsync(Guid emailId)
         {
+            // Invokes your business context builder using the strict Guid key tracking limits
             return await _builder.BuildAsync(emailId);
         }
-        // ----------------------------
+
+        // ---------------------------------------------------------------------
         // 4. ARCHITECTURAL FORWARDERS
-        // ----------------------------
-        public Task<List<OpenOrderDto>> GetLinkedOrdersAsync(string emailId)
+        // ---------------------------------------------------------------------
+        public Task<List<OpenOrderDto>> GetLinkedOrdersAsync(Guid emailId)
         {
             throw new NotImplementedException(
                 "Use GetEmailContextAsync instead (Email Intelligence Engine).");
         }
 
-        public Task<List<TaskDto>> GetLinkedTasksAsync(string emailId)
+        public Task<List<TaskDto>> GetLinkedTasksAsync(Guid emailId)
         {
             throw new NotImplementedException(
                 "Use GetEmailContextAsync instead (Email Intelligence Engine).");

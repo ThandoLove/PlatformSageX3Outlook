@@ -1,73 +1,88 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using OperationalWorkspaceApplication.Interfaces.IServices;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using OperationalWorkspaceApplication.DTOs;
+using OperationalWorkspaceApplication.Interfaces.IServices;
+using System;
+using System.Threading.Tasks;
 
-namespace OperationalWorkspaceAPI.Controllers;
-
-[ApiController]
-[Route("api/email")]
-public sealed class EmailController : ControllerBase
+namespace OperationalWorkspaceAPI.Controllers
 {
-    private readonly IEmailService _service;
-
-    public EmailController(IEmailService service)
+    [ApiController]
+    [Route("api/email")]
+    public sealed class EmailController : ControllerBase
     {
-        _service = service;
-    }
+        private readonly IEmailService _service;
 
-    // -------------------------------
-    // 1. SYNC EMAIL FROM OUTLOOK
-    // -------------------------------
-    [HttpPost("send")]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Send([FromBody] EmailInsightDto dto)
-    {
-        if (dto == null)
-            return BadRequest("Email cannot be null.");
-
-        var isSynced = await _service.SyncEmailAsync(dto);
-
-        if (!isSynced)
-            return BadRequest("Email already exists or failed to sync.");
-
-        return Accepted(new
+        public EmailController(IEmailService service)
         {
-            success = true,
-            message = "Email synced successfully"
-        });
-    }
+            _service = service ?? throw new ArgumentNullException(nameof(service));
+        }
 
-    // -------------------------------
-    // 2. GET EMAIL (BASIC)
-    // -------------------------------
-    [HttpGet("{emailId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById(string emailId)
-    {
-        var email = await _service.GetEmailByIdAsync(emailId);
+        // ---------------------------------------------------------------------
+        // 1. SYNC EMAIL FROM OUTLOOK
+        // ---------------------------------------------------------------------
+        [HttpPost("send")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Send([FromBody] EmailInsightDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Email cannot be null.");
 
-        if (email == null)
-            return NotFound();
+            var isSynced = await _service.SyncEmailAsync(dto);
 
-        return Ok(email);
-    }
+            if (!isSynced)
+                return BadRequest("Email already exists or failed to sync.");
 
-    // -------------------------------
-    // 3. ⭐ MAIN ENDPOINT (INTELLIGENCE LAYER)
-    // -------------------------------
-    [HttpGet("{emailId}/context")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetContext(string emailId)
-    {
-        var context = await _service.GetEmailByIdAsync(emailId);
+            return Accepted(new
+            {
+                success = true,
+                message = "Email synced successfully"
+            });
+        }
 
-        if (context == null)
-            return NotFound();
+        // ---------------------------------------------------------------------
+        // 2. GET EMAIL (BASIC)
+        // ---------------------------------------------------------------------
+        [HttpGet("{emailId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetById(Guid emailId)
+        {
+            if (emailId == Guid.Empty)
+                return BadRequest("Invalid cryptographic transaction identifier.");
 
-        return Ok(context);
+            // Standard string-mapping compatibility layer conversion
+            var email = await _service.GetEmailByIdAsync(emailId);
+
+            if (email == null)
+                return NotFound();
+
+            return Ok(email);
+        }
+
+        // ---------------------------------------------------------------------
+        // 3. ⭐ MAIN ENDPOINT (INTELLIGENCE LAYER - FIXED MAPPING)
+        // ---------------------------------------------------------------------
+        [HttpGet("{emailId}/context")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetContext(Guid emailId)
+        {
+            if (emailId == Guid.Empty)
+                return BadRequest("Invalid cryptographic transaction identifier.");
+
+            // FIX: Corrected target method link to tap straight into the context validation pipeline
+            var context = await _service.GetEmailContextAsync(emailId);
+
+            if (context == null)
+            {
+                // If not found, it passes an identifier down to naturally trigger 
+                // the "Add to Sage X3" client creation modal flow on the UI side
+                return Ok(new { isUnknownSender = true });
+            }
+
+            return Ok(context);
+        }
     }
 }

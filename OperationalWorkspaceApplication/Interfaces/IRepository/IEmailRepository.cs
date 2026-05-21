@@ -12,6 +12,6 @@ namespace OperationalWorkspaceApplication.Interfaces.IRepository
         Task AddAsync(Email email);
 
         // 3. RETRIEVES EMAIL BY MESSAGE ID (No CancellationToken, matching your architecture)
-        Task<Email?> GetByMessageIdAsync(string messageId);
+        Task<Email?> GetByMessageIdAsync(Guid emailId);
     }
 }

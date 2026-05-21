@@ -29,15 +29,17 @@ namespace OperationalWorkspaceApplication.Services
             _bpRepo = bpRepo ?? throw new ArgumentNullException(nameof(bpRepo));
         }
 
-        public async Task<EmailContextDto?> BuildAsync(string emailId)
+        // Hardened signature accepts an immutable cryptographic Guid tracking identifier
+        public async Task<EmailContextDto?> BuildAsync(Guid emailId)
         {
-            if (string.IsNullOrWhiteSpace(emailId))
+            if (emailId == Guid.Empty)
             {
                 return null;
             }
 
             var ct = CancellationToken.None;
 
+            // Queries the persistence layer natively using the strict Guid lookup boundary
             var email = await _emailRepo.GetByMessageIdAsync(emailId);
 
             if (email == null)
