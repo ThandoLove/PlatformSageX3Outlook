@@ -1,0 +1,54 @@
+# =========================================================================
+# STAGE 1: Compilation Infrastructure (Heavy .NET 8 SDK Image)
+# =========================================================================
+FROM ://microsoft.com AS build-env
+WORKDIR /src
+
+# Copy core global configuration and workspace blueprints
+COPY Directory.Build.props ./
+COPY PlatformSageX3Outlook.sln ./
+
+# Copy internal project definition blocks sequentially to leverage Docker caching
+COPY OperationalWorkspace.Domain/OperationalWorkspace.Domain.csproj OperationalWorkspace.Domain/
+COPY OperationalWorkspaceApplication/OperationalWorkspaceApplication.csproj OperationalWorkspaceApplication/
+COPY OperationalWorkspaceInfrastructure/OperationalWorkspaceInfrastructure.csproj OperationalWorkspaceInfrastructure/
+COPY OperationalWorkspaceAPI/OperationalWorkspaceAPI.csproj OperationalWorkspaceAPI/
+
+# Restore dependencies using isolated package restore operations
+RUN dotnet restore OperationalWorkspaceAPI/OperationalWorkspaceAPI.csproj
+
+# Copy complete project application source code segments into the compilation scope
+COPY OperationalWorkspace.Domain/ OperationalWorkspace.Domain/
+COPY OperationalWorkspaceApplication/ OperationalWorkspaceApplication/
+COPY OperationalWorkspaceInfrastructure/ OperationalWorkspaceInfrastructure/
+COPY OperationalWorkspaceAPI/ OperationalWorkspaceAPI/
+
+# Execute compilation build outputs targeting the publication destination path
+WORKDIR /src/OperationalWorkspaceAPI
+RUN dotnet build -c Release -o /app/build --no-restore
+
+# =========================================================================
+# STAGE 2: Publication Assembly
+# =========================================================================
+FROM build-env AS publish-env
+RUN dotnet publish -c Release -o /app/publish --no-restore /p:UseAppHost=false
+
+# =========================================================================
+# STAGE 3: Production Hardened Runtime (Minimal Linux ASP.NET Runtime Image)
+# =========================================================================
+FROM ://microsoft.com AS runtime-env
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+# Security Hardening: Enforce Least-Privilege non-root execution profiles
+USER $APP_UID
+
+# Fetch compilation artifacts from the preceding publication stage workspace
+COPY --from=publish-env /app/publish .
+
+# Inbound operational environment configurations
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://+:8080
+
+ENTRYPOINT ["dotnet", "OperationalWorkspaceAPI.dll"]

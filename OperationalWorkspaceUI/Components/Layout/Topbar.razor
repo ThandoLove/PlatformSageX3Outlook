@@ -83,6 +83,18 @@
             PageTitle = "Documents";
         else if (relativePath.StartsWith("contacts"))
             PageTitle = "Contacts";
+        else if (relativePath.StartsWith("admin-dashboard"))
+            PageTitle = "Admin Dashboard";
+        else if (relativePath.StartsWith("admin-tasks"))
+            PageTitle = "Admin Tasks";
+        else if (relativePath.StartsWith("/admin/users"))
+            PageTitle = "Users";
+        else if (relativePath.StartsWith("/admin/audit-logs"))
+            PageTitle = "Audit Logs";
+        else if (relativePath.StartsWith("/admin/system-health"))
+            PageTitle = "System Health";
+
+
         else
             PageTitle = "Workspace";
     }

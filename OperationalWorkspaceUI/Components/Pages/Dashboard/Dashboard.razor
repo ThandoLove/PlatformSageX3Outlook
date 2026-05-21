@@ -1,13 +1,17 @@
 ﻿@page "/dashboard"
+@page "/taskpane/workspace"
+@page "/taskpane/compose/template"
+@page "/taskpane/compose/ai-response"
+@page "/taskpane/compose/attach-documents"
+@page "/taskpane/compose/followup"
 @rendermode InteractiveServer
 
 @* 1. COMPONENT NAMESPACES *@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
-@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
-@using OperationalWorkspaceUI.Components.Email
+
 @using OperationalWorkspaceUI.Components.Shared
 @using OperationalWorkspaceUI.State
-@using OperationalWorkspaceApplication.DTOs
+
 @using Microsoft.JSInterop
 
 @* 2. SERVICE INJECTIONS *@
@@ -15,6 +19,7 @@
 @inject WorkspaceState WState
 @inject UIState AppUIState
 @inject IJSRuntime JS
+@inject NavigationManager NavManager
 
 @implements IDisposable
 
@@ -22,6 +27,21 @@
 
 @* Note: Top div still uses AppUIState.IsDarkMode to react to the Global Toggle *@
 <div class="dashboard-wrapper @(AppUIState.IsDarkMode ? "dark-mode" : "")">
+
+    @* EXTRACTION PROCESSING NOTICE FOR OUTLOOK USERS *@
+    @if (_isProcessingOutlookData)
+    {
+        <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between shadow-sm">
+            <div class="d-flex align-items-center gap-2">
+                <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+                <span class="text-sm font-weight-bold">Interrogating Sage X3 Context matrices...</span>
+            </div>
+            @if (!string.IsNullOrEmpty(_activeManifestActionContext))
+            {
+                <span class="badge bg-info">@_activeManifestActionContext</span>
+            }
+        </div>
+    }
 
     @* --- ROW 1: DYNAMIC KPI CARDS --- *@
     <div class="metrics-grid">
@@ -65,7 +85,7 @@
         <Card Title="Email Context">
             <EmailContextPanel />
         </Card>
-        
+
         <Card Title="Crm Snapshot">
             <CrmPanel Clients="@DState.TopClients" />
         </Card>
@@ -111,15 +131,60 @@
 </div>
 
 @code {
+    private bool _isProcessingOutlookData = false;
+    private string _activeManifestActionContext = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         // 1. Initial Data Load
         await DState.LoadDashboardAsync();
-        
+
         // 2. SUBSCRIBE: Listen to states so the UI updates when the Global Toggle or data changes
         DState.OnChange += StateHasChanged;
         WState.OnChange += StateHasChanged;
         AppUIState.OnChange += StateHasChanged; // Listen for theme changes specifically
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Trace active ribbon routing names dynamically
+                var activeUriPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+
+                if (activeUriPath.Contains("taskpane"))
+                {
+                    _isProcessingOutlookData = true;
+                    _activeManifestActionContext = activeUriPath switch
+                    {
+                        var p when p.Contains("template") => "Action: Insert Template",
+                        var p when p.Contains("ai-response") => "Action: Copy Assistant",
+                        var p when p.Contains("attach-documents") => "Action: Document Sync",
+                        var p when p.Contains("followup") => "Action: Follow-up Activity",
+                        _ => "Action: Workspace Home"
+                    };
+                    StateHasChanged();
+
+                    // Asynchronously pulls the email data object extracted from Outlook by your App.razor file
+                    var rawOfficePayload = await JS.InvokeAsync<System.Text.Json.JsonElement?>("eval", "window['initialOfficeItem']");
+
+                    if (rawOfficePayload.HasValue)
+                    {
+                        _isProcessingOutlookData = false;
+                        StateHasChanged();
+
+                        // Your local state containers can now read rawOfficePayload to update panels!
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                _isProcessingOutlookData = false;
+                StateHasChanged();
+            }
+        }
     }
 
     public void Dispose()

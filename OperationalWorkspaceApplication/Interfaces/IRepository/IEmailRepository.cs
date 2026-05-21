@@ -1,15 +1,17 @@
-﻿
-
+﻿using System.Threading.Tasks;
 using OperationalWorkspace.Domain.Entities;
-using System.Threading.Tasks;
 
-namespace OperationalWorkspaceApplication.Interfaces.IRepository;
-
-public interface IEmailRepository
+namespace OperationalWorkspaceApplication.Interfaces.IRepository
 {
-    Task<bool> ExistsAsync(string messageId);
-    Task AddAsync(Email email);
+    public interface IEmailRepository
+    {
+        // 1. CHECKS IF EMAIL EXISTS IN DATABASE
+        Task<bool> ExistsAsync(string messageId);
 
-    // FIX: single parameter only (NO CancellationToken)
-    Task<Email?> GetByMessageIdAsync(string messageId);
+        // 2. ADDS NEW EMAIL RECORD (Correct Entity Binding)
+        Task AddAsync(Email email);
+
+        // 3. RETRIEVES EMAIL BY MESSAGE ID (No CancellationToken, matching your architecture)
+        Task<Email?> GetByMessageIdAsync(string messageId);
+    }
 }

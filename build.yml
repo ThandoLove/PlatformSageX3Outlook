@@ -1,37 +1,40 @@
-name: Operational Workspace CI
+name: "Operational Workspace CI"
 
 on:
   push:
     branches:
       - main
       - develop
-
   pull_request:
     branches:
       - main
       - develop
 
 jobs:
-
   build:
-
-    runs-on: windows-latest
+    # Set to ubuntu-latest to run cross-platform Linux container validations cleanly
+    runs-on: ubuntu-latest
 
     steps:
-
-    - name: Checkout Repository
+    - name: "Checkout Repository"
       uses: actions/checkout@v4
 
-    - name: Setup .NET
+    - name: "Setup .NET 10 Environment"
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '9.0.x'
+        # Enforces your exact .NET 10 preview compiler baseline inside the cloud engine
+        dotnet-version: '10.0.x'
+        include-prerelease: true
 
-    - name: Restore Dependencies
-      run: dotnet restore
+    - name: "Restore Dependencies"
+      run: dotnet restore PlatformSageX3Outlook.sln
 
-    - name: Build Solution
-      run: dotnet build --configuration Release --no-restore
+    - name: "Build Solution (Enforcing .NET 10 Strict Compilation Style Gates)"
+      run: dotnet build PlatformSageX3Outlook.sln --configuration Release --no-restore
 
-    - name: Run Tests
-      run: dotnet test --no-build --verbosity normal
+    - name: "Run Tests"
+      run: dotnet test PlatformSageX3Outlook.sln --configuration Release --no-build --verbosity normal
+
+    - name: "Build Production-Hardened Container Image"
+      run: |
+        docker build -f deployments/containers/Dockerfile.api -t platform-sage-api:${{ github.sha }} .

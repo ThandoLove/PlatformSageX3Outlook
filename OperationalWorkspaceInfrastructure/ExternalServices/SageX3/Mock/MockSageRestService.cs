@@ -1,6 +1,7 @@
 using OperationalWorkspaceApplication.Interfaces.IServices;
 
-namespace OperationalWorkspaceAPI.Services;
+namespace OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
+
 
 public class MockSageRestService : ISageRestService
 {

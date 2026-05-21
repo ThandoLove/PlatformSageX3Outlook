@@ -1,4 +1,6 @@
 ﻿@using Radzen.Blazor
+@using Microsoft.AspNetCore.Components.Web
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,13 +8,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    
+
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/standard-base.css">
-    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.0.0/css/fabric.min.css">
+    <link rel="stylesheet" href="https://office.net">
     <link rel="stylesheet" href="/OperationalWorkspaceUI.styles.css" />
 
-    <!-- CUSTOM CSS -->
+    <!-- CUSTOM DESIGN SUBSYSTEM CSS ASSETS -->
     <link rel="stylesheet" href="css/Landing.css" />
     <link rel="stylesheet" href="css/Forms.css" />
     <link rel="stylesheet" href="css/Workspace.css" />
@@ -20,14 +22,15 @@
     <link href="css/AdminUsers.css" rel="stylesheet" />
     <link href="css/AdminAudit.css" rel="stylesheet" />
     <link href="css/AdminHealth.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/css/app.css" /> @* Locked colors live here *@
-    
+    <link rel="stylesheet" href="/css/app.css" />
+
     <link rel="icon" type="image/png" href="/favicon.png" />
 
     <script type="text/javascript">
+            // Cache native routing parameters prior to Office JS library interventions
             window._historyCache = { replaceState: window.history.replaceState, pushState: window.history.pushState };
     </script>
-    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <script src="https://microsoft.com"></script>
     <script type="text/javascript">
         window.history.replaceState = window._historyCache.replaceState;
         window.history.pushState = window._historyCache.pushState;
@@ -37,35 +40,81 @@
 </head>
 
 <body>
+    <!-- 🔒 ENTERPRISE ANTI-CSRF DATA SHIELD INTEGRATION -->
+    <AntiforgeryToken />
+
     <RadzenComponents />
 
     <Routes @rendermode="InteractiveServer" />
     <Modal @rendermode="InteractiveServer" />
     <ReconnectModal />
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PRESENTATION RENDERING ASSETS -->
+    <script src="https://jsdelivr.net"></script>
     <script src="/js/charts.js"></script>
     <script src="/js/officeBridge.js"></script>
     <script src="/js/app.js"></script>
 
-    @* --- THEME ENGINE DELETED --- *@
-
+    <!-- CORE BLAZOR RENDER ENGINES & LIBRARY MODULES -->
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
 
+    <!-- ========================================================================= -->
+    <!-- 📧 UNIFIED OFFICE.JS RUNTIME CONTEXT EXTRACTOR                            -->
+    <!-- Extracts mailbox item contexts directly inside the core Blazor shell app  -->
+    <!-- ========================================================================= -->
     <script>
-        if (window.Office) {
-        Office.onReady(function (info) {
-        if (info.host !== Office.HostType.Outlook) {
+        (function () {
+        function setInitialOfficeItem(item) {
+        try {
+        window['initialOfficeItem'] = {
+        subject: item.subject || '',
+        from: (item.from && item.from.emailAddress && item.from.emailAddress.address) || '',
+        body: ''
+        };
+
+        // Asynchronously parse message body strings from active Outlook composition canvases
+        if (item.getBodyAsync) {
+        item.getBodyAsync("text", function (result) {
+        try {
+        if (result && result.status === window['Office'].AsyncResultStatus.Succeeded) {
+        window['initialOfficeItem'].body = result.value || '';
+        }
+        } catch (e) {
+        // Fallback catch block
+        }
+        });
+        }
+        } catch (e) {
+        window['initialOfficeItem'] = window['initialOfficeItem'] || {};
+        }
+        }
+
+        if (window['Office']) {
+        window['Office'].onReady(function (info) {
+        try {
+        // Capture active item context elements natively
+        var item = window['Office'].context.mailbox.item;
+        if (item) {
+        setInitialOfficeItem(item);
+        }
+        } catch (e) {
+        // Fallback catch block
+        }
+
+        // Enforce routing cache alignment checks across non-Outlook boundaries
+        if (info.host !== window['Office'].HostType.Outlook) {
         window.history.pushState = window._historyCache.pushState;
         window.history.replaceState = window._historyCache.replaceState;
         }
         });
         } else {
+        window['initialOfficeItem'] = {};
         window.history.pushState = window._historyCache.pushState;
         window.history.replaceState = window._historyCache.replaceState;
         }
+        })();
     </script>
 </body>
 </html>

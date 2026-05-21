@@ -193,6 +193,39 @@ public sealed class UnifiedService :
 
     public async Task<List<TaskDto>> GetLinkedTasksAsync(string emailId) => await Task.FromResult(new List<TaskDto>());
 
+    public async Task<EmailContextDto?> GetEmailContextAsync(string emailId)
+    {
+        if (string.IsNullOrWhiteSpace(emailId))
+        {
+            return null;
+        }
+
+        var linkedOrders =
+            await GetLinkedOrdersAsync(emailId);
+
+        var linkedTasks =
+            await GetLinkedTasksAsync(emailId);
+
+        var email =
+            await GetEmailByIdAsync(emailId);
+
+        return new EmailContextDto
+        {
+            Email = email,
+
+            LinkedOrders = linkedOrders
+                .Select(o => new LinkedOpenOrderDto
+                {
+                    OrderNumber = o.OrderNumber,
+                    Status = o.Status,
+                    CustomerName = o.ClientName
+                })
+                .ToList(),
+
+            LinkedTasks = linkedTasks
+        };
+    }
+
     // =========================================================================
     // ---------------------------- INVENTORY SERVICE --------------------------
     // =========================================================================

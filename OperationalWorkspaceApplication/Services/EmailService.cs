@@ -1,81 +1,88 @@
-﻿using OperationalWorkspace.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
+using OperationalWorkspaceApplication.Interfaces.IServices;
 
-namespace OperationalWorkspaceApplication.Services;
+// Explicit Type Alias to resolve the namespace collision with the Services.Email folder
+using EmailEntity = OperationalWorkspace.Domain.Entities.Email;
 
-public sealed class EmailService : IEmailService
+namespace OperationalWorkspaceApplication.Services
 {
-    private readonly IEmailRepository _repo;
-    private readonly EmailContextBuilder _builder;
-
-    public EmailService(
-        IEmailRepository repo,
-        EmailContextBuilder builder)
+    public sealed class EmailService : IEmailService
     {
-        _repo = repo;
-        _builder = builder;
-    }
+        private readonly IEmailRepository _repo;
+        private readonly EmailContextBuilder _builder;
 
-    // ----------------------------
-    // 1. STORE EMAIL
-    // ----------------------------
-    public async Task<bool> SyncEmailAsync(EmailInsightDto dto)
-    {
-        if (await _repo.ExistsAsync(dto.MessageId))
-            return false;
-
-        await _repo.AddAsync(new Email
+        public EmailService(
+            IEmailRepository repo,
+            EmailContextBuilder builder)
         {
-            MessageId = dto.MessageId,
-            Subject = dto.Subject,
-            From = dto.From,
-            ReceivedAt = dto.ReceivedAt
-        });
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+            _builder = builder ?? throw new ArgumentNullException(nameof(builder));
+        }
 
-        return true;
-    }
-
-    // ----------------------------
-    // 2. GET BASIC EMAIL
-    // ----------------------------
-    public async Task<EmailInsightDto?> GetEmailByIdAsync(string emailId)
-    {
-        var email = await _repo.GetByMessageIdAsync(emailId);
-
-        if (email == null)
-            return null;
-
-        return new EmailInsightDto
+        // ----------------------------
+        // 1. STORE EMAIL
+        // ----------------------------
+        public async Task<bool> SyncEmailAsync(EmailInsightDto dto)
         {
-            MessageId = email.MessageId,
-            Subject = email.Subject,
-            From = email.From,
-            ReceivedAt = email.ReceivedAt
-        };
-    }
+            if (await _repo.ExistsAsync(dto.MessageId))
+                return false;
 
-    // ----------------------------
-    // 3. ⭐ REAL INTELLIGENCE ENTRY POINT
-    // ----------------------------
-    public async Task<EmailInsightDto?> GetEmailContextAsync(string emailId)
-    {
-        return await _builder.BuildAsync(emailId);
-    }
+            // Instantiated securely using the precise Type Alias to completely bypass compiler confusion
+            await _repo.AddAsync(new EmailEntity
+            {
+                MessageId = dto.MessageId,
+                Subject = dto.Subject,
+                From = dto.From,
+                ReceivedAt = dto.ReceivedAt
+            });
 
-    // ----------------------------
-    // 4. REMOVED FAKE LOGIC (IMPORTANT)
-    // ----------------------------
+            return true;
+        }
 
-    public Task<List<OpenOrderDto>> GetLinkedOrdersAsync(string emailId)
-    {
-        throw new NotImplementedException(
-            "Use GetEmailContextAsync instead (Email Intelligence Engine).");
-    }
+        // ----------------------------
+        // 2. GET BASIC EMAIL
+        // ----------------------------
+        public async Task<EmailInsightDto?> GetEmailByIdAsync(string emailId)
+        {
+            var email = await _repo.GetByMessageIdAsync(emailId);
 
-    public Task<List<TaskDto>> GetLinkedTasksAsync(string emailId)
-    {
-        throw new NotImplementedException(
-            "Use GetEmailContextAsync instead (Email Intelligence Engine).");
+            if (email == null)
+                return null;
+
+            return new EmailInsightDto
+            {
+                MessageId = email.MessageId,
+                Subject = email.Subject,
+                From = email.From,
+                ReceivedAt = email.ReceivedAt
+            };
+        }
+
+        // ----------------------------
+        // 3. ⭐ REAL INTELLIGENCE ENTRY POINT
+        // ----------------------------
+        public async Task<EmailContextDto?> GetEmailContextAsync(string emailId)
+        {
+            return await _builder.BuildAsync(emailId);
+        }
+        // ----------------------------
+        // 4. ARCHITECTURAL FORWARDERS
+        // ----------------------------
+        public Task<List<OpenOrderDto>> GetLinkedOrdersAsync(string emailId)
+        {
+            throw new NotImplementedException(
+                "Use GetEmailContextAsync instead (Email Intelligence Engine).");
+        }
+
+        public Task<List<TaskDto>> GetLinkedTasksAsync(string emailId)
+        {
+            throw new NotImplementedException(
+                "Use GetEmailContextAsync instead (Email Intelligence Engine).");
+        }
     }
 }

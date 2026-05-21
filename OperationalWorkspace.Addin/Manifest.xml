@@ -1,111 +1,466 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
-           xsi:type="MailApp">
-  <Id>23F4B3A6-5E0D-4C67-988D-F6943082C49B</Id>
-  <Version>1.0.0.0</Version>
-  <ProviderName>YourCompany</ProviderName>
-  <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="OperationalWorkspace ERP Add-In"/>
-  <Description DefaultValue="ERP-first Sage X3 integration for Outlook"/>
-  <IconUrl DefaultValue="https://yourcdn.com/icons/erpaddin-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://yourcdn.com/icons/erpaddin-64.png"/>
-  <SupportUrl DefaultValue="https://yourcompany.com/support"/>
-  <Hosts>
-    <Host Name="Mailbox"/>
-  </Hosts>
+<OfficeApp
+  xmlns="http://microsoft.com"
+  xmlns:xsi="http://w3.org"
+  xmlns:bt="http://microsoft.com"
+  xmlns:mailappor="http://microsoft.com"
+  xsi:type="MailApp">
 
-  <Requirements>
-    <Set Name="Mailbox" MinVersion="1.8"/>
-  </Requirements>
+	<!-- ========================================================================= -->
+	<!-- 1. ADD-IN IDENTITY CORES (Preserves Existing Manifest Setup Parameters)   -->
+	<!-- ========================================================================= -->
+	<Id>61f77d34-7389-4e09-9686-dcbbcdccbd1d</Id>
+	<Version>1.0.0.0</Version>
+	<ProviderName>PlatformSageX3OutlookProvider</ProviderName>
+	<DefaultLocale>en-US</DefaultLocale>
+	<DisplayName DefaultValue="Operational Sage X3 Workspace" />
+	<Description DefaultValue="Enterprise Outlook add-in bridging email context with Sage X3 and Creatio workflows." />
 
-  <Permissions>ReadWriteMailbox</Permissions>
+	<!-- Icon resource definitions for legacy clients -->
+	<IconUrl DefaultValue="https://localhost:7173/images/icon-32.png" />
+	<HighResolutionIconUrl DefaultValue="https://localhost:7173/images/icon-80.png" />
 
-  <!-- VersionOverrides 1.1 adds command ribbon buttons and taskpane bindings for Mail add-ins -->
-  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1">
-    <Requirements>
-      <bt:Sets>
-        <bt:Set Name="Mailbox" />
-      </bt:Sets>
-    </Requirements>
+	<SupportUrl DefaultValue="https://localhost:7173/support" />
 
-    <Hosts>
-      <Host Name="Mailbox" />
-    </Hosts>
+	<!-- ========================================================================= -->
+	<!-- 2. DOMAIN & PERMISSION ARCHITECTURES (Least Privilege Security Profile)  -->
+	<!-- ========================================================================= -->
+	<Hosts>
+		<Host Name="Mailbox" />
+	</Hosts>
 
-    <Resources>
-      <bt:Images>
-        <bt:Image id="icon16" DefaultValue="https://yourcdn.com/icons/erpaddin-16.png" />
-        <bt:Image id="icon32" DefaultValue="https://yourcdn.com/icons/erpaddin-32.png" />
-        <bt:Image id="icon80" DefaultValue="https://yourcdn.com/icons/erpaddin-80.png" />
-      </bt:Images>
-      <bt:Urls>
-        <!-- These should point to pages in your Blazor app that bootstrap the app and provide the login/welcome UI -->
-        <bt:Url id="messageReadPaneUrl" DefaultValue="https://localhost:7173/dashboard.html" />
-        <bt:Url id="messageComposePaneUrl" DefaultValue="https://localhost:7173/compose.html" />
-      </bt:Urls>
-      <bt:Strings>
-        <bt:String id="groupLabel" DefaultValue="OperationalWorkspace" />
-        <bt:String id="openPaneLabel" DefaultValue="Open OperationalWorkspace" />
-        <bt:String id="openPaneTitle" DefaultValue="Open OperationalWorkspace" />
-        <bt:String id="openPaneDesc" DefaultValue="Open the OperationalWorkspace pane (login required)." />
-      </bt:Strings>
-    </Resources>
+	<Requirements>
+		<Sets DefaultMinVersion="1.5">
+			<Set Name="Mailbox" />
+		</Sets>
+	</Requirements>
 
-    <!-- Command surface for message read (ribbon) -->
-    <ExtensionPoint xsi:type="MessageReadCommandSurface">
-      <OfficeTab id="TabDefault">
-        <Group id="OperationalWorkspaceGroup" label="OperationalWorkspace">
-          <Control xsi:type="Button" id="OpenPaneReadButton">
-            <Label resid="openPaneLabel" />
-            <Supertip>
-              <Title resid="openPaneTitle" />
-              <Description resid="openPaneDesc" />
-            </Supertip>
-            <Icon>
-              <bt:Image size="16" resid="icon16" />
-              <bt:Image size="32" resid="icon32" />
-              <bt:Image size="80" resid="icon80" />
-            </Icon>
-            <Action xsi:type="ShowTaskpane">
-              <SourceLocation resid="messageReadPaneUrl" />
-            </Action>
-          </Control>
-        </Group>
-      </OfficeTab>
-    </ExtensionPoint>
+	<!-- Grants required item body, read/write message, and attachment access scopes -->
+	<Permissions>ReadWriteItem</Permissions>
 
-    <!-- Command surface for message compose (ribbon) -->
-    <ExtensionPoint xsi:type="MessageComposeCommandSurface">
-      <OfficeTab id="TabDefault">
-        <Group id="OperationalWorkspaceComposeGroup" label="OperationalWorkspace">
-          <Control xsi:type="Button" id="OpenPaneComposeButton">
-            <Label resid="openPaneLabel" />
-            <Supertip>
-              <Title resid="openPaneTitle" />
-              <Description resid="openPaneDesc" />
-            </Supertip>
-            <Icon>
-              <bt:Image size="16" resid="icon16" />
-              <bt:Image size="32" resid="icon32" />
-              <bt:Image size="80" resid="icon80" />
-            </Icon>
-            <Action xsi:type="ShowTaskpane">
-              <SourceLocation resid="messageComposePaneUrl" />
-            </Action>
-          </Control>
-        </Group>
-      </OfficeTab>
-    </ExtensionPoint>
+	<!-- Activation rule for legacy fallback processing engines -->
+	<Rule xsi:type="RuleCollection" Mode="Or">
+		<Rule xsi:type="ItemIs" ItemType="Message" FormType="Read" />
+		<Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
+	</Rule>
 
-    <!-- Add rules for when the add-in is available in the message context -->
-    <Permissions>ReadWriteMailbox</Permissions>
-    <Rule xsi:type="RuleCollection" Mode="Or">
-      <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read" />
-      <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
-    </Rule>
+	<DisableEntityHighlighting>false</DisableEntityHighlighting>
 
-  </VersionOverrides>
+	<!-- ========================================================================= -->
+	<!-- 3. MODERN VERSION OVERRIDES (Ribbon, Surfaces, and Task Pane Engines)     -->
+	<!-- ========================================================================= -->
+	<VersionOverrides xmlns="http://microsoft.com" xsi:type="VersionOverridesV1_0">
+		<Description DefaultValue="Enterprise Outlook add-in bridging email context with Sage X3 and Creatio workflows." />
 
+		<!-- Requirements targeting unified modern Fluent UI Ribbon requirement sets -->
+		<Requirements>
+			<bt:Sets DefaultMinVersion="1.5">
+				<bt:Set Name="Mailbox" />
+			</bt:Sets>
+		</Requirements>
+
+		<Diagnostics />
+
+		<!-- Authorized execution domain channels (Blocks cross-origin network errors) -->
+		<AppDomains>
+			<AppDomain>https://localhost:7173</AppDomain>
+			<AppDomain>https://localhost:7123</AppDomain>
+		</AppDomains>
+
+		<!-- Asynchronous Function file containing click executors -->
+		<FunctionFile resid="funcFileUrl" />
+
+		<ExtensionPoints>
+
+			<!-- ===================================================================== -->
+			<!-- A. MESSAGE READ COMMAND SURFACE                                       -->
+			<!-- ===================================================================== -->
+			<ExtensionPoint xsi:type="MessageReadCommandSurface">
+				<OfficeTab id="TabDefault">
+
+					<!-- Branded Corporate CRM Group Layout Container -->
+					<Group id="grpX3CrmActions">
+						<Label resid="lblCrmGroup" />
+						<Tooltip resid="tipCrmGroup" />
+
+						<Control xsi:type="Button" id="btnOpenWorkspace">
+							<Label resid="lblOpenWorkspace" />
+							<Supertip>
+								<Title resid="lblOpenWorkspace" />
+								<Description resid="tipOpenWorkspace" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+								<bt:Image size="80" resid="icon80" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpWorkspaceUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnLinkToCrm">
+							<Label resid="lblLinkToCrm" />
+							<Supertip>
+								<Title resid="lblLinkToCrm" />
+								<Description resid="tipLinkToCrm" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ExecuteFunction">
+								<FunctionName>onLinkToCrmClicked</FunctionName>
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnCreateContact">
+							<Label resid="lblCreateContact" />
+							<Supertip>
+								<Title resid="lblCreateContact" />
+								<Description resid="tipCreateContact" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpCreateContactUrl" />
+							</Action>
+						</Control>
+					</Group>
+
+					<!-- Branded Operational Sales & Invoicing Group -->
+					<Group id="grpX3SalesActions">
+						<Label resid="lblSalesGroup" />
+						<Tooltip resid="tipSalesGroup" />
+
+						<Control xsi:type="Button" id="btnViewOrders">
+							<Label resid="lblViewOrders" />
+							<Supertip>
+								<Title resid="lblViewOrders" />
+								<Description resid="tipViewOrders" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpViewOrdersUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnViewCustomer">
+							<Label resid="lblViewCustomer" />
+							<Supertip>
+								<Title resid="lblViewCustomer" />
+								<Description resid="tipViewCustomer" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpViewCustomerUrl" />
+							</Action>
+						</Control>
+					</Group>
+
+					<!-- AI Intelligence & Utility Document Automation Group -->
+					<Group id="grpX3UtilityActions">
+						<Label resid="lblUtilityGroup" />
+						<Tooltip resid="tipUtilityGroup" />
+
+						<Control xsi:type="Button" id="btnAiSummary">
+							<Label resid="lblAiSummary" />
+							<Supertip>
+								<Title resid="lblAiSummary" />
+								<Description resid="tipAiSummary" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpAiSummaryUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnCreateTask">
+							<Label resid="lblCreateTask" />
+							<Supertip>
+								<Title resid="lblCreateTask" />
+								<Description resid="tipCreateTask" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpCreateTaskUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnUploadAttachment">
+							<Label resid="lblUploadAttachment" />
+							<Supertip>
+								<Title resid="lblUploadAttachment" />
+								<Description resid="tipUploadAttachment" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ExecuteFunction">
+								<FunctionName>onUploadAttachmentClicked</FunctionName>
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnOpenInSageX3">
+							<Label resid="lblOpenInSageX3" />
+							<Supertip>
+								<Title resid="lblOpenInSageX3" />
+								<Description resid="tipOpenInSageX3" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ExecuteFunction">
+								<FunctionName>onOpenInSageX3Clicked</FunctionName>
+							</Action>
+						</Control>
+					</Group>
+				</OfficeTab>
+			</ExtensionPoint>
+
+			<!-- ===================================================================== -->
+			<!-- B. MESSAGE COMPOSE COMMAND SURFACE                                    -->
+			<!-- ===================================================================== -->
+			<ExtensionPoint xsi:type="MessageComposeCommandSurface">
+				<OfficeTab id="TabDefault">
+					<Group id="grpX3ComposeActions">
+						<Label resid="lblComposeGroup" />
+						<Tooltip resid="tipComposeGroup" />
+
+						<Control xsi:type="Button" id="btnInsertTemplate">
+							<Label resid="lblInsertTemplate" />
+							<Supertip>
+								<Title resid="lblInsertTemplate" />
+								<Description resid="tipInsertTemplate" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpInsertTemplateUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnAiResponse">
+							<Label resid="lblAiResponse" />
+							<Supertip>
+								<Title resid="lblAiResponse" />
+								<Description resid="tipAiResponse" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpAiResponseUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnAttachDocuments">
+							<Label resid="lblAttachDocuments" />
+							<Supertip>
+								<Title resid="lblAttachDocuments" />
+								<Description resid="tipAttachDocuments" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpAttachDocsUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnFollowUpActivity">
+							<Label resid="lblFollowUpActivity" />
+							<Supertip>
+								<Title resid="lblFollowUpActivity" />
+								<Description resid="tipFollowUpActivity" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ShowTaskpane">
+								<SourceLocation resid="tpFollowUpUrl" />
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnInjectSignature">
+							<Label resid="lblInjectSignature" />
+							<Supertip>
+								<Title resid="lblInjectSignature" />
+								<Description resid="tipInjectSignature" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ExecuteFunction">
+								<FunctionName>onInjectSignatureClicked</FunctionName>
+							</Action>
+						</Control>
+
+						<Control xsi:type="Button" id="btnWorkflowAction">
+							<Label resid="lblWorkflowAction" />
+							<Supertip>
+								<Title resid="lblWorkflowAction" />
+								<Description resid="tipWorkflowAction" />
+							</Supertip>
+							<Icon>
+								<bt:Image size="16" resid="icon16" />
+								<bt:Image size="32" resid="icon32" />
+							</Icon>
+							<Action xsi:type="ExecuteFunction">
+								<FunctionName>onWorkflowActionClicked</FunctionName>
+							</Action>
+						</Control>
+					</Group>
+				</OfficeTab>
+			</ExtensionPoint>
+
+			<!-- ===================================================================== -->
+			<!-- C. CONTEXT MENU COMMAND SURFACE                                       -->
+			<!-- ===================================================================== -->
+			<ExtensionPoint xsi:type="ContextMenu">
+				<OfficeMenu id="ContextMenuMsgRead">
+					<Control xsi:type="Button" id="ctxOpenWorkspace">
+						<Label resid="lblOpenWorkspace" />
+						<Icon>
+							<bt:Image size="16" resid="icon16" />
+						</Icon>
+						<Action xsi:type="ShowTaskpane">
+							<SourceLocation resid="tpWorkspaceUrl" />
+						</Action>
+					</Control>
+
+					<Control xsi:type="Button" id="ctxQuickLinkSage">
+						<Label resid="lblOpenInSageX3" />
+						<Icon>
+							<bt:Image size="16" resid="icon16" />
+						</Icon>
+						<Action xsi:type="ExecuteFunction">
+							<FunctionName>onOpenInSageX3Clicked</FunctionName>
+						</Action>
+					</Control>
+
+					<Control xsi:type="Button" id="ctxCreateTask">
+						<Label resid="lblCreateTask" />
+						<Icon>
+							<bt:Image size="16" resid="icon16" />
+						</Icon>
+						<Action xsi:type="ShowTaskpane">
+							<SourceLocation resid="tpCreateTaskUrl" />
+						</Action>
+					</Control>
+
+					<Control xsi:type="Button" id="ctxAiSummarize">
+						<Label resid="lblAiSummary" />
+						<Icon>
+							<bt:Image size="16" resid="icon16" />
+						</Icon>
+						<Action xsi:type="ShowTaskpane">
+							<SourceLocation resid="tpAiSummaryUrl" />
+						</Action>
+					</Control>
+				</OfficeMenu>
+			</ExtensionPoint>
+
+		</ExtensionPoints>
+
+		<!-- ========================================================================= -->
+		<!-- 4. CENTRALIZED STRING & ASSET RESOURCE DESCRIPTIONS                       -->
+		<!-- ========================================================================= -->
+		<Resources>
+			<bt:Images>
+				<bt:Image id="icon16" DefaultValue="https://localhost:7173/images/icon-16.png" />
+				<bt:Image id="icon32" DefaultValue="https://localhost:7173/images/icon-32.png" />
+				<bt:Image id="icon80" DefaultValue="https://localhost:7173/images/icon-80.png" />
+			</bt:Images>
+
+			<bt:Urls>
+				<!-- Logic execution script file location target mapping -->
+				<bt:Url id="funcFileUrl" DefaultValue="https://localhost:7173/js/officeFunctionFile.html" />
+
+				<!-- Blazor Server endpoints rendering specific workspace component modules -->
+				<bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane/workspace" />
+				<bt:Url id="tpCreateContactUrl" DefaultValue="https://localhost:7173/taskpane/contact/create" />
+				<bt:Url id="tpViewOrdersUrl" DefaultValue="https://localhost:7173/taskpane/orders/view" />
+				<bt:Url id="tpViewCustomerUrl" DefaultValue="https://localhost:7173/taskpane/customer/view" />
+				<bt:Url id="tpAiSummaryUrl" DefaultValue="https://localhost:7173/taskpane/ai/summary" />
+				<bt:Url id="tpCreateTaskUrl" DefaultValue="https://localhost:7173/taskpane/task/create" />
+
+				<!-- Compose Mode Blazor target URLs -->
+				<bt:Url id="tpInsertTemplateUrl" DefaultValue="https://localhost:7173/taskpane/compose/template" />
+				<bt:Url id="tpAiResponseUrl" DefaultValue="https://localhost:7173/taskpane/compose/ai-response" />
+				<bt:Url id="tpAttachDocsUrl" DefaultValue="https://localhost:7173/taskpane/compose/attach-documents" />
+				<bt:Url id="tpFollowUpUrl" DefaultValue="https://localhost:7173/taskpane/compose/followup" />
+			</bt:Urls>
+
+			<bt:ShortStrings>
+				<bt:String id="lblCrmGroup" DefaultValue="Sage CRM Link" />
+				<bt:String id="lblSalesGroup" DefaultValue="Sage Sales" />
+				<bt:String id="lblUtilityGroup" DefaultValue="ERP Utilities" />
+				<bt:String id="lblComposeGroup" DefaultValue="ERP Automation" />
+
+				<bt:String id="lblOpenWorkspace" DefaultValue="Open Workspace" />
+				<bt:String id="lblLinkToCrm" DefaultValue="Link to CRM" />
+				<bt:String id="lblCreateContact" DefaultValue="Create Contact" />
+				<bt:String id="lblViewOrders" DefaultValue="View Orders" />
+				<bt:String id="lblViewCustomer" DefaultValue="View Customer" />
+				<bt:String id="lblAiSummary" DefaultValue="AI Summary" />
+				<bt:String id="lblCreateTask" DefaultValue="Create Task" />
+				<bt:String id="lblUploadAttachment" DefaultValue="Upload File" />
+				<bt:String id="lblOpenInSageX3" DefaultValue="Open in Sage X3" />
+
+				<bt:String id="lblInsertTemplate" DefaultValue="Insert Template" />
+				<bt:String id="lblAiResponse" DefaultValue="AI Response" />
+				<bt:String id="lblAttachDocuments" DefaultValue="Attach Sage Docs" />
+				<bt:String id="lblFollowUpActivity" DefaultValue="Create Follow-up" />
+
+				<bt:String id="lblWorkflowAction" DefaultValue="Trigger Workflow" />
+			</bt:ShortStrings>
+
+			<bt:LongStrings>
+
+				<bt:String id="tipSalesGroup" DefaultValue="Access order ledgers, process pending transaction items, and view invoices." />
+				<bt:String id="tipUtilityGroup" DefaultValue="Automate document attachments, extract activity histories, and analyze communication strings." />
+				<bt:String id="tipComposeGroup" DefaultValue="Inject automated transactional signatures, response scripts, and linked activities." />
+
+				<bt:String id="tipOpenWorkspace" DefaultValue="Launches the main multi-tier task pane canvas executing your interactive Blazor dashboards." />
+				<bt:String id="tipLinkToCrm" DefaultValue="Asynchronously interrogates the email header to bind the communication to Sage records." />
+				<bt:String id="tipCreateContact" DefaultValue="Launches a contextually populated form layout inside the task pane canvas to provision client entities." />
+				<bt:String id="tipViewOrders" DefaultValue="Displays a filtered grid layout listing open sales records linked to this business account." />
+				<bt:String id="tipViewCustomer" DefaultValue="Opens full credit limits, outstanding balances, and risk analysis metrics inside the task pane canvas." />
+				<bt:String id="tipAiSummary" DefaultValue="Processes message bodies asynchronously utilizing backend AI summarization engines." />
+				<bt:String id="tipCreateTask" DefaultValue="Launches an interactive administrative task generation form bound to this conversation." />
+				<bt:String id="tipUploadAttachment" DefaultValue="Safely extracts attachments from the message envelope and uploads them to secure storage paths." />
+				<bt:String id="tipOpenInSageX3" DefaultValue="Launches an external secure browser navigation window straight into the live Sage X3 records stream." />
+
+				<bt:String id="tipInsertTemplate" DefaultValue="Allows selection and hot injection of custom CRM message bodies into the editor frame." />
+				<bt:String id="tipAiResponse" DefaultValue="Generates an automated contextual email draft proposal based on background account metadata metrics." />
+				<bt:String id="tipAttachDocuments" DefaultValue="Searches active inventory catalogs or invoice histories to attach copies to the message." />
+				<bt:String id="tipFollowUpUrl" DefaultValue="Schedules an internal notification timer checking tracking metrics for this transaction thread." />
+				<bt:String id="tipInjectSignature" DefaultValue="Appends official multi-tenant accounting identifiers into the compose pane layout." />
+				<bt:String id="tipWorkflowAction" DefaultValue="Triggers an external ERP integration pipeline workflow context from the draft pane." />
+			</bt:LongStrings>
+		</Resources>
+	</VersionOverrides>
 </OfficeApp>

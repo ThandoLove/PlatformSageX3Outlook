@@ -26,7 +26,7 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
             .ForMember(dest => dest.CreatedAtUtc, opt => opt.MapFrom(_ => DateTime.UtcNow));
 
-        CreateMap<OrderDto, SalesOrder>();
+        CreateMap<OpenOrderDto, SalesOrder>();
 
         
     }

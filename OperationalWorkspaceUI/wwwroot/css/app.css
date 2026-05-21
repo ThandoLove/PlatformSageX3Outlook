@@ -206,12 +206,16 @@ html, body, .app-container, .main-layout, .page-content,
     background-color: #10b981;
 }
 
-/* KPI Grid Structure */
+/* ========================================================= 
+   6. RESPONSIVE LAYOUT ENGINE (ANTI-SQUISH REFACTOR)
+   ========================================================= */
+
+/* A. DEFAULT WIDE DESKTOP VIEW (Widths 1024px and greater) */
 .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+    width: 100% !important;
 }
 
 .metric-value {
@@ -219,11 +223,57 @@ html, body, .app-container, .main-layout, .page-content,
     font-weight: 700;
     color: var(--text-dark) !important;
     margin: 4px 0;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
 }
 
-.metric-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    font-weight: 700;
+.metric-subtext {
+    font-size: 0.75rem;
     color: var(--text-muted) !important;
+    display: block !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important; /* Forces words to stay intact */
+}
+
+/* B. INTERMEDIATE TABLET/NARROW VIEW (Your specific window layout size) */
+@media screen and (max-width: 900px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important; /* Converts 4 tiny columns into 2 wide columns */
+        gap: 12px !important;
+    }
+}
+
+/* C. STRICTOR OUTLOOK TASKPANE VIEW (Widths under 480px) */
+@media screen and (max-width: 480px) {
+    .sage-sidebar, .sidebar, .global-header, .sage-topbar-master, .sage-topbar-wrapper {
+        display: none !important; /* Strips navigation framing inside the side add-in panel */
+    }
+
+    .main-wrapper {
+        width: 100% !important;
+        height: 100vh !important;
+    }
+
+    .metrics-grid {
+        grid-template-columns: 1fr !important; /* Snaps cards to a clean single column list */
+        gap: 12px !important;
+    }
+
+    .sage-dashboard-row {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .quick-actions-container {
+        flex-wrap: wrap !important;
+    }
+
+    .action-tile {
+        flex: 1 1 calc(50% - 8px) !important;
+    }
+
+    .metric-value {
+        font-size: 1.2rem !important;
+    }
 }
