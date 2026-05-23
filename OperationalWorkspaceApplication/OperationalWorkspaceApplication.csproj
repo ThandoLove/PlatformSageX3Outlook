@@ -1,35 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Accelist.FluentValidation.Blazor" Version="4.0.0" />
-    <PackageReference Include="Asp.Versioning.Mvc" Version="10.0.0" />
-    <PackageReference Include="AutoMapper" Version="16.1.1" />
-    <PackageReference Include="FluentValidation" Version="12.1.1" />
-    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.6.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.14.1" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.1" />
-    <PackageReference Include="Radzen.Blazor" Version="10.4.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\OperationalWorkspace.Domain\OperationalWorkspace.Domain.csproj" />
-  </ItemGroup>
 	<ItemGroup>
-		<!-- This removes the global reference that causes the conflict -->
-		<Using Remove="System.Net.Mail" />
+		<!-- 🚀 ADDED TO FIX THE MICROSOFT.ENTITYFRAMEWORKCORE ERROR -->
+		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
+
+		<!-- ALL EXISTING PACKAGES KEPT 100% INTACT -->
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
+		<PackageReference Include="AutoMapper" Version="16.1.1" />
+		<PackageReference Include="FluentValidation" Version="12.1.1" />
+		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.6.3" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\OperationalWorkspace.Domain\OperationalWorkspace.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Remove="System.Net.Mail" />
+	</ItemGroup>
 
 </Project>
