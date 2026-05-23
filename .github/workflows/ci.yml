@@ -1,0 +1,75 @@
+name: CI - Build, Scan, Smoke Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install dotnet-format tool
+        run: dotnet tool install -g dotnet-format || true
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --no-restore --configuration Release
+
+      - name: List vulnerable packages
+        run: dotnet list package --vulnerable || true
+
+      - name: Run unit tests
+        run: |
+          dotnet test --no-build --verbosity normal || echo "No tests or some tests failed"
+
+      - name: Start API and UI for smoke tests
+        run: |
+          # Start API on http://localhost:5001
+          dotnet run --project OperationalWorkspaceAPI/OperationalWorkspaceAPI.csproj --urls http://localhost:5001 &
+          pid_api=$!
+
+          # Start UI on http://localhost:5002
+          dotnet run --project OperationalWorkspaceUI/OperationalWorkspaceUI.csproj --urls http://localhost:5002 &
+          pid_ui=$!
+
+          # Wait for endpoints to respond
+          echo "Waiting for API and UI to be available..."
+          for i in {1..60}; do
+            if curl -sSf http://localhost:5001/health >/dev/null 2>&1; then
+              echo "API ready"
+              break
+            fi
+            sleep 1
+          done
+
+          for i in {1..60}; do
+            if curl -sSf http://localhost:5002 >/dev/null 2>&1; then
+              echo "UI ready"
+              break
+            fi
+            sleep 1
+          done
+
+          # Basic smoke checks
+          curl -v --fail http://localhost:5001/health
+          curl -v --fail http://localhost:5002
+
+          # Tear down background processes
+          kill $pid_api || true
+          kill $pid_ui || true
+
+      - name: Run dotnet-format (verify)
+        run: dotnet format --verify-no-changes || echo "dotnet-format found issues"

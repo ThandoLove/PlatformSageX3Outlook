@@ -158,7 +158,6 @@ namespace OperationalWorkspaceAPI.Controllers
                 user = userDto
             });
         }
-
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
         {
@@ -221,7 +220,12 @@ namespace OperationalWorkspaceAPI.Controllers
         private string GenerateJwtToken(UserAccount user, string jwtId)
         {
             var jwtSettings = _config.GetSection("Jwt");
-            var keyString = jwtSettings["Key"] ?? "DEVELOPMENT_32_BYTE_SECURITY_KEY_FOR_POSTMAN_TESTING_ONLY";
+            var keyString = jwtSettings["Key"];
+
+            if (string.IsNullOrWhiteSpace(keyString))
+            {
+                throw new InvalidOperationException("CRITICAL CONFIGURATION ERROR: Cryptographic signature validation key is missing from active environment parameters.");
+            }
 
             var claims = new[]
             {

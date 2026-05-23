@@ -2,161 +2,173 @@ using Majorsoft.Blazor.Extensions.BrowserStorage;
 using Microsoft.AspNetCore.Components;
 using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceApplication.DTOs;
-
+using System;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Threading.Tasks;
 
-namespace OperationalWorkspaceUI.UIServices.System;
-
-public class AuthService
+namespace OperationalWorkspaceUI.UIServices.System
 {
-    private readonly HttpClient _http;
-    private readonly NavigationManager _nav;
-    private readonly ILocalStorageService _storage;
-    private readonly AppStateContainer _appState;
-
-    private const string AccessTokenKey = "access_token";
-    private const string RefreshTokenKey = "refresh_token";
-
-    public AuthService(
-        HttpClient http,
-        NavigationManager nav,
-        ILocalStorageService storage,
-        AppStateContainer appState)
+    public class AuthService
     {
-        _http = http;
-        _nav = nav;
-        _storage = storage;
-        _appState = appState;
-    }
+        private readonly HttpClient _http;
+        private readonly NavigationManager _nav;
+        private readonly ILocalStorageService _storage;
+        private readonly AppStateContainer _appState;
 
-    // ======================================================
-    // INIT SESSION (RESTORE LOGIN ON STARTUP)
-    // ======================================================
+        private const string AccessTokenKey = "access_token";
+        private const string RefreshTokenKey = "refresh_token";
 
-    public async Task InitializeAsync()
-    {
-        var token = await _storage.GetItemAsync<string>(AccessTokenKey);
-
-        if (string.IsNullOrWhiteSpace(token))
-            return;
-
-        SetAuthHeader(token);
-        _appState.SetAuthentication(token);
-    }
-
-    // ======================================================
-    // LOGIN
-    // ======================================================
-
-    public async Task<bool> LoginAsync(LoginRequestDto dto)
-    {
-        var response = await _http.PostAsJsonAsync(
-            "/api/v1/auth/login",
-            dto);
-
-        if (!response.IsSuccessStatusCode)
-            return false;
-
-        // SAFE: works with ANY backend shape (no AuthResultDto needed)
-        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-
-        if (!json.TryGetProperty("accessToken", out var tokenElement) &&
-            !json.TryGetProperty("token", out tokenElement) &&
-            !(json.TryGetProperty("data", out var data) &&
-              data.TryGetProperty("token", out tokenElement)))
+        public AuthService(
+            HttpClient http,
+            NavigationManager nav,
+            ILocalStorageService storage,
+            AppStateContainer appState)
         {
-            return false;
+            _http = http ?? throw new ArgumentNullException(nameof(http));
+            _nav = nav ?? throw new ArgumentNullException(nameof(nav)); // Fixed: Added the missing nameof operator mapping
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _appState = appState ?? throw new ArgumentNullException(nameof(appState));
         }
 
-        var token = tokenElement.GetString();
-
-        if (string.IsNullOrWhiteSpace(token))
-            return false;
-
-        await StoreSessionAsync(token);
-
-        return true;
-    }
-
-    // ======================================================
-    // REFRESH TOKEN
-    // ======================================================
-
-    public async Task<bool> TryRefreshTokenAsync()
-    {
-        try
+        // ======================================================
+        // INIT SESSION (RESTORE LOGIN ON STARTUP)
+        // ======================================================
+        public async Task InitializeAsync()
         {
-            var refreshToken =
-                await _storage.GetItemAsync<string>(RefreshTokenKey);
+            var token = await _storage.GetItemAsync<string>(AccessTokenKey);
 
-            if (string.IsNullOrWhiteSpace(refreshToken))
-                return false;
+            if (string.IsNullOrWhiteSpace(token))
+                return;
 
-            var response = await _http.PostAsJsonAsync(
-                "/api/v1/auth/refresh",
-                new { refreshToken });
+            SetAuthHeader(token);
+            _appState.SetAuthentication(token);
+        }
 
-            if (!response.IsSuccessStatusCode)
-                return false;
+        // ======================================================
+        // LOGIN (Fixed JSON property navigation tree)
+        // ======================================================
+        public async Task<bool> LoginAsync(LoginRequestDto dto)
+        {
+            if (dto == null) return false;
 
-            var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+            try
+            {
+                var response = await _http.PostAsJsonAsync("/api/v1/auth/login", dto);
 
-            if (!json.TryGetProperty("accessToken", out var tokenElement) &&
-                !(json.TryGetProperty("data", out var data) &&
-                  data.TryGetProperty("accessToken", out tokenElement)))
+                if (!response.IsSuccessStatusCode)
+                    return false;
+
+                var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+
+                string? token = null;
+                string? refreshToken = null;
+
+                if (json.TryGetProperty("data", out var data))
+                {
+                    if (data.TryGetProperty("token", out var tokenElement))
+                    {
+                        token = tokenElement.GetString();
+                    }
+
+                    if (data.TryGetProperty("refreshToken", out var refreshElement))
+                    {
+                        refreshToken = refreshElement.GetString();
+                    }
+                }
+                else if (json.TryGetProperty("token", out var rootTokenElement))
+                {
+                    token = rootTokenElement.GetString();
+                }
+
+                if (string.IsNullOrWhiteSpace(token))
+                    return false;
+
+                await _storage.SetItemAsync(AccessTokenKey, token);
+
+                if (!string.IsNullOrEmpty(refreshToken))
+                {
+                    await _storage.SetItemAsync(RefreshTokenKey, refreshToken);
+                }
+
+                SetAuthHeader(token);
+                _appState.SetAuthentication(token);
+
+                return true;
+            }
+            catch (Exception)
             {
                 return false;
             }
-
-            var newToken = tokenElement.GetString();
-
-            if (string.IsNullOrWhiteSpace(newToken))
-                return false;
-
-            await StoreSessionAsync(newToken);
-
-            return true;
         }
-        catch
+
+        // ======================================================
+        // REFRESH TOKEN
+        // ======================================================
+        public async Task<bool> TryRefreshTokenAsync()
         {
-            return false;
+            try
+            {
+                var refreshToken = await _storage.GetItemAsync<string>(RefreshTokenKey);
+
+                if (string.IsNullOrWhiteSpace(refreshToken))
+                    return false;
+
+                var response = await _http.PostAsJsonAsync("/api/v1/auth/refresh", new { refreshToken });
+
+                if (!response.IsSuccessStatusCode)
+                    return false;
+
+                var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+                string? newToken = null;
+
+                if (json.TryGetProperty("data", out var data) && data.TryGetProperty("token", out var tokenElement))
+                {
+                    newToken = tokenElement.GetString();
+                }
+                else if (json.TryGetProperty("token", out var rootTokenElement))
+                {
+                    newToken = rootTokenElement.GetString();
+                }
+
+                if (string.IsNullOrWhiteSpace(newToken))
+                    return false;
+
+                await _storage.SetItemAsync(AccessTokenKey, newToken);
+                SetAuthHeader(newToken);
+                _appState.SetAuthentication(newToken);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
-    }
 
-    // ======================================================
-    // LOGOUT
-    // ======================================================
+        // ======================================================
+        // LOGOUT
+        // ======================================================
+        public async Task LogoutAsync()
+        {
+            _http.DefaultRequestHeaders.Authorization = null;
+            _appState.ClearAuthentication();
 
-    public async Task LogoutAsync()
-    {
-        _http.DefaultRequestHeaders.Authorization = null;
+            await _storage.RemoveItemAsync(AccessTokenKey);
+            await _storage.RemoveItemAsync(RefreshTokenKey);
 
-        _appState.ClearAuthentication();
+            _nav.NavigateTo("/login");
+        }
 
-        await _storage.RemoveItemAsync(AccessTokenKey);
-        await _storage.RemoveItemAsync(RefreshTokenKey);
-
-        _nav.NavigateTo("/login");
-    }
-
-    // ======================================================
-    // INTERNAL HELPERS
-    // ======================================================
-
-    private async Task StoreSessionAsync(string token)
-    {
-        await _storage.SetItemAsync(AccessTokenKey, token);
-
-        SetAuthHeader(token);
-
-        _appState.SetAuthentication(token);
-    }
-
-    private void SetAuthHeader(string token)
-    {
-        _http.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", token);
+        // ======================================================
+        // INTERNAL HELPERS
+        // ======================================================
+        private void SetAuthHeader(string token)
+        {
+            _http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
     }
 }

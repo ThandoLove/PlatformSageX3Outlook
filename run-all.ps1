@@ -20,7 +20,8 @@ if ($Rebuild) {
 # Projects that produce runnable apps in this repo
 $projectsToRun = @(
 	@{ Name = 'OperationalWorkspaceAPI'; CsProj = Join-Path $root 'OperationalWorkspaceAPI\OperationalWorkspaceAPI.csproj' },
-	@{ Name = 'OperationalWorkspaceUI'; CsProj = Join-Path $root 'OperationalWorkspaceUI\OperationalWorkspaceUI.csproj' }
+	@{ Name = 'OperationalWorkspaceUI'; CsProj = Join-Path $root 'OperationalWorkspaceUI\OperationalWorkspaceUI.csproj' },
+	@{ Name = 'OperationalWorkspace.Addin'; CsProj = Join-Path $root 'OperationalWorkspace.Addin\OperationalWorkspace.Addin.csproj' }
 )
 
 foreach ($p in $projectsToRun) {
@@ -60,3 +61,21 @@ $uiUrl = 'https://localhost:7173'
 if (Wait-ForUrl $uiUrl 45) { Write-Host "UI is healthy at $uiUrl" } else { Write-Warning "UI did not respond at $uiUrl" }
 
 Write-Host "Run complete. Use Task Manager or the opened consoles to stop the running apps."
+
+# Optional: run smoke tests against launched endpoints
+function Run-SmokeTests {
+	Write-Host "Running smoke tests..."
+
+	$tests = @(
+		@{ Name = 'API Swagger'; Url = 'https://localhost:7123/swagger/index.html' },
+		@{ Name = 'UI Root'; Url = 'https://localhost:7173' },
+		@{ Name = 'API Health (sample)'; Url = 'https://localhost:7123/health' }
+	)
+
+	foreach ($t in $tests) {
+		Write-Host "Testing $($t.Name) -> $($t.Url)"
+		if (Wait-ForUrl $t.Url 20) { Write-Host "OK: $($t.Name)" } else { Write-Warning "FAIL: $($t.Name)" }
+	}
+}
+
+Run-SmokeTests
