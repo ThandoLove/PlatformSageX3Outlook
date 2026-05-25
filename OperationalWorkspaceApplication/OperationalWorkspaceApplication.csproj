@@ -7,11 +7,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- 🚀 ADDED TO FIX THE MICROSOFT.ENTITYFRAMEWORKCORE ERROR -->
+		<!-- 🚀 ADDED: MATCHES THE EXACT EXTENSION USED BY YOUR API LAYER -->
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.10" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
+		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.8" />
 
-		<!-- ALL EXISTING PACKAGES KEPT 100% INTACT -->
+	
+
+		<!-- ALL ORIGINAL PACKAGES PRESERVED 100% INTACT -->
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
 		<PackageReference Include="AutoMapper" Version="16.1.1" />
 		<PackageReference Include="FluentValidation" Version="12.1.1" />

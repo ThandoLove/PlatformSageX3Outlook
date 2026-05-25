@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
 namespace OperationalWorkspaceInfrastructure.Caching;

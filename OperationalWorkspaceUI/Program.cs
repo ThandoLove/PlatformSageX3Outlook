@@ -21,6 +21,7 @@ using OperationalWorkspaceUI.UIServices.EmailService;
 using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.ToastUIService;
 using OperationalWorkspaceUI.UIServices.Workspace;
+
 using Radzen;
 using System;
 using System.Net.Http;
@@ -77,6 +78,9 @@ builder.Services.AddScoped<SageStateService>();
 
 builder.Services.AddScoped<AppStateContainer>();
 builder.Services.AddScoped<EventBus>();
+
+builder.Services.AddScoped<OutlookStateContainer>();
+
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 
 // ======================================================

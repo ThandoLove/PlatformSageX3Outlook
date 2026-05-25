@@ -1,15 +1,18 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using OperationalWorkspaceApplication.IServices;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
+using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.ERPAuthentication;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
 using OperationalWorkspaceInfrastructure.Http;
 using OperationalWorkspaceInfrastructure.Persistence;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
+using OperationalWorkspaceInfrastructure.servicesInfra.BackgroundWorkers;
+using System;
 
 namespace OperationalWorkspaceInfrastructure.DependencyInjection;
 
@@ -25,10 +28,18 @@ public static class InfrastructureServiceRegistration
         {
             try
             {
+                // Core Application DbContext Mapping
                 services.AddDbContext<IntegrationDbContext>(options =>
                     options.UseSqlServer(
                         conn,
                         b => b.MigrationsAssembly(typeof(IntegrationDbContext).Assembly.FullName)
+                    ));
+
+                // 🚀 STABILIZED: Explicitly register your Security Cryptographic Keys DB using the same SQL connection
+                services.AddDbContext<DataProtectionDbContext>(options =>
+                    options.UseSqlServer(
+                        conn,
+                        b => b.MigrationsAssembly(typeof(DataProtectionDbContext).Assembly.FullName)
                     ));
             }
             catch (Exception ex)
@@ -38,6 +49,12 @@ public static class InfrastructureServiceRegistration
                 );
 
                 services.AddDbContext<IntegrationDbContext>(options =>
+                {
+                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
+                });
+
+                // 🚀 STABILIZED: Fallback database setup for security keys on connection exceptions
+                services.AddDbContext<DataProtectionDbContext>(options =>
                 {
                     options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
                 });
@@ -54,6 +71,13 @@ public static class InfrastructureServiceRegistration
                 options.UseInMemoryDatabase("DevInMemory");
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
             });
+
+            // 🚀 STABILIZED: Development fallback in-memory registration for isolated testing tracking
+            services.AddDbContext<DataProtectionDbContext>(options =>
+            {
+                options.UseInMemoryDatabase("SecurityInMemory");
+                options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
+            });
         }
 
         services.AddInfrastructureLayer();
@@ -63,7 +87,13 @@ public static class InfrastructureServiceRegistration
 
     public static IServiceCollection AddInfrastructureLayer(this IServiceCollection services)
     {
-        // Repositories
+        // 🚀 NEW: Register the Background Queue as a Singleton across the application lifetime
+        services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueueService>();
+
+        // 🚀 NEW: Register the continuous background engine hosted process thread
+        services.AddHostedService<QueuedHostedService>();
+
+        // Repositories (100% PRESERVED RELEVANT MAPPINGS FROM YOUR EXISTING CODE)
         services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
@@ -72,19 +102,23 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 
-        // Caching
+        // Caching & ERP Authentication
         services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
-
-        // ERP Authentication
         services.AddScoped<ISageAuthService, SageAuthService>();
 
-        // SageX3
+        // SageX3 Plumbing
         services.AddScoped<ISageX3Client, SageX3Client>();
         services.AddScoped<ISageX3AttachmentService, SageX3AttachmentService>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddHttpClient<OperationalWorkspaceApplication.Services.BusinessPartnerService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
 
         services.AddHttpClient<ISageHttpClient, SageHttpClient>();
 
         return services;
     }
+
 }

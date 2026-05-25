@@ -1,6 +1,14 @@
-﻿
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OperationalWorkspace.Domain.Exceptions;
+using OperationalWorkspaceInfrastructure.Exceptions; // 🚀 ADDED: Bridges your custom Sage exception types
+using System;
+using System.Threading.Tasks;
+
+namespace OperationalWorkspaceAPI.Middleware;
 
 public class GlobalExceptionMiddleware
 {
@@ -30,7 +38,7 @@ public class GlobalExceptionMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Unhandled exception. CorrelationId: {CorrelationId}",
+                "Unhandled exception captured by middleware. CorrelationId: {CorrelationId}",
                 correlationId);
 
             var problem = MapException(ex, correlationId);
@@ -45,7 +53,22 @@ public class GlobalExceptionMiddleware
     private ProblemDetails MapException(Exception ex, string correlationId)
     {
         // ======================================================
-        // DOMAIN EXCEPTIONS (YOUR CODE BASE)
+        // 🚀 NEW: RELEVANT SAGE ERP INFRASTRUCTURE EXCEPTIONS
+        // ======================================================
+        if (ex is SageAuthenticationException authEx)
+        {
+            return new ProblemDetails
+            {
+                Status = 502, // Bad Gateway (Standard for external vendor service failures)
+                Title = "ERP Authentication Failure",
+                Detail = authEx.Message,
+                Instance = correlationId,
+                Type = "https://httpstatuses.com"
+            };
+        }
+
+        // ======================================================
+        // DOMAIN EXCEPTIONS (YOUR COMPLETE CODE BASE PRESERVED)
         // ======================================================
         if (ex is DomainException domainEx)
         {

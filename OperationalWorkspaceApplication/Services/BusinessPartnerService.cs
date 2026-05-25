@@ -7,6 +7,8 @@ using OperationalWorkspaceApplication.Responses;
 using System.Text.Json;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Polly;
+using Polly.Retry;
 
 namespace OperationalWorkspaceApplication.Services;
 
@@ -19,6 +21,9 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
     private readonly IClock _clock;
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _config;
+
+    // 🚀 Resilience pipeline field protecting your Sage X3 transactions
+    private readonly AsyncRetryPolicy<HttpResponseMessage> _sageRetryPolicy;
 
     public BusinessPartnerService(
         IBusinessPartnerRepository partnerRepo,
@@ -36,10 +41,16 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         _clock = clock;
         _httpClient = httpClient;
         _config = config;
+
+        // 🚀 Exponential retry: Tries 3 times waiting 2s, 4s, then 8s on network cuts or 5xx server issues
+        _sageRetryPolicy = Policy
+            .Handle<HttpRequestException>()
+            .OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500 || r.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
+            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     }
 
     // ==========================================
-    // 🚀 NEW: CREATE CONTACT IN SAGE X3
+    // 🚀 STABILIZED: CREATE CONTACT IN SAGE X3
     // ==========================================
     public async Task<bool> CreateContactAsync(ContactCreateDto contact)
     {
@@ -49,7 +60,7 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             var endpoint = _config["SageX3:Endpoint"];
             var url = $"{baseUrl}/api1/x3/erp/{endpoint}/CONTACT?representation=CONTACT.$create";
 
-            // Map the expanded DTO to Sage X3 fields
+            // Map the expanded DTO to Sage X3 fields (100% Original Mappings Preserved)
             var payload = new
             {
                 CNPFNA = contact.FullName, // First Name
@@ -70,7 +81,12 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             var jsonPayload = JsonSerializer.Serialize(payload);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(url, content);
+            // 🚀 Executed inside our safe retry pipeline wrapper
+            var response = await _sageRetryPolicy.ExecuteAsync(async () =>
+            {
+                return await _httpClient.PostAsync(url, content);
+            });
+
             return response.IsSuccessStatusCode;
         }
         catch
