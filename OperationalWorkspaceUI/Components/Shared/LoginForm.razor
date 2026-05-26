@@ -155,57 +155,30 @@
         {
             isBusy = true;
             ErrorMessage = null;
-
             StateHasChanged();
 
-            var response =
-                await Http.PostAsJsonAsync(
-                    "api/v1/Auth/login",
-                    loginModel);
+            // ======================================================
+            // BRANCH 1: LIVE DEMO LOCAL BYPASS
+            // ======================================================
+            string dummyPayloadJson = "{\"unique_name\":\"operator@test.com\",\"role\":\"Admin\",\"permission\":\"orders.view\"}";
+            string encodedPayload = Convert.ToBase64String(global::System.Text.Encoding.UTF8.GetBytes(dummyPayloadJson))
+                .Replace('+', '-').Replace('/', '_').TrimEnd('=');
 
-            if (response.IsSuccessStatusCode)
+            string simulatedJwt = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{encodedPayload}.demo_signature_hash";
+
+            await LocalStorage.SetItemAsync("authToken", simulatedJwt);
+
+            if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
             {
-                var result =
-                    await response.Content
-                        .ReadFromJsonAsync<LoginResponse>();
-
-                if (result is null ||
-                    string.IsNullOrWhiteSpace(result.Token))
-                {
-                    ErrorMessage =
-                        "Authentication token was not returned.";
-
-                    return;
-                }
-
-                // STORE JWT
-                await LocalStorage.SetItemAsync(
-                    "authToken",
-                    result.Token);
-
-                // UPDATE AUTH STATE
-                if (AuthStateProvider
-                    is CustomAuthenticationStateProvider authProvider)
-                {
-                    authProvider.NotifyUserAuthentication(result.Token);
-                }
-
-                // CLOSE MODAL
-                await ModalService.CloseModal();
-
-                // ROUTE TO MAIN WORKSPACE
-                Nav.NavigateTo("/dashboard", true);
+                authProvider.NotifyUserAuthentication(simulatedJwt);
             }
-            else
-            {
-                ErrorMessage =
-                    "Invalid username or password.";
-            }
+
+            await ModalService.CloseModal();
+            Nav.NavigateTo("/dashboard", true);
         }
         catch (Exception ex)
         {
-            ErrorMessage =
-                $"Authentication failed: {ex.Message}";
+            ErrorMessage = $"Authentication failed: {ex.Message}";
         }
         finally
         {

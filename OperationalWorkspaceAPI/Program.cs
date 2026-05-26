@@ -67,11 +67,26 @@ builder.Services.AddHttpClient();
 // ======================================================
 // HANGFIRE BACKGROUND ENGINE REGISTRATION
 // ======================================================
+//builder.Services.AddHangfire(config => config
+//.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+//.UseSimpleAssemblyNameTypeSerializer()
+//.UseRecommendedSerializerSettings()
+//.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ======================================================
+// HANGFIRE BACKGROUND ENGINE REGISTRATION
+// ======================================================
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+    .UseInMemoryStorage()); // Bypasses SQL Server for Hangfire tasks entirely
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = Environment.ProcessorCount * 2;
+});
+
 
 
 builder.Services.AddHangfireServer(options =>

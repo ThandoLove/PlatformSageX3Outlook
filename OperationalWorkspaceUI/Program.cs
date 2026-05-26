@@ -9,8 +9,9 @@ using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
+using OperationalWorkspaceInfrastructure.ExternalServices;
+using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.Services;
-// REMOVED INAPPROPRIATE INFRASTRUCTURE USINGS HERE
 using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
@@ -80,7 +81,6 @@ builder.Services.AddScoped<EventBus>();
 builder.Services.AddScoped<OutlookStateContainer>();
 
 builder.Services.AddScoped<IUserContextService, UserContextService>();
-
 // ======================================================
 // 6. BACKEND REST API NETWORK CHANNELS
 // ======================================================
@@ -111,25 +111,29 @@ builder.Services.AddScoped<AdminDashboardUIService>();
 builder.Services.AddScoped<KnowledgeUIService>();
 
 // ======================================================
-// 8. EMAIL ENRICHMENT & API REDIRECTS (Decoupled From Mock Infrastructure)
+// 8. EMAIL ENRICHMENT & API REDIRECTS
 // ======================================================
 builder.Services.AddScoped<EmailEnrichmentService>();
 
-// CRITICAL FIX: The UI now depends on an API client proxy or application container rather than raw mock files.
-// For now, if you are calling these over HTTP, we point them to application handlers or an API client.
-// If you still need runtime stubs for the frontend to boot, implement them inside the Application layer, not Infrastructure.
+builder.Services.AddScoped<MockUnifiedService>();
+
+builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
+builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
+builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUnifiedService>());
+builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
+builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
+builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
+builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
+builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
+
+builder.Services.AddScoped<IAuditLogService, MockAuditService>();
+builder.Services.AddScoped<ISystemHealthService, MockSystemHealthService>();
 
 // ======================================================
 // 9. TOAST MESSAGING NOTIFICATIONS
 // ======================================================
 builder.Services.AddScoped<IToastUIService, ToastService>();
 builder.Services.AddScoped<ToastService>();
-
-// ======================================================
-// 10. COMPLIANCE AUDIT TRACING SERVICE LOGGERS
-// ======================================================
-// REMOVED: Direct injection of MockAuditService. 
-// Your UI components should log actions by executing an API call or through an application wrapper.
 
 // ======================================================
 // 11. BUILD WEB APPLICATION HOST ENGINE

@@ -1,5 +1,4 @@
-﻿
-@rendermode InteractiveServer
+﻿@rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Components.Authorization
 @using OperationalWorkspaceApplication.DTOs
@@ -42,7 +41,6 @@
             }
             else
             {
-
                 <span>Sign In</span>
             }
         </button>
@@ -62,14 +60,13 @@
     private async Task HandleLogin()
     {
         isBusy = true;
-        var response = await Http.PostAsJsonAsync("api/v1/Auth/login", loginModel);
-        
-        if (response.IsSuccessStatusCode)
-        {
-            // Close modal before redirecting
-            await ModalService.CloseModal();
-            Nav.NavigateTo("/dashboard");
-        }
+
+        // ======================================================
+        // EMERGENCY DEMO HOTFIX
+        // ======================================================
+        await ModalService.CloseModal();
+        Nav.NavigateTo("/dashboard", forceLoad: true);
+
         isBusy = false;
     }
 }

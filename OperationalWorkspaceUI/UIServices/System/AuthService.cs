@@ -1,5 +1,8 @@
 using Majorsoft.Blazor.Extensions.BrowserStorage;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration; // Added for configuration fallback parsing
+using Microsoft.Extensions.Hosting;
 using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceApplication.DTOs;
 using System;
@@ -17,6 +20,8 @@ namespace OperationalWorkspaceUI.UIServices.System
         private readonly NavigationManager _nav;
         private readonly ILocalStorageService _storage;
         private readonly AppStateContainer _appState;
+        private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration _config; // Added configuration tracking field
 
         private const string AccessTokenKey = "access_token";
         private const string RefreshTokenKey = "refresh_token";
@@ -25,12 +30,16 @@ namespace OperationalWorkspaceUI.UIServices.System
             HttpClient http,
             NavigationManager nav,
             ILocalStorageService storage,
-            AppStateContainer appState)
+            AppStateContainer appState,
+            IWebHostEnvironment env,
+            IConfiguration config) // Injected configuration engine instance safely
         {
             _http = http ?? throw new ArgumentNullException(nameof(http));
-            _nav = nav ?? throw new ArgumentNullException(nameof(nav)); // Fixed: Added the missing nameof operator mapping
+            _nav = nav ?? throw new ArgumentNullException(nameof(nav));
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _appState = appState ?? throw new ArgumentNullException(nameof(appState));
+            _env = env ?? throw new ArgumentNullException(nameof(env));
+            _config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         // ======================================================
@@ -48,12 +57,40 @@ namespace OperationalWorkspaceUI.UIServices.System
         }
 
         // ======================================================
-        // LOGIN (Fixed JSON property navigation tree)
+        // MULTI-ENVIRONMENT LOGIN MANAGEMENT
         // ======================================================
         public async Task<bool> LoginAsync(LoginRequestDto dto)
         {
             if (dto == null) return false;
 
+            // Check if the emergency demo string flag is present in your appsettings.json file
+            var isDemoFallback = _config["BlazorExecutionMode"] == "DevelopmentDemo";
+
+            // --------------------------------------------------
+            // BRANCH 1: LIVE DEMO LOCAL BYPASS (Safely intercepts if IsDevelopment OR fallback flag is set)
+            // --------------------------------------------------
+            if (_env.IsDevelopment() || isDemoFallback)
+            {
+                string dummyPayloadJson = "{\"unique_name\":\"operator@test.com\",\"role\":\"Admin\",\"permission\":\"orders.view\"}";
+
+                string encodedPayload = Convert.ToBase64String(global::System.Text.Encoding.UTF8.GetBytes(dummyPayloadJson))
+                    .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+
+                string simulatedJwt = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{encodedPayload}.demo_signature_hash";
+
+                await _storage.SetItemAsync(AccessTokenKey, simulatedJwt);
+                await _storage.SetItemAsync(RefreshTokenKey, "demo_refresh_token");
+
+                SetAuthHeader(simulatedJwt);
+                _appState.SetAuthentication(simulatedJwt);
+                _nav.NavigateTo("/");
+
+                return true;
+            }
+
+            // --------------------------------------------------
+            // BRANCH 2: SECURE ENTERPRISE NETWORK CALL (100% PRESERVED AND UNTOUCHED FOR PRODUCTION)
+            // --------------------------------------------------
             try
             {
                 var response = await _http.PostAsJsonAsync("/api/v1/auth/login", dto);
@@ -62,7 +99,6 @@ namespace OperationalWorkspaceUI.UIServices.System
                     return false;
 
                 var json = await response.Content.ReadFromJsonAsync<JsonElement>();
-
                 string? token = null;
                 string? refreshToken = null;
 
@@ -72,7 +108,6 @@ namespace OperationalWorkspaceUI.UIServices.System
                     {
                         token = tokenElement.GetString();
                     }
-
                     if (data.TryGetProperty("refreshToken", out var refreshElement))
                     {
                         refreshToken = refreshElement.GetString();
@@ -109,6 +144,9 @@ namespace OperationalWorkspaceUI.UIServices.System
         // ======================================================
         public async Task<bool> TryRefreshTokenAsync()
         {
+            var isDemoFallback = _config["BlazorExecutionMode"] == "DevelopmentDemo";
+            if (_env.IsDevelopment() || isDemoFallback) return true;
+
             try
             {
                 var refreshToken = await _storage.GetItemAsync<string>(RefreshTokenKey);

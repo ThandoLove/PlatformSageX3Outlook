@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OperationalWorkspaceApplication\OperationalWorkspaceApplication.csproj" />
+    <ProjectReference Include="..\OperationalWorkspaceInfrastructure\OperationalWorkspaceInfrastructure.csproj" />
    
     <ProjectReference Include="..\SharedProject\OperationalWorkspaceShared.csproj" />
   </ItemGroup>
