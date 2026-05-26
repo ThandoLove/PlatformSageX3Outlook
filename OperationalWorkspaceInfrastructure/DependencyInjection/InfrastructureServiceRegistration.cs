@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp; // Added this using directive
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.IServices;
@@ -87,6 +88,11 @@ public static class InfrastructureServiceRegistration
 
     public static IServiceCollection AddInfrastructureLayer(this IServiceCollection services)
     {
+        // ======================================================
+        // BACKGROUND WORKER REGISTRATION (Priority 2)
+        // ======================================================
+        services.AddScoped<ISageSyncJobs, SageSyncJobs>();
+
         // 🚀 NEW: Register the Background Queue as a Singleton across the application lifetime
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueueService>();
 
@@ -120,5 +126,4 @@ public static class InfrastructureServiceRegistration
 
         return services;
     }
-
 }

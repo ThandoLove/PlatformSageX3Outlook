@@ -1,4 +1,5 @@
 using FluentValidation;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -36,12 +37,22 @@ using OperationalWorkspaceInfrastructure.services;
 using OperationalWorkspaceShared.Validators;
 using Polly;
 using Polly.Extensions.Http;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.RateLimiting;
 
+// Configure global Serilog engine early before host construction
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{CorrelationId}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Inject Serilog provider into host container framework layers
+builder.Host.UseSerilog();
 
 // ======================================================
 // 1. CORE INFRASTRUCTURE
@@ -54,11 +65,28 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
 // ======================================================
+// HANGFIRE BACKGROUND ENGINE REGISTRATION
+// ======================================================
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = Environment.ProcessorCount * 2;
+});
+
+// ======================================================
 // 2. PRODUCTION COMPRESSION & METRICS TELEMETRY
 // ======================================================
 builder.Services.AddProductionCompression();
 builder.Services.AddEnterpriseTelemetry(builder.Configuration, "OperationalWorkspace-API");
 builder.Services.AddEnterpriseHealthChecks(builder.Configuration);
+
+// ======================================================
 
 // ======================================================
 // 3. ENTERPRISE RATE LIMITING CONFIGURATION
@@ -106,7 +134,6 @@ builder.Services.AddRateLimiter(options =>
         });
     });
 });
-
 // ======================================================
 // 4. VALIDATION
 // ======================================================
@@ -127,7 +154,7 @@ builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheS
 builder.Services.AddScoped<IAuthProvider, JwtAuthProvider>();
 
 // ======================================================
-// 7. JWT CONFIGURATION & VALIDATION LAYERS (HARDENED SECURE)
+// 7. JWT CONFIGURATION & VALIDATION LAYERS
 // ======================================================
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PlatformSageX3OutlookBackend";
@@ -135,7 +162,7 @@ var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PlatformSageX3Outloo
 
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
-    throw new InvalidOperationException("CRITICAL CONFIGURATION ERROR: Cryptographic JWT Master Signing Key is missing from the environment configuration layers.");
+    throw new InvalidOperationException("CRITICAL CONFIGURATION ERROR: Cryptographic JWT Master Signing Key is missing.");
 }
 
 if (jwtKey.Length < 32)
@@ -239,7 +266,6 @@ builder.Services.Configure<SageSecurityOptions>(builder.Configuration.GetSection
 // 15. INFRASTRUCTURE SERVICE LAYER REGISTRATION
 // ======================================================
 InfrastructureServiceRegistration.AddInfrastructureServices(builder.Services, builder.Configuration);
-
 // ======================================================
 // 16. AUDIT LAYER STORAGE
 // ======================================================
@@ -329,7 +355,6 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 // ======================================================
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<JwtTokenService>();
-
 // ======================================================
 // 21. BUILD EXECUTABLE APPLICATION CONTEXT
 // ======================================================
@@ -378,13 +403,21 @@ if (app.Environment.IsDevelopment())
 }
 
 // ======================================================
+// HANGFIRE RUNTIME CONTROL DASHBOARD
+// ======================================================
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new LocalDashboardAuthorizationFilter() }
+});
+
+// ======================================================
 // 27. SECURITY ROUTING PIPELINE SEQUENCE
 // ======================================================
 app.UseRouting();
 app.UseRateLimiter();
 app.UseCors("OutlookAddInPolicy");
 app.UseAuthentication();
-app.UseAuthorization(); // Confirms explicit security alignments
+app.UseAuthorization();
 
 // ======================================================
 // 28. STRATEGIC CONTEXT AUDITING MIDDLEWARE BLOCK
@@ -420,4 +453,3 @@ app.MapGet("/metrics", async context =>
 // 31. RUN PROCESS
 // ======================================================
 app.Run();
-

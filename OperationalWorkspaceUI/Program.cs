@@ -1,27 +1,26 @@
 using FluentValidation;
 using Majorsoft.Blazor.Extensions.BrowserStorage;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
+using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
-using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.Services;
+// REMOVED INAPPROPRIATE INFRASTRUCTURE USINGS HERE
 using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
 using OperationalWorkspaceUI.State;
-using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceUI.UIServices.Actions;
 using OperationalWorkspaceUI.UIServices.DashboardUI;
 using OperationalWorkspaceUI.UIServices.EmailService;
 using OperationalWorkspaceUI.UIServices.System;
 using OperationalWorkspaceUI.UIServices.ToastUIService;
 using OperationalWorkspaceUI.UIServices.Workspace;
-
 using Radzen;
 using System;
 using System.Net.Http;
@@ -45,7 +44,6 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenRefreshCoordinator>();
 
-// Enforces structural validation engine support matching your App.razor anti-CSRF changes
 builder.Services.AddAntiforgery();
 
 // ======================================================
@@ -113,22 +111,13 @@ builder.Services.AddScoped<AdminDashboardUIService>();
 builder.Services.AddScoped<KnowledgeUIService>();
 
 // ======================================================
-// 8. EMAIL ENRICHMENT & MOCK SERVICE REDIRECTS (Fixed Mappings)
+// 8. EMAIL ENRICHMENT & API REDIRECTS (Decoupled From Mock Infrastructure)
 // ======================================================
 builder.Services.AddScoped<EmailEnrichmentService>();
 
-// Instantiate the single primary multi-interface concrete service mapping target
-builder.Services.AddScoped<MockUnifiedService>();
-
-// Safely forward implementation redirects down to the single singleton source instance
-builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
+// CRITICAL FIX: The UI now depends on an API client proxy or application container rather than raw mock files.
+// For now, if you are calling these over HTTP, we point them to application handlers or an API client.
+// If you still need runtime stubs for the frontend to boot, implement them inside the Application layer, not Infrastructure.
 
 // ======================================================
 // 9. TOAST MESSAGING NOTIFICATIONS
@@ -139,7 +128,8 @@ builder.Services.AddScoped<ToastService>();
 // ======================================================
 // 10. COMPLIANCE AUDIT TRACING SERVICE LOGGERS
 // ======================================================
-builder.Services.AddScoped<IAuditLogService, MockAuditService>();
+// REMOVED: Direct injection of MockAuditService. 
+// Your UI components should log actions by executing an API call or through an application wrapper.
 
 // ======================================================
 // 11. BUILD WEB APPLICATION HOST ENGINE
@@ -158,7 +148,6 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-// Active server-side token state interceptor mapping rules
 app.UseAntiforgery();
 
 // ======================================================
