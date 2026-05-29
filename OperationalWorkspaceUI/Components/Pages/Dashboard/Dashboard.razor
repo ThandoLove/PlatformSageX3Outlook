@@ -140,9 +140,14 @@
         await DState.LoadDashboardAsync();
 
         // 2. SUBSCRIBE: Listen to states so the UI updates when the Global Toggle or data changes
-        DState.OnChange += StateHasChanged;
-        WState.OnChange += StateHasChanged;
-        AppUIState.OnChange += StateHasChanged; // Listen for theme changes specifically
+        DState.OnChange += Refresh;
+        WState.OnChange += Refresh;
+        AppUIState.OnChange += Refresh; // Listen for theme changes specifically
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -190,8 +195,8 @@
     public void Dispose()
     {
         // 3. CLEANUP
-        DState.OnChange -= StateHasChanged;
-        WState.OnChange -= StateHasChanged;
-        AppUIState.OnChange -= StateHasChanged;
+        DState.OnChange -= Refresh;
+        WState.OnChange -= Refresh;
+        AppUIState.OnChange -= Refresh;
     }
 }

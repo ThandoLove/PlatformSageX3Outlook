@@ -2,18 +2,20 @@
 @page "/tickets/edit/{TicketId:guid}"
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Components.Forms
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceApplication.ApplicationState
 
 @implements IDisposable
-@inject WorkspaceState WState 
+@inject WorkspaceState WState
+@inject AppStateContainer AppState
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
-@inject HttpClient Http
 
 <div class="form-container" style="padding: 20px;">
     <div class="page-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
@@ -25,9 +27,9 @@
 
     <EditForm Model="@_ticket" OnValidSubmit="HandleSubmit">
         <DataAnnotationsValidator />
-        
+
         <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="5">
-            
+
             <div class="form-section" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
                 <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">REQUEST INFORMATION</label>
                 <FluentGrid>
@@ -51,7 +53,7 @@
                 <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">SAGE X3 CONTEXT</label>
                 <FluentGrid>
                     <FluentGridItem xs="12" sm="4">
-                        <FluentTextField Label="Customer Name" @bind-Value="_ticket.CustomerName" Placeholder="e.g. Tech Innovations" Style="width: 100%;" />
+                        <FluentTextField Label="Customer Name" @bind-Value="_ticket.CustomerName" Readonly="@IsEmailContextLive" Placeholder="e.g. Tech Innovations" Style="width: 100%;" />
                     </FluentGridItem>
                     <FluentGridItem xs="12" sm="4">
                         <FluentTextField Label="Site Code" @bind-Value="_ticket.SiteCode" Placeholder="e.g. AO011" Style="width: 100%;" />
@@ -84,14 +86,14 @@
     [Parameter] public Guid? TicketId { get; set; }
 
     private TicketDto _ticket = new();
+    private bool IsEmailContextLive => AppState.CurrentEmail != null;
 
     protected override void OnInitialized()
     {
-        WState.OnChange += StateHasChanged;
+        WState.OnChange += Refresh;
 
         if (TicketId.HasValue)
         {
-            // Pull from the same WState list the grid uses
             var existing = WState.Tickets.FirstOrDefault(t => t.Id == TicketId.Value);
             if (existing != null)
             {
@@ -100,43 +102,49 @@
         }
         else
         {
-            _ticket = new TicketDto { Status = "Open", CreatedAt = DateTime.Now, Priority = "Medium" };
+            // Intelligent pre-filling evaluation loop
+            string resolvedCustomer = AppState.MatchedClient?.FullName ?? AppState.CurrentEmail?.SenderName ?? string.Empty;
+            string resolvedSubject = AppState.CurrentEmail?.Subject ?? string.Empty;
+
+            _ticket = new TicketDto
+            {
+                Status = "Open",
+                CreatedAt = DateTime.Now,
+                Priority = "Medium",
+                CustomerName = resolvedCustomer,
+                Title = resolvedSubject
+            };
         }
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task HandleSubmit()
     {
         if (TicketId == null)
         {
-            // 1. Finalize DTO Data
             _ticket.Id = Guid.NewGuid();
             _ticket.TicketNumber = $"TKT-{Random.Shared.Next(1000, 9999)}";
 
-            // 2. Simulate API Call (Comment this out if not using a real endpoint yet)
-            // var response = await Http.PostAsJsonAsync("api/tickets/create", _ticket);
-            
-            // 3. INTERNAL UPDATE: Add to the shared list
             WState.Tickets.Add(_ticket);
-
-            // 4. THE SYNC: This forces the grid page and dashboard to refresh
             WState.Notify();
 
             ToastService.ShowSuccess("New Ticket Created and Synced.");
         }
         else
         {
-            // For updates, the object is already in the list (Reference type), 
-            // so we just notify the app of the change.
             WState.Notify();
             ToastService.ShowSuccess("Ticket Updated.");
         }
-        
-        // 5. Go back to the list
+
         NavManager.NavigateTo("/tickets");
     }
 
     public void Dispose()
     {
-        WState.OnChange -= StateHasChanged;
+        WState.OnChange -= Refresh;
     }
 }

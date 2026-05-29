@@ -55,7 +55,12 @@
     [Parameter] public TaskDto? Task { get; set; }
     private string EscalationNote { get; set; } = "";
 
-    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    protected override void OnInitialized() => State.OnChange += Refresh;
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
 
     private void PerformEscalation()
     {
@@ -78,5 +83,5 @@
         State.NotifyStateChanged();
     }
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose() => State.OnChange -= Refresh;
 }

@@ -1,8 +1,8 @@
 ﻿@page "/forms/attach-email"
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.FluentUI.AspNetCore.Components
-@* FIXED: Added the Icons alias *@
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.Actions
@@ -22,14 +22,12 @@
 
     @if (AppState.CurrentEmail == null)
     {
-        <div class="dashboard-placeholder">
-            @* FIXED: Swapped MailSettings for Mail, which exists in Size48 *@
+        <div class="dashboard-placeholder" style="text-align: center; padding: 40px; color: #64748b;">
             <FluentIcon Value="@(new Icons.Regular.Size48.Mail())" Color="Color.Disabled" />
-            <p>No email selected. Please select an email to attach.</p>
+            <p style="margin: 16px 0; font-size: 0.9rem;">No active email context loaded. Please select an email from the Outlook panel to execute record linkage.</p>
             <FluentButton Appearance="Appearance.Outline" OnClick="HandleCancel">Return to Dashboard</FluentButton>
         </div>
     }
-
     else
     {
         <EditForm Model="Model" OnValidSubmit="HandleSubmit">
@@ -37,20 +35,17 @@
 
             @* SECTION 1: EMAIL SOURCE INFO *@
             <div class="sage-form-group">
-                @* FIXED: Changed Typography.Caption to Typography.Body *@
                 <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">SOURCE EMAIL</FluentLabel>
-                <div style="background-color: #f9f9f9; padding: 12px; border-radius: 4px; border: 1px solid #edebe9;">
+                <div style="background-color: #f9f9f9; padding: 12px; border-radius: 4px; border: 1px solid #edebe9; margin-top: 8px;">
                     <FluentTextField Label="Subject" Value="@AppState.CurrentEmail.Subject" Readonly="true" FullWidth="true" />
-                    <FluentTextField Label="From" Value="@AppState.CurrentEmail.From" Readonly="true" FullWidth="true" Style="margin-top: 8px;" />
+                    <FluentTextField Label="From" Value="@AppState.CurrentEmail.SenderName" Readonly="true" FullWidth="true" Style="margin-top: 8px;" />
                 </div>
             </div>
 
             @* SECTION 2: TARGET RECORD *@
             <div class="sage-form-group" style="margin-top: 24px;">
-                @* FIXED: Changed Typography.Caption to Typography.Body *@
                 <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">TARGET RECORD</FluentLabel>
-                <div class="form-grid-2-col">
-                    @* FIXED: Added TOption="string" *@
+                <div class="form-grid-2-col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px;">
                     <FluentSelect Label="Entity Type" TOption="string" @bind-Value="Model.EntityType" Style="width: 100%;">
                         <FluentOption TOption="string" Value="Client">Client / Business Partner</FluentOption>
                         <FluentOption TOption="string" Value="Order">Sales Order</FluentOption>
@@ -81,10 +76,12 @@
 
     private async Task HandleSubmit()
     {
+        if (AppState.CurrentEmail == null) return;
+
         try
         {
             await Actions.AttachEmailAsync(Model);
-            
+
             Notifications.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
@@ -92,7 +89,7 @@
                 Detail = "Email successfully linked to Sage X3 record.",
                 Duration = 4000
             });
-            
+
             NavManager.NavigateTo("/dashboard");
         }
         catch (Exception ex)

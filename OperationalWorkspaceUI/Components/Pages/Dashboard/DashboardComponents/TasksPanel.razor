@@ -116,7 +116,12 @@
     protected override void OnInitialized()
     {
         // Now listening to WState
-        WState.OnChange += StateHasChanged;
+        WState.OnChange += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private void SetTab(string tab) => ActiveTab = tab;
@@ -140,6 +145,6 @@
 
     public void Dispose()
     {
-        WState.OnChange -= StateHasChanged;
+        WState.OnChange -= Refresh;
     }
 }

@@ -7,7 +7,7 @@
 @inject IJSRuntime JS
 
 <div class="sage-topbar-master">
-    
+
     @* ZONE 1: LEFT - Branding & Dynamic Title *@
     <div class="zone-left">
         <span class="sage-brand-text">SAGE X3 CONTEXTUAL WORKSPACE</span>
@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    @* ZONE 3: RIGHT - Status and Profile (Toggle component DELETED) *@
+    @* ZONE 3: RIGHT - Status and Profile *@
     <div class="zone-right">
         <div class="connection-status">
             <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
@@ -44,22 +44,28 @@
 
 @code {
     private string PageTitle { get; set; } = "Dashboard";
-    private string DisplayName => !string.IsNullOrEmpty(UIState.UserName) ? UIState.UserName : "John Smith";
+
+    // Fallback checks UIState first. If empty, falls back safely to production dummy data.
+    private string DisplayName => !string.IsNullOrWhiteSpace(UIState.UserName) ? UIState.UserName : "John Smith";
 
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
-        UIState.OnChange += StateHasChanged;
+        UIState.OnChange += HandleStateChanged;
         UpdatePageTitle();
     }
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         UpdatePageTitle();
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
-    // ToggleTheme Method deleted to stop color interference
+    private void HandleStateChanged()
+    {
+        // Safe thread execution update when UIState changes asynchronously on login
+        InvokeAsync(StateHasChanged);
+    }
 
     private void UpdatePageTitle()
     {
@@ -87,14 +93,12 @@
             PageTitle = "Admin Dashboard";
         else if (relativePath.StartsWith("admin-tasks"))
             PageTitle = "Admin Tasks";
-        else if (relativePath.StartsWith("/admin/users"))
+        else if (relativePath.StartsWith("admin/users")) // Cleaned absolute leading slash
             PageTitle = "Users";
-        else if (relativePath.StartsWith("/admin/audit-logs"))
+        else if (relativePath.StartsWith("admin/audit-logs")) // Cleaned absolute leading slash
             PageTitle = "Audit Logs";
-        else if (relativePath.StartsWith("/admin/system-health"))
+        else if (relativePath.StartsWith("admin/system-health")) // Cleaned absolute leading slash
             PageTitle = "System Health";
-
-
         else
             PageTitle = "Workspace";
     }
@@ -102,6 +106,6 @@
     public void Dispose()
     {
         Nav.LocationChanged -= HandleLocationChanged;
-        UIState.OnChange -= StateHasChanged;
+        UIState.OnChange -= HandleStateChanged;
     }
 }

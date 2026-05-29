@@ -57,7 +57,12 @@
     // Mock data for the dropdown - in production, fetch this from a UserService
     private List<string> MockEmployees = new() { "John Doe", "Jane Smith", "Robert Brown", "Sarah Wilson" };
 
-    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    protected override void OnInitialized() => State.OnChange += Refresh;
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
 
     private void HandleEmployeeChange(ChangeEventArgs e) => ApplyFilters();
     private void HandleDepartmentChange(ChangeEventArgs e) => ApplyFilters();
@@ -75,6 +80,6 @@
         await State.LoadDashboardAsync(isAdmin: true);
     }
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose() => State.OnChange -= Refresh;
 }
 

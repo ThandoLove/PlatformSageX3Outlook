@@ -72,13 +72,18 @@
 
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
+        State.OnChange += Refresh;
 
         // Auto-refresh timer (60s)
         _refreshTimer = new System.Threading.Timer(async _ =>
         {
             await ManualRefresh();
         }, null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task ManualRefresh()
@@ -98,7 +103,7 @@
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
+        State.OnChange -= Refresh;
         _refreshTimer?.Dispose();
     }
 }

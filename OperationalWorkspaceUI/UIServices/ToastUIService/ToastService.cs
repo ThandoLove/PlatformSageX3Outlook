@@ -1,6 +1,6 @@
 ﻿using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspace.Domain.Enums;
-// Fix 1: Use global:: to force the compiler to find the real .NET System.Timers
+using System;
 using Timer = global::System.Timers.Timer;
 
 namespace OperationalWorkspaceUI.UIServices.ToastUIService
@@ -24,18 +24,28 @@ namespace OperationalWorkspaceUI.UIServices.ToastUIService
 
         private void StartCountdown()
         {
-            if (_countdown == null)
-            {
-                // Fix 2: Again, use global:: here to be absolutely safe
-                _countdown = new global::System.Timers.Timer(5000);
-                _countdown.Elapsed += (s, e) => OnHide?.Invoke();
-                _countdown.AutoReset = false;
-            }
-
-            if (_countdown.Enabled)
+            // 🚀 STABILIZED TIMER RESET MECHANISM:
+            // If a timer already exists from a previous alert, completely kill and stop it.
+            // This resets the countdown buffer cleanly so overlapping click alerts don't stack up or freeze.
+            if (_countdown != null)
             {
                 _countdown.Stop();
+                _countdown.Dispose();
+                _countdown = null;
             }
+
+            // Create a completely clean 3000ms (3 seconds) window. 
+            // 5 seconds feels way too long and makes the user think the UI is locked up.
+            _countdown = new global::System.Timers.Timer(3000);
+
+            _countdown.Elapsed += (s, e) =>
+            {
+                // Ensure the timer explicitly cleans up after it finishes executing its hide invoke
+                _countdown?.Stop();
+                OnHide?.Invoke();
+            };
+
+            _countdown.AutoReset = false;
             _countdown.Start();
         }
 
@@ -45,6 +55,7 @@ namespace OperationalWorkspaceUI.UIServices.ToastUIService
             {
                 _countdown.Stop();
                 _countdown.Dispose();
+                _countdown = null;
             }
         }
     }

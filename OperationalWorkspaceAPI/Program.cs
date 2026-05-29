@@ -64,6 +64,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
+// UNIFICATION HOOK: Registers the Blazor Server component tree inside the API application host execution scope
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents(o => o.DetailedErrors = true);
 // ======================================================
 // HANGFIRE BACKGROUND ENGINE REGISTRATION
 // ======================================================
@@ -449,6 +452,10 @@ app.UseMiddleware<PerformanceTrackingMiddleware>();
 // ======================================================
 app.MapControllers();
 app.MapCustomHealthEndpoints();
+
+// CRITICAL HOOK: Tells your API server to natively render your Blazor App component
+app.MapRazorComponents<OperationalWorkspaceUI.Components.App>()
+    .AddInteractiveServerRenderMode();
 app.MapFallbackToFile("index.html");
 
 // ======================================================

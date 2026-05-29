@@ -57,7 +57,12 @@
         public List<ClientDto>? Clients { get; set; }
     
 
-    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    protected override void OnInitialized() => State.OnChange += Refresh;
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
 
     private string GetOverdueAmount()
     {
@@ -68,7 +73,7 @@
         return "12,500";
     }
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose() => State.OnChange -= Refresh;
 
     }
 

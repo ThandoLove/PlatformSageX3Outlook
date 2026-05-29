@@ -76,7 +76,15 @@
 </div>
 
 @code {
-    protected override void OnInitialized() => State.OnChange += StateHasChanged;
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    protected override void OnInitialized()
+    {
+        State.OnChange += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+    public void Dispose() => State.OnChange -= Refresh;
 }
 

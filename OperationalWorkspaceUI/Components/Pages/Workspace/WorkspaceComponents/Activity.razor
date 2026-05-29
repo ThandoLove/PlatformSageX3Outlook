@@ -98,7 +98,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        State.OnChange += StateHasChanged;
+        State.OnChange += Refresh;
 
         if (State.ActivityLogs == null || !State.ActivityLogs.Any())
         {
@@ -106,6 +106,10 @@
         }
     }
 
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
     private async Task Reload()
     {
         var databaseLogs = await ActivityService.GetActivitiesAsync();
@@ -148,6 +152,6 @@
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
+        State.OnChange -= Refresh;
     }
 }

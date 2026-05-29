@@ -75,7 +75,12 @@
     protected override void OnInitialized()
     {
         // Listen for changes (like when a new ticket is added from the form page)
-        WState.OnChange += StateHasChanged;
+        WState.OnChange += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private void HandleTabChange(FluentTab tab)
@@ -87,5 +92,5 @@
     private void EditTicket(TicketDto ticket) =>
         NavManager.NavigateTo($"{AppRoutes.Tickets}/edit/{ticket.Id}");
 
-    public void Dispose() => WState.OnChange -= StateHasChanged;
+    public void Dispose() => WState.OnChange -= Refresh;
 }

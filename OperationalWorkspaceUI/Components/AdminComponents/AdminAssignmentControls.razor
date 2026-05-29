@@ -60,7 +60,12 @@
         ("Sarah Wilson", "sarah.w@company.com", "Logistics")
     };
 
-    protected override void OnInitialized() => State.OnChange += StateHasChanged;
+    protected override void OnInitialized() => State.OnChange += Refresh;
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
 
     private async Task ExecuteReassignment()
     {
@@ -117,5 +122,5 @@
         }
     }
 
-    public void Dispose() => State.OnChange -= StateHasChanged;
+    public void Dispose() => State.OnChange -= Refresh;
 }

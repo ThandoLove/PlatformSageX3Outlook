@@ -166,10 +166,11 @@
     }
 
 /* =========================================================
-   SECONDARY BUTTON
+   SECONDARY BUTTON & WELCOME FALLBACKS
 ========================================================= */
 
-.btn-secondary {
+/* FIXED: Added your custom class right here to inherit the rounded modern frame configuration */
+.btn-secondary, .btn-welcome-secondary {
     height: 52px;
     padding: 0 28px;
     border-radius: 12px;
@@ -178,11 +179,15 @@
     color: white;
     font-size: 0.92rem;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     cursor: pointer;
     transition: 0.2s ease;
 }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover, .btn-welcome-secondary:hover {
         background: rgba(255,255,255,0.08);
     }
 
@@ -210,8 +215,10 @@
     }
 
     .btn-primary,
-    .btn-secondary {
+    .btn-secondary,
+    .btn-welcome-secondary {
         width: 100%;
         justify-content: center;
     }
 }
+

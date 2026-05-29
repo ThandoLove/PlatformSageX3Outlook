@@ -63,7 +63,12 @@
 
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
+        State.OnChange += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     // Fix 3: Full path for Return Type 'Icon'
@@ -78,6 +83,6 @@
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
+        State.OnChange -= Refresh;
     }
 }

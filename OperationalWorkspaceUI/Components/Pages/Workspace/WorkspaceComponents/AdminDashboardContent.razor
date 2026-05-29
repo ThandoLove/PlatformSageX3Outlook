@@ -197,11 +197,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        DashboardState.OnChange += StateHasChanged;
+        DashboardState.OnChange += Refresh;
 
         await LoadDashboard();
     }
 
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
     private async Task LoadDashboard()
     {
         CurrentUser =
@@ -236,7 +240,7 @@
 
     public void Dispose()
     {
-        DashboardState.OnChange -= StateHasChanged;
+        DashboardState.OnChange -= Refresh;
     }
 
 }

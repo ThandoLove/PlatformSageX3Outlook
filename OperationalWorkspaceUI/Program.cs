@@ -7,11 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
 using OperationalWorkspaceApplication.ApplicationState;
+using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
-using OperationalWorkspaceInfrastructure.ExternalServices;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.Services;
+using OperationalWorkspaceInfrastructure.servicesInfra.BackgroundWorkers;
 using OperationalWorkspaceShared.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
@@ -77,6 +78,8 @@ builder.Services.AddScoped<SageStateService>();
 
 builder.Services.AddScoped<AppStateContainer>();
 builder.Services.AddScoped<EventBus>();
+builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueueService>();
+builder.Services.AddScoped<ISageSyncJobs, SageSyncJobs>();
 
 builder.Services.AddScoped<OutlookStateContainer>();
 

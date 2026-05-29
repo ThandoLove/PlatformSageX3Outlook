@@ -2,7 +2,6 @@
 @using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceApplication.ApplicationState
 @using OperationalWorkspaceUI.Components.Pages.Forms
-
 @using OperationalWorkspaceUI.UIServices.System
 
 @inject OperationalWorkspaceUI.State.EmailContextState EmailState
@@ -15,7 +14,7 @@
     @* 1. Add Partner (Blue) *@
     <button class="action-tile action-blue" @onclick='() => OpenModal<NewContactForm>("Add Business Partner")'>
         <FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" Color="Color.Custom" CustomColor="#ffffff" />
-        <span>Add Partner</span>
+        <span>Add Contact</span>
     </button>
 
     @* 2. Link Existing (Teal) *@
@@ -27,19 +26,19 @@
     @* 3. Create Quote (Orange) *@
     <button class="action-tile action-orange" @onclick='() => OpenModal<CreateQuoteForm>("Create Sage Quote")'>
         <FluentIcon Value="@(new Icons.Regular.Size20.DocumentAdd())" Color="Color.Custom" CustomColor="#ffffff" />
-        <span>Create Quote</span>
+        <span>Add Quote</span>
     </button>
 
     @* 4. Add Sales (Indigo) *@
     <button class="action-tile action-indigo" @onclick='() => OpenModal<AddSalesOrderForm>("New Sales Order")'>
         <FluentIcon Value="@(new Icons.Regular.Size20.Cart())" Color="Color.Custom" CustomColor="#ffffff" />
-        <span>Add Sales</span>
+        <span>Create Ticket</span>
     </button>
 
     @* 5. Create Invoice (Navy) *@
     <button class="action-tile action-navy" @onclick='() => NavigateToSage("GESPNH", "NEW")'>
         <FluentIcon Value="@(new Icons.Regular.Size20.Document())" Color="Color.Custom" CustomColor="#ffffff" />
-        <span>Create Invoice</span>
+        <span>Add Invoice</span>
     </button>
 
     @* 6. Attach Email (Green) *@
@@ -52,23 +51,59 @@
 @code {
     private async Task OpenModal<TComponent>(string title) where TComponent : IComponent
     {
+        // 🚀 RESOLVED: Using exact string title matching instead of unstable assembly type tracking.
+        // This guarantees Add Contact and Create Ticket completely bypass the email validation block,
+        // whether an email is active or completely unselected.
+        bool isContactOrTicket = title == "Add Business Partner" ||
+                                 title == "New Sales Order";
+
+        if (!isContactOrTicket && AppState.CurrentEmail == null)
+        {
+            ToastService.ShowError("Please select an email first.");
+            return;
+        }
+
+        // Extract parameters safely if an email is present
+        string? emailParam = AppState.CurrentEmail?.SenderEmail;
+        string? nameParam = AppState.CurrentEmail?.SenderName;
+
+        await ModalService.ShowModal(title, builder =>
+        {
+            builder.OpenComponent<TComponent>(0);
+            builder.AddAttribute(1, "Email", emailParam);
+            builder.AddAttribute(2, "FullName", nameParam);
+            builder.CloseComponent();
+        });
+
+        // Clear any residual click-shields when the modal frame closes
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task NavigateToSage(string functionCode, string action)
+    {
         if (AppState.CurrentEmail == null)
         {
             ToastService.ShowError("Please select an email first.");
             return;
         }
 
-        await ModalService.ShowModal(title, builder =>
+        try
         {
-            builder.OpenComponent<TComponent>(0);
-            builder.AddAttribute(1, "Email", AppState.CurrentEmail.SenderEmail);
-            builder.AddAttribute(2, "FullName", AppState.CurrentEmail.SenderName);
-            builder.CloseComponent();
-        });
-    }
+            bool isBridgeReady = await JS.InvokeAsync<bool>("eval", "typeof window.officeBridge !== 'undefined' && typeof window.officeBridge.openSageRecord === 'function'");
 
-    private async Task NavigateToSage(string functionCode, string action)
-    {
-        await JS.InvokeVoidAsync("officeBridge.openSageRecord", functionCode, action);
+            if (!isBridgeReady)
+            {
+                ToastService.ShowError("Outlook Script Integration engine is initializing. Try again shortly.");
+                return;
+            }
+
+            await JS.InvokeVoidAsync("officeBridge.openSageRecord", functionCode, action);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to dispatch JS call to officeBridge.openSageRecord: {ex.Message}");
+            ToastService.ShowError("Communication bridge connection failure.");
+        }
     }
 }
+

@@ -151,16 +151,25 @@
 
     protected override async Task OnInitializedAsync()
     {
-        DashboardState.OnChange += StateHasChanged;
+        DashboardState.OnChange += Refresh;
+
+
 
         CurrentUser = await UserContextService.GetCurrentUserAsync();
 
-        StateHasChanged();
+        
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        DashboardState.OnChange -= StateHasChanged;
+        DashboardState.OnChange -= Refresh;
     }
+
+
 
 }

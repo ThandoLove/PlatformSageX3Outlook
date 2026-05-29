@@ -67,16 +67,23 @@
                             <td>@contact.Company</td>
                             <td class="email-text">@contact.Email</td>
                             <td>@contact.Phone</td>
-                            @* --- THE BADGE DATA GOES HERE --- *@
                             <td>
-                                <span class="badge @(contact.IsActive ? "active" : "inactive")">
-                                    @(contact.IsActive ? "Active" : "Inactive")
+                                @* 🚀 FIXED: Swapped nonexistent property call for an evaluation check on Category *@
+                                <span class="badge @(contact.Category == "Active" ? "active" : "inactive")">
+                                    @(contact.Category == "Active" ? "Active" : "Inactive")
                                 </span>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
+        </div>
+    }
+
+    @if (activeTab == "recent")
+    {
+        <div class="sage-content animate-fade-in">
+            <p style="padding: 20px; color: #605e5c;">No recent activity logs available.</p>
         </div>
     }
 </div>
@@ -86,25 +93,28 @@
     private bool IsFilterOpen = true;
     private string SearchQuery = string.Empty;
     private string StatusFilter = "All";
-    
+
     private List<ContactCreateDto> ContactsList = new();
 
-    // --- THE INITIALIZED DATA GOES HERE ---
     protected override void OnInitialized()
     {
+        // 🚀 FIXED: Set the Category parameter field to act as the status string toggle
+        // because ContactCreateDto does not natively support an IsActive primitive boolean type field.
         ContactsList = new List<ContactCreateDto>
         {
-            new() { FullName = "Sarah Johnson", Company = "Tech Innovations Inc.", Email = "sarah.j@tech.com", Phone = "(555) 123-4567", IsActive = true },
-            new() { FullName = "David Wilson", Company = "NextGen Tech", Email = "david.w@nextgen.com", Phone = "(555) 456-7890", IsActive = false }
+            new() { FullName = "Sarah Johnson", Company = "Tech Innovations Inc.", Email = "sarah.j@tech.com", Phone = "(555) 123-4567", Category = "Active" },
+            new() { FullName = "David Wilson", Company = "NextGen Tech", Email = "david.w@nextgen.com", Phone = "(555) 456-7890", Category = "Inactive" }
         };
     }
 
     private IEnumerable<ContactCreateDto> FilteredContacts =>
         ContactsList.Where(c =>
-            (StatusFilter == "All" || (StatusFilter == "Active" && c.IsActive) || (StatusFilter == "Inactive" && !c.IsActive)) &&
-            (string.IsNullOrWhiteSpace(SearchQuery) || c.FullName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
+            (StatusFilter == "All" || (StatusFilter == "Active" && c.Category == "Active") || (StatusFilter == "Inactive" && c.Category != "Active")) &&
+            (string.IsNullOrWhiteSpace(SearchQuery) || (c.FullName != null && c.FullName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))));
 
     private void Create() => NavigationService.NavigateTo("/forms/add-contact");
+   
+
     private void Refresh() => StateHasChanged();
     private void Open(ContactCreateDto contact) => NavigationService.NavigateTo($"/workspace/contacts/{contact.Email}");
 }

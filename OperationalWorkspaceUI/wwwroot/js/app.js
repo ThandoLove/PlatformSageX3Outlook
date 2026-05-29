@@ -35,6 +35,10 @@ window.dashboardCharts = {
 // 2. OFFICE.JS BRIDGE (FIXED)
 // =========================
 
+// =========================
+// 2. OFFICE.JS BRIDGE (FIXED)
+// =========================
+
 window.officeBridge = {
     initialize: function (dotNetHelper) {
 
@@ -47,7 +51,8 @@ window.officeBridge = {
 
             setInterval(async () => {
                 try {
-                    const resp = await fetch('/api/testemail/latest');
+                    // FIX: Changed relative path to use your exact backend API host port 7123
+                    const resp = await fetch('https://localhost:7123/api/testemail/latest');
                     if (!resp.ok) return;
 
                     const json = await resp.json();
@@ -74,6 +79,7 @@ window.officeBridge = {
 
             return; // 🔥 IMPORTANT: stop here in browser mode
         }
+
 
 
         // =========================

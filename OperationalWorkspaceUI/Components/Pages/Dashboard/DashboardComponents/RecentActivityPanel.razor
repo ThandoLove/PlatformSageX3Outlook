@@ -60,7 +60,12 @@
 @code {
     protected override void OnInitialized()
     {
-        WState.OnChange += StateHasChanged;
+        WState.OnChange += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private string GetDateHeader(DateTime date)

@@ -5,4 +5,6 @@ public interface ITenantContext
 {
     string Company { get; }
     string Dataset { get; }
+
+   
 }

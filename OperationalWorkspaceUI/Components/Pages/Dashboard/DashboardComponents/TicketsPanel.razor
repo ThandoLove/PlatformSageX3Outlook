@@ -62,11 +62,16 @@
     protected override void OnInitialized()
     {
         // LISTEN: Update this tile if tickets are added/deleted on other pages
-        WState.OnChange += StateHasChanged;
+        WState.OnChange += Refresh;
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        WState.OnChange -= StateHasChanged;
+        WState.OnChange -= Refresh;
     }
 }

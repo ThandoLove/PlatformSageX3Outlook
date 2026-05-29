@@ -85,7 +85,7 @@
     protected override async Task OnInitializedAsync()
     {
         // Sync with the global state event so the overlay appears instantly
-        WorkspaceState.OnChange += StateHasChanged;
+        WorkspaceState.OnChange += Refresh;
 
         if (WorkspaceState.Attachments == null)
         {
@@ -94,6 +94,11 @@
                 Guid.NewGuid(), name, "application/octet-stream", 0, $"/files/{name}", "General", DateTime.UtcNow
             )).ToList();
         }
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task Attach(string fileName)
@@ -119,7 +124,7 @@
     // Clean up to prevent memory leaks
     public void Dispose()
     {
-        WorkspaceState.OnChange -= StateHasChanged;
+        WorkspaceState.OnChange -= Refresh;
     }
 
     private Microsoft.FluentUI.AspNetCore.Components.Icon GetFileIcon(string name) => name.ToLower().EndsWith(".pdf") ? new Icons.Filled.Size20.DocumentPdf() : new Icons.Filled.Size20.DocumentBulletList();

@@ -101,8 +101,13 @@
 
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
-        AdminState.OnChange += StateHasChanged; // Listen to Admin state too
+        State.OnChange += Refresh;
+        AdminState.OnChange += Refresh;// Listen to Admin state too
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private void ToggleFilter() => IsFilterOpen = !IsFilterOpen;
@@ -140,7 +145,7 @@
 
     public void Dispose()
     {
-        State.OnChange -= StateHasChanged;
-        AdminState.OnChange -= StateHasChanged;
+        State.OnChange -= Refresh;
+        AdminState.OnChange -= Refresh;
     }
 }

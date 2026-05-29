@@ -2,12 +2,13 @@
 @layout EmptyLayout
 @rendermode InteractiveServer
 
-
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceUI.Components
 
 @inject NavigationManager Nav
 @inject IJSRuntime JS
-@inject ModalService ModalService
+@inject ModalService ModalService  
+
 
 <PageTitle>Sage X3 Workspace</PageTitle>
 
@@ -66,38 +67,48 @@
 
                 </button>
 
-                <button class="btn-secondary">
-                    Learn More
+                <!-- The professional Fluent UI layout action hook -->
+                <button type="button" class="btn-welcome-secondary" @onclick="OpenPlatformDocs">
+                    <i class="ms-Icon ms-Icon--Info"></i> Learn More
                 </button>
 
-            </div> <!-- FIXED: Closed actions container -->
+            </div>
 
-        </div> <!-- FIXED: Closed content container -->
+        </div>
 
-    </section> <!-- FIXED: Closed hero block -->
+    </section>
 
-</div> <!-- FIXED: Closed root layout framework -->
+</div>
+
 @code {
     private bool isDark = false;
 
-    // 🟢 FIXED: Created missing theme controller to execute light/dark styles
     private async Task ToggleTheme()
     {
         isDark = !isDark;
-        
-        // Triggers your project's global stylesheet modifier if present
         await JS.InvokeVoidAsync("localStorage.setItem", "theme", isDark ? "dark" : "light");
         StateHasChanged();
     }
 
-    // 🟢 FIXED: Implemented missing handler targeting your Modal Service overlay
+    private async Task OpenPlatformDocs()
+    {
+        RenderFragment docsFragment = __builder =>
+        {
+            <PlatformDocsDialog />
+        };
+
+        await ModalService.ShowModal(
+            title: "Platform Overview & Architectural Scope",
+            content: docsFragment
+        );
+    }
+
     private async Task ShowLogin()
     {
         await ModalService.ShowModal("Sign In", builder =>
         {
-            builder.OpenComponent<
-                OperationalWorkspaceUI.Components.Shared.LoginForm>(0);
-
+            // Dynamically instantiates your LoginForm layout panel when clicked
+            builder.OpenComponent<OperationalWorkspaceUI.Components.Shared.LoginForm>(0);
             builder.CloseComponent();
         });
     }

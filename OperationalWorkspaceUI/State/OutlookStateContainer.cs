@@ -1,8 +1,5 @@
-﻿
-using System;
+﻿using System;
 using OperationalWorkspaceApplication.DTOs;
-
-
 namespace OperationalWorkspaceUI.State;
 
 public interface IOutlookStateContainer
@@ -11,26 +8,30 @@ public interface IOutlookStateContainer
     string? CurrentSenderEmail { get; set; }
     BusinessPartnerSnapshotDto? ActivePartnerSnapshot { get; set; }
     event Action? OnStateChanged;
-    void UpdateState(string messageId, string senderEmail, BusinessPartnerSnapshotDto? snapshot);
+    void UpdateState(
+    string messageId,
+    string senderEmail,
+    BusinessPartnerSnapshotDto? snapshot);
     void Reset();
 }
-
-public sealed class OutlookStateContainer : IOutlookStateContainer
+public sealed class OutlookStateContainer :
+IOutlookStateContainer,
+IDisposable
 {
     public string? CurrentMessageId { get; set; }
     public string? CurrentSenderEmail { get; set; }
     public BusinessPartnerSnapshotDto? ActivePartnerSnapshot { get; set; }
-
     public event Action? OnStateChanged;
-
-    public void UpdateState(string messageId, string senderEmail, BusinessPartnerSnapshotDto? snapshot)
+    public void UpdateState(
+    string messageId,
+    string senderEmail,
+    BusinessPartnerSnapshotDto? snapshot)
     {
         CurrentMessageId = messageId;
         CurrentSenderEmail = senderEmail;
         ActivePartnerSnapshot = snapshot;
         NotifyStateChanged();
     }
-
     public void Reset()
     {
         CurrentMessageId = null;
@@ -38,6 +39,15 @@ public sealed class OutlookStateContainer : IOutlookStateContainer
         ActivePartnerSnapshot = null;
         NotifyStateChanged();
     }
-
-    private void NotifyStateChanged() => OnStateChanged?.Invoke();
+    private void NotifyStateChanged()
+    {
+        OnStateChanged?.Invoke();
+    }
+    // ======================================================
+    // MEMORY CLEANUP
+    // ======================================================
+    public void Dispose()
+    {
+        OnStateChanged = null;
+    }
 }

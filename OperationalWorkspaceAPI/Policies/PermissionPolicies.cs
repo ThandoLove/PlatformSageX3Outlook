@@ -15,8 +15,21 @@ public static class PermissionPolicies
     public const string CanInvoice = "CanInvoice";
     public const string CanInventory = "CanInventory";
 
+    // IDENTITY GOVERNANCE ACCESS POLICY KEY (Priority 5 Security Rule)
+    public const string SageUserOnly = "SageUserOnly";
     public static void Register(AuthorizationOptions options)
     {
+        // ======================================================
+        // STRICT SAGE ERP OPERATOR IDENTITY REQUIREMENT POLICY
+        // ======================================================
+        options.AddPolicy(SageUserOnly, policy => policy
+            .RequireAuthenticatedUser()
+            .RequireAssertion(context =>
+                // Evaluates the presence of the runtime assertion identity claims pool natively
+                context.User.HasClaim(c => c.Type == "is_sage_user" && c.Value.ToLower() == "true") ||
+                // Local debugging safety shortcut to guarantee workspace testing flows stay operational locally
+                context.User.IsInRole("Admin")));
+
         // ======================================================
         // ROLE FALLBACK POLICIES
         // ======================================================

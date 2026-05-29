@@ -8,10 +8,13 @@ namespace OperationalWorkspaceApplication.ApplicationState;
 public class AppStateContainer : IDisposable
 {
     // ======================================================
-    // AUTH
+    // AUTH & ENVIRONMENT CONTEXT GOVERNANCE
     // ======================================================
     public bool IsAuthenticated { get; private set; }
     public string? AccessToken { get; private set; }
+
+    // Captures the explicit assigned target environment folder (e.g., "SEED", "PROD")
+    public string ActiveSageEndpoint { get; private set; } = "SEED";
 
     // ======================================================
     // EMAIL
@@ -32,13 +35,15 @@ public class AppStateContainer : IDisposable
     // ======================================================
     public bool IsBusy { get; private set; }
 
+
+
     // ======================================================
     // EVENTS
     // ======================================================
     public event Action? OnChange;
 
     // ======================================================
-    // AUTH ACTIONS
+    // AUTH ACTIONS & SITE GOVERNANCE SETTERS
     // ======================================================
     public void SetAuthentication(string token)
     {
@@ -47,10 +52,18 @@ public class AppStateContainer : IDisposable
         Notify();
     }
 
+    // Direct mutator allowing the login workflow to map environment folders dynamically
+    public void SetActiveSageEndpoint(string folder)
+    {
+        ActiveSageEndpoint = folder;
+        Notify();
+    }
+
     public void ClearAuthentication()
     {
         IsAuthenticated = false;
         AccessToken = null;
+        ActiveSageEndpoint = "SEED"; // Safely defaults context back to seed configurations
         Notify();
     }
 
@@ -126,3 +139,4 @@ public class AppStateContainer : IDisposable
         OnChange = null;
     }
 }
+

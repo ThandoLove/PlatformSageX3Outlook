@@ -54,7 +54,9 @@
 @code {
     protected override void OnInitialized()
     {
-        State.OnChange += StateHasChanged;
+        State.OnChange += Refresh;
+
+
         // EXACT IMAGE DUMMY DATA
         State.AllTasks = new List<TaskDto> {
             new TaskDto { Title = "Issue with Invoice INV-100123", CompanyName = "Brightwave Solutions", Priority = TaskPriority.Urgent, Status = TaskStatus.Assigned, AssignedTo = "Amit Patel", CreatedDate = new DateTime(2025, 5, 6, 9, 15, 0) },
@@ -62,5 +64,10 @@
             new TaskDto { Title = "Develop QTE-7823 Renewal", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Medium, Status = TaskStatus.Assigned, AssignedTo = "John Smith" }
         };
     }
-    public void Dispose() => State.OnChange -= StateHasChanged;
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+    public void Dispose() => State.OnChange -= Refresh;
 }

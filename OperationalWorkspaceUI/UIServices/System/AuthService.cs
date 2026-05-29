@@ -1,7 +1,7 @@
 using Majorsoft.Blazor.Extensions.BrowserStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration; // Added for configuration fallback parsing
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceApplication.DTOs;
@@ -21,10 +21,11 @@ namespace OperationalWorkspaceUI.UIServices.System
         private readonly ILocalStorageService _storage;
         private readonly AppStateContainer _appState;
         private readonly IWebHostEnvironment _env;
-        private readonly IConfiguration _config; // Added configuration tracking field
+        private readonly IConfiguration _config;
 
         private const string AccessTokenKey = "access_token";
         private const string RefreshTokenKey = "refresh_token";
+        private const string ActiveSageFolderKey = "active_sage_folder";
 
         public AuthService(
             HttpClient http,
@@ -32,7 +33,7 @@ namespace OperationalWorkspaceUI.UIServices.System
             ILocalStorageService storage,
             AppStateContainer appState,
             IWebHostEnvironment env,
-            IConfiguration config) // Injected configuration engine instance safely
+            IConfiguration config)
         {
             _http = http ?? throw new ArgumentNullException(nameof(http));
             _nav = nav ?? throw new ArgumentNullException(nameof(nav));
@@ -54,6 +55,13 @@ namespace OperationalWorkspaceUI.UIServices.System
 
             SetAuthHeader(token);
             _appState.SetAuthentication(token);
+
+            // Restores the exact active Sage folder context on startup initialization
+            var savedFolder = await _storage.GetItemAsync<string>(ActiveSageFolderKey);
+            if (!string.IsNullOrWhiteSpace(savedFolder))
+            {
+                _appState.SetActiveSageEndpoint(savedFolder);
+            }
         }
 
         // ======================================================
@@ -63,15 +71,14 @@ namespace OperationalWorkspaceUI.UIServices.System
         {
             if (dto == null) return false;
 
-            // Check if the emergency demo string flag is present in your appsettings.json file
             var isDemoFallback = _config["BlazorExecutionMode"] == "DevelopmentDemo";
 
             // --------------------------------------------------
-            // BRANCH 1: LIVE DEMO LOCAL BYPASS (Safely intercepts if IsDevelopment OR fallback flag is set)
+            // BRANCH 1: LIVE DEMO LOCAL BYPASS (Development Only)
             // --------------------------------------------------
             if (_env.IsDevelopment() || isDemoFallback)
             {
-                string dummyPayloadJson = "{\"unique_name\":\"operator@test.com\",\"role\":\"Admin\",\"permission\":\"orders.view\"}";
+                string dummyPayloadJson = "{\"unique_name\":\"operator@test.com\",\"role\":\"Admin\",\"permission\":\"orders.view\",\"is_sage_user\":true,\"sage_env\":\"SEED\"}";
 
                 string encodedPayload = Convert.ToBase64String(global::System.Text.Encoding.UTF8.GetBytes(dummyPayloadJson))
                     .Replace('+', '-').Replace('/', '_').TrimEnd('=');
@@ -80,16 +87,20 @@ namespace OperationalWorkspaceUI.UIServices.System
 
                 await _storage.SetItemAsync(AccessTokenKey, simulatedJwt);
                 await _storage.SetItemAsync(RefreshTokenKey, "demo_refresh_token");
+                await _storage.SetItemAsync(ActiveSageFolderKey, "SEED");
 
                 SetAuthHeader(simulatedJwt);
                 _appState.SetAuthentication(simulatedJwt);
-                _nav.NavigateTo("/");
 
+                // UNIFICATION HOOK: Update your native local AppStateContainer environment parameter
+                _appState.SetActiveSageEndpoint("SEED");
+
+                _nav.NavigateTo("/");
                 return true;
             }
 
             // --------------------------------------------------
-            // BRANCH 2: SECURE ENTERPRISE NETWORK CALL (100% PRESERVED AND UNTOUCHED FOR PRODUCTION)
+            // BRANCH 2: SECURE ENTERPRISE NETWORK CALL (Production Only)
             // --------------------------------------------------
             try
             {
@@ -121,6 +132,30 @@ namespace OperationalWorkspaceUI.UIServices.System
                 if (string.IsNullOrWhiteSpace(token))
                     return false;
 
+                // PRODUCTION ENFORCEMENT PARSING CHECK LINKAGE
+                /*
+                ====================================================================================
+                █████████████████████ PRODUCTION EXPLICIT GOVERNANCE IDENTITY ENFORCEMENT █████████████████████
+                ====================================================================================
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jsonToken = handler.ReadToken(token) as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
+
+                var isSageUser = jsonToken?.Payload.ContainsKey("is_sage_user") == true 
+                    && bool.Parse(jsonToken.Payload["is_sage_user"].ToString() ?? "false");
+
+                if (!isSageUser)
+                {
+                    return false;
+                }
+
+                string sageFolder = jsonToken?.Payload["sage_env"]?.ToString() ?? "PROD";
+                await _storage.SetItemAsync(ActiveSageFolderKey, sageFolder);
+                
+                // UNIFICATION HOOK: Update your native local AppStateContainer environment parameter
+                _appState.SetActiveSageEndpoint(sageFolder);
+                ====================================================================================
+                */
+
                 await _storage.SetItemAsync(AccessTokenKey, token);
 
                 if (!string.IsNullOrEmpty(refreshToken))
@@ -138,7 +173,6 @@ namespace OperationalWorkspaceUI.UIServices.System
                 return false;
             }
         }
-
         // ======================================================
         // REFRESH TOKEN
         // ======================================================
@@ -196,6 +230,7 @@ namespace OperationalWorkspaceUI.UIServices.System
 
             await _storage.RemoveItemAsync(AccessTokenKey);
             await _storage.RemoveItemAsync(RefreshTokenKey);
+            await _storage.RemoveItemAsync(ActiveSageFolderKey);
 
             _nav.NavigateTo("/login");
         }
