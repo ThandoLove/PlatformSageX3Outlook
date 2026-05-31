@@ -3,6 +3,8 @@
 @rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
+
 @implements IAsyncDisposable
 
 @inject IJSRuntime JS
@@ -73,6 +75,9 @@
 
     private DotNetObjectReference<Welcome>? _reference;
 
+    private bool _disposed;
+    private bool _initialized;
+
     private string OfficeStatus = "Initializing...";
     private string ContextStatus = "Waiting...";
     private string EmailStatus = "Waiting...";
@@ -83,32 +88,61 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if (!firstRender || _initialized || _disposed)
             return;
+
+        _initialized = true;
 
         try
         {
             OfficeStatus = "Connecting...";
 
+            await SafeRefresh();
+
+            // ============================================
+            // CREATE JS CALLBACK REFERENCE
+            // ============================================
+
             _reference =
                 DotNetObjectReference.Create(this);
+
+            // ============================================
+            // INITIALIZE OFFICE BRIDGE
+            // ============================================
 
             await JS.InvokeVoidAsync(
                 "officeBridge.initialize",
                 _reference);
 
+            if (_disposed)
+                return;
+
             OfficeStatus = "Connected";
 
             ContextStatus = "Listening";
 
-            StateHasChanged();
+            await SafeRefresh();
+
+            // ============================================
+            // SMALL BOOTSTRAP DELAY
+            // ============================================
 
             await Task.Delay(1500);
+
+            if (_disposed)
+                return;
+
+            // ============================================
+            // AUTHENTICATION FLOW
+            // ============================================
 
             if (AuthenticationStateTask is not null)
             {
                 var authState =
                     await AuthenticationStateTask;
+
+                if (_disposed)
+                    return;
 
                 if (authState.User.Identity?.IsAuthenticated == true)
                 {
@@ -120,30 +154,93 @@
                 }
             }
         }
+        catch (JSDisconnectedException)
+        {
+            // Blazor circuit disconnected safely
+        }
+        catch (ObjectDisposedException)
+        {
+            // Component disposed safely
+        }
+        catch (TaskCanceledException)
+        {
+            // Navigation interrupted safely
+        }
         catch (Exception ex)
         {
+            if (_disposed)
+                return;
+
             OfficeStatus = "Failed";
 
             ErrorMessage =
                 $"Bootstrap failed: {ex.Message}";
-        }
 
-        StateHasChanged();
+            await SafeRefresh();
+        }
     }
 
     [JSInvokable]
     public async Task OnEmailReceived(EmailContext context)
     {
-        CurrentSubject = context.Subject;
+        if (_disposed)
+            return;
 
-        EmailStatus = "Connected";
+        if (context == null)
+            return;
 
-        await InvokeAsync(StateHasChanged);
+        try
+        {
+            CurrentSubject = context.Subject;
+
+            EmailStatus = "Connected";
+
+            await SafeRefresh();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"OnEmailReceived failed: {ex.Message}");
+        }
+    }
+
+    private async Task SafeRefresh()
+    {
+        if (_disposed)
+            return;
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (!_disposed)
+                {
+                    StateHasChanged();
+                }
+            });
+        }
+        catch
+        {
+            // Ignore disposed renderer errors
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        _reference?.Dispose();
+        if (_disposed)
+            return;
+
+        _disposed = true;
+
+        try
+        {
+            _reference?.Dispose();
+            _reference = null;
+        }
+        catch
+        {
+            // Ignore disposal exceptions safely
+        }
 
         await Task.CompletedTask;
     }
