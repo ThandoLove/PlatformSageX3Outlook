@@ -6,9 +6,8 @@
 @inject IJSRuntime JSRuntime
 @inject WorkspaceState State
 
-@* Combined dynamic classes for Overdue (Red Border), Today (Blue BG), and Completed (Faded) *@
 <div class="task-card @GetCssClass(Task)" @onclick="() => OnSelect.InvokeAsync(Task)">
-    
+
     <!-- COL 1: IDENTITY -->
     <div class="card-col info-group">
         <div class="card-t">@Task.Title</div>
@@ -20,7 +19,6 @@
         <span class="p-chip @Task.Priority.ToString().ToLower()">
             <i class="oi oi-layers"></i> @Task.Priority
         </span>
-        @* Engine-driven Red Alert text if Overdue *@
         <div class="due-text @(TaskRulesEngine.IsOverdue(Task) ? "red-alert" : "")">
             <i class="oi oi-clock"></i> @TaskRulesEngine.DueLabel(Task)
         </div>
@@ -35,7 +33,7 @@
         </button>
     </div>
 
-    <!-- COL 4: MAIN ACTION (Complete Button) -->
+    <!-- COL 4: MAIN ACTION -->
     <div class="card-col action-group">
         @if (!Task.Completed && Task.Status != TaskStatus.Completed)
         {
@@ -50,9 +48,9 @@
         }
     </div>
 
-    <!-- COL 5: SAGE ACTION -->
+    <!-- COL 5: SAGE ACTION (FIXED: Triggers OpenSageX3Context onClick safely) -->
     <div class="card-col sage-link-group">
-        <button class="btn-blue-square-icon" title="View in Sage X3" @onclick:stopPropagation="true">
+        <button class="btn-blue-square-icon" title="View in Sage X3" @onclick="OpenSageX3Context" @onclick:stopPropagation="true">
             <i class="oi oi-external-link"></i>
         </button>
     </div>
@@ -78,14 +76,21 @@
         }
     }
 
+    private async Task OpenSageX3Context()
+    {
+        // Triggers the JavaScript context lookup pass to fetch ERP row references instantly
+        if (!string.IsNullOrEmpty(Task.CompanyName))
+        {
+            await JSRuntime.InvokeVoidAsync("openSageX3CustomerContext", Task.CompanyName);
+        }
+    }
+
     private void HandleComplete()
     {
-        // Update both flags to ensure engine and UI stay in sync
         Task.Completed = true;
         Task.Status = TaskStatus.Completed;
         Task.UpdatedDate = DateTime.UtcNow;
 
-        // Broadcast change to Dashboard and Task Grid counts
         State.LogActivity(Task.Title, "Completed Task", "Current User");
         State.Notify();
     }

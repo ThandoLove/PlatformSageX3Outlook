@@ -1,44 +1,20 @@
 ﻿@page "/tasks"
 @rendermode InteractiveServer
+@implements IDisposable
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Mappers
 @using OperationalWorkspaceUI.State
 @inject WorkspaceState State
 
 <div class="sage-app">
-    <!-- 1. TOP HEADER: ALEX TURNER SECTION -->
-    <header class="sage-header">
-        <div class="user-block">
-            <div class="avatar-ring">
-                <img src="images/alex_turner.png" alt="Alex Turner" />
-                <span class="online-dot"></span>
-            </div>
-            <div class="u-text">
-                <span class="u-name">Alex Turner</span>
-                <span class="u-role">UX Designer | UX Design</span>
-            </div>
-        </div>
-
-        <!-- INTEGRATED SEARCH COMPONENT -->
-        <div class="search-pill">
-            <i class="oi oi-magnifying-glass search-icon"></i>
-            <input type="text"
-                   @bind="SearchQuery"
-                   @bind:event="oninput"
-                   placeholder="Search across Outlook & Sage X3..." />
-            <i class="oi oi-chevron-bottom dropdown-icon"></i>
-        </div>
-    </header>
-
     <main class="sage-body">
-        <!-- 2. LEFT COLUMN: THE TASKS HUB -->
+        <!-- LEFT COLUMN: THE TASKS HUB -->
         <section class="hub-main-container">
-            @* FIX: Removed Tasks="State.Tasks" because TaskGrid now gets data from State internally *@
             <TaskGrid SearchQuery="@SearchQuery"
                       OnTaskSelected="HandleTaskSelection" />
         </section>
 
-        <!-- 3. RIGHT COLUMN: THE SIDEBAR -->
+        <!-- RIGHT COLUMN: THE SIDEBAR DETAIL PANEL -->
         <aside class="details-sidebar">
             <TaskDetailsPanel Task="SelectedTask" />
         </aside>
@@ -61,8 +37,26 @@
         {
             await State.LoadTasksAsync();
         }
-        
-        // Match the initial tab filter
-        SelectedTask = State.Tasks?.FirstOrDefault(t => t.DueDate?.Date == DateTime.Today);
+
+        // Explicitly sync initial tab context data to the details panel on load
+        SelectedTask = State.Tasks?.FirstOrDefault(t => t.DueDate?.Date == DateTime.Today)
+                       ?? State.Tasks?.FirstOrDefault();
+
+        // Ensure we react to any later state changes (e.g. background loads)
+        State.OnChange += OnStateChanged;
+    }
+
+    private void OnStateChanged()
+    {
+        if (SelectedTask == null && State.Tasks != null && State.Tasks.Count > 0)
+        {
+            SelectedTask = State.Tasks.First();
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= OnStateChanged;
     }
 }

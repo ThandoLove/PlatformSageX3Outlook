@@ -1,151 +1,167 @@
 ﻿/* THE TASK CARD GRID */
 .task-card {
-    display: grid;
-    /* Clean 5-column layout: Title | Status | Link | Button | Icon */
-    grid-template-columns: 1.8fr 120px 1.2fr 130px 40px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px 16px;
-    align-items: center;
-    cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-    gap: 12px;
+    display: grid !important;
+    grid-template-columns: 1.8fr 120px 1.2fr 130px 40px !important; /* Locks strict 5-column grid layout proportions */
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
     .task-card:hover {
-        border-color: #2563eb;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-        transform: translateY(-1px);
-        background-color: #ffffff;
+        border-color: #2563eb !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+        transform: translateY(-1px) !important;
+        background-color: #ffffff !important;
     }
 
-/* COLUMN 1: IDENTITY (TITLE & COMPANY) */
 .card-t {
-    font-weight: 600; /* Modern semi-bold */
-    font-size: 13px;
-    color: #0f172a;
-    margin-bottom: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: #0f172a !important;
+    margin-bottom: 2px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .card-c {
-    font-size: 11px;
-    color: #64748b;
-    font-weight: 400;
+    font-size: 11px !important;
+    color: #64748b !important;
+    font-weight: 400 !important;
 }
 
-/* COLUMN 2: STATUS & CHIPS */
 .p-chip {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    padding: 2px 8px !important;
+    border-radius: 4px !important;
+    text-transform: uppercase !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: fit-content !important;
 }
 
     .p-chip.urgent {
-        background: #fee2e2;
-        color: #b91c1c;
+        background: #fee2e2 !important;
+        color: #b91c1c !important;
     }
 
     .p-chip.high {
-        background: #dbeafe;
-        color: #2563eb;
+        background: #dbeafe !important;
+        color: #2563eb !important;
     }
 
     .p-chip.normal {
-        background: #fef3c7;
-        color: #92400e;
+        background: #fef3c7 !important;
+        color: #92400e !important;
+    }
+
+    .p-chip.medium {
+        background: #fef3c7 !important;
+        color: #92400e !important;
+    }
+
+    .p-chip.low {
+        background: #f1f5f9 !important;
+        color: #64748b !important;
     }
 
 .due-text {
-    font-size: 11px;
-    color: #64748b;
-    font-weight: 500;
-    margin-top: 4px;
+    font-size: 11px !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+    margin-top: 4px !important;
 }
 
 .red-alert {
     color: #ef4444 !important;
-    font-weight: 600;
+    font-weight: 600 !important;
 }
 
-/* COLUMN 3: SOURCE LINKS */
 .btn-ghost-link {
-    background: transparent;
-    border: none;
-    font-size: 11px;
-    font-weight: 600;
-    color: #475569;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
+    background: transparent !important;
+    border: none !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #475569 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
 }
 
     .btn-ghost-link:hover {
-        background: #f1f5f9;
-        color: #2563eb;
+        background: #f1f5f9 !important;
+        color: #2563eb !important;
     }
 
 .sage-s-box {
-    background: #2563eb;
-    color: white;
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-size: 9px;
-    font-weight: 700;
+    background: #2563eb !important;
+    color: white !important;
+    padding: 1px 4px !important;
+    border-radius: 3px !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
 }
 
-/* COLUMN 4: ACTION BUTTONS (COMPLETE) */
 .btn-outline-complete {
-    border: 1px solid #cbd5e1;
-    background: white;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.2s;
+    border: 1px solid #cbd5e1 !important;
+    background: white !important;
+    border-radius: 6px !important;
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    transition: all 0.2s !important;
 }
 
     .btn-outline-complete:hover {
-        border-color: #10b981;
-        color: #10b981;
-        background: #f0fdf4;
+        border-color: #10b981 !important;
+        color: #10b981 !important;
+        background: #f0fdf4 !important;
     }
 
-/* COLUMN 5: ICON BOXES */
+.completed-label {
+    color: #10b981 !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+}
+
+/* HIGH-PRIORITY BLUE SQUARE FIX (COLUMN 5) */
 .btn-blue-square-icon {
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 14px;
-    transition: opacity 0.2s;
+    background-color: #2563eb !important; /* Forces the background color from your stylesheet */
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important;
+    width: 32px !important; /* Locks its layout box dimensions */
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    transition: opacity 0.2s !important;
+    flex-shrink: 0 !important;
 }
 
     .btn-blue-square-icon:hover {
-        opacity: 0.9;
+        opacity: 0.9 !important;
+    }
+
+    .btn-blue-square-icon i {
+        color: #ffffff !important;
     }

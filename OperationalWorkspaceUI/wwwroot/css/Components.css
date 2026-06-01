@@ -1,50 +1,5 @@
 ﻿/* ========================================================= 
-   1. GLOBAL LAYOUT (3-COLUMNS)
-   ========================================================= */
-.main-layout {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background: var(--bg-main);
-}
-
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.page-container {
-    flex: 1;
-    overflow-y: auto; /* Only the center scrolls */
-    padding: 20px;
-}
-
-/* RIGHT PANEL (SAGE INSIGHTS) */
-.right-panel {
-    width: 320px;
-    background: #020617; /* Deep Navy matching your image */
-    padding: 15px;
-    flex-shrink: 0;
-    border-left: 1px solid #1e293b;
-    overflow-y: auto;
-}
-
-/* Topbar Context Area */
-.topbar {
-    height: 60px;
-    padding: 0 20px;
-    background: #020617;
-    border-bottom: 1px solid #1e293b;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* ========================================================= 
-   2. SAGE X3 GLOBAL MODAL SYSTEM (High-Fidelity)
+   1. SAGE X3 GLOBAL MODAL SYSTEM (High-Fidelity)
    ========================================================= */
 
 /* The Wrapper ensures the modal is centered and doesn't block background clicks when closed */
@@ -116,7 +71,7 @@ body.dark-mode .modal-window {
     }
 
 /* ========================================================= 
-   3. NOTIFICATIONS & ANIMATIONS
+   2. NOTIFICATIONS & ANIMATIONS
    ========================================================= */
 
 .toast {

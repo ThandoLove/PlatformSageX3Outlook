@@ -1,11 +1,16 @@
 /* ========================================================= 
-   SAGE X3 MASTER THEME - FIXED & LOCKED
+   SAGE X3 MASTER THEME DESIGN TOKENS
    ========================================================= */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
 :root {
     --sage-navy: #003366;
     --sage-navy-dark: #002b55;
-    --bg-workspace: #f3f4f6; /* Light Grey Floor */
+    --bg-workspace: #f3f4f6;
     --panel-white: #ffffff;
     --text-dark: #111827;
     --text-muted: #64748b;
@@ -13,125 +18,17 @@
     --header-grey: #f8fafc;
 }
 
-/* 1. GLOBAL WORKSPACE FLOOR (Grey Area behind cards) */
-html, body, .app-container, .main-layout, .page-content,
-.dashboard-wrapper, .tickets-container, .kb-page-container,
-.hub-main-container, .sage-app, .content-body {
-    background-color: var(--bg-workspace) !important;
-    color: var(--text-dark) !important;
+html, body {
     margin: 0;
+    padding: 0;
     font-family: 'Segoe UI', Tahoma, sans-serif;
-    overflow-x: hidden;
+    background-color: var(--bg-workspace);
+    color: var(--text-dark);
 }
 
-/* 2. SIDEBAR LOCK (Stops the white ghosting) */
-.sage-sidebar, .sidebar {
-    background-color: var(--sage-navy) !important;
-    flex: 0 0 240px !important;
-    width: 240px !important;
-}
-
-.sidebar-header {
-    background-color: var(--sage-navy-dark) !important;
-    height: 40px !important;
-}
-
-.nav-menu {
-    background-color: var(--sage-navy) !important;
-}
-
-/* 3. TOPBAR MASTER LOCK (Zoning & Centering) */
-.global-header, .sage-topbar-master, .sage-topbar-wrapper {
-    background-color: var(--sage-navy) !important;
-    height: 40px !important;
-    width: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    padding: 0 15px !important;
-    box-sizing: border-box !important;
-}
-
-/* ZONE 1: BRANDING (LOCKED - NO SQUISH) */
-.zone-left {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px;
-    flex: 0 0 auto !important; /* FORBID SQUISHING */
-    white-space: nowrap !important; /* STAY ON ONE LINE */
-}
-
-.sage-brand-text {
-    color: #ffffff !important; /* PURE WHITE */
-    font-size: 0.72rem !important;
-    font-weight: 800 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05rem !important;
-    opacity: 1 !important;
-}
-
-.topbar-divider {
-    width: 1px !important;
-    height: 16px !important;
-    background: rgba(255, 255, 255, 0.3) !important;
-    margin: 0 8px !important;
-}
-
-.page-dynamic-title {
-    color: #ffffff !important;
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-    white-space: nowrap !important;
-}
-
-/* ZONE 2: SEARCH (Flexible Center) */
-.zone-middle {
-    flex: 1 !important; /* Takes up all remaining space */
-    display: flex !important;
-    justify-content: center !important;
-    padding: 0 20px !important;
-}
-
-.search-input-group {
-    display: flex !important;
-    align-items: center !important;
-    background: rgba(255, 255, 255, 0.12) !important;
-    padding: 0 10px !important;
-    border-radius: 4px !important;
-    width: 100% !important;
-    max-width: 380px !important;
-    height: 28px !important;
-}
-
-.topbar-search-input {
-    border: none !important;
-    background: transparent !important;
-    font-size: 0.75rem !important;
-    color: #ffffff !important;
-    outline: none !important;
-    width: 100% !important;
-}
-
-/* ZONE 3: PROFILE (Align to Edge) */
-.zone-right {
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px;
-    flex: 0 0 auto !important;
-    min-width: 300px !important;
-    justify-content: flex-end !important;
-}
-
-.connection-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.7rem;
-    color: #ffffff !important;
-    border-right: 1px solid rgba(255,255,255,0.2);
-    padding-right: 12px;
-}
-
-/* 4. CARDS & PANELS (Locked White) */
+/* ========================================================= 
+   CARDS & PANELS (LOCKED WHITE UTILITIES)
+   ========================================================= */
 .metric-card, .widget-wrapper, .timeline-card, .kb-widget-card,
 .grid-card, .card, .fluent-card, .right-panel-container,
 .details-sidebar, .details-sidebar aside {
@@ -140,22 +37,24 @@ html, body, .app-container, .main-layout, .page-content,
     border: 1px solid var(--border-light) !important;
 }
 
-    /* Unified Headers */
     .card-header, .panel-header, .widget-wrapper h3 {
         background-color: var(--header-grey) !important;
         color: var(--text-dark) !important;
         border-bottom: 1px solid var(--border-light) !important;
     }
 
-/* 5. LAYOUT STRUCTURE (Fix Cutoffs) */
-.main-wrapper {
-    display: flex;
-    width: 100vw;
-    height: calc(100vh - 40px);
-    overflow: hidden;
+.card,
+.metric-card,
+.widget-wrapper,
+.grid-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
 }
 
-/* QUICK ACTIONS BRANDING */
+/* ========================================================= 
+   QUICK ACTIONS BRANDING
+   ========================================================= */
 .quick-actions-container {
     display: flex !important;
     gap: 8px !important;
@@ -181,7 +80,6 @@ html, body, .app-container, .main-layout, .page-content,
         color: #ffffff !important;
     }
 
-/* SAGE Action Colors */
 .action-blue {
     background-color: #0078d4;
 }
@@ -207,10 +105,8 @@ html, body, .app-container, .main-layout, .page-content,
 }
 
 /* ========================================================= 
-   6. RESPONSIVE LAYOUT ENGINE (ANTI-SQUISH REFACTOR)
+   RESPONSIVE UTILITIES ENGINE (ANTI-SQUISH DASHBOARDS)
    ========================================================= */
-
-/* A. DEFAULT WIDE DESKTOP VIEW (Widths 1024px and greater) */
 .metrics-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -232,30 +128,19 @@ html, body, .app-container, .main-layout, .page-content,
     color: var(--text-muted) !important;
     display: block !important;
     word-break: normal !important;
-    overflow-wrap: break-word !important; /* Forces words to stay intact */
+    overflow-wrap: break-word !important;
 }
 
-/* B. INTERMEDIATE TABLET/NARROW VIEW (Your specific window layout size) */
 @media screen and (max-width: 900px) {
     .metrics-grid {
-        grid-template-columns: repeat(2, 1fr) !important; /* Converts 4 tiny columns into 2 wide columns */
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 12px !important;
     }
 }
 
-/* C. STRICTOR OUTLOOK TASKPANE VIEW (Widths under 480px) */
 @media screen and (max-width: 480px) {
-    .sage-sidebar, .sidebar, .global-header, .sage-topbar-master, .sage-topbar-wrapper {
-        display: none !important; /* Strips navigation framing inside the side add-in panel */
-    }
-
-    .main-wrapper {
-        width: 100% !important;
-        height: 100vh !important;
-    }
-
     .metrics-grid {
-        grid-template-columns: 1fr !important; /* Snaps cards to a clean single column list */
+        grid-template-columns: 1fr !important;
         gap: 12px !important;
     }
 
@@ -277,3 +162,284 @@ html, body, .app-container, .main-layout, .page-content,
         font-size: 1.2rem !important;
     }
 }
+
+@media screen and (max-width: 360px) {
+    .action-tile {
+        flex: 1 1 100% !important;
+    }
+
+    .metric-value {
+        font-size: 1rem !important;
+    }
+
+    .metric-subtext {
+        font-size: 0.70rem !important;
+    }
+}
+
+/* =========================================================================
+   MASTER APP SHELL VERTICAL HYPER-LOCKS (GLOBAL FIX)
+   ========================================================================= */
+html,
+body,
+fluent-layout,
+.app-container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.main-wrapper {
+    display: flex !important;
+    flex: 1 !important;
+    width: 100% !important;
+    height: calc(100vh - 40px) !important;
+    min-height: calc(100vh - 40px) !important;
+    max-height: calc(100vh - 40px) !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+}
+
+.sidebar-wrapper {
+    width: 240px !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    flex-shrink: 0 !important;
+}
+
+    .sidebar-wrapper > *,
+    .sage-sidebar,
+    .sidebar {
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: 100% !important;
+        width: 100% !important;
+    }
+
+.page-content {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+}
+
+.content-body {
+    flex: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 20px !important;
+}
+
+.right-panel-wrapper,
+.right-panel-component {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+}
+
+.right-panel-container {
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    background-color: #ffffff !important;
+}
+
+
+/* =========================================================================
+   TASK GRID & ITEM HIGH-PRIORITY GLOBAL OVERRIDES
+   ========================================================================= */
+
+/* 1. Force the Task Card Container to render as a strict 5-column CSS grid */
+.task-card {
+    display: grid !important;
+    grid-template-columns: 1.8fr 120px 1.2fr 130px 40px !important; /* Locks structural layout alignment proportions */
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+    /* 2. Style each grid column slot to prevent items from collapsing */
+    .task-card .card-col {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 0 !important;
+    }
+
+    /* 3. Realign Text overflow parameters so data truncation handles cleanly */
+    .task-card .card-t {
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        color: #0f172a !important;
+        margin-bottom: 2px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .task-card .card-c {
+        font-size: 11px !important;
+        color: #64748b !important;
+        font-weight: 400 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* 4. Fix the Priority and Due text labels */
+    .task-card .p-chip {
+        font-size: 10px !important;
+        font-weight: 600 !important;
+        padding: 2px 8px !important;
+        border-radius: 4px !important;
+        text-transform: uppercase !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: fit-content !important;
+    }
+
+        .task-card .p-chip.urgent {
+            background: #fee2e2 !important;
+            color: #b91c1c !important;
+        }
+
+        .task-card .p-chip.high {
+            background: #dbeafe !important;
+            color: #2563eb !important;
+        }
+
+        .task-card .p-chip.normal {
+            background: #fef3c7 !important;
+            color: #92400e !important;
+        }
+
+        .task-card .p-chip.medium {
+            background: #fef3c7 !important;
+            color: #92400e !important;
+        }
+
+        .task-card .p-chip.low {
+            background: #f1f5f9 !important;
+            color: #64748b !important;
+        }
+
+    .task-card .due-text {
+        font-size: 11px !important;
+        color: #64748b !important;
+        font-weight: 500 !important;
+        margin-top: 4px !important;
+        white-space: nowrap !important;
+    }
+
+    .task-card .red-alert {
+        color: #ef4444 !important;
+        font-weight: 600 !important;
+    }
+
+    /* 5. Clean up the Source Link typography metrics */
+    .task-card .btn-ghost-link {
+        background: transparent !important;
+        border: none !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        color: #475569 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        cursor: pointer !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+        white-space: nowrap !important;
+    }
+
+        .task-card .btn-ghost-link:hover {
+            background: #f1f5f9 !important;
+            color: #2563eb !important;
+        }
+
+    .task-card .sage-s-box {
+        background: #2563eb !important;
+        color: white !important;
+        padding: 1px 4px !important;
+        border-radius: 3px !important;
+        font-size: 9px !important;
+        font-weight: 700 !important;
+    }
+
+    /* 6. Standardize Complete Button dimensions */
+    .task-card .btn-outline-complete {
+        border: 1px solid #cbd5e1 !important;
+        background: white !important;
+        border-radius: 6px !important;
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        color: #334155 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        transition: all 0.2s !important;
+        white-space: nowrap !important;
+    }
+
+        .task-card .btn-outline-complete:hover {
+            border-color: #10b981 !important;
+            color: #10b981 !important;
+            background: #f0fdf4 !important;
+        }
+
+    .task-card .completed-label {
+        color: #10b981 !important;
+        font-weight: 700 !important;
+        font-size: 11px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    /* 7. FORCE ACTION CONSTRAINTS ON THE BLUE SQUARE BUTTON (COLUMN 5) */
+    .task-card .btn-blue-square-icon {
+        background: #2563eb !important; /* Restores missing vivid royal blue background layer */
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        width: 32px !important; /* Overrides component shrinkage with static width parameters */
+        height: 32px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        font-size: 14px !important;
+        transition: opacity 0.2s !important;
+        flex-shrink: 0 !important;
+    }
+
+        .task-card .btn-blue-square-icon:hover {
+            opacity: 0.9 !important;
+        }
+
+        .task-card .btn-blue-square-icon i,
+        .task-card .btn-blue-square-icon span {
+            color: #ffffff !important;
+        }

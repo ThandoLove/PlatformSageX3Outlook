@@ -1,9 +1,70 @@
 ﻿/* ========================================================= 
-   TOPBAR COMPONENT POLISH (Scoped)
+   TOPBAR COMPONENT MASTER FRAME (Scoped Grid Mechanics)
    ========================================================= */
+.sage-topbar-master {
+    background-color: var(--sage-navy, #003366) !important;
+    height: 40px !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 15px !important;
+    box-sizing: border-box !important;
+}
 
-/* High-density search bar polish */
+/* ZONE 1: BRANDING (LOCKED - NO SQUISH) */
+.zone-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px;
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    min-width: 0;
+}
+
+.sage-brand-text {
+    color: #ffffff !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05rem !important;
+    opacity: 1 !important;
+}
+
+.topbar-divider {
+    width: 1px !important;
+    height: 16px !important;
+    background: rgba(255, 255, 255, 0.3) !important;
+    margin: 0 8px !important;
+    opacity: 0.4;
+}
+
+.page-dynamic-title {
+    color: #ffffff !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* ZONE 2: SEARCH (Flexible Center Spacer) */
+.zone-middle {
+    flex: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+    padding: 0 20px !important;
+    min-width: 0;
+}
+
 .search-input-group {
+    display: flex !important;
+    align-items: center !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    padding: 0 10px !important;
+    border-radius: 4px !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    height: 28px !important;
     transition: background 0.2s, border-color 0.2s;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -13,19 +74,37 @@
         border-color: rgba(255, 255, 255, 0.3);
     }
 
-/* Make the dynamic title "Pop" */
-.page-dynamic-title {
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+.topbar-search-input {
+    border: none !important;
+    background: transparent !important;
+    font-size: 0.75rem !important;
+    color: #ffffff !important;
+    outline: none !important;
+    width: 100% !important;
 }
 
-/* Connection Status pulse */
+/* ZONE 3: PROFILE & METRICS (Align to Edge) */
+.zone-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px;
+    flex: 0 0 auto !important;
+    min-width: 0;
+    justify-content: flex-end !important;
+}
+
 .connection-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: #ffffff !important;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    padding-right: 12px;
     cursor: default;
     user-select: none;
 }
 
-/* User Profile Hover effect */
 .user-profile-section {
     padding: 2px 8px;
     border-radius: 4px;
@@ -36,13 +115,10 @@
         background: rgba(255, 255, 255, 0.1);
     }
 
-/* Ensure FluentSwitch text is white on the blue bar */
+/* ========================================================= 
+   COMPENSATING UTILITIES FOR INLINE OVERRIDES
+   ========================================================= */
 ::deep .fluent-switch-label {
     color: rgba(255,255,255,0.9) !important;
     font-size: 0.7rem !important;
-}
-
-/* Divider Transparency */
-.topbar-divider {
-    opacity: 0.4;
 }

@@ -11,51 +11,48 @@
 @inject AppStateContainer AppState
 @inject IBusinessPartnerService BPService
 
-<div class="right-panel-wrapper" style="position: relative; height: 100%; display: flex; flex-direction: row;">
+<div class="right-panel-wrapper @(IsCollapsed ? "panel-collapsed" : "panel-expanded")">
 
-    <div style="position: absolute; left: -16px; top: 20px; z-index: 100;">
+    <div class="toggle-button-anchor">
         <FluentButton Appearance="Appearance.Accent"
                       OnClick="TogglePanel"
-                      Style="border-radius: 50%; min-width: 32px; height: 32px;">
-            @(IsCollapsed ? ">" : "<")
+                      Style="border-radius: 50%; min-width: 32px; height: 32px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+            @(IsCollapsed ? "◀" : "▶")
         </FluentButton>
     </div>
 
-    <div class="right-panel-container"
-         style="width:@(IsCollapsed ? "0px" : "350px");
-        padding:@(IsCollapsed ? "0" : "16px");">
-
+    <div class="right-panel-container">
         @if (!IsCollapsed)
         {
             @if (IsLoading)
             {
-                <FluentProgressRing />
+                <div class="panel-spinner-box">
+                    <FluentProgressRing />
+                </div>
             }
             else if (DashboardState.SelectedOrderId != null)
             {
-                <FluentCard>
+                <FluentCard Class="insight-panel-card">
                     <h3>Order Insight</h3>
-                    <p>@DashboardState.SelectedOrderId</p>
+                    <p class="insight-main-value">@DashboardState.SelectedOrderId</p>
 
-                    <FluentButton OnClick="ClearOrder">
+                    <FluentButton OnClick="ClearOrder" Appearance="Appearance.Neutral">
                         Clear Context
                     </FluentButton>
                 </FluentCard>
             }
             else if (AppState.CurrentEmail == null)
             {
-                <FluentCard>
+                <div class="panel-card-empty">
                     <p>Select an email or order</p>
-                </FluentCard>
+                </div>
             }
             else
             {
-                <FluentCard>
+                <FluentCard Class="insight-panel-card">
                     <h3>Email Insight</h3>
-
-                    <p>@AppState.CurrentEmail.SenderName</p>
-
-                    <p>@(CurrentPartner?.Company ?? "Unknown")</p>
+                    <p class="insight-main-value">@AppState.CurrentEmail.SenderName</p>
+                    <p class="insight-sub-value">@(CurrentPartner?.Company ?? "Unknown Entity")</p>
                 </FluentCard>
             }
         }
@@ -63,7 +60,6 @@
 </div>
 
 @code {
-
     private BusinessPartnerSnapshotDto? CurrentPartner;
     private bool IsLoading;
     private bool IsCollapsed;
@@ -89,7 +85,6 @@
         AppState.ClearCurrentEmail();
     }
 
-    // Called from JS (ONLY if you wire it later)
     [JSInvokable]
     public async Task HandleEmailSelection(EmailBridgeContext context)
     {
@@ -108,8 +103,7 @@
 
         if (!string.IsNullOrWhiteSpace(context.SenderEmail))
         {
-            CurrentPartner =
-                await BPService.GetPartnerByEmailAsync(context.SenderEmail);
+            CurrentPartner = await BPService.GetPartnerByEmailAsync(context.SenderEmail);
         }
 
         IsLoading = false;

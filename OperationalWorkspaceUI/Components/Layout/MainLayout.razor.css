@@ -1,116 +1,105 @@
 /* ======================================================
-   ROOT APP LAYOUT (GLOBAL CONTAINER)
+   ROOT APP LAYOUT (GLOBAL BROWSER CORE AND WEB LAYERS)
    ====================================================== */
 
+/* Force layout height rules globally through all Blazor layers */
+html,
+body,
+:host,
+fluent-layout,
 .app-container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-    background-color: #f3f4f6;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background-color: #f3f4f6 !important;
 }
 
 /* ======================================================
    TOP HEADER (GLOBAL APP BAR)
    ====================================================== */
-
 .global-header {
-    width: 100%;
-    height: 40px;
-    flex-shrink: 0;
-    z-index: 2000;
-    background-color: #003366;
-    display: flex;
-    align-items: center;
+    width: 100% !important;
+    height: 40px !important;
+    flex-shrink: 0 !important;
+    z-index: 2000 !important;
 }
 
 /* ======================================================
    MAIN LAYOUT WRAPPER (SIDEBAR + CONTENT + RIGHT PANEL)
    ====================================================== */
-
 .main-wrapper {
-    display: flex;
-    flex: 1;
-    width: 100%;
-    min-height: 0; /* IMPORTANT for proper flex scrolling */
-    overflow: hidden;
+    display: flex !important;
+    flex: 1 !important;
+    width: 100% !important;
+    height: calc(100vh - 40px) !important; /* Locks remaining screen size */
+    min-height: calc(100vh - 40px) !important;
+    max-height: calc(100vh - 40px) !important;
+    min-width: 0 !important;
+    align-items: stretch !important; /* Drags panels down to screen edge */
+    overflow: hidden !important;
 }
 
 /* ======================================================
-   SIDEBAR (LEFT NAV)
+   SIDEBAR BOUNDING BOX (SOLE OWNER OF SIDEBAR STRUCTURAL WIDTH)
    ====================================================== */
-
-::deep .sidebar {
-    width: 60px;
-    height: 100%;
-    flex-shrink: 0;
-    background-color: #020617;
-    border-right: 1px solid #1e293b;
-    z-index: 100;
+.sidebar-wrapper {
+    width: 240px !important;
+    height: 100% !important; /* Locks container wall to floor layout */
+    min-height: 100% !important;
+    max-height: 100% !important;
+    flex-shrink: 0 !important;
+    background-color: #020617 !important;
+    border-right: 1px solid #1e293b !important;
+    z-index: 100 !important;
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 /* ======================================================
    CENTER CONTENT AREA
    ====================================================== */
-
 .page-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    min-height: 0; /* CRITICAL FIX for scrolling */
-    overflow: hidden;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
 }
 
 /* ======================================================
    CONTENT SCROLL AREA (MAIN PAGE BODY)
    ====================================================== */
-
 .content-body {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 0;
-}
-
-/* ======================================================
-   TOPBAR (INSIDE HEADER COMPONENT)
-   ====================================================== */
-
-::deep .topbar {
-    height: 40px;
-    width: 100%;
-    background-color: #020617;
-    border-bottom: 1px solid #1e293b;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    color: #ffffff;
-}
-
-/* ======================================================
-   RIGHT PANEL (INSIGHTS / CRM PANEL)
-   ====================================================== */
-
-::deep .right-panel {
-    width: 320px;
-    height: 100%;
-    flex-shrink: 0;
-    background: #ffffff;
-    border-left: 1px solid #e2e8f0;
-    overflow-y: auto;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 0 !important;
 }
 
 /* ======================================================
    LANDING PAGE MODE (LOGIN / PUBLIC SCREENS)
    ====================================================== */
-
 .landing-frame {
-    width: 100%;
-    height: 100vh;
-    background: #f3f4f6;
-    overflow: auto;
+    width: 100% !important;
+    height: 100vh !important;
+    background: #f3f4f6 !important;
+    overflow: auto !important;
+}
+
+/* ======================================================
+   OUTLOOK ADD-IN PANEL RESPONSIVE OVERRIDES
+   ====================================================== */
+@media (max-width: 900px) {
+    .sidebar-wrapper {
+        width: 60px !important;
+    }
 }

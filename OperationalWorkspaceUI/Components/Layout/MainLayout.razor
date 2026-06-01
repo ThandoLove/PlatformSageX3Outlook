@@ -24,7 +24,7 @@
 @inject IToastUIService ToastService
 @inject HttpClient Http
 
-<div class="app-container">
+<FluentLayout Class="app-container">
 
     @if (IsAppPage)
     {
@@ -34,12 +34,13 @@
 
         <div class="main-wrapper">
 
-            <Sidebar />
+            <div class="sidebar-wrapper">
+                <Sidebar />
+            </div>
 
             <main class="page-content">
 
                 <div class="content-body">
-
                     @if (UIState.IsLoading || AppState.IsBusy)
                     {
                         <LoadingSpinner />
@@ -48,7 +49,6 @@
                     {
                         @Body
                     }
-
                 </div>
 
                 <ToastNotification />
@@ -66,15 +66,12 @@
         </div>
     }
 
-</div>
+</FluentLayout>
 
 @code {
-
     private DotNetObjectReference<MainLayout>? _objRef;
-
     private bool _initialized;
     private bool _disposed;
-
     private Action? _unsubscribeEmail;
 
     private bool IsAppPage =>
@@ -82,185 +79,99 @@
 
     protected override void OnInitialized()
     {
-        // ============================================
-        // NAVIGATION EVENTS
-        // ============================================
-
         Nav.LocationChanged += HandleLocationChanged;
-
-        // ============================================
-        // GLOBAL UI STATE EVENTS
-        // ENTERPRISE SAFE
-        // ============================================
 
         UIState.OnChange += RefreshUI;
         DashboardState.OnChange += RefreshUI;
         AppState.OnChange += RefreshUI;
 
-        // ============================================
-        // EVENT BUS SUBSCRIPTION
-        // ============================================
+        _unsubscribeEmail = EventBus.Subscribe("EMAIL_RECEIVED", async data =>
+        {
+            if (_disposed) return;
+            if (data is not EmailInsightDto email) return;
 
-        _unsubscribeEmail =
-            EventBus.Subscribe("EMAIL_RECEIVED", async data =>
+            try
             {
-                if (_disposed)
-                    return;
+                UIState.IsLoading = true;
+                await InvokeAsync(StateHasChanged);
 
-                if (data is not EmailInsightDto email)
-                    return;
-
-                try
+                await Http.PostAsJsonAsync($"api/email/{email.Id}/enrich", email);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"EMAIL_RECEIVED processing failed: {ex.Message}");
+            }
+            finally
+            {
+                if (!_disposed)
                 {
-                    UIState.IsLoading = true;
-
+                    UIState.IsLoading = false;
                     await InvokeAsync(StateHasChanged);
-
-                    // ============================================
-                    // API ENRICHMENT FLOW
-                    // ============================================
-
-                    await Http.PostAsJsonAsync(
-                        $"api/email/{email.Id}/enrich",
-                        email);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(
-                        $"EMAIL_RECEIVED processing failed: {ex.Message}");
-                }
-                finally
-                {
-                    if (!_disposed)
-                    {
-                        UIState.IsLoading = false;
-
-                        await InvokeAsync(StateHasChanged);
-                    }
-                }
-            });
+            }
+        });
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || _initialized || _disposed)
-            return;
-
+        if (!firstRender || _initialized || _disposed) return;
         _initialized = true;
 
         try
         {
-            // ============================================
-            // AUTH INITIALIZATION
-            // ============================================
-
             await AuthService.InitializeAsync();
-
-            // ============================================
-            // OUTLOOK OFFICE BRIDGE
-            // ============================================
 
             if (IsAppPage)
             {
                 _objRef = DotNetObjectReference.Create(this);
-
-                await JS.InvokeVoidAsync(
-                    "officeBridge.initialize",
-                    _objRef);
+                await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
             }
         }
-        catch (JSDisconnectedException)
-        {
-            // Blazor circuit disconnected safely
-        }
-        catch (ObjectDisposedException)
-        {
-            // Component already disposed safely
-        }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
         catch (Exception ex)
         {
-            Console.WriteLine(
-                $"MainLayout initialization error: {ex.Message}");
+            Console.WriteLine($"MainLayout initialization error: {ex.Message}");
         }
     }
 
     [JSInvokable]
     public async Task OnEmailReceived(EmailInsightDto emailData)
     {
-        if (_disposed)
-            return;
-
-        if (emailData == null)
-            return;
+        if (_disposed) return;
+        if (emailData == null) return;
 
         try
         {
-            EventBus.Publish(
-                "EMAIL_RECEIVED",
-                emailData);
-
+            EventBus.Publish("EMAIL_RECEIVED", emailData);
             await Task.CompletedTask;
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
-                $"OnEmailReceived failed: {ex.Message}");
+            Console.WriteLine($"OnEmailReceived failed: {ex.Message}");
         }
     }
 
-    private void HandleLocationChanged(
-        object? sender,
-        LocationChangedEventArgs e)
-    {
-        RefreshUI();
-    }
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => RefreshUI();
 
     private void RefreshUI()
     {
-        if (_disposed)
-            return;
-
-        _ = InvokeAsync(() =>
-        {
-            if (!_disposed)
-            {
-                StateHasChanged();
-            }
-        });
+        if (_disposed) return;
+        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
     }
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
-
+        if (_disposed) return;
         _disposed = true;
 
-        // ============================================
-        // NAVIGATION CLEANUP
-        // ============================================
-
         Nav.LocationChanged -= HandleLocationChanged;
-
-        // ============================================
-        // STATE EVENT CLEANUP
-        // ============================================
-
         UIState.OnChange -= RefreshUI;
         DashboardState.OnChange -= RefreshUI;
         AppState.OnChange -= RefreshUI;
 
-        // ============================================
-        // EVENT BUS CLEANUP
-        // ============================================
-
         _unsubscribeEmail?.Invoke();
         _unsubscribeEmail = null;
-
-        // ============================================
-        // JS INTEROP CLEANUP
-        // ============================================
-
         _objRef?.Dispose();
         _objRef = null;
     }

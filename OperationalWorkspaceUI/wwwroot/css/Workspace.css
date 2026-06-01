@@ -1,88 +1,12 @@
 ﻿/* ========================================================= */
-/* SHARED VARIABLES (The Real Palette) */
+/* WORKSPACE CONTENT BRANDING TOKENS                         */
 /* ========================================================= */
 :root {
-    /* Backgrounds & Sidebar */
-    --sidebar-bg: #2D3748; /* Dark Charcoal / Navy Blue */
-    --topbar-bg: #FFFFFF;
-    --app-bg: #F3F4F6; /* Outlook Grey Background */
-    --border-color: #E5E7EB;
-    /* Branding & Nav */
-    --active-link-bg: #374151;
-    --active-indicator: #6366F1; /* Indigo vertical bar */
-    /* Text */
-    --text-primary: #111827;
-    --text-muted: #6B7280;
-    /* Accent Colors (Icons & KPIs) */
-    --sage-blue: #3B82F6; /* Open Orders / Revenue */
-    --sage-orange: #F59E0B; /* Inventory / Pending */
-    --sage-green: #10B981; /* Shipments / Confirmed */
+    --sage-blue: #3B82F6;
+    --sage-orange: #F59E0B;
+    --sage-green: #10B981;
 }
 
-/* ========================================================= */
-/* MAIN LAYOUT STRUCTURE */
-/* ========================================================= */
-.workspace-container {
-    display: flex;
-    height: 100vh;
-    background: var(--app-bg);
-    color: var(--text-primary);
-    overflow: hidden;
-}
-
-/* LEFT: ICON SIDEBAR (Fixed) */
-.sidebar {
-    width: 64px;
-    background-color: var(--sidebar-bg);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    z-index: 10;
-}
-
-    .sidebar li {
-        padding: 20px;
-        color: #9CA3AF;
-        cursor: pointer;
-        border-left: 3px solid transparent;
-        transition: all 0.2s ease;
-        display: flex;
-        justify-content: center;
-    }
-
-        .sidebar li.active {
-            background-color: var(--active-link-bg);
-            color: #FFFFFF;
-            border-left: 3px solid var(--active-indicator);
-        }
-
-        .sidebar li:hover:not(.active) {
-            background-color: rgba(255,255,255,0.05);
-        }
-
-/* CENTER: MAIN CONTENT */
-.main-dashboard {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* TOPBAR (Fixed) */
-.topbar {
-    height: 60px;
-    background-color: var(--topbar-bg);
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-/* ========================================================= */
-/* DASHBOARD CONTENT & COMPONENTS */
-/* ========================================================= */
 .page-container {
     flex: 1;
     padding: 20px;
@@ -95,22 +19,20 @@
     gap: 16px;
 }
 
-/* CARDS (The $310,250 Snapshot Look) */
 .dashboard-card {
     background: #FFFFFF;
     border-radius: 8px;
     padding: 20px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-light, #E5E7EB);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
     .dashboard-card h3 {
         font-size: 14px;
-        color: var(--text-muted);
+        color: var(--text-muted, #6B7280);
         margin-bottom: 12px;
     }
 
-/* KPI ACCENTS */
 .kpi-value.blue {
     color: var(--sage-blue);
     font-weight: 700;
@@ -126,9 +48,6 @@
     font-weight: 700;
 }
 
-/* ========================================================= */
-/* TABLES (Late Shipments / Quotes) */
-/* ========================================================= */
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -138,32 +57,20 @@
     .table th {
         text-align: left;
         font-size: 12px;
-        color: var(--text-muted);
-        border-bottom: 1px solid var(--border-color);
+        color: var(--text-muted, #6B7280);
+        border-bottom: 1px solid var(--border-light, #E5E7EB);
         padding: 10px;
     }
 
     .table td {
         padding: 12px 10px;
         font-size: 13px;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-light, #E5E7EB);
     }
 
     .table tr:hover {
         background-color: rgba(0, 0, 0, 0.02);
     }
-
-/* ========================================================= */
-/* RIGHT PANEL (Sarah Johnson Context) */
-/* ========================================================= */
-.context-panel {
-    width: 350px;
-    background: #FFFFFF;
-    border-left: 1px solid var(--border-color);
-    padding: 16px;
-    overflow-y: auto;
-    flex-shrink: 0;
-}
 
 .panel-section {
     margin-bottom: 24px;

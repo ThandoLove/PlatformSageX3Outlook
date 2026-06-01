@@ -1,127 +1,133 @@
 ﻿/* =========================================================
-   TASK DETAILS PANEL — FULL REWRITE
-   CLEAN • HIGH-DENSITY • NO-SCROLL-HELL
+   TASK DETAILS PANEL — COMPONENT ELEMENT STYLE SPECS
+   CLEAN • HIGH-DENSITY • NO STRUCTURAL OVERLAP
 ========================================================= */
 
-/* 1. ROOT CONTAINER & SCROLL LOCK */
-.sidebar-root {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: #f8fafc;
-    overflow: hidden; /* 🔥 This prevents the "Double Scrollbar" */
-    border-left: 1px solid #e2e8f0;
+/* 1. COMPONENT INTERNAL SHEET WRAPPER */
+:host, .sidebar-root {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    width: 100% !important;
+    background: #f8fafc !important;
+    overflow: hidden !important; /* Prevents the "Double Scrollbar" */
 }
 
-/* 2. THE CONTENT AREA (The only area that scrolls) */
+/* 2. THE CONTENT SCROLLING BOX (The only area that scrolls internally) */
 .sidebar-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
 }
 
-/* 3. SECTION HEADERS */
+/* 3. CORE HEADER PANEL STRIP */
 .sidebar-header-main {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: white;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #0f172a;
-    cursor: pointer;
-    flex-shrink: 0;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 16px !important;
+    background: white !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
 }
 
-/* 4. MODERN CARD DESIGN */
+/* 4. CARDS & SECTIONS */
 .side-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 16px;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 16px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
 }
 
-/* 5. LABELS & TYPOGRAPHY */
+/* 5. TYPOGRAPHY MODIFIERS */
 .card-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: #64748b;
-    margin-bottom: 12px;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    margin-bottom: 12px !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
 }
 
 .lbl-bold {
-    font-size: 13px;
-    font-weight: 600;
-    color: #0f172a;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
 }
 
-/* 6. AGING STATS GRID */
+/* 6. AGING STATS DATA VIEWS */
 .aging-grid {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 15px !important;
+}
+
+.stat-unit {
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .stat-num {
-    font-size: 26px;
-    font-weight: 700;
-    line-height: 1;
+    font-size: 26px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
 }
 
 .stat-lbl {
-    font-size: 10px;
-    font-weight: 500;
-    color: #94a3b8;
-    text-transform: uppercase;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
 }
 
 .red-txt {
-    color: #ef4444;
+    color: #ef4444 !important;
 }
 
 .blue-txt {
-    color: #2563eb;
+    color: #2563eb !important;
 }
 
-/* 7. COMPLETION RING */
+/* 7. RADIAL COMPLETION RING INDICATOR */
 .green-ring-pretty {
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    border: 3px solid #10b981;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: #10b981;
-    background: #f0fdf4;
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 50% !important;
+    border: 3px solid #10b981 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #10b981 !important;
+    background: #f0fdf4 !important;
 }
 
-/* 8. HISTOGRAM / CANVAS LOGIC (RESTORED) */
+/* 8. HISTOGRAM CANVAS PARAMETERS */
 .histo-divider {
-    font-size: 9px;
-    font-weight: 600;
-    color: #cbd5e1;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #f1f5f9;
-    text-transform: uppercase;
+    font-size: 9px !important;
+    font-weight: 600 !important;
+    color: #cbd5e1 !important;
+    margin-top: 12px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #f1f5f9 !important;
+    text-transform: uppercase !important;
 }
 
 .histogram-viewport {
-    height: 70px; /* High density height */
-    width: 100%;
-    margin-top: 8px;
+    height: 70px !important;
+    width: 100% !important;
+    margin-top: 8px !important;
 }
 
 #agingHistogramCanvas {
@@ -129,91 +135,110 @@
     height: 100% !important;
 }
 
-/* 9. RESPONSE TIME */
+/* 9. RESPONSE TIME SEGMENTS */
 .response-row {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
 }
 
 .timer-red-ring-seamless {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid #ef4444;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fef2f2;
-    font-size: 11px;
-    font-weight: 700;
-    color: #0f172a;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    border: 2px solid #ef4444 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #fef2f2 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    flex-shrink: 0 !important;
 }
 
-/* 10. SPARKLINE */
+.response-text {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+}
+
+/* 10. DYNAMIC MINI SPARKLINE GRAPH */
 .spark-box {
-    display: flex;
-    align-items: flex-end;
-    gap: 2px;
-    height: 12px;
-    margin-top: 4px;
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 2px !important;
+    height: 12px !important;
+    margin-top: 4px !important;
 }
 
 .spark-bar-seamless {
-    width: 4px;
-    background: #3b82f6;
-    border-radius: 1px;
+    width: 4px !important;
+    background: #3b82f6 !important;
+    border-radius: 1px !important;
 }
 
-/* 11. BUTTONS & INPUTS */
+/* 11. COLLABORATION INTERACTIVE ELEMENTS */
 .btn-blue-delegate-seamless {
-    width: 100%;
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
+    width: 100% !important;
+    background: #2563eb !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
 }
 
     .btn-blue-delegate-seamless:hover {
-        background: #1d4ed8;
+        background: #1d4ed8 !important;
     }
 
-/* 12. WORKLOAD STATS */
+    .btn-blue-delegate-seamless:disabled {
+        background: #cbd5e1 !important;
+        color: #94a3b8 !important;
+        cursor: not-allowed !important;
+    }
+
+/* 12. RUNTIME WORKLOAD SUMMARIES */
 .workload-stats-seamless {
-    padding-top: 4px;
+    padding-top: 4px !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .task-count {
-    font-size: 13px;
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 10px;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    margin-bottom: 10px !important;
 }
 
 .icon-row-seamless {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 12px;
+    display: flex !important;
+    gap: 6px !important;
+    margin-bottom: 12px !important;
 }
 
 .blue-p-icon {
-    color: #3b82f6;
-    font-size: 16px;
+    color: #3b82f6 !important;
+    font-size: 16px !important;
 }
 
 .grey-p-icon {
-    color: #e2e8f0;
-    font-size: 16px;
+    color: #e2e8f0 !important;
+    font-size: 16px !important;
 }
 
-/* 13. ANIMATIONS & SCROLLBAR (RESTORED) */
+/* 13. COMPONENT INTERFACE ANIMATIONS */
 .animate-fade-in {
-    animation: fadeIn 0.2s ease-in-out;
+    animation: fadeIn 0.2s ease-in-out !important;
 }
 
 @keyframes fadeIn {
@@ -228,11 +253,12 @@
     }
 }
 
+/* 14. CUSTOM TRACK PANELS HIGH DENSITY SCROLLBARS */
 .sidebar-content::-webkit-scrollbar {
-    width: 4px;
+    width: 4px !important;
 }
 
 .sidebar-content::-webkit-scrollbar-thumb {
-    background: #e2e8f0;
-    border-radius: 10px;
+    background: #e2e8f0 !important;
+    border-radius: 10px !important;
 }
