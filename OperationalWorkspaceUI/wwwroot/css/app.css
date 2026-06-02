@@ -470,3 +470,36 @@ fluent-layout,
             height: 0 !important;
             margin: 0 !important;
         }
+/* =========================================================================
+   ADMIN ACTIONS DETAILED ELEMENT FORM RENDER CODES
+   ========================================================================= */
+
+.admin-action-list .action-btn.success {
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    border-radius: 6px !important;
+    padding: 10px !important;
+    text-align: left !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    color: #10b981 !important;
+    width: 100% !important;
+}
+
+    .admin-action-list .action-btn.success:hover {
+        background-color: #f0fdf4 !important;
+        border-color: #10b981 !important;
+    }
+
+.customer-card .sage-link-btn {
+    font-size: 11px !important;
+    color: #2563eb !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+}
+
+    .customer-card .sage-link-btn:hover {
+        text-decoration: underline !important;
+    }

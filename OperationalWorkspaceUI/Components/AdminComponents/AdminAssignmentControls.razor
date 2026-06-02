@@ -18,48 +18,77 @@
         {
             <div class="control-group">
                 <label>Reassign Specialist</label>
+
                 <div class="input-with-button">
-                    <select @bind="SelectedRecipientEmail" class="admin-select">
-                        <option value="">Select Employee...</option>
+                    <select @bind="SelectedRecipientEmail"
+                            class="admin-select">
+
+                        <option value="">
+                            Select Employee...
+                        </option>
+
                         @foreach (var emp in MockSpecialists)
                         {
-                            <option value="@emp.Email">@emp.Name (@emp.Department)</option>
+                            <option value="@emp.Email">
+                                @emp.Name (@emp.Department)
+                            </option>
                         }
+
                     </select>
+
                     <button class="btn-primary-admin"
                             @onclick="ExecuteReassignment"
                             disabled="@(string.IsNullOrEmpty(SelectedRecipientEmail) || isProcessing)">
+
                         @(isProcessing ? "..." : "Assign")
+
                     </button>
                 </div>
             </div>
 
             <div class="quick-actions-row">
-                <button class="btn-outline-danger" @onclick="ExecuteEscalation" disabled="@isProcessing">
+
+                <button class="btn-outline-danger"
+                        @onclick="ExecuteEscalation"
+                        disabled="@isProcessing">
+
                     Force Escalate
+
                 </button>
-                <button class="btn-outline-warning" @onclick="AdjustSla" disabled="@isProcessing">
+
+                <button class="btn-outline-warning"
+                        @onclick="AdjustSla"
+                        disabled="@isProcessing">
+
                     Extend SLA
+
                 </button>
+
             </div>
         }
     </div>
 </div>
 
 @code {
-    [Parameter] public TaskDto? Task { get; set; }
+
+    [Parameter]
+    public TaskDto? Task { get; set; }
+
     private string SelectedRecipientEmail { get; set; } = "";
+
     private bool isProcessing = false;
 
-    // Matches your DelegateTaskRequest which requires an Email
-    private List<(string Name, string Email, string Department)> MockSpecialists = new()
+    private readonly List<(string Name, string Email, string Department)> MockSpecialists = new()
     {
         ("John Doe", "john.doe@company.com", "Sales"),
         ("Jane Smith", "jane.smith@company.com", "Support"),
         ("Sarah Wilson", "sarah.w@company.com", "Logistics")
     };
 
-    protected override void OnInitialized() => State.OnChange += Refresh;
+    protected override void OnInitialized()
+    {
+        State.OnChange += Refresh;
+    }
 
     private void Refresh()
     {
@@ -68,58 +97,90 @@
 
     private async Task ExecuteReassignment()
     {
-        if (Task == null || string.IsNullOrEmpty(SelectedRecipientEmail)) return;
+        if (Task == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(SelectedRecipientEmail))
+            return;
 
         isProcessing = true;
+
         try
         {
-            // FIX 1: Map to DelegateAsync and use DelegateTaskRequest
             var request = new DelegateTaskRequest
             {
                 TaskId = Task.Id,
                 RecipientEmail = SelectedRecipientEmail
             };
 
-            var response = await TaskService.DelegateAsync(request, default);
+            var response =
+                await TaskService.DelegateAsync(
+                    request,
+                    CancellationToken.None);
 
-            if (response != null)
+            if (response != null && response.IsSuccess)
             {
-                var specialist = MockSpecialists.FirstOrDefault(u => u.Email == SelectedRecipientEmail);
-                Task.AssignedTo = specialist.Name ?? SelectedRecipientEmail;
-                
-                // FIX 2: Set status to 'Assigned' which exists in your enum
-                Task.Status = OperationalWorkspace.Domain.Enums.TaskStatus.Assigned;
-                
+                var specialist =
+                    MockSpecialists.FirstOrDefault(
+                        x => x.Email == SelectedRecipientEmail);
+
+                Task.AssignedTo =
+                    specialist.Name ?? SelectedRecipientEmail;
+
+                Task.Status =
+                    OperationalWorkspace.Domain.Enums.TaskStatus.Assigned;
+
+                Task.UpdatedDate = DateTime.UtcNow;
+
+                State.SendTaskToEmployee(
+                    Task,
+                    SelectedRecipientEmail);
+
                 State.NotifyStateChanged();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error reassigning task: {ex.Message}");
+            Console.WriteLine(
+                $"Error reassigning task: {ex.Message}");
         }
         finally
         {
             isProcessing = false;
-        }
-    }
-
-    private async Task ExecuteEscalation()
-    {
-        if (Task == null) return;
-        Task.IsEscalated = true;
-        State.NotifyStateChanged();
-        await System.Threading.Tasks.Task.Delay(100);
-    }
-
-    private void AdjustSla()
-    {
-        // FIX 3: Null-safe check for nullable DateTime?
-        if (Task?.DueDate != null)
-        {
-            Task.DueDate = Task.DueDate.Value.AddHours(24);
             State.NotifyStateChanged();
         }
     }
 
-    public void Dispose() => State.OnChange -= Refresh;
+    private void ExecuteEscalation()
+    {
+        if (Task == null)
+            return;
+
+        Task.IsEscalated = true;
+
+        Task.Priority =
+            OperationalWorkspace.Domain.Enums.TaskPriority.Urgent;
+
+        Task.UpdatedDate = DateTime.UtcNow;
+
+        State.NotifyStateChanged();
+    }
+
+    private void AdjustSla()
+    {
+        if (Task?.DueDate == null)
+            return;
+
+        Task.DueDate =
+            Task.DueDate.Value.AddHours(24);
+
+        Task.UpdatedDate = DateTime.UtcNow;
+
+        State.NotifyStateChanged();
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= Refresh;
+    }
 }

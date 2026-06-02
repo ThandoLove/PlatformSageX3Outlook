@@ -3,9 +3,12 @@
 @using OperationalWorkspaceUI.Components.AdminComponents
 @using TaskDto = OperationalWorkspaceApplication.DTOs.TaskDto
 @using OperationalWorkspace.Domain.Enums
+
+@* Type alias mapping to eliminate compiler namespace collisions *@
 @using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus
-@inject DashboardState State
 @implements IDisposable
+
+@inject DashboardState State
 
 <div class="hub-viewport-lock">
     @* --- TOP HEADER --- *@
@@ -42,7 +45,8 @@
 
         @* --- COLUMN 3: RIGHT HIGH-FIDELITY DETAILS --- *@
         <aside class="col-details">
-            <AdminTaskDetailsPanel Task="@(State.SelectedTask ?? State.AllTasks.FirstOrDefault(t => t.CompanyName == "Brightwave Solutions"))" />
+            @* FIX: Passing explicit local Refresh handler to listen directly to the right detail panel *@
+            <AdminTaskDetailsPanel Task="@(State.SelectedTask ?? State.AllTasks.FirstOrDefault(t => t.CompanyName == "Brightwave Solutions"))" OnActionsUpdated="Refresh" />
         </aside>
     </div>
 </div>
@@ -50,6 +54,7 @@
 @code {
     protected override void OnInitialized()
     {
+        // FIX: Subscribing the parent layout page directly to DashboardState updates so ANY admin action redraws the board canvas instantly
         State.OnChange += Refresh;
 
         if (State.AllTasks == null || !State.AllTasks.Any())
@@ -69,9 +74,12 @@
 
     private void Refresh()
     {
-        // FIXED: Safe thread invoke handles state updates securely when sub-toolbar events notify data mutations change parameters
+        // Invokes render sequence safely on main thread loop to handle background data swaps
         InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose() => State.OnChange -= Refresh;
+    public void Dispose()
+    {
+        State.OnChange -= Refresh;
+    }
 }

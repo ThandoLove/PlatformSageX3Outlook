@@ -1,7 +1,10 @@
-﻿
-using OperationalWorkspaceUI.State;
+﻿using OperationalWorkspaceUI.State;
 using OperationalWorkspaceApplication.DTOs;
 using System.Net.Http.Json;
+using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
+using OperationalWorkspace.Domain.Enums;
 
 namespace OperationalWorkspaceUI.UIServices.DashboardUI;
 
@@ -166,7 +169,7 @@ public class DashboardUIService
     }
 
     // =========================================================
-    // TASKS
+    // TASKS (FIXED: Added explicit status mapping tags and employee emails)
     // =========================================================
     private async Task<List<TaskDto>> FetchTasksAsync(string role)
     {
@@ -177,8 +180,11 @@ public class DashboardUIService
             new TaskDto
             {
                 Id = Guid.NewGuid(),
-                Title = "Review Sales Report",
-                AssignedTo = "Admin",
+                Title = "Issue with Invoice INV-100123",
+                CompanyName = "Brightwave Solutions",
+                Priority = TaskPriority.Urgent,
+                Status = OperationalWorkspace.Domain.Enums.TaskStatus.Assigned, // Matches Kanban column filter!
+                AssignedTo = "Amit Patel",
                 DueDate = DateTime.Now.AddDays(2),
                 Completed = false
             },
@@ -186,9 +192,24 @@ public class DashboardUIService
             new TaskDto
             {
                 Id = Guid.NewGuid(),
-                Title = "Update Client Contact",
-                AssignedTo = "CurrentUser",
+                Title = "Review Sales Report",
+                CompanyName = "Brightwave Solutions",
+                Priority = TaskPriority.High,
+                Status = OperationalWorkspace.Domain.Enums.TaskStatus.Open, // Matches Kanban column filter!
+                AssignedTo = "alex.turner@company.com", // Matches Employee list filter!
                 DueDate = DateTime.Now.AddDays(1),
+                Completed = false
+            },
+
+            new TaskDto
+            {
+                Id = Guid.NewGuid(),
+                Title = "Update Client Contact",
+                CompanyName = "Tech Innovations Inc.",
+                Priority = TaskPriority.Medium,
+                Status = OperationalWorkspace.Domain.Enums.TaskStatus.Assigned, // Matches Kanban column filter!
+                AssignedTo = "alex.turner@company.com", // Matches Employee list filter!
+                DueDate = DateTime.Now.AddDays(3),
                 Completed = false
             }
         };
@@ -246,4 +267,3 @@ public class DashboardUIService
         };
     }
 }
-

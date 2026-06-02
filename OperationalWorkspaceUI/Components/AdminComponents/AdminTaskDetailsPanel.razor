@@ -1,8 +1,12 @@
-﻿
+﻿@using OperationalWorkspace.Domain.Enums
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.DTOs
+@using Microsoft.JSInterop
+@using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus
 
 @inject DashboardState DashboardState
+@inject WorkspaceState EmployeeWorkspaceState
+@inject IJSRuntime JSRuntime
 
 <div class="task-details-panel @(Task == null ? "hidden" : "")">
 
@@ -10,116 +14,46 @@
     {
         <!-- HEADER -->
         <div class="details-header">
-
-            <div class="alert-icon">
-                !
-            </div>
-
+            <div class="alert-icon">!</div>
             <div class="header-content">
                 <h3>@Task.Title</h3>
                 <p>@Task.CompanyName</p>
             </div>
-
-            <button class="close-btn"
-                    @onclick="() => DashboardState.SetSelectedTask(null)">
-                &times;
-            </button>
-
+            <button class="close-btn" @onclick="ClosePanel">&times;</button>
         </div>
 
         <!-- METADATA -->
         <div class="metadata-grid">
-
-            <div class="meta-row">
-                <label>Status</label>
-                <span class="value-blue">@Task.Status</span>
-            </div>
-
-            <div class="meta-row">
-                <label>Priority</label>
-                <span class="value-red">@Task.Priority</span>
-            </div>
-
-            <div class="meta-row">
-                <label>SLA Remaining</label>
-                <span class="value-red">Overdue by 5h 20m</span>
-            </div>
-
-            <div class="meta-row">
-                <label>Assigned To</label>
-
-                <div class="assignee-wrap">
-                    <span class="avatar-box">AP</span>
-                    <span>@Task.AssignedTo</span>
-                </div>
-            </div>
-
-            <div class="meta-row">
-                <label>Created</label>
-                <span>@Task.CreatedDate.ToString("MMM dd, yyyy hh:mm tt")</span>
-            </div>
-
+            <div class="meta-row"><label>Status</label><span class="value-blue">@Task.Status</span></div>
+            <div class="meta-row"><label>Priority</label><span class="value-red">@Task.Priority</span></div>
+            <div class="meta-row"><label>SLA Remaining</label><span class="@(IsOverdue ? "value-red" : "value-blue")">@SlaLabel</span></div>
+            <div class="meta-row"><label>Assigned To</label><div class="assignee-wrap"><span class="avatar-box">AP</span><span>@Task.AssignedTo</span></div></div>
+            <div class="meta-row"><label>Created</label><span>@Task.CreatedDate.ToString("MMM dd, yyyy hh:mm tt")</span></div>
             <div class="meta-row">
                 <label>Source</label>
-
-                <div class="source-wrap">
-                    <span>📧</span>
-                    <span>Outlook Email</span>
+                <div class="source-wrap" @onclick="OpenSourceEmailInOutlook" style="cursor: pointer; text-decoration: underline; color: #2563eb;">
+                    <span>📧</span><span>Outlook Email</span>
                 </div>
             </div>
-
         </div>
 
         <!-- TABS -->
         <div class="details-tabs">
-
-            <button class="tab-btn @(activeTab == "overview" ? "active" : "")"
-                    @onclick='() => activeTab = "overview"'>
-
-                Overview
-
-            </button>
-
-            <button class="tab-btn @(activeTab == "links" ? "active" : "")"
-                    @onclick='() => activeTab = "links"'>
-
-                Sage Links
-
-            </button>
-
-            <button class="tab-btn @(activeTab == "actions" ? "active" : "")"
-                    @onclick='() => activeTab = "actions"'>
-
-                Actions
-
-            </button>
-
+            <button class="tab-btn @(activeTab == "overview" ? "active" : "")" @onclick='() => activeTab = "overview"'>Overview</button>
+            <button class="tab-btn @(activeTab == "links" ? "active" : "")" @onclick='() => activeTab = "links"'>Sage Links</button>
+            <button class="tab-btn @(activeTab == "actions" ? "active" : "")" @onclick='() => activeTab = "actions"'>Actions</button>
         </div>
-
         <!-- OVERVIEW TAB -->
         @if (activeTab == "overview")
         {
             <div class="details-section">
-
-                <label class="section-label">
-                    CUSTOMER
-                </label>
-
+                <label class="section-label">CUSTOMER</label>
                 <div class="customer-card">
-
-                    <span class="customer-name">
-                        @Task.CompanyName
-                    </span>
-
-                    <a href="javascript:void(0)"
-                           class="sage-link">
-
+                    <span class="customer-name">@Task.CompanyName</span>
+                    <button type="button" class="sage-link-btn" @onclick="OpenCustomerInSageX3" style="background: none; border: none; color: #2563eb; text-decoration: underline; cursor: pointer; padding: 0; font-size: inherit;">
                         Open in Sage X3
-
-                    </a>
-
+                    </button>
                 </div>
-
             </div>
         }
 
@@ -127,35 +61,13 @@
         @if (activeTab == "links")
         {
             <div class="details-section">
-
-                <label class="section-label">
-                    SAGE X3 LINKS
-                </label>
-
+                <label class="section-label">SAGE X3 LINKS (READ-ONLY)</label>
                 <div class="link-list">
-
-                    <div class="link-item">
-                        <span>Customer</span>
-                        <span class="blue-link">@Task.CompanyName</span>
-                    </div>
-
-                    <div class="link-item">
-                        <span>Invoice</span>
-                        <span class="blue-link">INV-100123</span>
-                    </div>
-
-                    <div class="link-item">
-                        <span>Sales Order</span>
-                        <span class="blue-link">SO-10293</span>
-                    </div>
-
-                    <div class="link-item">
-                        <span>Opportunity</span>
-                        <span class="blue-link">OP-00921</span>
-                    </div>
-
+                    <div class="link-item"><span>Customer</span><span class="blue-link" style="cursor: pointer;" @onclick="OpenCustomerInSageX3">@Task.CompanyName</span></div>
+                    <div class="link-item"><span>Invoice</span><span class="blue-link" style="cursor: pointer;" @onclick='() => OpenSageFunctionWithRecord("SIH", "INV-100123")'>INV-100123</span></div>
+                    <div class="link-item"><span>Sales Order</span><span class="blue-link" style="cursor: pointer;" @onclick='() => OpenSageFunctionWithRecord("SOH", "SO-10293")'>SO-10293</span></div>
+                    <div class="link-item"><span>Opportunity</span><span class="blue-link" style="cursor: pointer;" @onclick='() => OpenSageFunctionWithRecord("OPP", "OP-00921")'>OP-00921</span></div>
                 </div>
-
             </div>
         }
 
@@ -163,43 +75,304 @@
         @if (activeTab == "actions")
         {
             <div class="details-section">
-
-                <label class="section-label">
-                    ADMIN ACTIONS
-                </label>
-
-                <div class="admin-action-list">
-
-                    <button class="action-btn">
-                        Reassign Task
-                    </button>
-
-                    <button class="action-btn">
-                        Change Priority
-                    </button>
-
-                    <button class="action-btn danger">
-                        Escalate Task
-                    </button>
-
+                <label class="section-label">ADMIN ACTIONS</label>
+                <div class="admin-action-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <button class="action-btn" @onclick="OpenAssignmentPanel">Reassign Task</button>
+                    <button class="action-btn" @onclick="TriggerPriorityModal">Change Priority...</button>
+                    <button class="action-btn danger" @onclick="TriggerEscalateModal">Escalate Task...</button>
+                    <button class="action-btn danger" @onclick="TriggerForceModal">Force Escalation...</button>
+                    <button class="action-btn" @onclick="TriggerSlaModal">Extend SLA...</button>
+                    <button class="action-btn success" @onclick="TriggerResolveModal">Resolve & De-escalate...</button>
                 </div>
-
             </div>
 
-            <AdminAssignmentControls Task="Task" />
-
-            <AdminEscalationPanel Task="Task" />
+            <!-- REASSIGN PORTAL -->
+            <div class="admin-sub-action-box" style="margin-top: 16px; padding: 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 8px;">Reassign Specialist Portal</label>
+                <select @bind="SelectedColleagueEmail" style="width: 100%; height: 32px; padding: 0 8px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 12px; font-size: 13px; background: white; color: #334155;">
+                    <option value="">Select Employee...</option>
+                    @foreach (var colleague in ColleagueDropdownPool)
+                    {
+                        <option value="@colleague.Email">@colleague.Name</option>
+                    }
+                </select>
+                <button class="btn-assign-primary" @onclick="ExecuteCrossEnvironmentAssignment" disabled="@string.IsNullOrEmpty(SelectedColleagueEmail)" style="width: 100%; height: 36px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
+                    Assign Specialist
+                </button>
+            </div>
         }
-
+    }
+    <!-- OVERLAY MODALS REGISTRATION -->
+    @if (showPriorityModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-box">
+                <h4>Change Task Priority</h4>
+                <p>Select the new severity designation for this workspace entity:</p>
+                <select @bind="modalPriority" class="modal-select">
+                    <option value="@TaskPriority.Low">Low</option>
+                    <option value="@TaskPriority.Medium">Medium</option>
+                    <option value="@TaskPriority.High">High</option>
+                    <option value="@TaskPriority.Urgent">Urgent</option>
+                </select>
+                <div class="modal-actions">
+                    <button class="btn-m-save @GetPriorityPillClass(modalPriority)" @onclick="ConfirmPriorityChange">Apply Priority</button>
+                    <button class="btn-m-cancel" @onclick="() => showPriorityModal = false">Cancel</button>
+                </div>
+            </div>
+        </div>
     }
 
+    @if (showEscalateModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-box danger-border">
+                <h4>Escalate Task Instance</h4>
+                <p>Provide an administrative reason note for promoting this entity to Urgent priority:</p>
+                <input type="text" @bind="escalationReason" placeholder="Enter reason for escalation..." class="modal-input" />
+                <div class="modal-actions">
+                    <button class="btn-m-danger" @onclick="ConfirmEscalation">Escalate Now</button>
+                    <button class="btn-m-cancel" @onclick="() => showEscalateModal = false">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (showForceModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-box danger-border">
+                <h4>Force Critical Overdue State</h4>
+                <p>This action slams the SLA deadline timeline back behind current system time to test alert states immediately.</p>
+                <div class="modal-actions">
+                    <button class="btn-m-danger" @onclick="ConfirmForceEscalation">Force Overdue</button>
+                    <button class="btn-m-cancel" @onclick="() => showForceModal = false">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (showSlaModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-box">
+                <h4>Extend SLA Target Timeline</h4>
+                <p>Choose the threshold hours capacity limit to extend this task:</p>
+                <select @bind="slaExtensionHours" class="modal-select">
+                    <option value="12">Add 12 Hours</option>
+                    <option value="24">Add 24 Hours</option>
+                    <option value="48">Add 48 Hours</option>
+                    <option value="72">Add 72 Hours</option>
+                </select>
+                <div class="modal-actions">
+                    <button class="btn-m-save priority-high" @onclick="ConfirmSlaExtension">Extend Deadline</button>
+                    <button class="btn-m-cancel" @onclick="() => showSlaModal = false">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (showResolveModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-box success-border">
+                <h4>Resolve & De-escalate Entity</h4>
+                <p>Clear audit exception tracking notes and return this card to low priority parameters?</p>
+                <div class="modal-actions">
+                    <button class="btn-m-success" @onclick="ConfirmResolve">Confirm Resolution</button>
+                    <button class="btn-m-cancel" @onclick="() => showResolveModal = false">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
-
 @code {
+    [Parameter] public TaskDto? Task { get; set; }
+    [Parameter] public EventCallback OnActionsUpdated { get; set; }
 
-    [Parameter]
-    public TaskDto? Task { get; set; }
+    private string activeTab = "actions";
+    private string SelectedColleagueEmail = "";
 
-    private string activeTab = "overview";
+    private bool showPriorityModal = false;
+    private bool showEscalateModal = false;
+    private bool showForceModal = false;
+    private bool showSlaModal = false;
+    private bool showResolveModal = false;
 
+    private TaskPriority modalPriority = TaskPriority.Medium;
+    private string escalationReason = "";
+    private int slaExtensionHours = 24;
+
+    private List<ColleagueRecord> ColleagueDropdownPool = new()
+    {
+        new("Sarah Jenkins", "sarah.j@company.com"),
+        new("Mark Stevens", "mark.s@company.com"),
+        new("Tia Roberts", "tia.r@company.com"),
+        new("Alex Turner", "alex.turner@company.com")
+    };
+
+    private bool IsOverdue => Task?.DueDate != null && DateTime.UtcNow > Task.DueDate.Value;
+    
+    private string SlaLabel
+    {
+        get
+        {
+            if (Task?.DueDate == null) return "No SLA Target";
+            var timeDifference = Task.DueDate.Value - DateTime.UtcNow;
+            if (timeDifference.TotalSeconds < 0)
+            {
+                var absDiff = timeDifference.Duration();
+                return $"Overdue by {(int)absDiff.TotalHours}h {absDiff.Minutes}m";
+            }
+            return $"Remaining: {(int)timeDifference.TotalHours}h {timeDifference.Minutes}m";
+        }
+    }
+
+    private void OpenAssignmentPanel() => activeTab = "actions";
+
+    private async Task ClosePanel()
+    {
+        DashboardState.SetSelectedTask(null);
+        await OnActionsUpdated.InvokeAsync();
+    }
+
+    // MODAL STATE ROUTERS WIPE OUT INLINE LAMBDA STRING COLLISIONS
+    private void TriggerPriorityModal()
+    {
+        if (Task != null) modalPriority = Task.Priority;
+        showPriorityModal = true;
+    }
+
+    private void TriggerEscalateModal()
+    {
+        escalationReason = "Escalated by corporate administrator";
+        showEscalateModal = true;
+    }
+
+    private void TriggerForceModal() => showForceModal = true;
+    private void TriggerSlaModal()
+    {
+        slaExtensionHours = 24;
+        showSlaModal = true;
+    }
+    private void TriggerResolveModal() => showResolveModal = true;
+
+
+    private async Task ConfirmPriorityChange()
+    {
+        if (Task == null) return;
+        Task.Priority = modalPriority;
+        showPriorityModal = false;
+        await UpdateTaskStateMetadata();
+    }
+
+    private async Task ConfirmEscalation()
+    {
+        if (Task == null) return;
+        Task.IsEscalated = true;
+        Task.Priority = TaskPriority.Urgent;
+        Task.Status = TaskStatus.Assigned;
+        Task.StatusDescription = escalationReason;
+        showEscalateModal = false;
+        await UpdateTaskStateMetadata();
+    }
+
+    private async Task ConfirmForceEscalation()
+    {
+        if (Task == null) return;
+        Task.IsEscalated = true;
+        Task.Priority = TaskPriority.Urgent;
+        Task.Status = TaskStatus.Assigned;
+        Task.DueDate = DateTime.UtcNow.AddHours(-6);
+        Task.StatusDescription = "Critical Level Forced Escalation Passed via Dashboard Override UI";
+        showForceModal = false;
+        await UpdateTaskStateMetadata();
+    }
+
+    private async Task ConfirmSlaExtension()
+    {
+        if (Task == null) return;
+        Task.DueDate = (Task.DueDate ?? DateTime.UtcNow).AddHours(slaExtensionHours);
+        Task.StatusDescription = $"SLA Extended by +{slaExtensionHours} Hours via Admin Portal";
+        showSlaModal = false;
+        await UpdateTaskStateMetadata();
+    }
+
+    private async Task ConfirmResolve()
+    {
+        if (Task == null) return;
+        Task.IsEscalated = false;
+        Task.Priority = TaskPriority.Low;
+        Task.StatusDescription = "Resolved and de-escalated safely";
+        showResolveModal = false;
+        await UpdateTaskStateMetadata();
+    }
+
+    private async Task ExecuteCrossEnvironmentAssignment()
+    {
+        if (Task == null || string.IsNullOrEmpty(SelectedColleagueEmail)) return;
+
+        var matchingColleague = ColleagueDropdownPool.FirstOrDefault(c => c.Email == SelectedColleagueEmail);
+        Task.AssignedTo = matchingColleague?.Name ?? SelectedColleagueEmail;
+        Task.Status = TaskStatus.Assigned;
+        Task.UpdatedDate = DateTime.UtcNow;
+
+        if (EmployeeWorkspaceState.Tasks != null)
+        {
+            var alreadyInEmployeeGrid = EmployeeWorkspaceState.Tasks.Any(t => t.Id == Task.Id || (t.Title == Task.Title && t.CompanyName == Task.CompanyName));
+            if (!alreadyInEmployeeGrid)
+            {
+                EmployeeWorkspaceState.Tasks.Insert(0, Task);
+            }
+            EmployeeWorkspaceState.Notify();
+        }
+
+        SelectedColleagueEmail = "";
+        await UpdateTaskStateMetadata();
+    }
+
+    private async Task UpdateTaskStateMetadata()
+    {
+        if (Task != null) Task.UpdatedDate = DateTime.UtcNow;
+        DashboardState.NotifyStateChanged();
+        await OnActionsUpdated.InvokeAsync();
+    }
+
+    private async Task OpenSourceEmailInOutlook()
+    {
+        if (Task != null && !string.IsNullOrEmpty(Task.OutlookItemId))
+        {
+            await JSRuntime.InvokeVoidAsync("openOutlookItem", Task.OutlookItemId);
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("window.open", "https://office.com", "_blank");
+        }
+    }
+
+    private async Task OpenCustomerInSageX3()
+    {
+        if (Task != null && !string.IsNullOrEmpty(Task.CompanyName))
+        {
+            await OpenSageFunctionWithRecord("BPC", Task.CompanyName);
+        }
+    }
+
+    private async Task OpenSageFunctionWithRecord(string functionCode, string recordId)
+    {
+        var encodedRecord = Uri.EscapeDataString(recordId);
+        var targetSageUrl = $"https://your-sage-x3-server.com{functionCode}&key={encodedRecord}";
+        await JSRuntime.InvokeVoidAsync("window.open", targetSageUrl, "_blank");
+    }
+
+    private string GetPriorityPillClass(TaskPriority priority) => priority switch
+    {
+        TaskPriority.Low => "priority-low",
+        TaskPriority.Medium => "priority-medium",
+        TaskPriority.High => "priority-high",
+        TaskPriority.Urgent => "priority-urgent",
+        _ => "priority-medium"
+    };
+
+    public record ColleagueRecord(string Name, string Email);
 }

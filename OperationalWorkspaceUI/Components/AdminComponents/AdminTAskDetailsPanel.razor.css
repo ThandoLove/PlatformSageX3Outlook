@@ -1,15 +1,16 @@
 ﻿/* =========================================================
-   TASK DETAILS PANEL
+   TASK DETAILS PANEL MASTER CHASSIS
 ========================================================= */
 
 .task-details-panel {
     height: 100%;
     overflow-y: auto;
     padding: 18px;
-    background: rgba(255,255,255,0.55);
-    backdrop-filter: blur(10px);
+    background: #ffffff !important;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    position: relative !important; /* Establishes a local anchor boundary for your overlay modals */
+    box-sizing: border-box !important;
 }
 
 .hidden {
@@ -78,7 +79,6 @@
         background: rgba(241,245,249,0.9);
     }
 
-
 /* =========================================================
    METADATA
 ========================================================= */
@@ -115,7 +115,6 @@
     color: #ef4444;
     font-weight: 500;
 }
-
 
 /* =========================================================
    ASSIGNEE
@@ -300,4 +299,180 @@
         background: #2563eb;
         color: white;
         box-shadow: 0 4px 12px rgba(37,99,235,0.14);
+    }
+
+
+/* =========================================================
+   MODALS (FIXED OVERLAY HEIGHT SHADOW ELIMINATION)
+========================================================= */
+
+.modal-overlay {
+    position: absolute !important; /* FIX: Restricts the modal layer strictly within the side container card bounds */
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important; /* Compresses container limits to 360px matching the column chassis dimensions */
+    height: 100% !important;
+    background: rgba(241, 245, 249, 0.85) !important; /* Modern clean background tint replaces the heavy gray bleed shadow */
+    backdrop-filter: blur(16px) !important; /* Unified crisp frosted glass effect */
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    padding: 16px !important;
+}
+
+.modal-box {
+    background: #ffffff !important;
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    width: 100% !important; /* Dynamically sizes content cards within the panel frame */
+    max-width: 320px !important;
+    box-shadow: 0 12px 20px -8px rgba(15, 23, 42, 0.12) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    box-sizing: border-box !important;
+    animation: modernModalPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+    .modal-box.danger-border {
+        border-top: 5px solid #dc2626 !important;
+    }
+
+    .modal-box.success-border {
+        border-top: 5px solid #059669 !important;
+    }
+
+@keyframes modernModalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-box h4 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.02em !important;
+}
+
+.modal-box p {
+    margin: 0 !important;
+    font-size: 12px !important;
+    color: #64748b !important;
+    line-height: 1.5 !important;
+}
+
+.modal-select, .modal-input {
+    width: 100% !important;
+    height: 38px !important;
+    border-radius: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+}
+
+    .modal-select:focus, .modal-input:focus {
+        border-color: #2563eb !important;
+    }
+
+.modal-actions {
+    display: flex !important;
+    gap: 8px !important;
+    margin-top: 4px !important;
+}
+
+
+.btn-m-cancel, .btn-m-save, .btn-m-danger, .btn-m-success {
+    flex: 1 !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    transition: all 0.15s ease-in-out !important;
+}
+
+.btn-m-cancel {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+    .btn-m-cancel:hover {
+        background: #e2e8f0 !important;
+    }
+
+/* Priority Color Variations */
+.btn-m-save.priority-low {
+    background: #f0fdf4 !important;
+    color: #16a34a !important;
+    border: 1px solid #bbf7d0 !important;
+}
+
+    .btn-m-save.priority-low:hover {
+        background: #16a34a !important;
+        color: white !important;
+    }
+
+.btn-m-save.priority-medium {
+    background: #fef3c7 !important;
+    color: #d97706 !important;
+    border: 1px solid #fde68a !important;
+}
+
+    .btn-m-save.priority-medium:hover {
+        background: #d97706 !important;
+        color: white !important;
+    }
+
+.btn-m-save.priority-high {
+    background: #eff6ff !important;
+    color: #2563eb !important;
+    border: 1px solid #bfdbfe !important;
+}
+
+    .btn-m-save.priority-high:hover {
+        background: #2563eb !important;
+        color: white !important;
+    }
+
+.btn-m-save.priority-urgent, .btn-m-danger {
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+}
+
+    .btn-m-save.priority-urgent:hover, .btn-m-danger:hover {
+        background: #dc2626 !important;
+        color: white !important;
+    }
+
+.btn-m-success {
+    background: #ecfdf5 !important;
+    color: #059669 !important;
+    border: 1px solid #a7f3d0 !important;
+}
+
+    .btn-m-success:hover {
+        background: #059669 !important;
+        color: white !important;
     }
