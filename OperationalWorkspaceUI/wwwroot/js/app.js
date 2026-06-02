@@ -144,3 +144,58 @@ window.officeBridge = {
 window.showToast = function (message) {
     console.log("APP_LOG:", message);
 };
+
+
+// =========================
+// 4. INTEROP SHIMS (safety stubs for missing integrations)
+// These provide no-op or demo behaviors when host integrations are not present
+// so Blazor JS interop calls won't throw "not a function" errors during demo.
+// =========================
+
+window.openOutlookItem = function (itemId) {
+    try {
+        console.log("openOutlookItem called:", itemId);
+        if (itemId && itemId.startsWith && itemId.startsWith("http")) {
+            window.open(itemId, "_blank");
+        } else {
+            window.open('/compose.html?source=' + encodeURIComponent(itemId || ''), '_blank');
+        }
+    } catch (e) {
+        console.error('openOutlookItem failed', e);
+    }
+};
+
+window.openSageX3CustomerContext = function (customerName) {
+    try {
+        console.log('openSageX3CustomerContext called for:', customerName);
+        var url = '/sagex3/customer?name=' + encodeURIComponent(customerName || '');
+        window.open(url, '_blank');
+    } catch (e) {
+        console.error('openSageX3CustomerContext failed', e);
+    }
+};
+
+window.renderAgingHistogram = function (canvasId, dataArray) {
+    try {
+        console.log('renderAgingHistogram', canvasId, dataArray);
+        var canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        var w = canvas.width = canvas.clientWidth || 200;
+        var h = canvas.height = canvas.clientHeight || 60;
+        ctx.clearRect(0,0,w,h);
+        var max = Math.max.apply(null, dataArray || [0]);
+        var barWidth = Math.floor(w / ((dataArray && dataArray.length) || 1)) - 4;
+        for (var i=0;i<(dataArray?dataArray.length:0);i++) {
+            var v = dataArray[i] || 0;
+            var barH = max > 0 ? (v / max) * (h - 8) : 0;
+            var x = i * (barWidth + 4) + 4;
+            var y = h - barH - 4;
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(x, y, barWidth, barH);
+        }
+    } catch (e) {
+        console.error('renderAgingHistogram failed', e);
+    }
+};

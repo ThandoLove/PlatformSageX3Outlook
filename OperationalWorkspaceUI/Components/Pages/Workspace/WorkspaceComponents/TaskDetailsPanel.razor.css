@@ -1,30 +1,26 @@
 ﻿/* =========================================================
    TASK DETAILS PANEL — COMPONENT ELEMENT STYLE SPECS
-   CLEAN • HIGH-DENSITY • NO STRUCTURAL OVERLAP
+   CLEAN • HIGH-DENSITY • NO-SCROLL-HELL
 ========================================================= */
 
-/* 1. COMPONENT INTERNAL SHEET WRAPPER */
 :host, .sidebar-root {
     display: flex !important;
     flex-direction: column !important;
     height: 100% !important;
     width: 100% !important;
     background: #f8fafc !important;
-    overflow: hidden !important; /* Prevents the "Double Scrollbar" */
+    overflow: hidden !important;
 }
 
-/* 2. THE CONTENT SCROLLING BOX (The only area that scrolls internally) */
 .sidebar-content {
     flex: 1 !important;
     overflow-y: auto !important;
-    overflow-x: hidden !important;
     padding: 16px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
 }
 
-/* 3. CORE HEADER PANEL STRIP */
 .sidebar-header-main {
     display: flex !important;
     justify-content: space-between !important;
@@ -39,7 +35,6 @@
     flex-shrink: 0 !important;
 }
 
-/* 4. CARDS & SECTIONS */
 .side-card {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
@@ -48,7 +43,6 @@
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
 }
 
-/* 5. TYPOGRAPHY MODIFIERS */
 .card-label {
     font-size: 10px !important;
     font-weight: 700 !important;
@@ -64,7 +58,6 @@
     color: #0f172a !important;
 }
 
-/* 6. AGING STATS DATA VIEWS */
 .aging-grid {
     display: flex !important;
     justify-content: space-between !important;
@@ -98,7 +91,6 @@
     color: #2563eb !important;
 }
 
-/* 7. RADIAL COMPLETION RING INDICATOR */
 .green-ring-pretty {
     width: 54px !important;
     height: 54px !important;
@@ -113,7 +105,6 @@
     background: #f0fdf4 !important;
 }
 
-/* 8. HISTOGRAM CANVAS PARAMETERS */
 .histo-divider {
     font-size: 9px !important;
     font-weight: 600 !important;
@@ -135,7 +126,6 @@
     height: 100% !important;
 }
 
-/* 9. RESPONSE TIME SEGMENTS */
 .response-row {
     display: flex !important;
     align-items: center !important;
@@ -163,7 +153,6 @@
     flex: 1 !important;
 }
 
-/* 10. DYNAMIC MINI SPARKLINE GRAPH */
 .spark-box {
     display: flex !important;
     align-items: flex-end !important;
@@ -178,7 +167,6 @@
     border-radius: 1px !important;
 }
 
-/* 11. COLLABORATION INTERACTIVE ELEMENTS */
 .btn-blue-delegate-seamless {
     width: 100% !important;
     background: #2563eb !important;
@@ -206,7 +194,6 @@
         cursor: not-allowed !important;
     }
 
-/* 12. RUNTIME WORKLOAD SUMMARIES */
 .workload-stats-seamless {
     padding-top: 4px !important;
     display: flex !important;
@@ -236,7 +223,87 @@
     font-size: 16px !important;
 }
 
-/* 13. COMPONENT INTERFACE ANIMATIONS */
+.meta-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 6px 0 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 12px !important;
+}
+
+    .meta-row label {
+        color: #94a3b8 !important;
+        font-weight: 600 !important;
+    }
+
+    .meta-row span {
+        color: #1e293b !important;
+        font-weight: 700 !important;
+    }
+
+.txt-urgent {
+    color: #ef4444 !important;
+}
+
+.customer-sage-box {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 10px !important;
+    border-radius: 6px !important;
+}
+
+.sage-links-grid {
+    display: grid !important;
+    gap: 8px !important;
+    background: #f8fafc !important;
+    padding: 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.a-btn {
+    width: 100% !important;
+    text-align: left !important;
+    padding: 10px !important;
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+    .a-btn:hover {
+        background: #f8fafc !important;
+    }
+
+.red-border {
+    color: #ef4444 !important;
+    border-color: #fee2e2 !important;
+}
+
+.blue-txt {
+    color: #2563eb !important;
+}
+
+.task-details-empty-state {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    padding: 24px !important;
+    text-align: center !important;
+    font-size: 0.85rem !important;
+    color: #64748b !important;
+}
+
 .animate-fade-in {
     animation: fadeIn 0.2s ease-in-out !important;
 }
@@ -253,7 +320,6 @@
     }
 }
 
-/* 14. CUSTOM TRACK PANELS HIGH DENSITY SCROLLBARS */
 .sidebar-content::-webkit-scrollbar {
     width: 4px !important;
 }

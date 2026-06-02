@@ -19,6 +19,7 @@ namespace OperationalWorkspaceUI.State
 
         // In production, default this to empty. The TopBar component handles the fallback to "John Smith".
         public string UserName { get; private set; } = string.Empty;
+        public string UserEmail { get; private set; } = string.Empty;
         public bool IsAuthenticated => !string.IsNullOrWhiteSpace(UserName);
 
         /// <summary>

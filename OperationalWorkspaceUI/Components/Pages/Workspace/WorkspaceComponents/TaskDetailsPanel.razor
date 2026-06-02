@@ -7,7 +7,7 @@
 @inject DashboardState AdminState
 @inject IJSRuntime JS
 
-<div class="sidebar-wrapper @(IsCollapsed ? "collapsed" : "")">
+<div class="sidebar-root">
     <div class="sidebar-header-main" @onclick="ToggleSidebar" style="cursor:pointer">
         <span>Task Details</span>
         <i class="oi @(IsCollapsed ? "oi-chevron-top" : "oi-chevron-bottom")"
@@ -17,28 +17,21 @@
     @if (!IsCollapsed && Task != null)
     {
         <div class="sidebar-content animate-fade-in">
-            
+
             @if (AdminState.IsAdminEnvironment)
             {
                 <!-- =========================================================
-                     ADMIN MODE: HIGH-FIDELITY (MATCHES IMAGE 100%)
+                     ADMIN MODE: HIGH-FIDELITY
                 ========================================================= -->
-                
-                    <div class="header-flex" style="display: flex; gap: 12px; align-items: flex-start;">
-                        <div class="alert-icon-red" style="background: #ef4444; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">!</div>
-                        <div class="header-titles">
-                            <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #1e293b;">@Task.Title</h3>
-                            <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b; font-weight: 600;">@Task.CompanyName</p>
-                        </div>
+                <div class="header-flex" style="display: flex; gap: 12px; align-items: flex-start;">
+                    <div class="alert-icon-red" style="background: #ef4444; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">!</div>
+                    <div class="header-titles">
+                        <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: #1e293b;">@Task.Title</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b; font-weight: 600;">@Task.CompanyName</p>
                     </div>
+                </div>
 
                 <div class="side-card meta-info-table" style="padding: 12px;">
-                    <style>
-                        .meta-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
-                        .meta-row label { color: #94a3b8; font-weight: 600; }
-                        .meta-row span, .meta-row div { color: #1e293b; font-weight: 700; }
-                        .txt-urgent { color: #ef4444 !important; }
-                    </style>
                     <div class="meta-row"><label>Status</label><span>@Task.Status</span></div>
                     <div class="meta-row"><label>Priority</label><span class="txt-urgent">@Task.Priority</span></div>
                     <div class="meta-row"><label>SLA Remaining</label><span class="txt-urgent">Overdue by 5h 20m</span></div>
@@ -74,12 +67,6 @@
                 <div class="details-section" style="margin-top: 16px;">
                     <label class="group-label" style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; display: block;">ADMIN ACTIONS</label>
                     <div class="admin-action-btns" style="display: grid; gap: 8px;">
-                        <style>
-                            .a-btn { width: 100%; text-align: left; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; font-weight: 600; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-                            .a-btn:hover { background: #f8fafc; }
-                            .red-border { color: #ef4444; border-color: #fee2e2; }
-                            .blue-txt { color: #2563eb; }
-                        </style>
                         <button class="a-btn"><i class="oi oi-person"></i> Reassign Task</button>
                         <button class="a-btn"><i class="oi oi-arrow-top"></i> Change Priority</button>
                         <button class="a-btn red-border"><i class="oi oi-shield"></i> Escalate Task</button>
@@ -91,9 +78,8 @@
             else
             {
                 <!-- =========================================================
-                     EMPLOYEE MODE: YOUR ORIGINAL DASHBOARD (UNCHANGED)
+                     EMPLOYEE MODE: DASHBOARD INSIGHTS
                 ========================================================= -->
-                <!-- 1. AGING WIDGET -->
                 <div class="side-card aging-card">
                     <div class="card-label">TASK AGING</div>
                     <div class="aging-grid">
@@ -101,25 +87,27 @@
                         <div class="stat-unit"><span class="stat-num blue-txt">1</span><span class="stat-lbl">DUE SOON</span></div>
                         <div class="ring-unit"><div class="green-ring-pretty">78%</div></div>
                     </div>
-                    <div class="histo-viewport">
+                    <div class="histo-divider">HISTORICAL TREND</div>
+                    <div class="histogram-viewport">
                         <canvas id="agingHistogramCanvas"></canvas>
                     </div>
                 </div>
 
-                <!-- 2. RESPONSE WIDGET -->
                 <div class="side-card response-row">
                     <div class="timer-red-ring-seamless">2.3h</div>
                     <div class="response-text">
                         <span class="lbl-bold">Avg. Response Time</span>
                         <div class="spark-box">
-                            @for (int i = 0; i < 6; i++) { <div class="spark-bar-seamless"></div> }
+                            @for (int i = 0; i < 6; i++)
+                            {
+                                <div class="spark-bar-seamless" style="height: @(6 + (i * 3))px;"></div>
+                            }
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. DELEGATION SECTION -->
-                <div class="side-card delegation-box" style="padding: 15px; background: rgba(59, 130, 246, 0.05); border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(59, 130, 246, 0.1);">
-                    <div class="card-label" style="margin-bottom: 10px; font-weight: 700; font-size: 0.7rem; color: #1e293b;">DELEGATE TO TEAM MEMBER</div>
+                <div class="side-card delegation-box">
+                    <div class="card-label">DELEGATE TO TEAM MEMBER</div>
                     <FluentSelect TOption="TeamMember" Items="@TeamMembers" OptionText="@(i => i.Name)"
                                   @bind-SelectedOption="@SelectedMember" Placeholder="Select a colleague..."
                                   Style="width: 100%; margin-bottom: 12px;" />
@@ -130,19 +118,27 @@
                 </div>
             }
 
-            <!-- SHARED WORKLOAD STATS -->
             <div class="workload-stats-seamless">
                 <div class="task-count">@State.Tasks.Count(t => !t.Completed) Active Tasks</div>
                 <div class="icon-row-seamless">
-                    @for (int i = 0; i < 5; i++) { <i class="oi oi-person blue-p-icon"></i> }
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <i class="oi oi-person blue-p-icon"></i>
+                    }
                     <i class="oi oi-person grey-p-icon"></i>
                 </div>
                 <div class="footer-msg-seamless"><i class="oi oi-info"></i> System Workload</div>
             </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="task-details-empty-state">
+            <p>Select a task row layout from the grid list to view complete dynamic insights.</p>
         </div>
     }
 </div>
-
 
 @code {
     [Parameter] public TaskDto? Task { get; set; }
@@ -163,21 +159,48 @@
     {
         if (Task != null && SelectedMember != null)
         {
-            State.SetLoadingTasks(true);
+            // Use InvokeAsync to ensure UI state operations are safely dispatched on the main Blazor render thread
+            await InvokeAsync(async () =>
+            {
+                State.SetLoadingTasks(true);
+                StateHasChanged(); // Instantly show the progress spinner block safely
+            });
+
             try
             {
+                // 1. Dispatch the asynchronous API backend database delegation mutation update pass
                 await TasksUIService.DelegateTaskAsync(Task.Id, SelectedMember.Email);
+
+                // 2. Safely mutate the data context parameters inside the state lists container logs
                 var masterTask = State.Tasks.FirstOrDefault(t => t.Id == Task.Id);
                 if (masterTask != null)
                 {
                     masterTask.AssignedTo = SelectedMember.Email;
                     masterTask.UpdatedDate = DateTime.Now;
                 }
+
+                // Log auditing parameters cleanly
                 State.LogActivity(Task.Title, $"Delegated to {SelectedMember.Name}", "Alex Turner");
-                State.Notify();
+
+                // 3. Clear local parameter variables context before pushing notifications to break the thread loop
                 SelectedMember = null;
+
+                // 4. Force a safe UI state change notification pass across subscribed grid components
+                State.Notify();
             }
-            finally { State.SetLoadingTasks(false); }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Delegation process threw an exception: {ex.Message}");
+            }
+            finally
+            {
+                // 5. Ensure the task loading lock is forcefully dropped under all circumstances
+                await InvokeAsync(() =>
+                {
+                    State.SetLoadingTasks(false);
+                    StateHasChanged(); // Instantly releases the button locks and interactions across the layout
+                });
+            }
         }
     }
 
@@ -185,9 +208,15 @@
     {
         if (Task != null && !IsCollapsed && !AdminState.IsAdminEnvironment)
         {
-            await JS.InvokeVoidAsync("renderAgingHistogram", "agingHistogramCanvas", new[] { 2, 1, 0, 3 });
+            try
+            {
+                await JS.InvokeVoidAsync("renderAgingHistogram", "agingHistogramCanvas", new[] { 2, 1, 0, 3 });
+            }
+            catch (JSDisconnectedException) { /* Safe link drop during navigation refitting passes */ }
+            catch (Exception) { /* Total lockout on silent interop canvas crashes */ }
         }
     }
 
     public record TeamMember(string Name, string Email);
 }
+

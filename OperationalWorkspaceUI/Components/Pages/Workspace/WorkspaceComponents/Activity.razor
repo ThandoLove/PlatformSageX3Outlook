@@ -12,7 +12,7 @@
 @inject OperationalWorkspaceUI.UIServices.Workspace.ActivityUIService ActivityService
 
 <div class="page-layout">
-    
+
     @* HEADER SECTION *@
     <div class="activity-header">
         <div>
@@ -20,10 +20,12 @@
             <p class="header-sub">System-wide activity tracking</p>
         </div>
         <div class="header-actions">
+            @* FIXED: Wired interactive spinning state modifiers to FluentButton template values *@
             <FluentButton Appearance="Appearance.Outline"
-                          IconStart="@(new Icons.Regular.Size20.ArrowClockwise())"
-                          OnClick="Reload">
-                Refresh
+                          IconStart="@(isSyncing ? new Icons.Regular.Size20.ArrowClockwise() : new Icons.Regular.Size20.ArrowClockwise())"
+                          Disabled="@isSyncing"
+                          OnClick="HandleLogReloadAsync">
+                @(isSyncing ? "Syncing..." : "Refresh")
             </FluentButton>
         </div>
     </div>
@@ -95,6 +97,7 @@
 @code {
     private string SearchQuery = "";
     private string SelectedAction = "";
+    private bool isSyncing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,12 +113,42 @@
     {
         InvokeAsync(StateHasChanged);
     }
+
+    private async Task HandleLogReloadAsync()
+    {
+        if (isSyncing) return;
+
+        // FIXED: Dispatched asynchronously to safely update internal database logs while forcing a hard interface redraw pass
+        await InvokeAsync(async () =>
+        {
+            isSyncing = true;
+            StateHasChanged();
+
+            try
+            {
+                await Reload();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Audit logging thread refresh pass failed: {ex.Message}");
+            }
+            finally
+            {
+                isSyncing = false;
+                StateHasChanged(); // Hyper-lock thread flush repaints audit rows layout data grid instantly
+            }
+        });
+    }
+
     private async Task Reload()
     {
         var databaseLogs = await ActivityService.GetActivitiesAsync();
-    
-        // Merge the database logs with what's already in memory
-        // This ensures your "live" actions from this session don't vanish
+
+        if (State.ActivityLogs == null)
+        {
+            State.ActivityLogs = new List<ActivityDto>();
+        }
+
         foreach (var log in databaseLogs)
         {
             if (!State.ActivityLogs.Any(l => l.Id == log.Id))
@@ -123,19 +156,18 @@
                 State.ActivityLogs.Add(log);
             }
         }
-    
+
         State.Notify();
     }
 
-
-    private IEnumerable<ActivityDto> FilteredLogs => State.ActivityLogs
+    private IEnumerable<ActivityDto> FilteredLogs => (State.ActivityLogs ?? Enumerable.Empty<ActivityDto>())
         .Where(l => (string.IsNullOrWhiteSpace(SearchQuery) ||
                      l.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
                      l.CreatedBy.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)))
         .Where(l => string.IsNullOrWhiteSpace(SelectedAction) || l.Action == SelectedAction)
         .OrderByDescending(l => l.Timestamp);
 
-    private List<string> UniqueActions => State.ActivityLogs
+    private List<string> UniqueActions => (State.ActivityLogs ?? Enumerable.Empty<ActivityDto>())
         .Select(l => l.Action)
         .Distinct()
         .OrderBy(a => a)

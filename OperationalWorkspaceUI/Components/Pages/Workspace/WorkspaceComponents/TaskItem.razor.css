@@ -1,12 +1,14 @@
-﻿/* THE TASK CARD GRID */
+﻿/* THE TASK CARD GRID - SYNCED TRACK WIDTH CONSTRAINTS */
 .task-card {
     display: grid !important;
-    grid-template-columns: 1.8fr 120px 1.2fr 130px 40px !important; /* Locks strict 5-column grid layout proportions */
+    grid-template-columns: 1.5fr 110px 1.2fr 110px 170px !important;
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
     border-radius: 8px !important;
-    padding: 12px 16px !important;
+    padding: 12px 14px !important;
     align-items: center !important;
+    cursor: pointer !important;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
     gap: 12px !important;
     width: 100% !important;
     box-sizing: border-box !important;
@@ -16,7 +18,6 @@
         border-color: #2563eb !important;
         box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
         transform: translateY(-1px) !important;
-        background-color: #ffffff !important;
     }
 
 .card-t {
@@ -32,7 +33,10 @@
 .card-c {
     font-size: 11px !important;
     color: #64748b !important;
-    font-weight: 400 !important;
+    font-weight: 400;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .p-chip {
@@ -57,19 +61,9 @@
         color: #2563eb !important;
     }
 
-    .p-chip.normal {
+    .p-chip.normal, .p-chip.medium {
         background: #fef3c7 !important;
         color: #92400e !important;
-    }
-
-    .p-chip.medium {
-        background: #fef3c7 !important;
-        color: #92400e !important;
-    }
-
-    .p-chip.low {
-        background: #f1f5f9 !important;
-        color: #64748b !important;
     }
 
 .due-text {
@@ -77,6 +71,7 @@
     color: #64748b !important;
     font-weight: 500 !important;
     margin-top: 4px !important;
+    white-space: nowrap !important;
 }
 
 .red-alert {
@@ -96,6 +91,7 @@
     cursor: pointer !important;
     padding: 4px 8px !important;
     border-radius: 4px !important;
+    white-space: nowrap !important;
 }
 
     .btn-ghost-link:hover {
@@ -127,6 +123,7 @@
     cursor: pointer !important;
     width: 100% !important;
     transition: all 0.2s !important;
+    white-space: nowrap !important;
 }
 
     .btn-outline-complete:hover {
@@ -139,29 +136,27 @@
     color: #10b981 !important;
     font-weight: 700 !important;
     font-size: 11px !important;
+    white-space: nowrap !important;
 }
 
-/* HIGH-PRIORITY BLUE SQUARE FIX (COLUMN 5) */
+/* COLUMN 5: ICON BOX MASTER BASE PILL CONFIG */
 .btn-blue-square-icon {
-    background-color: #2563eb !important; /* Forces the background color from your stylesheet */
+    background-color: #2563eb !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 6px !important;
-    width: 32px !important; /* Locks its layout box dimensions */
+    width: 100% !important;
     height: 32px !important;
-    display: flex !important;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
+    gap: 6px !important;
+    padding: 0 12px !important;
     cursor: pointer !important;
-    font-size: 14px !important;
-    transition: opacity 0.2s !important;
+    box-sizing: border-box !important;
     flex-shrink: 0 !important;
 }
 
     .btn-blue-square-icon:hover {
-        opacity: 0.9 !important;
-    }
-
-    .btn-blue-square-icon i {
-        color: #ffffff !important;
+        background-color: #1d4ed8 !important;
     }

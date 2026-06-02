@@ -1,5 +1,6 @@
 ﻿@using OperationalWorkspaceUI.State
 
+
 @inject DashboardState State
 @implements IDisposable
 
@@ -39,21 +40,22 @@
         </div>
 
         @* Quick Action Toggle *@
-        <button class="btn-refresh" @onclick="RefreshDashboard">
-            <i>🔄</i> Refresh Queue
+        <button class="btn-refresh" @onclick="RefreshDashboard" disabled="@isSyncing">
+            <i>🔄</i> @(isSyncing ? "Syncing..." : "Refresh Queue")
         </button>
     </div>
 </div>
 
 @code {
     private string _searchTerm = "";
+    private bool isSyncing = false;
+
     private string SearchTerm
     {
         get => _searchTerm;
         set { _searchTerm = value; ApplyFilters(); }
     }
 
-    // Mock data for the dropdown - in production, fetch this from a UserService
     private List<string> MockEmployees = new() { "John Doe", "Jane Smith", "Robert Brown", "Sarah Wilson" };
 
     protected override void OnInitialized() => State.OnChange += Refresh;
@@ -68,17 +70,36 @@
 
     private void ApplyFilters()
     {
-        // Logic: Filter State.AllTasks based on the UI selections
-        // In a seasoned professional app, this might trigger a service call
-        // or a client-side filter logic inside DashboardState.
         State.NotifyStateChanged();
     }
 
     private async Task RefreshDashboard()
     {
-        await State.LoadDashboardAsync(isAdmin: true);
+        if (isSyncing) return;
+
+        // FIXED: Safely dispatches the async data refresh on the main thread without throwing thread deadlocks
+        await InvokeAsync(async () =>
+        {
+            isSyncing = true;
+            StateHasChanged();
+
+            try
+            {
+                // Trigger the live data re-pull from the dashboard state manager
+                await State.LoadDashboardAsync(isAdmin: true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Admin queue load service dropped: {ex.Message}");
+            }
+            finally
+            {
+                isSyncing = false;
+                // Force a full state notification cascade to repaint all columns on the board layout cleanly
+                State.NotifyStateChanged();
+            }
+        });
     }
 
     public void Dispose() => State.OnChange -= Refresh;
 }
-

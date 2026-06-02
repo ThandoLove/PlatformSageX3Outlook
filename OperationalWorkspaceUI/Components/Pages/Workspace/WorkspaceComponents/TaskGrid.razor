@@ -1,13 +1,16 @@
-﻿@using OperationalWorkspaceApplication.DTOs
+﻿@using OperationalWorkspaceApplication.ApplicationState
+@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
 
 @implements IDisposable
 @inject WorkspaceState State
+@inject AppStateContainer AppState
+@inject UIState UIState
 @inject DashboardState AdminState
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
-<div class="hub-container">
+<div class="hub-container" style="position: relative;">
 
     @if (State.IsLoadingTasks)
     {
@@ -70,7 +73,6 @@
     <div class="task-list-scroller">
         @foreach (var task in GetFilteredTasks())
         {
-            <!-- FIX: Assigned OnTaskSelected correctly to drive the context sidebar data pass -->
             <TaskItem Task="task" OnSelect="OnTaskSelected" />
         }
     </div>
@@ -84,18 +86,28 @@
     private string ActiveTab = "Today";
     private bool IsFilterOpen = false;
     private string PriorityFilter = "All";
-    private string CurrentUserEmail = "alex.turner@company.com";
 
+    // ACTIVE DYNAMIC DATA RESOLVER: Pulls target identity variables straight from live session login tokens context
+    private string ResolvedUserEmail => !string.IsNullOrWhiteSpace(UIState.UserEmail)
+        ? UIState.UserEmail
+        : (!string.IsNullOrWhiteSpace(AppState.CurrentEmail?.SenderEmail) ? AppState.CurrentEmail.SenderEmail : "alex.turner@company.com");
+
+    // UNIFIED PIPELINE ENGINE: Captures task items assigned to the active user context or records initialized as unassigned
     private IEnumerable<TaskDto> SourceTasks => Tasks ?? State.Tasks
-        .Where(t => t.AssignedTo == CurrentUserEmail || string.IsNullOrEmpty(t.AssignedTo));
+        .Where(t => t.AssignedTo == ResolvedUserEmail || string.IsNullOrEmpty(t.AssignedTo) || t.AssignedTo == "Unlinked");
 
     protected override void OnInitialized()
     {
         State.OnChange += Refresh;
         AdminState.OnChange += Refresh;
+        UIState.OnChange += Refresh;
+        AppState.OnChange += Refresh;
     }
 
-    private void Refresh() => InvokeAsync(StateHasChanged);
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
 
     private void ToggleFilter() => IsFilterOpen = !IsFilterOpen;
 
@@ -131,5 +143,7 @@
     {
         State.OnChange -= Refresh;
         AdminState.OnChange -= Refresh;
+        UIState.OnChange -= Refresh;
+        AppState.OnChange -= Refresh;
     }
 }

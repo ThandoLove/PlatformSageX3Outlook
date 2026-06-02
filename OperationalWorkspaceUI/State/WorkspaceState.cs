@@ -179,6 +179,7 @@ CreatedAt = DateTime.Now
             {
                 SetLoadingTasks(true);
                 await Task.Delay(100);
+                var now = DateTime.Now;
                 Tasks = new List<TaskDto>
 {
 new TaskDto
@@ -237,6 +238,17 @@ DueDate = DateTime.Today,
 Status = TaskStatus.Open
 }
 };
+
+                // Ensure all tasks have basic metadata used by the UI
+                foreach (var t in Tasks)
+                {
+                    if (t.CreatedDate == default) t.CreatedDate = now.AddDays(-1);
+                    if (t.UpdatedDate == default) t.UpdatedDate = now;
+                    if (string.IsNullOrEmpty(t.AssignedTo)) t.AssignedTo = "alex.turner@company.com";
+                    if (string.IsNullOrEmpty(t.SourceEmailSubject)) t.SourceEmailSubject = "Auto-generated task";
+                    if (string.IsNullOrEmpty(t.Description)) t.Description = "No additional details provided.";
+                    if (string.IsNullOrEmpty(t.OutlookItemId)) t.OutlookItemId = Guid.NewGuid().ToString();
+                }
 
                 Notify();
             }

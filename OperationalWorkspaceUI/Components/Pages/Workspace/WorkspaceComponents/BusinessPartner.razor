@@ -20,7 +20,11 @@
                 </div>
                 <div class="action-group">
                     <button class="btn-sage-blue" @onclick="Create">+ New Contact</button>
-                    <button class="btn-sage-white" @onclick="Refresh">Refresh</button>
+                    @* FIXED: Associated spinner icon utility modifier classes to track asynchronous execution state variables *@
+                    <button class="btn-sage-white" @onclick="RefreshContactsAsync" disabled="@isRefreshing">
+                        <i class="oi oi-reload @(isRefreshing ? "animate-spin" : "")" style="margin-right: 4px;"></i>
+                        <span>@(isRefreshing ? "Syncing..." : "Refresh")</span>
+                    </button>
                 </div>
             </div>
 
@@ -68,7 +72,6 @@
                             <td class="email-text">@contact.Email</td>
                             <td>@contact.Phone</td>
                             <td>
-                                @* 🚀 FIXED: Swapped nonexistent property call for an evaluation check on Category *@
                                 <span class="badge @(contact.Category == "Active" ? "active" : "inactive")">
                                     @(contact.Category == "Active" ? "Active" : "Inactive")
                                 </span>
@@ -93,13 +96,17 @@
     private bool IsFilterOpen = true;
     private string SearchQuery = string.Empty;
     private string StatusFilter = "All";
+    private bool isRefreshing = false;
 
     private List<ContactCreateDto> ContactsList = new();
 
     protected override void OnInitialized()
     {
-        // 🚀 FIXED: Set the Category parameter field to act as the status string toggle
-        // because ContactCreateDto does not natively support an IsActive primitive boolean type field.
+        LoadMockContacts();
+    }
+
+    private void LoadMockContacts()
+    {
         ContactsList = new List<ContactCreateDto>
         {
             new() { FullName = "Sarah Johnson", Company = "Tech Innovations Inc.", Email = "sarah.j@tech.com", Phone = "(555) 123-4567", Category = "Active" },
@@ -113,8 +120,33 @@
             (string.IsNullOrWhiteSpace(SearchQuery) || (c.FullName != null && c.FullName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))));
 
     private void Create() => NavigationService.NavigateTo("/forms/add-contact");
-   
 
-    private void Refresh() => StateHasChanged();
+    private async Task RefreshContactsAsync()
+    {
+        if (isRefreshing) return;
+
+        // FIXED: Dispatched asynchronously to simulate data network sync requests while forcing a complete UI layout refresh step
+        await InvokeAsync(async () =>
+        {
+            isRefreshing = true;
+            StateHasChanged();
+
+            try
+            {
+                await Task.Delay(1000); // Simulated API transaction latency delay
+                LoadMockContacts(); // Explicitly re-read reference listings matrices back to memory variables
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Contacts async reload pipeline encountered an issue: {ex.Message}");
+            }
+            finally
+            {
+                isRefreshing = false;
+                StateHasChanged(); // Hyper-lock thread push flushes new variables array directly onto the screen layout
+            }
+        });
+    }
+
     private void Open(ContactCreateDto contact) => NavigationService.NavigateTo($"/workspace/contacts/{contact.Email}");
 }

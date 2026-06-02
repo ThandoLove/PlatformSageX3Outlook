@@ -2,11 +2,30 @@
 @rendermode InteractiveServer
 @implements IDisposable
 @using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceApplication.Mappers
 @using OperationalWorkspaceUI.State
 @inject WorkspaceState State
+@inject DashboardState AdminState
+@inject IJSRuntime JS
 
 <div class="sage-app">
+    <!-- TOP TOOLBAR: RE-ANCHORED SEARCH PILL + DYNAMIC REFRESH BUTTON -->
+    <div class="page-search-container" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 20px 4px 20px; background-color: transparent;">
+        <div class="search-pill" style="display: flex; align-items: center; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0 12px; max-width: 500px; width: 100%; height: 34px; transition: border-color 0.2s, background-color 0.2s;">
+            <i class="oi oi-magnifying-glass search-icon" style="color: #94a3b8; font-size: 14px;"></i>
+            <input type="text"
+                   @bind="SearchQuery"
+                   @bind:event="oninput"
+                   placeholder="Search across Outlook & Sage X3..."
+                   style="border: none !important; outline: none !important; background: transparent !important; padding: 0 10px !important; font-size: 13px !important; color: #1e293b !important; width: 100% !important;" />
+        </div>
+
+        <button class="btn-refresh-pill" @onclick="RefreshTasksAsync" disabled="@State.IsLoadingTasks"
+                style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; height: 34px; padding: 0 16px; font-size: 12px; font-weight: 600; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.2s; white-space: nowrap;">
+            <i class="oi oi-reload @(State.IsLoadingTasks ? "animate-spin" : "")"></i>
+            <span>@(State.IsLoadingTasks ? "Syncing..." : "Refresh")</span>
+        </button>
+    </div>
+
     <main class="sage-body">
         <!-- LEFT COLUMN: THE TASKS HUB -->
         <section class="hub-main-container">
@@ -33,17 +52,32 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // FIX: Forcefully drop the admin environment context state the instant the employee page renders
+        AdminState.SetEnvironment(false);
+
         if (State.Tasks == null || State.Tasks.Count == 0)
         {
             await State.LoadTasksAsync();
         }
 
-        // Explicitly sync initial tab context data to the details panel on load
         SelectedTask = State.Tasks?.FirstOrDefault(t => t.DueDate?.Date == DateTime.Today)
                        ?? State.Tasks?.FirstOrDefault();
 
-        // Ensure we react to any later state changes (e.g. background loads)
         State.OnChange += OnStateChanged;
+    }
+
+    private async Task RefreshTasksAsync()
+    {
+        await InvokeAsync(async () =>
+        {
+            // Re-enforce environment isolation layer safety on refresh
+            AdminState.SetEnvironment(false);
+
+            await State.LoadTasksAsync();
+            SelectedTask = State.Tasks?.FirstOrDefault(t => t.DueDate?.Date == DateTime.Today)
+                           ?? State.Tasks?.FirstOrDefault();
+            StateHasChanged();
+        });
     }
 
     private void OnStateChanged()
@@ -51,8 +85,8 @@
         if (SelectedTask == null && State.Tasks != null && State.Tasks.Count > 0)
         {
             SelectedTask = State.Tasks.First();
-            InvokeAsync(StateHasChanged);
         }
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
