@@ -125,10 +125,34 @@
 
 /* RIGHT SIDEBAR AREA */
 .details-sidebar {
-    width: 320px;
+    width: 340px;
     display: flex;
     flex-direction: column;
     border-left: 1px solid #e2e8f0;
     background: #f8fafc;
     min-height: 0;
+}
+
+/* Responsive: collapse details sidebar on smaller screens */
+@media (max-width: 900px) {
+    .details-sidebar {
+        width: 300px;
+        min-width: 260px;
+    }
+    .search-pill {
+        max-width: 320px;
+        margin-left: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .sage-body {
+        flex-direction: column;
+    }
+    .details-sidebar {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #e2e8f0;
+        height: auto;
+    }
 }

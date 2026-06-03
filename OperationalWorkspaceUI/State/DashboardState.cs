@@ -1,5 +1,4 @@
-﻿using OperationalWorkspace.Domain.Enums;
-using OperationalWorkspaceApplication.DTOs;
+﻿using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceUI.Models.Email;
 using OperationalWorkspaceUI.UIServices.DashboardUI;
@@ -9,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static OperationalWorkspaceUI.Components.Pages.Welcome;
 
 namespace OperationalWorkspaceUI.State
 {
@@ -64,6 +62,20 @@ namespace OperationalWorkspaceUI.State
             }
             NotifyStateChanged();
             await Task.CompletedTask;
+        }
+
+        // DYNAMIC WORKSPACE FILTERS AND LAYOUT STATE CHASSIS BINDINGS
+        public string SearchTerm { get; set; } = string.Empty;
+        public string SelectedEmployeeFilter { get; set; } = string.Empty;
+        public string SelectedDepartmentFilter { get; set; } = string.Empty;
+
+        // UNIFIED SIDEBAR COLLAPSE TOGGLE COMPONENT BOUNDARY
+        public bool IsSidebarCollapsed { get; set; } = false;
+
+        public void ToggleGlobalSidebar()
+        {
+            IsSidebarCollapsed = !IsSidebarCollapsed;
+            NotifyStateChanged();
         }
 
         public List<TaskDto> AllTasks { get; set; } = new();
@@ -131,9 +143,6 @@ namespace OperationalWorkspaceUI.State
                     AdminHealth = new AdminSystemHealthDto();
                 }
 
-                // FIX: Ensure mock data structures re-initialize on refresh if the service layer backend returns empty arrays
-                EnsureDefaultAdminTasks();
-
                 EnsureDefaultData();
                 NotifyStateChanged();
             }
@@ -141,43 +150,6 @@ namespace OperationalWorkspaceUI.State
             {
                 Console.WriteLine($"DashboardState Load Error: {ex.Message}");
             }
-        }
-
-        public void EnsureDefaultAdminTasks()
-        {
-            if (AllTasks == null || !AllTasks.Any())
-            {
-                AllTasks = new List<TaskDto> {
-                    new TaskDto { Id = Guid.NewGuid(), Title = "Issue with Invoice INV-100123", CompanyName = "Brightwave Solutions", Priority = TaskPriority.Urgent, Status = OperationalWorkspace.Domain.Enums.TaskStatus.Assigned, AssignedTo = "Amit Patel", CreatedDate = new DateTime(2025, 5, 6, 9, 15, 0) },
-                    new TaskDto { Id = Guid.NewGuid(), Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.High, Status = OperationalWorkspace.Domain.Enums.TaskStatus.Open, AssignedTo = "Deepa Patel" },
-                    new TaskDto { Id = Guid.NewGuid(), Title = "Develop QTE-7823 Renewal", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Medium, Status = OperationalWorkspace.Domain.Enums.TaskStatus.Assigned, AssignedTo = "John Smith" }
-                };
-            }
-        }
-
-        // EXPLICIT TRANSMISSION PORTAL: This is the ONLY context method allowed to assign a task from Admin over to Employee list
-        public void SendTaskToEmployee(TaskDto task, string employeeEmail)
-        {
-            if (task == null) return;
-
-            // Update parameters on the active card instance inside the Admin view
-            task.AssignedTo = employeeEmail;
-
-            if (MyTasks == null)
-            {
-                MyTasks = new List<TaskDto>();
-            }
-
-            // Verify if the employee's container list already has this task record to block double insertion bugs
-            bool exists = MyTasks.Any(t => t.Id == task.Id || (t.Title == task.Title && t.CompanyName == task.CompanyName));
-
-            if (!exists)
-            {
-                // Inject clean task instance into employee list track natively
-                MyTasks.Insert(0, task);
-            }
-
-            NotifyStateChanged();
         }
 
         private async Task LoadAdminSpecificDataAsync()

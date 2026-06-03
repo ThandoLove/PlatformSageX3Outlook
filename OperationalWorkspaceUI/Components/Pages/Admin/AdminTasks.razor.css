@@ -865,3 +865,148 @@
     color: #475569 !important;
     border: 1px solid #e2e8f0 !important;
 }
+
+/* =========================================================================
+   HEADER DROPDOWN CONTEXT FLYOUT MENUS & EXPANSION TRAYS
+   ========================================================================= */
+
+.dropdown-wrapper {
+    position: relative !important;
+    display: inline-block !important;
+}
+
+.header-context-menu {
+    position: absolute !important;
+    top: 42px !important;
+    left: 0 !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04) !important;
+    width: 180px !important;
+    z-index: 9999 !important;
+    padding: 6px 0 !important;
+}
+
+    .header-context-menu.right-align {
+        left: auto !important;
+        right: 0 !important;
+        width: 210px !important;
+    }
+
+.menu-item {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    color: #334155 !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: background 0.12s ease-in-out !important;
+    white-space: nowrap !important;
+}
+
+    .menu-item:hover {
+        background-color: #f1f5f9 !important;
+        color: #2563eb !important;
+    }
+
+    .menu-item.selected {
+        color: #2563eb !important;
+        background-color: #eff6ff !important;
+        font-weight: 600 !important;
+    }
+
+/* EXPANDABLE HORIZONTAL GLOBAL FILTERS TRAYS */
+.global-filter-expansion-tray {
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 14px 24px !important;
+    flex-shrink: 0 !important;
+}
+
+.tray-inner {
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+}
+
+.filter-cell {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+}
+
+    .filter-cell label {
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.02em !important;
+    }
+
+    .filter-cell select {
+        height: 32px !important;
+        border-radius: 6px !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 0 8px !important;
+        font-size: 12px !important;
+        color: #334155 !important;
+        background: #ffffff !important;
+        outline: none !important;
+        width: 160px !important;
+    }
+
+/* ANIMATION TRANSITION TUNNELS */
+.animate-pop {
+    animation: popEntry 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    transform-origin: top left !important;
+}
+
+.header-context-menu.right-align.animate-pop {
+    transform-origin: top right !important;
+}
+
+@keyframes popEntry {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.btn-ghost.filter-engaged {
+    background-color: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    color: #2563eb !important;
+    font-weight: 600 !important;
+}
+
+/* =========================================================
+   INTEGRATION TEXT INDICATORS COLOR HOOK OVERRIDES
+   ========================================================= */
+
+.status-indicator {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+}
+
+    .status-indicator.online {
+        background-color: #ecfdf5 !important;
+        color: #059669 !important;
+    }
+
+    .status-indicator.delayed {
+        background-color: #fffbeb !important;
+        color: #d97706 !important;
+    }
+
+    .status-indicator.offline {
+        background-color: #fef2f2 !important;
+        color: #dc2626 !important;
+    }

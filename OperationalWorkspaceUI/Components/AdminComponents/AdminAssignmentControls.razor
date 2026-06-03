@@ -68,9 +68,7 @@
         }
     </div>
 </div>
-
 @code {
-
     [Parameter]
     public TaskDto? Task { get; set; }
 
@@ -82,7 +80,8 @@
     {
         ("John Doe", "john.doe@company.com", "Sales"),
         ("Jane Smith", "jane.smith@company.com", "Support"),
-        ("Sarah Wilson", "sarah.w@company.com", "Logistics")
+        ("Sarah Wilson", "sarah.w@company.com", "Logistics"),
+        ("Alex Turner", "alex.turner@company.com", "Engineering")
     };
 
     protected override void OnInitialized()
@@ -97,10 +96,7 @@
 
     private async Task ExecuteReassignment()
     {
-        if (Task == null)
-            return;
-
-        if (string.IsNullOrWhiteSpace(SelectedRecipientEmail))
+        if (Task == null || string.IsNullOrWhiteSpace(SelectedRecipientEmail))
             return;
 
         isProcessing = true;
@@ -113,36 +109,34 @@
                 RecipientEmail = SelectedRecipientEmail
             };
 
-            var response =
-                await TaskService.DelegateAsync(
-                    request,
-                    CancellationToken.None);
+            var response = await TaskService.DelegateAsync(request, CancellationToken.None);
 
             if (response != null && response.IsSuccess)
             {
-                var specialist =
-                    MockSpecialists.FirstOrDefault(
-                        x => x.Email == SelectedRecipientEmail);
+                var specialist = MockSpecialists.FirstOrDefault(x => x.Email == SelectedRecipientEmail);
 
-                Task.AssignedTo =
-                    specialist.Name ?? SelectedRecipientEmail;
-
-                Task.Status =
-                    OperationalWorkspace.Domain.Enums.TaskStatus.Assigned;
-
+                Task.AssignedTo = specialist.Name ?? SelectedRecipientEmail;
+                Task.Status = OperationalWorkspace.Domain.Enums.TaskStatus.Assigned;
                 Task.UpdatedDate = DateTime.UtcNow;
 
-                State.SendTaskToEmployee(
-                    Task,
-                    SelectedRecipientEmail);
+                // FIX: Unified Cross-State injection logic maps assignments safely into the Employee dashboard array
+                if (State.MyTasks == null)
+                {
+                    State.MyTasks = new List<TaskDto>();
+                }
+
+                bool alreadyInEmployeeQueue = State.MyTasks.Any(t => t.Id == Task.Id || (t.Title == Task.Title && t.CompanyName == Task.CompanyName));
+                if (!alreadyInEmployeeQueue)
+                {
+                    State.MyTasks.Insert(0, Task);
+                }
 
                 State.NotifyStateChanged();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
-                $"Error reassigning task: {ex.Message}");
+            Console.WriteLine($"Error reassigning task inside assignment controls: {ex.Message}");
         }
         finally
         {
@@ -157,10 +151,7 @@
             return;
 
         Task.IsEscalated = true;
-
-        Task.Priority =
-            OperationalWorkspace.Domain.Enums.TaskPriority.Urgent;
-
+        Task.Priority = OperationalWorkspace.Domain.Enums.TaskPriority.Urgent;
         Task.UpdatedDate = DateTime.UtcNow;
 
         State.NotifyStateChanged();
@@ -168,12 +159,10 @@
 
     private void AdjustSla()
     {
-        if (Task?.DueDate == null)
+        if (Task == null)
             return;
 
-        Task.DueDate =
-            Task.DueDate.Value.AddHours(24);
-
+        Task.DueDate = (Task.DueDate ?? DateTime.UtcNow).AddHours(24);
         Task.UpdatedDate = DateTime.UtcNow;
 
         State.NotifyStateChanged();

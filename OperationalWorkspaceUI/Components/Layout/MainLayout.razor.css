@@ -1,8 +1,7 @@
-/* ======================================================
-   ROOT APP LAYOUT (GLOBAL BROWSER CORE AND WEB LAYERS)
-   ====================================================== */
+/* =========================================================================
+   UNIVERSAL ENTERPRISE CORE LAYOUT SYSTEM — PREVENTS WORKSPACE SQUASHING
+   ========================================================================= */
 
-/* Force layout height rules globally through all Blazor layers */
 html,
 body,
 :host,
@@ -17,12 +16,10 @@ fluent-layout,
     margin: 0 !important;
     padding: 0 !important;
     overflow: hidden !important;
-    background-color: #f3f4f6 !important;
+    background-color: #f8fafc !important;
+    font-family: Inter, "Segoe UI", sans-serif !important;
 }
 
-/* ======================================================
-   TOP HEADER (GLOBAL APP BAR)
-   ====================================================== */
 .global-header {
     width: 100% !important;
     height: 40px !important;
@@ -30,76 +27,138 @@ fluent-layout,
     z-index: 2000 !important;
 }
 
-/* ======================================================
-   MAIN LAYOUT WRAPPER (SIDEBAR + CONTENT + RIGHT PANEL)
-   ====================================================== */
+/* THE CONTAINER CHASSIS: Switches smoothly without hardcoded height traps */
 .main-wrapper {
     display: flex !important;
+    flex-direction: row !important; /* Side-by-side layout on desktops */
     flex: 1 !important;
     width: 100% !important;
-    height: calc(100vh - 40px) !important; /* Locks remaining screen size */
-    min-height: calc(100vh - 40px) !important;
-    max-height: calc(100vh - 40px) !important;
+    min-height: 0 !important;
     min-width: 0 !important;
-    align-items: stretch !important; /* Drags panels down to screen edge */
-    overflow: hidden !important;
+    align-items: stretch !important;
+    overflow: visible !important;
 }
 
-/* ======================================================
-   SIDEBAR BOUNDING BOX (SOLE OWNER OF SIDEBAR STRUCTURAL WIDTH)
-   ====================================================== */
 .sidebar-wrapper {
     width: 240px !important;
-    height: 100% !important; /* Locks container wall to floor layout */
-    min-height: 100% !important;
-    max-height: 100% !important;
+    height: 100% !important;
     flex-shrink: 0 !important;
-    background-color: #020617 !important;
-    border-right: 1px solid #1e293b !important;
-    z-index: 100 !important;
-    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background-color: #003366 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    z-index: 1000 !important;
+    transition: width 0.2s ease !important;
 }
 
-/* ======================================================
-   CENTER CONTENT AREA
-   ====================================================== */
+    .sidebar-wrapper.is-collapsed-active {
+        width: 64px !important;
+    }
+
+/* THE PAGE CONTAINER: Enforces automated flexible height distribution scales */
 .page-content {
     flex: 1 !important;
     display: flex !important;
     flex-direction: column !important;
     min-width: 0 !important;
     height: 100% !important;
-    min-height: 100% !important;
-    max-height: 100% !important;
+    min-height: 0 !important; /* Crucial: lets container compute dynamic space tags */
     overflow: hidden !important;
+    background-color: #f1f5f9 !important;
 }
 
-/* ======================================================
-   CONTENT SCROLL AREA (MAIN PAGE BODY)
-   ====================================================== */
 .content-body {
     flex: 1 !important;
+    height: 100% !important;
     min-height: 0 !important;
-    overflow-y: auto !important;
+    overflow-y: auto !important; /* Scrollable canvas area protects page grids layout from squashing */
     overflow-x: hidden !important;
-    padding: 0 !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
 }
 
-/* ======================================================
-   LANDING PAGE MODE (LOGIN / PUBLIC SCREENS)
-   ====================================================== */
-.landing-frame {
-    width: 100% !important;
-    height: 100vh !important;
-    background: #f3f4f6 !important;
-    overflow: auto !important;
-}
+/* =========================================================================
+   🔥 OUTLOOK ADD-IN PANEL & MOBILE FLUID AUTO-GROWTH SPECIFICATION OVERRIDES
+   ========================================================================= */
+@media (max-width: 800px) {
+    .main-wrapper {
+        flex-direction: column !important; /* Stacks layout elements vertically without crushing heights */
+        overflow-y: auto !important; /* Allows the entire narrow frame panel view track to scroll */
+        height: auto !important;
+        max-height: calc(100vh - 40px) !important;
+    }
 
-/* ======================================================
-   OUTLOOK ADD-IN PANEL RESPONSIVE OVERRIDES
-   ====================================================== */
-@media (max-width: 900px) {
     .sidebar-wrapper {
-        width: 60px !important;
+        width: 100% !important;
+        height: 44px !important; /* Fixed, minimal vertical height footprint locks the navigation bar */
+        min-height: 44px !important;
+        max-height: 44px !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .page-content {
+        height: auto !important;
+        flex: 1 !important; /* Pushes the main page grid content area to fill the remaining screen space */
+        min-height: 0 !important;
+        overflow: hidden !important;
     }
 }
+
+/* =========================================================================
+   RESPONSIVE BREAKPOINTS
+   Desktop, Laptop, Small-Laptop, Tablet, Mobile, Outlook Add-in
+   These rules adjust sidebar widths, padding and stacking behavior.
+   ========================================================================= */
+
+:root {
+    --sidebar-desktop: 240px;
+    --sidebar-laptop: 230px;
+    --sidebar-small-laptop: 200px;
+    --sidebar-tablet: 72px; /* compact nav */
+    --sidebar-mobile: 100%;
+    --content-padding-desktop: 24px;
+    --content-padding-mobile: 12px;
+}
+
+/* Large desktops: >= 1400px */
+@media (min-width: 1400px) {
+    .sidebar-wrapper { width: var(--sidebar-desktop) !important; }
+    .content-body { padding: calc(var(--content-padding-desktop) + 8px) !important; }
+}
+
+/* Laptop: 1024 - 1399 */
+@media (min-width: 1024px) and (max-width: 1399px) {
+    .sidebar-wrapper { width: var(--sidebar-laptop) !important; }
+    .content-body { padding: var(--content-padding-desktop) !important; }
+}
+
+/* Small laptop / large tablet: 900 - 1023 */
+@media (min-width: 900px) and (max-width: 1023px) {
+    .sidebar-wrapper { width: var(--sidebar-small-laptop) !important; }
+    .content-body { padding: 18px !important; }
+}
+
+/* Tablet: 600 - 899 */
+@media (min-width: 600px) and (max-width: 899px) {
+    .main-wrapper { flex-direction: row !important; }
+    .sidebar-wrapper { width: var(--sidebar-tablet) !important; }
+    .sidebar-wrapper.is-collapsed-active { width: 56px !important; }
+    .page-content { overflow: visible !important; }
+    .content-body { padding: 16px !important; }
+}
+
+/* Mobile & Outlook add-in narrow frames: <= 599 */
+@media (max-width: 599px) {
+    .main-wrapper { flex-direction: column !important; height: auto !important; }
+    .sidebar-wrapper { width: var(--sidebar-mobile) !important; height: 56px !important; min-height: 56px !important; }
+    .page-content { height: auto !important; }
+    .content-body { padding: var(--content-padding-mobile) !important; }
+    .global-header { height: 48px !important; }
+}
+
+/* Outlook add-in tiny panes often have very constrained width; provide a special compact mode */
+@media (max-width: 420px) {
+    .sidebar-wrapper { display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 0 8px !important; }
+    .content-body { padding: 8px !important; }
+    .task-card { grid-template-columns: 1fr 80px !important; gap: 8px !important; }
+}
+

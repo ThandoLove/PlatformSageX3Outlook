@@ -34,9 +34,11 @@
         </div>
 
         <div class="user-profile-section">
+            @* FIX: Added Brief layout parameter properties to output ONLY the picture bubble indicator *@
             <FluentPersona Name="@DisplayName"
                            Status="@PresenceStatus.Available"
                            AvatarSize="24"
+                           Brief="true"
                            Style="color: white; font-size: 0.75rem !important;" />
         </div>
     </div>
@@ -99,6 +101,8 @@
             PageTitle = "Audit Logs";
         else if (relativePath.StartsWith("admin/system-health")) // Cleaned absolute leading slash
             PageTitle = "System Health";
+        else if (relativePath.StartsWith("settings"))
+            PageTitle = "Settings";
         else
             PageTitle = "Workspace";
     }

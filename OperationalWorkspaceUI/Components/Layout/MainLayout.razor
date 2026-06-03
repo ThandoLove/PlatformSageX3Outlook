@@ -34,7 +34,8 @@
 
         <div class="main-wrapper">
 
-            <div class="sidebar-wrapper">
+            @* FIX: Captures global IsSidebarCollapsed boolean state to collapse wrapper dimensions fluidly *@
+            <div class="sidebar-wrapper @(DashboardState.IsSidebarCollapsed ? "is-collapsed-active" : "")">
                 <Sidebar />
             </div>
 

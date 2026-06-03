@@ -1,7 +1,7 @@
 ﻿/* THE TASK CARD GRID - SYNCED TRACK WIDTH CONSTRAINTS */
 .task-card {
     display: grid !important;
-    grid-template-columns: 1.5fr 110px 1.2fr 110px 170px !important;
+    grid-template-columns: 1.5fr 100px 1fr 100px 150px !important;
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
     border-radius: 8px !important;
@@ -12,6 +12,31 @@
     gap: 12px !important;
     width: 100% !important;
     box-sizing: border-box !important;
+}
+
+/* Responsive stacking for smaller viewports */
+@media (max-width: 900px) {
+    .task-card {
+        grid-template-columns: 1fr 120px !important;
+        grid-auto-rows: auto !important;
+        align-items: start !important;
+    }
+    .card-col.status-group { order: 2; }
+    .card-col.source-group { order: 3; }
+    .card-col.action-group { order: 4; }
+    .card-col.sage-link-group { order: 5; }
+}
+
+@media (max-width: 600px) {
+    .task-card {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        padding: 10px !important;
+    }
+    .btn-blue-square-icon, .btn-outline-complete, .btn-ghost-link { width: auto !important; }
+    .card-t { font-size: 14px !important; }
+    .card-c { font-size: 12px !important; }
 }
 
     .task-card:hover {

@@ -17,7 +17,7 @@ namespace OperationalWorkspaceApplication.DTOs
 
         public string AssignedTo { get; set; } = string.Empty;
 
-        public string? CompanyName { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
 
         public bool Completed { get; set; }
 

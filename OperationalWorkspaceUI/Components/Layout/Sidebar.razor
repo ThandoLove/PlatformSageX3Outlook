@@ -5,7 +5,6 @@
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
-
 @implements IDisposable
 
 @inject NavigationManager Nav
@@ -13,15 +12,13 @@
 @inject DashboardState DashboardState
 @inject IUserContextService UserContextService
 
-<div class="sage-sidebar">
+<div class="sage-sidebar @(DashboardState.IsSidebarCollapsed ? "is-collapsed" : "")">
 
     <!-- SIDEBAR HEADER -->
-    <div class="sidebar-header">
-
+    <div class="sidebar-header" @onclick="ToggleSidebarLayout" style="cursor: pointer;">
         <FluentIcon Value="@(new Icons.Regular.Size16.LineHorizontal3())"
-                    Color="@Color.Fill"
-                    Style="cursor: pointer;" />
-
+                    Color="@Color.Fill" />
+        <span class="brand-text">Hub</span>
     </div>
 
     <!-- NAVIGATION -->
@@ -31,30 +28,22 @@
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())"
                        Href="@AppRoutes.Dashboard"
                        Match="NavLinkMatch.All">
-
-            Dashboard
-
+            <span class="nav-link-text">Dashboard</span>
         </FluentNavLink>
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Person())"
                        Href="@AppRoutes.BusinessPartners">
-
-            Contacts
-
+            <span class="nav-link-text">Contacts</span>
         </FluentNavLink>
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.TicketDiagonal())"
                        Href="@AppRoutes.Tickets">
-
-            Tickets
-
+            <span class="nav-link-text">Tickets</span>
         </FluentNavLink>
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.DataUsage())"
                        Href="@AppRoutes.Activity">
-
-            Activities
-
+            <span class="nav-link-text">Activities</span>
         </FluentNavLink>
 
         <div class="sidebar-divider"></div>
@@ -62,23 +51,17 @@
         <!-- WORKSPACE -->
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())"
                        Href="@AppRoutes.Knowledge">
-
-            Knowledge Base
-
+            <span class="nav-link-text">Knowledge Base</span>
         </FluentNavLink>
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.CheckmarkCircle())"
                        Href="@AppRoutes.Tasks">
-
-            My Tasks
-
+            <span class="nav-link-text">My Tasks</span>
         </FluentNavLink>
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Book())"
                        Href="@AppRoutes.Attachments">
-
-            Documents
-
+            <span class="nav-link-text">Documents</span>
         </FluentNavLink>
 
         <!-- ADMIN ONLY -->
@@ -87,42 +70,32 @@
             <div class="sidebar-divider"></div>
 
             <div class="group-title">
-                Administration
+                <span class="nav-link-text">Administration</span>
             </div>
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldSettings())"
                            Href="@AppRoutes.Administration">
-
-                Admin Dashboard
-
+                <span class="nav-link-text">Admin Dashboard</span>
             </FluentNavLink>
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.TaskListSquareLtr())"
                            Href="@AppRoutes.AdministrationTasks">
-
-                Admin Tasks
-
+                <span class="nav-link-text">Admin Tasks</span>
             </FluentNavLink>
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.PeopleTeam())"
                            Href="/admin/users">
-
-                User Management
-
+                <span class="nav-link-text">User Management</span>
             </FluentNavLink>
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.DocumentBulletList())"
                            Href="/admin/audit-logs">
-
-                Audit Logs
-
+                <span class="nav-link-text">Audit Logs</span>
             </FluentNavLink>
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldTask())"
                            Href="/admin/system-health">
-
-                System Health
-
+                <span class="nav-link-text">System Health</span>
             </FluentNavLink>
         }
 
@@ -130,20 +103,15 @@
 
     <!-- FOOTER -->
     <div class="sidebar-footer">
-
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())"
                        Href="@AppRoutes.Settings">
-
-            Settings
-
+            <span class="nav-link-text">Settings</span>
         </FluentNavLink>
-
     </div>
 
 </div>
 
 @code {
-
     private UserDto? CurrentUser;
 
     private bool IsAdmin =>
@@ -152,12 +120,12 @@
     protected override async Task OnInitializedAsync()
     {
         DashboardState.OnChange += Refresh;
-
-
-
         CurrentUser = await UserContextService.GetCurrentUserAsync();
+    }
 
-        
+    private void ToggleSidebarLayout()
+    {
+        DashboardState.ToggleGlobalSidebar();
     }
 
     private void Refresh()
@@ -169,5 +137,4 @@
     {
         DashboardState.OnChange -= Refresh;
     }
-
 }

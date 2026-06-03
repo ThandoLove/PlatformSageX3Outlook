@@ -104,6 +104,58 @@ html, body {
     background-color: #10b981;
 }
 
+/* =========================================================
+   BUTTON AND FORM CONTROL TOKENS (GLOBAL)
+   Modern neutral buttons, small radius, subtle hover/focus
+   ========================================================= */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: #ffffff;
+    color: var(--text-dark);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s ease;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: transparent;
+}
+
+.btn-ghost {
+    background: transparent;
+    border: 1px solid #e6eef8;
+    color: var(--text-dark);
+}
+
+button, .btn { -webkit-appearance: none; appearance: none; }
+
+button:focus, .btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
+}
+
+/* Inputs */
+input[type="text"], input[type="search"], textarea, select {
+    border-radius: 8px;
+    border: 1px solid #e6eef8;
+    padding: 8px 10px;
+    background: #fff;
+    color: var(--text-dark);
+}
+
+input:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
+    outline: none;
+}
+
 /* ========================================================= 
    RESPONSIVE UTILITIES ENGINE (ANTI-SQUISH DASHBOARDS)
    ========================================================= */
@@ -186,41 +238,33 @@ fluent-layout,
 .app-container {
     display: flex !important;
     flex-direction: column !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    max-height: 100vh !important;
+    min-height: 100vh !important; /* allow content to grow naturally */
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    /* Allow scrolling where needed (prevents clipped overlays and side panels) */
-    overflow: auto !important;
+    overflow: auto !important; /* allow page-level scrolling */
 }
 
 .main-wrapper {
     display: flex !important;
     flex: 1 !important;
     width: 100% !important;
-    height: calc(100vh - 40px) !important;
     min-height: calc(100vh - 40px) !important;
-    max-height: calc(100vh - 40px) !important;
     align-items: stretch !important;
-    overflow: hidden !important;
+    overflow: visible !important; /* allow children to control scrolling */
 }
 
 .sidebar-wrapper {
     width: 240px !important;
-    height: 100% !important;
-    min-height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important;
     flex-shrink: 0 !important;
 }
 
     .sidebar-wrapper > *,
     .sage-sidebar,
     .sidebar {
-        height: 100% !important;
-        min-height: 100% !important;
-        max-height: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
         width: 100% !important;
     }
 
@@ -229,15 +273,12 @@ fluent-layout,
     display: flex !important;
     flex-direction: column !important;
     min-width: 0 !important;
-    height: 100% !important;
-    min-height: 100% !important;
-    max-height: 100% !important;
+    min-height: 0 !important; /* allow inner scroll regions to compute */
     overflow: hidden !important;
 }
 
 .content-body {
     flex: 1 !important;
-    height: 100% !important;
     min-height: 0 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
@@ -503,3 +544,101 @@ fluent-layout,
     .customer-card .sage-link-btn:hover {
         text-decoration: underline !important;
     }
+
+/* =========================================================================
+   UNIVERSAL ENTERPRISE RESPONSIVE UTILITIES FOR ALL APP PAGES
+   ========================================================================= */
+
+/* The primary wrapper for your pages (Contacts, Tickets, etc.) */
+.enterprise-page-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* A smart, auto-fitting grid for summary cards or metric listings */
+.responsive-data-grid {
+    display: grid !important;
+    /* Desktop default: dynamic matching blocks */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Master-Detail splitter layout used in Contacts & Tickets views */
+.split-view-container {
+    display: grid !important;
+    grid-template-columns: 1fr 360px !important; /* Left: Master list, Right: Detail panel */
+    gap: 16px !important;
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.scrollable-list-pane {
+    height: 100% !important;
+    overflow-y: auto !important;
+    padding-right: 4px !important;
+}
+
+/* Responsive Table container to stop data from breaking frames */
+.responsive-table-wrapper {
+    width: 100% !important;
+    overflow-x: auto !important; /* Horizontally scrollable data sheets on small screens */
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+}
+
+/* =========================================================================
+   INTEGRATION STATE PILL VALUE ACCENTS & INDICATORS
+   ========================================================================= */
+
+.status-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-transform: none !important;
+}
+
+    .status-pill.status-online, .status-indicator.online {
+        background-color: #ecfdf5 !important;
+        color: #059669 !important;
+        border: 1px solid #a7f3d0 !important;
+    }
+
+    .status-pill.status-delayed, .status-indicator.delayed {
+        background-color: #fffbeb !important;
+        color: #d97706 !important;
+        border: 1px solid #fde68a !important;
+    }
+
+    .status-pill.status-offline, .status-indicator.offline {
+        background-color: #fef2f2 !important;
+        color: #dc2626 !important;
+        border: 1px solid #fecaca !important;
+    }
+
+/* =========================================================================
+   📱 OUTLOOK ADD-IN PANEL & MOBILE OVERRIDES FOR ALL OTHER PAGES
+   ========================================================================= */
+@media (max-width: 800px) {
+    /* Stacks Master-Detail views vertically inside Outlook */
+    .split-view-container {
+        display: flex !important;
+        flex-direction: column !important;
+        overflow-y: auto !important;
+        height: auto !important;
+    }
+
+    /* Forces columns or items to occupy single columns */
+    .responsive-data-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+}

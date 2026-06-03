@@ -1,24 +1,65 @@
-﻿<div class="sla-navy-card">
+﻿@using OperationalWorkspaceUI.State
+
+@inject DashboardState State
+@implements IDisposable
+
+<div class="sla-navy-card">
     <div class="sla-header">
         <label>SLA COMPLIANCE MONITOR</label>
         <span class="live-pill">● LIVE</span>
     </div>
     <div class="sla-grid">
-        <div class="sla-box">
-            <span class="v">0</span>
+        @* 🚨 BOX 1: BREACHED COUNT *@
+        <div class="sla-box @(BreachedCount > 0 ? "active-breached" : "")">
+            <span class="v">@BreachedCount</span>
             <span class="l">BREACHED</span>
             <span class="sub">Needs Immediate Action</span>
         </div>
-        <div class="sla-box">
-            <span class="v">0</span>
+
+        @* ⚠️ BOX 2: AT RISK COUNT (< 2 Hours Remaining) *@
+        <div class="sla-box @(AtRiskCount > 0 ? "active-risk" : "")">
+            <span class="v">@AtRiskCount</span>
             <span class="l">AT RISK</span>
             <span class="sub">&lt; 2 Hours Remaining</span>
         </div>
-        <div class="sla-box active">
-            <span class="v">2</span>
+
+        @* ✅ BOX 3: HEALTHY COUNT (Safe target buffers) *@
+        <div class="sla-box @(HealthyCount > 0 ? "active" : "")">
+            <span class="v">@HealthyCount</span>
             <span class="l">HEALTHY</span>
             <span class="sub">SLA Standards Met</span>
         </div>
     </div>
 </div>
 
+@code {
+    protected override void OnInitialized()
+    {
+        State.OnChange += RefreshView;
+    }
+
+    private void RefreshView()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    // REAL-TIME TIMELINE DYNAMIC SLA CLOCK CALCULATORS
+    private int BreachedCount => State.AllTasks?
+        .Count(t => t.DueDate.HasValue && DateTime.UtcNow > t.DueDate.Value && !t.Completed) ?? 0;
+
+    private int AtRiskCount => State.AllTasks?
+        .Count(t => t.DueDate.HasValue &&
+                    DateTime.UtcNow <= t.DueDate.Value &&
+                    (t.DueDate.Value - DateTime.UtcNow).TotalHours <= 2 &&
+                    !t.Completed) ?? 0;
+
+    private int HealthyCount => State.AllTasks?
+        .Count(t => !t.DueDate.HasValue ||
+                    ((t.DueDate.Value - DateTime.UtcNow).TotalHours > 2 && !t.Completed) ||
+                    t.Completed) ?? 0;
+
+    public void Dispose()
+    {
+        State.OnChange -= RefreshView;
+    }
+}

@@ -4,27 +4,77 @@
 @using TaskDto = OperationalWorkspaceApplication.DTOs.TaskDto
 @using OperationalWorkspace.Domain.Enums
 
-@* Type alias mapping to eliminate compiler namespace collisions *@
+@* Explicit namespace type alias mapping rules out System.Threading compiler ambiguity *@
 @using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus
 @implements IDisposable
 
 @inject DashboardState State
 
 <div class="hub-viewport-lock">
-    @* --- TOP HEADER --- *@
+    @* --- TOP HEADER WITH FUNCTIONAL ROUTING BINDINGS --- *@
     <header class="hub-header">
         <div class="header-left">
             <h1>Tasks Hub</h1>
-            <button class="btn-new-task">+ New Task</button>
+            <button class="btn-new-task" @onclick="() => showCreateModal = true">+ New Task</button>
         </div>
         <div class="header-right">
-            <button class="btn-ghost">Filters</button>
-            <button class="btn-ghost">Group: Status <i class="oi oi-chevron-bottom"></i></button>
-            <span class="hub-dots">...</span>
+            <button class="btn-ghost @(isFilterActive ? "filter-engaged" : "")" @onclick="ToggleGlobalFilters">
+                <i class="oi oi-fullscreen-exit" style="margin-right: 4px;"></i> Filters
+            </button>
+            
+            <div class="dropdown-wrapper">
+                <button class="btn-ghost" @onclick="ToggleGroupingMenu">
+                    Group: @ActiveGroupingCriterion <i class="oi oi-chevron-bottom" style="margin-left: 4px; font-size: 10px;"></i>
+                </button>
+                @if (showGroupingMenu)
+                {
+                    <div class="header-context-menu animate-pop">
+                        <div class="menu-item @(ActiveGroupingCriterion == "Status" ? "selected" : "")" @onclick='() => ChangeGroupingCriterion("Status")'>Group by Status</div>
+                        <div class="menu-item @(ActiveGroupingCriterion == "Priority" ? "selected" : "")" @onclick='() => ChangeGroupingCriterion("Priority")'>Group by Priority</div>
+                    </div>
+                }
+            </div>
+
+            <div class="dropdown-wrapper">
+                <span class="hub-dots" @onclick="ToggleEllipsisMenu" style="padding: 4px 8px; font-weight: 800; user-select: none;">...</span>
+                @if (showEllipsisMenu)
+                {
+                    <div class="header-context-menu right-align animate-pop">
+                        <div class="menu-item" @onclick="ExportQueueToCsv">📥 Export Queue Data</div>
+                        <div class="menu-item" @onclick="ClearCompletedFromView">🧹 Clear Done Cards</div>
+                        <div class="menu-item" @onclick="ToggleCompactMode">⚙️ Toggle Compact Density</div>
+                    </div>
+                }
+            </div>
         </div>
     </header>
 
     <AdminTaskToolbar />
+
+    @if (isFilterActive)
+    {
+        <div class="global-filter-expansion-tray animate-slide">
+            <div class="tray-inner">
+                <div class="filter-cell">
+                    <label>URGENCY footprint</label>
+                    <select @bind="GlobalPriorityFilter">
+                        <option value="All">All Priorities</option>
+                        <option value="Urgent">Urgent Only</option>
+                        <option value="High">High Only</option>
+                        <option value="Medium">Medium Only</option>
+                    </select>
+                </div>
+                <div class="filter-cell">
+                    <label>TIMELINE STATE</label>
+                    <select @bind="GlobalSlaFilter">
+                        <option value="All">All Cards</option>
+                        <option value="Overdue">Overdue Alerts</option>
+                        <option value="Healthy">Within SLA Target</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    }
 
     <div class="hub-main-layout">
         @* --- COLUMN 1: LEFT OVERSIGHT --- *@
@@ -34,27 +84,115 @@
             <AdminAnalyticsPanel />
         </aside>
 
-        @* --- COLUMN 2: CENTER KANBAN BOARD --- *@
+        @* --- COLUMN 2: CENTER KANBAN BOARD MATRIX (DYNAMIC TUNNEL SORTING) --- *@
         <main class="col-board">
             <div class="board-canvas">
-                <KanbanColumn Title="Inbox / Unassigned" Count="4" Tasks="@State.AllTasks.Where(t => t.Status == TaskStatus.Open)" OnSelect="State.SetSelectedTask" />
-                <KanbanColumn Title="In Progress" Count="5" Tasks="@State.AllTasks.Where(t => t.Status == TaskStatus.Assigned)" OnSelect="State.SetSelectedTask" />
-                <KanbanColumn Title="Waiting / Review" Count="0" Tasks="@State.AllTasks.Where(t => t.Status == TaskStatus.PendingApproval)" OnSelect="State.SetSelectedTask" />
+                @if (ActiveGroupingCriterion == "Status")
+                {
+                    <KanbanColumn Title="Inbox / Unassigned" Count="@GetTasksForColumn(TaskStatus.Open).Count()" Tasks="@GetTasksForColumn(TaskStatus.Open)" OnSelect="State.SetSelectedTask" />
+                    <KanbanColumn Title="In Progress" Count="@GetTasksForColumn(TaskStatus.Assigned).Count()" Tasks="@GetTasksForColumn(TaskStatus.Assigned)" OnSelect="State.SetSelectedTask" />
+                    <KanbanColumn Title="Waiting / Review" Count="@GetTasksForColumn(TaskStatus.PendingApproval).Count()" Tasks="@GetTasksForColumn(TaskStatus.PendingApproval)" OnSelect="State.SetSelectedTask" />
+                }
+                else
+                {
+                    <KanbanColumn Title="🔴 Urgent Priority" Count="@GetTasksByPriority(TaskPriority.Urgent).Count()" Tasks="@GetTasksByPriority(TaskPriority.Urgent)" OnSelect="State.SetSelectedTask" />
+                    <KanbanColumn Title="🟡 High Priority" Count="@GetTasksByPriority(TaskPriority.High).Count()" Tasks="@GetTasksByPriority(TaskPriority.High)" OnSelect="State.SetSelectedTask" />
+                    <KanbanColumn Title="🔵 Normal Priority" Count="@GetTasksByPriority(TaskPriority.Medium).Count()" Tasks="@GetTasksByPriority(TaskPriority.Medium)" OnSelect="State.SetSelectedTask" />
+                }
             </div>
         </main>
 
         @* --- COLUMN 3: RIGHT HIGH-FIDELITY DETAILS --- *@
         <aside class="col-details">
-            @* FIX: Passing explicit local Refresh handler to listen directly to the right detail panel *@
-            <AdminTaskDetailsPanel Task="@(State.SelectedTask ?? State.AllTasks.FirstOrDefault(t => t.CompanyName == "Brightwave Solutions"))" OnActionsUpdated="Refresh" />
+            <AdminTaskDetailsPanel Task="@(State.SelectedTask ?? FilteredTasksArray.FirstOrDefault(t => t.CompanyName == "Brightwave Solutions"))" OnActionsUpdated="Refresh" />
         </aside>
     </div>
-</div>
 
+
+    @* =========================================================
+       MODERN ENTERPRISE NEW TASK CREATION POP-UP MODAL FRAME
+       ========================================================= *@
+    @if (showCreateModal)
+    {
+        <div class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.4); backdrop-filter: blur(12px); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+            <div class="modal-box text-left-align animate-pop" style="background: white; border-radius: 20px; padding: 28px; width: 440px; box-shadow: 0 25px 50px -12px rgba(15,23,42,0.15); display: flex; flex-direction: column; gap: 16px; box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em;">Create New Corporate Task</h3>
+                    <span style="font-size: 20px; cursor: pointer; color: #94a3b8;" @onclick="() => showCreateModal = false">&times;</span>
+                </div>
+
+                <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.4;">Initialize a transaction card workflow mapping directly into your Sage X3 enterprise database pipelines.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Task Title / Subject</label>
+                    <input type="text" @bind="NewTaskTitle" placeholder="e.g., Resolve Invoice mismatch INV-10045" class="modal-input" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 12px; font-size:13px;" />
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Client / Company Name</label>
+                    <input type="text" @bind="NewTaskCompany" placeholder="e.g., Tech Innovations Inc." class="modal-input" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 12px; font-size:13px;" />
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Initial Priority</label>
+                        <select @bind="NewTaskPriority" class="modal-select" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 8px; font-size:13px; background:white;">
+                            <option value="@TaskPriority.Low">Low</option>
+                            <option value="@TaskPriority.Medium">Medium</option>
+                            <option value="@TaskPriority.High">High</option>
+                            <option value="@TaskPriority.Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Assign To Specialist</label>
+                        <select @bind="NewTaskAssignee" class="modal-select" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 8px; font-size:13px; background:white;">
+                            <option value="Unassigned">Leave Unassigned</option>
+                            <option value="Amit Patel">Amit Patel</option>
+                            <option value="Deepa Patel">Deepa Patel</option>
+                            <option value="John Smith">John Smith</option>
+                            <option value="alex.turner@company.com">Alex Turner</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">SLA Due Target Timeline</label>
+                    <select @bind="SlaHoursTimelineWindow" class="modal-select" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 8px; font-size:13px; background:white;">
+                        <option value="12">Standard Tier (12h Target)</option>
+                        <option value="24">Elevated Tier (24h Target)</option>
+                        <option value="-2">Instant Overdue Alert Tester (-2h Target)</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 8px;">
+                    <button class="btn-m-save priority-high" @onclick="SubmitNewCorporateTask" disabled="@(string.IsNullOrWhiteSpace(NewTaskTitle) || string.IsNullOrWhiteSpace(NewTaskCompany))" style="flex:1; height:38px; border-radius:10px; font-weight:600; font-size:13px; background:#2563eb; color:white; border:none; cursor:pointer;">Dispatch Task</button>
+                    <button class="btn-m-cancel" @onclick="() => showCreateModal = false" style="flex:1; height:38px; border-radius:10px; font-weight:600; font-size:13px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; cursor:pointer;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 @code {
+    // LAYOUT MODAL CONTROL FLAGS
+    private bool showCreateModal = false;
+    private bool isFilterActive = false;
+    private bool showGroupingMenu = false;
+    private bool showEllipsisMenu = false;
+
+    // ACTIVE VIEW FILTER PARAMETERS
+    private string ActiveGroupingCriterion = "Status";
+    private string GlobalPriorityFilter = "All";
+    private string GlobalSlaFilter = "All";
+
+    // FORM REGISTRATION VALUE BINDINGS
+    private string NewTaskTitle = "";
+    private string NewTaskCompany = "";
+    private TaskPriority NewTaskPriority = TaskPriority.Medium;
+    private string NewTaskAssignee = "Unassigned";
+    private int SlaHoursTimelineWindow = 24;
+
     protected override void OnInitialized()
     {
-        // FIX: Subscribing the parent layout page directly to DashboardState updates so ANY admin action redraws the board canvas instantly
         State.OnChange += Refresh;
 
         if (State.AllTasks == null || !State.AllTasks.Any())
@@ -66,20 +204,111 @@
     private void LoadAdminTasksData()
     {
         State.AllTasks = new List<TaskDto> {
-            new TaskDto { Title = "Issue with Invoice INV-100123", CompanyName = "Brightwave Solutions", Priority = TaskPriority.Urgent, Status = TaskStatus.Assigned, AssignedTo = "Amit Patel", CreatedDate = new DateTime(2025, 5, 6, 9, 15, 0) },
-            new TaskDto { Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.High, Status = TaskStatus.Open, AssignedTo = "Deepa Patel" },
-            new TaskDto { Title = "Develop QTE-7823 Renewal", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Medium, Status = TaskStatus.Assigned, AssignedTo = "John Smith" }
+            new TaskDto { Id = Guid.NewGuid(), Title = "Issue with Invoice INV-100123", CompanyName = "Brightwave Solutions", Priority = TaskPriority.Urgent, Status = TaskStatus.Assigned, AssignedTo = "Amit Patel", CreatedDate = DateTime.UtcNow.AddHours(-12), DueDate = DateTime.UtcNow.AddHours(-2) },
+            new TaskDto { Id = Guid.NewGuid(), Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.High, Status = TaskStatus.Open, AssignedTo = "Deepa Patel", CreatedDate = DateTime.UtcNow.AddHours(-4), DueDate = DateTime.UtcNow.AddHours(8) },
+            new TaskDto { Id = Guid.NewGuid(), Title = "Develop QTE-7823 Renewal", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Medium, Status = TaskStatus.Assigned, AssignedTo = "John Smith", CreatedDate = DateTime.UtcNow.AddHours(-2), DueDate = DateTime.UtcNow.AddHours(22) }
         };
     }
 
-    private void Refresh()
+    // =========================================================================
+    // 🔥 THIS IS EXACTLY WHERE THE FILTER PROPERTIES AND ENUM METHODS LIVE:
+    // =========================================================================
+    private IEnumerable<TaskDto> FilteredTasksArray
     {
-        // Invokes render sequence safely on main thread loop to handle background data swaps
-        InvokeAsync(StateHasChanged);
+        get
+        {
+            var collection = State.AllTasks ?? Enumerable.Empty<TaskDto>();
+
+            // 1. Live Toolbar Search Text Filter
+            if (!string.IsNullOrWhiteSpace(State.SearchTerm))
+            {
+                collection = collection.Where(t =>
+                    t.Title.Contains(State.SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    t.CompanyName.Contains(State.SearchTerm, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // 2. Toolbar Employee Dropdown Filter
+            if (!string.IsNullOrWhiteSpace(State.SelectedEmployeeFilter))
+            {
+                collection = collection.Where(t => t.AssignedTo == State.SelectedEmployeeFilter);
+            }
+
+            // 3. Header Action Bar Urgency Dropdown Tray Filter
+            if (GlobalPriorityFilter != "All")
+            {
+                collection = collection.Where(t => t.Priority.ToString().Equals(GlobalPriorityFilter, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // 4. Header Action Bar SLA Timeline Tray Filter
+            if (GlobalSlaFilter == "Overdue")
+            {
+                collection = collection.Where(t => t.DueDate.HasValue && DateTime.UtcNow > t.DueDate.Value);
+            }
+            else if (GlobalSlaFilter == "Healthy")
+            {
+                collection = collection.Where(t => !t.DueDate.HasValue || DateTime.UtcNow <= t.DueDate.Value);
+            }
+
+            return collection;
+        }
     }
 
-    public void Dispose()
+    private IEnumerable<TaskDto> GetTasksForColumn(TaskStatus statusTarget) =>
+        FilteredTasksArray.Where(t => t.Status == statusTarget);
+
+    private IEnumerable<TaskDto> GetTasksByPriority(TaskPriority priorityTarget) =>
+        FilteredTasksArray.Where(t => t.Priority == priorityTarget);
+
+    // =========================================================================
+    // UI LAYOUT NAVIGATION TRAYS & MODAL SUBMISSIONS CONTINUE DIRECTLY BELOW:
+    // =========================================================================
+    private void ToggleGlobalFilters() => isFilterActive = !isFilterActive;
+    private void ToggleGroupingMenu() { showGroupingMenu = !showGroupingMenu; showEllipsisMenu = false; }
+    private void ToggleEllipsisMenu() { showEllipsisMenu = !showEllipsisMenu; showGroupingMenu = false; }
+
+    private void ChangeGroupingCriterion(string selectedCriterion)
     {
-        State.OnChange -= Refresh;
+        ActiveGroupingCriterion = selectedCriterion;
+        showGroupingMenu = false;
+        StateHasChanged();
     }
+
+    private void SubmitNewCorporateTask()
+    {
+        if (string.IsNullOrWhiteSpace(NewTaskTitle) || string.IsNullOrWhiteSpace(NewTaskCompany)) return;
+
+        var assignedStatus = NewTaskAssignee == "Unassigned" ? TaskStatus.Open : TaskStatus.Assigned;
+        var createdTask = new TaskDto
+        {
+            Id = Guid.NewGuid(),
+            Title = NewTaskTitle.Trim(),
+            CompanyName = NewTaskCompany.Trim(),
+            Priority = NewTaskPriority,
+            Status = assignedStatus,
+            AssignedTo = NewTaskAssignee,
+            CreatedDate = DateTime.UtcNow,
+            DueDate = DateTime.UtcNow.AddHours(SlaHoursTimelineWindow),
+            Completed = false,
+            OutlookItemId = Guid.NewGuid().ToString()
+        };
+
+        State.AllTasks.Insert(0, createdTask);
+        State.SetSelectedTask(createdTask);
+
+        NewTaskTitle = "";
+        NewTaskCompany = "";
+        NewTaskAssignee = "Unassigned";
+        showCreateModal = false;
+
+        State.NotifyStateChanged();
+    }
+
+    private void ExportQueueToCsv() { showEllipsisMenu = false; }
+    private void ClearCompletedFromView() { showEllipsisMenu = false; }
+    private void ToggleCompactMode() { showEllipsisMenu = false; }
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.OnChange -= Refresh;
 }
+

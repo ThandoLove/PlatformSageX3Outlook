@@ -25,6 +25,11 @@
         border-bottom-color: #005ce6;
         font-weight: 700;
     }
+/* TAB HOVER */
+.tab:hover {
+    color: #0041b3;
+    border-bottom-color: rgba(0,92,230,0.15);
+}
 
 /* HEADER */
 .sage-header-row {
@@ -61,6 +66,9 @@
     font-weight: 600;
     cursor: pointer;
 }
+.btn-sage-blue:hover {
+    background: #0041b3;
+}
 
 .btn-sage-white {
     background: #fff;
@@ -69,6 +77,10 @@
     border-radius: 4px;
     color: #444;
     cursor: pointer;
+}
+.btn-sage-white:hover {
+    background: #f7fafc;
+    border-color: #e2e8f0;
 }
 
 /* TOOLBAR & SEARCH */
@@ -208,4 +220,107 @@
     padding: 60px;
     text-align: center;
     color: #94a3b8;
+}
+
+/* Additional styles matching the razor markup used in BusinessPartner.razor */
+.sage-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.sage-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.toolbar-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid #e6eef8;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(2,6,23,0.03);
+    flex: 1 1 420px;
+    min-width: 160px;
+}
+
+.search-icon { font-size: 15px; color: #94a3b8; }
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    width: 100%;
+    color: #0f172a;
+}
+/* Placeholder color */
+.search-input::placeholder { color: #9aa6b2; }
+
+.btn-ghost, .filter-toggle {
+    background: transparent;
+    border: 1px solid #e6eef8;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.btn-new-task {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.customer-card { background: white; border: 1px solid #eef4fb; padding: 12px; border-radius: 8px; }
+
+.responsive-table-wrapper { width: 100%; overflow: hidden; border-radius: 8px; background: #fff; border: 1px solid #eef4fb; box-shadow: 0 6px 18px rgba(2,6,23,0.03); }
+
+.contact-row {
+    transition: background 0.08s ease, transform 0.08s ease;
+}
+.contact-row:hover { background: #fbfdff; transform: translateY(-1px); }
+
+.td-name { color: #0f172a; font-weight: 700; }
+.td-company, .td-email, .td-phone { color: #64748b; }
+
+/* Table header polish */
+.sage-table thead th { background: #fbfdff; color: #475569; font-weight: 600; padding: 12px 18px; border-bottom: 1px solid #eef4fb; }
+.sage-table { background: transparent; }
+
+/* Make rows slightly taller and spaced */
+.sage-table td { padding: 14px 18px; }
+
+.status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.status-online { background: #ecfdf5; color: #059669; }
+.status-offline { background: #f8fafc; color: #64748b; border: 1px solid #eef2f7; }
+
+/* Recent Activity card style */
+.customer-card.animate-fade-in { display: block; }
+
+/* Responsive: convert table to cards on small screens */
+@media (max-width: 880px) {
+    .sage-table thead { display: none; }
+    .sage-table, .sage-table tbody, .sage-table tr, .sage-table td { display: block; width: 100%; }
+    .sage-table tr { margin: 8px 0; border-radius: 8px; box-shadow: 0 4px 12px rgba(2,6,23,0.04); overflow: hidden; }
+    .sage-table td { padding: 12px; border: none; display: flex; justify-content: space-between; align-items: center; }
 }

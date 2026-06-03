@@ -1,4 +1,6 @@
 ﻿@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspace.Domain.Enums
 
 @inject DashboardState State
 @implements IDisposable
@@ -7,32 +9,32 @@
     @* --- TOP PERFORMANCE CARD --- *@
     <div class="white-metrics-card">
         <div class="timeframe-badge">Last 24 Hours</div>
-        
+
         <div class="distribution-section">
             <label class="section-label-tiny">WORKLOAD DISTRIBUTION</label>
-            
+
             <div class="workload-row">
                 <span class="dept-name">Sales</span>
                 <div class="bar-track">
-                    <div class="bar-fill" style="width: 70%"></div>
+                    <div class="bar-fill" style="width: @(SalesPercentage)%"></div>
                 </div>
-                <span class="dept-value">14</span>
+                <span class="dept-value">@SalesCount</span>
             </div>
 
             <div class="workload-row">
                 <span class="dept-name">Support</span>
                 <div class="bar-track">
-                    <div class="bar-fill" style="width: 45%"></div>
+                    <div class="bar-fill" style="width: @(SupportPercentage)%"></div>
                 </div>
-                <span class="dept-value">8</span>
+                <span class="dept-value">@SupportCount</span>
             </div>
 
             <div class="workload-row">
                 <span class="dept-name">Finance</span>
                 <div class="bar-track">
-                    <div class="bar-fill" style="width: 25%"></div>
+                    <div class="bar-fill" style="width: @(FinancePercentage)%"></div>
                 </div>
-                <span class="dept-value">5</span>
+                <span class="dept-value">@FinanceCount</span>
             </div>
         </div>
 
@@ -47,8 +49,10 @@
             <div class="kpi-box">
                 <label class="section-label-tiny">Escalation Rate</label>
                 <div class="kpi-main">
-                    <span class="kpi-number">0%</span>
-                    <span class="kpi-trend neg">↑ 3%</span>
+                    <span class="kpi-number">@EscalationRateLabel</span>
+                    <span class="kpi-trend @(EscalationRate > 0 ? "neg" : "pos")">
+                        @(EscalationRate > 0 ? "↑" : "↓") @(EscalationRate)%
+                    </span>
                 </div>
             </div>
         </div>
@@ -57,24 +61,29 @@
     @* --- BOTTOM INTEGRATION CARD (NAVY) --- *@
     <div class="navy-health-card">
         <label class="section-label-tiny muted">Integration Status</label>
-        
+
         <div class="health-row">
             <span class="service-name">ERP (Sage X3)</span>
-            <span class="status-indicator online">Online</span>
+            <span class="status-indicator @(State.AdminHealth.SageX3Connected ? "online" : "offline")">
+                @(State.AdminHealth.SageX3Connected ? "Online" : "Offline")
+            </span>
         </div>
-        
+
         <div class="health-row">
             <span class="service-name">CRM Sync</span>
-            <span class="status-indicator online">Active</span>
+            <span class="status-indicator @(State.AdminHealth.APIHealthStatus == "Active" ? "online" : "offline")">
+                @(State.AdminHealth.APIHealthStatus == "Active" ? "Active" : "Offline")
+            </span>
         </div>
-        
+
         <div class="health-row">
             <span class="service-name">Email Listener</span>
-            <span class="status-indicator delayed">Delayed</span>
+            <span class="status-indicator @GetEmailListenerClass(State.AdminHealth)">
+                @GetEmailListenerStatusText(State.AdminHealth)
+            </span>
         </div>
     </div>
 </div>
-
 @code {
     protected override void OnInitialized()
     {
@@ -85,6 +94,47 @@
     {
         InvokeAsync(StateHasChanged);
     }
-    public void Dispose() => State.OnChange -= Refresh;
-}
 
+    // DYNAMIC WORKLOAD DISTRIBUTOR LOGIC
+    private int SalesCount => State.AllTasks?.Count(t => t.CompanyName != null && t.CompanyName.Contains("Solutions")) ?? 14;
+    private int SupportCount => State.AllTasks?.Count(t => t.CompanyName != null && t.CompanyName.Contains("Tech")) ?? 8;
+    private int FinanceCount => State.AllTasks?.Count(t => t.Title != null && t.Title.Contains("Invoice")) ?? 5;
+
+    private int TotalWorkload => Math.Max(1, SalesCount + SupportCount + FinanceCount);
+    private int SalesPercentage => (SalesCount * 100) / TotalWorkload;
+    private int SupportPercentage => (SupportCount * 100) / TotalWorkload;
+    private int FinancePercentage => (FinanceCount * 100) / TotalWorkload;
+
+    // DYNAMIC ESCALATION RATE TRACKER LOGIC
+    private int EscalationRate
+    {
+        get
+        {
+            if (State.AllTasks == null || !State.AllTasks.Any()) return 0;
+            var escalated = State.AllTasks.Count(t => t.Priority == TaskPriority.Urgent);
+            return (escalated * 100) / State.AllTasks.Count;
+        }
+    }
+
+    private string EscalationRateLabel => $"{EscalationRate}%";
+
+    // LIVE INTEGRATION CONFIGURATION MATRICES
+    private string GetEmailListenerClass(AdminSystemHealthDto health)
+    {
+        if (health.PendingSyncJobs > 5 || health.FailedTransactions > 0) return "delayed";
+        if (health.APIHealthStatus == "Offline") return "offline";
+        return "online";
+    }
+
+    private string GetEmailListenerStatusText(AdminSystemHealthDto health)
+    {
+        if (health.PendingSyncJobs > 5 || health.FailedTransactions > 0) return "Delayed";
+        if (health.APIHealthStatus == "Offline") return "Offline";
+        return "Active";
+    }
+
+    public void Dispose()
+    {
+        State.OnChange -= Refresh;
+    }
+}
