@@ -188,18 +188,15 @@
                 combinedList.AddRange(translatedSharedLogs);
             }
 
-            // 3. 🔥 THE ESSENTIALS GATEWAY: Ignores passive load traces to focus on true operations
             return combinedList
-                .Where(l => !string.IsNullOrEmpty(l.Title))
-                .Where(l => !l.Title.Contains("loaded", StringComparison.OrdinalIgnoreCase) &&
-                             !l.Title.Contains("view", StringComparison.OrdinalIgnoreCase) &&
-                             !l.Title.Contains("inspected", StringComparison.OrdinalIgnoreCase))
-                .Where(l => string.IsNullOrWhiteSpace(SearchQuery) ||
-                             l.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
-                             l.CreatedBy.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
-                .Where(l => string.IsNullOrWhiteSpace(SelectedAction) ||
-                             l.Action.Equals(SelectedAction, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(l => l.Timestamp);
+       .Where(l => !string.IsNullOrEmpty(l.Title))
+       .Where(l => !l.Title.Contains("loaded", StringComparison.OrdinalIgnoreCase))
+       .Where(l => string.IsNullOrWhiteSpace(SearchQuery) ||
+                    l.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
+                    l.CreatedBy.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+       .Where(l => string.IsNullOrWhiteSpace(SelectedAction) ||
+                    l.Action.Equals(SelectedAction, StringComparison.OrdinalIgnoreCase))
+       .OrderByDescending(l => l.Timestamp);
         }
     }
 
