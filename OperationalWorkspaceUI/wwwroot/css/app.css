@@ -1,549 +1,122 @@
-/* ========================================================= 
-   SAGE X3 MASTER THEME DESIGN TOKENS
-   ========================================================= */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
-
-:root {
-    --sage-navy: #003366;
-    --sage-navy-dark: #002b55;
-    --bg-workspace: #f3f4f6;
-    --panel-white: #ffffff;
-    --text-dark: #111827;
-    --text-muted: #64748b;
-    --border-light: #e2e8f0;
-    --header-grey: #f8fafc;
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background-color: var(--bg-workspace);
-    color: var(--text-dark);
-}
-
-/* ========================================================= 
-   CARDS & PANELS (LOCKED WHITE UTILITIES)
-   ========================================================= */
-.metric-card, .widget-wrapper, .timeline-card, .kb-widget-card,
-.grid-card, .card, .fluent-card, .right-panel-container,
-.details-sidebar, .details-sidebar aside {
-    background-color: var(--panel-white) !important;
-    color: var(--text-dark) !important;
-    border: 1px solid var(--border-light) !important;
-}
-
-    .card-header, .panel-header, .widget-wrapper h3 {
-        background-color: var(--header-grey) !important;
-        color: var(--text-dark) !important;
-        border-bottom: 1px solid var(--border-light) !important;
-    }
-
-.card,
-.metric-card,
-.widget-wrapper,
-.grid-card {
-    min-width: 0 !important;
-    max-width: 100% !important;
-    overflow-wrap: break-word !important;
-}
-
-/* ========================================================= 
-   QUICK ACTIONS BRANDING
-   ========================================================= */
-.quick-actions-container {
-    display: flex !important;
-    gap: 8px !important;
-    width: 100% !important;
-    background: transparent !important;
-}
-
-.action-tile {
-    flex: 1;
-    height: 38px;
-    border: none;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-    .action-tile span {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #ffffff !important;
-    }
-
-.action-blue {
-    background-color: #0078d4;
-}
-
-.action-teal {
-    background-color: #008272;
-}
-
-.action-orange {
-    background-color: #f59e0b;
-}
-
-.action-indigo {
-    background-color: #4f46e5;
-}
-
-.action-navy {
-    background-color: #003366;
-}
-
-.action-green {
-    background-color: #10b981;
-}
-
-/* =========================================================
-   BUTTON AND FORM CONTROL TOKENS (GLOBAL)
-   Modern neutral buttons, small radius, subtle hover/focus
-   ========================================================= */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    background: #ffffff;
-    color: var(--text-dark);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.12s ease;
-}
-
-.btn-primary {
-    background: #2563eb;
-    color: #ffffff;
-    border-color: transparent;
-}
-
-.btn-ghost {
-    background: transparent;
-    border: 1px solid #e6eef8;
-    color: var(--text-dark);
-}
-
-button, .btn { -webkit-appearance: none; appearance: none; }
-
-button:focus, .btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(37,99,235,0.12);
-}
-
-/* Inputs */
-input[type="text"], input[type="search"], textarea, select {
-    border-radius: 8px;
-    border: 1px solid #e6eef8;
-    padding: 8px 10px;
-    background: #fff;
-    color: var(--text-dark);
-}
-
-input:focus, textarea:focus, select:focus {
-    box-shadow: 0 0 0 4px rgba(37,99,235,0.08);
-    outline: none;
-}
-
-/* ========================================================= 
-   RESPONSIVE UTILITIES ENGINE (ANTI-SQUISH DASHBOARDS)
-   ========================================================= */
-.metrics-grid {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 16px !important;
-    width: 100% !important;
-}
-
-.metric-value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--text-dark) !important;
-    margin: 4px 0;
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-}
-
-.metric-subtext {
-    font-size: 0.75rem;
-    color: var(--text-muted) !important;
-    display: block !important;
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-}
-
-@media screen and (max-width: 900px) {
-    .metrics-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .metrics-grid {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-    }
-
-    .sage-dashboard-row {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 12px !important;
-    }
-
-    .quick-actions-container {
-        flex-wrap: wrap !important;
-    }
-
-    .action-tile {
-        flex: 1 1 calc(50% - 8px) !important;
-    }
-
-    .metric-value {
-        font-size: 1.2rem !important;
-    }
-}
-
-@media screen and (max-width: 360px) {
-    .action-tile {
-        flex: 1 1 100% !important;
-    }
-
-    .metric-value {
-        font-size: 1rem !important;
-    }
-
-    .metric-subtext {
-        font-size: 0.70rem !important;
-    }
-}
-
 /* =========================================================================
-   MASTER APP SHELL VERTICAL HYPER-LOCKS (GLOBAL FIX)
+   💎 ENTERPRISE UNIVERSAL HIGH-FIDELITY GLASSMORPHISM THEME SYSTEM
    ========================================================================= */
+
+/* Overhaul the main application backdrop with a smooth, premium mesh gradient */
 html,
 body,
+:host,
 fluent-layout,
 .app-container {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 100vh !important; /* allow content to grow naturally */
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: auto !important; /* allow page-level scrolling */
+    background: radial-gradient(at 0% 0%, rgba(241, 245, 249, 1) 0px, transparent 45%), radial-gradient(at 50% 0%, rgba(224, 242, 254, 0.5) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.3) 0px, transparent 45%), #f8fafc !important;
 }
 
-.main-wrapper {
-    display: flex !important;
-    flex: 1 !important;
-    width: 100% !important;
-    min-height: calc(100vh - 40px) !important;
-    align-items: stretch !important;
-    overflow: visible !important; /* allow children to control scrolling */
-}
-
-.sidebar-wrapper {
-    width: 240px !important;
-    height: auto !important;
-    flex-shrink: 0 !important;
-}
-
-    .sidebar-wrapper > *,
-    .sage-sidebar,
-    .sidebar {
-        height: auto !important;
-        min-height: 0 !important;
-        width: 100% !important;
-    }
-
-.page-content {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-width: 0 !important;
-    min-height: 0 !important; /* allow inner scroll regions to compute */
-    overflow: hidden !important;
-}
-
-.content-body {
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    padding: 20px !important;
-}
-
-.right-panel-wrapper,
-.right-panel-component {
-    height: 100% !important;
-    min-height: 100% !important;
-    max-height: 100% !important;
-}
-
-.right-panel-container {
-    height: 100% !important;
-    min-height: 100% !important;
-    max-height: 100% !important;
-    background-color: #ffffff !important;
-}
-
-
-/* =========================================================================
-   TASK GRID & ITEM HIGH-PRIORITY GLOBAL OVERRIDES
-   ========================================================================= */
-
-/* 1. Force the Task Card Container to render as a strict 5-column CSS grid */
+/* --- UNIVERSAL COMPONENT GLASS CONTAINERS --- */
+.white-metrics-card,
+.customer-card,
+.link-list,
+.compact-content-panel,
+.admin-sub-action-box,
+.hub-container,
+.timeline-card,
+.tasks-widget-card,
+.health-widget-card,
+.fluent-card,
+.card,
+.kb-widget-card,
+.reports-card,
 .task-card {
-    display: grid !important;
-    grid-template-columns: 1.8fr 120px 1.2fr 130px 40px !important; /* Locks structural layout alignment proportions */
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    padding: 12px 16px !important;
-    align-items: center !important;
-    gap: 12px !important;
-    width: 100% !important;
+    background: rgba(255, 255, 255, 0.52) !important; /* Premium semi-transparent canvas tint */
+    -webkit-backdrop-filter: blur(8px) !important; /* Slightly tighter blur for compact density */
+    backdrop-filter: blur(8px) !important; /* Premium frosting depth */
+    border: 1px solid rgba(255, 255, 255, 0.55) !important; /* Uniform crystal reflection edge */
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.02), inset 0 1px 1px rgba(255, 255, 255, 0.75) !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important; /* Erases overlapping background boxes layout spacing bugs */
+    padding: 8px 10px !important; /* Compact breathing room */
+    transition: transform 0.16s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.16s ease !important;
+}
+
+    /* Premium card hover micro-interactions */
+    .white-metrics-card:hover { transform: translateY(-1px) !important; box-shadow: 0 10px 20px rgba(15,23,42,0.035) !important; }
+
+/* Compact card utility you can apply per-component */
+.card--compact { padding: 6px 8px !important; border-radius: 8px !important; }
+
+/* Tighter headers inside glass cards */
+.fluent-card .panel-header, .card .card-header, .tasks-widget-card .panel-header { padding: 8px 6px !important; }
+
+/* Compact buttons */
+.fluent-card .footer-btn, .card .footer-btn, .reports-card .report-action-btn, .task-card .action-btn { padding: 6px 8px !important; font-size: 0.84rem !important; }
+
+/* --- SECURED GLASS NAVIGATION TOPBAR OVERHAUL --- */
+.sage-topbar-master, .global-header {
+    background: rgba(15, 32, 66, 0.75) !important; /* Deep navy glass tint */
+    -webkit-backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* --- SECURED GLASS LAYOUT DRAWER SIDEBAR OVERHAUL --- */
+.sage-sidebar, .sidebar, .sidebar-wrapper {
+    background: rgba(0, 43, 85, 0.65) !important; /* Rich sapphire glass tint */
+    -webkit-backdrop-filter: blur(20px) !important;
+    backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.sidebar-header {
+    background: rgba(0, 32, 64, 0.4) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --- HIGH-DENSITY GLASS COMPACT FORM INPUT FIELD OVERRIDES --- */
+input[type="text"], input[type="password"], select, textarea, .search-container, .company-selector {
+    background: rgba(255, 255, 255, 0.6) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    backdrop-filter: blur(6px) !important;
+    border: 1px solid rgba(203, 213, 225, 0.7) !important;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+    color: #0f172a !important;
+    border-radius: 6px !important;
+    height: 30px !important;
+    font-size: 12px !important;
     box-sizing: border-box !important;
 }
 
-    /* 2. Style each grid column slot to prevent items from collapsing */
-    .task-card .card-col {
-        display: flex !important;
-        flex-direction: column !important;
-        min-width: 0 !important;
+    input[type="text"]:focus, select:focus {
+        background: #ffffff !important;
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
     }
 
-    /* 3. Realign Text overflow parameters so data truncation handles cleanly */
-    .task-card .card-t {
-        font-weight: 600 !important;
-        font-size: 13px !important;
-        color: #0f172a !important;
-        margin-bottom: 2px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-
-    .task-card .card-c {
-        font-size: 11px !important;
-        color: #64748b !important;
-        font-weight: 400 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-
-    /* 4. Fix the Priority and Due text labels */
-    .task-card .p-chip {
-        font-size: 10px !important;
-        font-weight: 600 !important;
-        padding: 2px 8px !important;
-        border-radius: 4px !important;
-        text-transform: uppercase !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: fit-content !important;
-    }
-
-        .task-card .p-chip.urgent {
-            background: #fee2e2 !important;
-            color: #b91c1c !important;
-        }
-
-        .task-card .p-chip.high {
-            background: #dbeafe !important;
-            color: #2563eb !important;
-        }
-
-        .task-card .p-chip.normal {
-            background: #fef3c7 !important;
-            color: #92400e !important;
-        }
-
-        .task-card .p-chip.medium {
-            background: #fef3c7 !important;
-            color: #92400e !important;
-        }
-
-        .task-card .p-chip.low {
-            background: #f1f5f9 !important;
-            color: #64748b !important;
-        }
-
-    .task-card .due-text {
-        font-size: 11px !important;
-        color: #64748b !important;
-        font-weight: 500 !important;
-        margin-top: 4px !important;
-        white-space: nowrap !important;
-    }
-
-    .task-card .red-alert {
-        color: #ef4444 !important;
-        font-weight: 600 !important;
-    }
-
-    /* 5. Clean up the Source Link typography metrics */
-    .task-card .btn-ghost-link {
-        background: transparent !important;
-        border: none !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        color: #475569 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        cursor: pointer !important;
-        padding: 4px 8px !important;
-        border-radius: 4px !important;
-        white-space: nowrap !important;
-    }
-
-        .task-card .btn-ghost-link:hover {
-            background: #f1f5f9 !important;
-            color: #2563eb !important;
-        }
-
-    .task-card .sage-s-box {
-        background: #2563eb !important;
-        color: white !important;
-        padding: 1px 4px !important;
-        border-radius: 3px !important;
-        font-size: 9px !important;
-        font-weight: 700 !important;
-    }
-
-    /* 6. Standardize Complete Button dimensions */
-    .task-card .btn-outline-complete {
-        border: 1px solid #cbd5e1 !important;
-        background: white !important;
-        border-radius: 6px !important;
-        padding: 6px 12px !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        color: #334155 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        cursor: pointer !important;
-        width: 100% !important;
-        transition: all 0.2s !important;
-        white-space: nowrap !important;
-    }
-
-        .task-card .btn-outline-complete:hover {
-            border-color: #10b981 !important;
-            color: #10b981 !important;
-            background: #f0fdf4 !important;
-        }
-
-    .task-card .completed-label {
-        color: #10b981 !important;
-        font-weight: 700 !important;
-        font-size: 11px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-    }
-
-    /* =========================================================================
-   TASK CARD SAGE RE-ROUTER MASTER CORRECTIONS OVERRIDE
-   ========================================================================= */
-
-    .task-card .sage-link-group button.btn-blue-square-icon,
-    .task-card .btn-blue-square-icon,
-    button.btn-blue-square-icon {
-        background-color: #2563eb !important;
-        color: #ffffff !important;
-        border-radius: 6px !important;
-        width: 100% !important;
-        min-width: 150px !important;
-        max-width: 100% !important;
-        height: 32px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 6px !important;
-        padding: 0 12px !important;
-        box-sizing: border-box !important;
-        border: none !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        font-size: 11px !important;
-        font-weight: 600 !important;
-        text-transform: none !important;
-    }
-
-        /* CLEAN SINGLE INJECTION STRIP: Forces the correct literal text value once, wiping out duplications */
-        .task-card .sage-link-group button.btn-blue-square-icon::after,
-        .task-card .btn-blue-square-icon::after,
-        button.btn-blue-square-icon::after {
-            content: "View in Sage X3" !important;
-            color: #ffffff !important;
-            font-size: 11px !important;
-            font-weight: 600 !important;
-            display: inline-block !important;
-            white-space: nowrap !important;
-        }
-
-        /* Completely blinds, hides and strips any inner spans that were causing double rendering bugs */
-        .task-card .sage-link-group button.btn-blue-square-icon span,
-        .task-card .btn-blue-square-icon span,
-        .task-card .sage-link-group button.btn-blue-square-icon i,
-        .task-card .btn-blue-square-icon i {
-            display: none !important;
-            visibility: hidden !important;
-            width: 0 !important;
-            height: 0 !important;
-            margin: 0 !important;
-        }
-/* =========================================================================
-   ADMIN ACTIONS DETAILED ELEMENT FORM RENDER CODES
-   ========================================================================= */
-
-.admin-action-list .action-btn.success {
-    border: 1px solid #cbd5e1 !important;
-    background: #ffffff !important;
-    border-radius: 6px !important;
-    padding: 10px !important;
-    text-align: left !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    color: #10b981 !important;
-    width: 100% !important;
+/* --- RESPONSIVE LIQUID DATA TABLES IN GLASS --- */
+.responsive-table-wrapper {
+    background: rgba(255, 255, 255, 0.35) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
 }
 
-    .admin-action-list .action-btn.success:hover {
-        background-color: #f0fdf4 !important;
-        border-color: #10b981 !important;
-    }
-
-.customer-card .sage-link-btn {
-    font-size: 11px !important;
-    color: #2563eb !important;
-    text-decoration: none !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
+.sage-table tr:hover, .table-row-hover:hover {
+    background: rgba(255, 255, 255, 0.5) !important;
 }
 
-    .customer-card .sage-link-btn:hover {
-        text-decoration: underline !important;
-    }
+/* --- HIGH-FIDELITY GLASS PROMPT OVERLAY MODALS --- */
+.modal-overlay {
+    background: rgba(15, 23, 42, 0.25) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    backdrop-filter: blur(14px) !important;
+}
+
+.modal-box {
+    background: rgba(255, 255, 255, 0.85) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18) !important;
+}
 
 /* =========================================================================
    UNIVERSAL ENTERPRISE RESPONSIVE UTILITIES FOR ALL APP PAGES
@@ -553,7 +126,7 @@ fluent-layout,
 .enterprise-page-layout {
     display: flex !important;
     flex-direction: column !important;
-    gap: 16px !important;
+    gap: 12px !important;
     width: 100% !important;
     height: 100% !important;
     box-sizing: border-box !important;
@@ -562,9 +135,8 @@ fluent-layout,
 /* A smart, auto-fitting grid for summary cards or metric listings */
 .responsive-data-grid {
     display: grid !important;
-    /* Desktop default: dynamic matching blocks */
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-    gap: 16px !important;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; /* tighter columns for modern compact look */
+    gap: 12px !important;
     width: 100% !important;
     box-sizing: border-box !important;
 }
@@ -586,44 +158,6 @@ fluent-layout,
     padding-right: 4px !important;
 }
 
-/* Responsive Table container to stop data from breaking frames */
-.responsive-table-wrapper {
-    width: 100% !important;
-    overflow-x: auto !important; /* Horizontally scrollable data sheets on small screens */
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-}
-
-/* =========================================================================
-   INTEGRATION STATE PILL VALUE ACCENTS & INDICATORS
-   ========================================================================= */
-
-.status-pill {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-transform: none !important;
-}
-
-    .status-pill.status-online, .status-indicator.online {
-        background-color: #ecfdf5 !important;
-        color: #059669 !important;
-        border: 1px solid #a7f3d0 !important;
-    }
-
-    .status-pill.status-delayed, .status-indicator.delayed {
-        background-color: #fffbeb !important;
-        color: #d97706 !important;
-        border: 1px solid #fde68a !important;
-    }
-
-    .status-pill.status-offline, .status-indicator.offline {
-        background-color: #fef2f2 !important;
-        color: #dc2626 !important;
-        border: 1px solid #fecaca !important;
-    }
-
 /* =========================================================================
    📱 OUTLOOK ADD-IN PANEL & MOBILE OVERRIDES FOR ALL OTHER PAGES
    ========================================================================= */
@@ -641,4 +175,96 @@ fluent-layout,
         grid-template-columns: 1fr !important;
         gap: 12px !important;
     }
+}
+
+/* =========================================================================
+   GLOBAL COMPACT GLASS OVERRIDES
+   Applies a consistent compact glassmorphic treatment across all components
+   without editing each component file. This reduces perceived size and
+   ensures cards, headers, icons, buttons and inputs are visually cohesive.
+   ========================================================================= */
+
+:root {
+    --glass-bg-compact: rgba(255,255,255,0.52);
+    --glass-blur-compact: 8px;
+    --ui-radius-compact: 8px;
+    --ui-padding-compact-sm: 6px;
+    --ui-padding-compact-md: 10px;
+}
+
+/* Apply compact glass canvas to common containers */
+.fluent-card, .card, .tasks-widget-card, .white-metrics-card, .kb-widget-card, .reports-card, .hub-container, .timeline-card {
+    background: var(--glass-bg-compact) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur-compact)) !important;
+    backdrop-filter: blur(var(--glass-blur-compact)) !important;
+    border-radius: var(--ui-radius-compact) !important;
+    padding: var(--ui-padding-compact-md) !important;
+}
+
+/* Make headers and titles compact */
+.panel-header h3, .card-header, .panel-title, .reports-title {
+    font-size: 0.98rem !important;
+    margin: 0 !important;
+    font-weight: 600 !important;
+}
+
+.panel-header, .card-header {
+    padding: 8px 6px !important;
+}
+
+/* Compact footer and actions */
+.panel-footer, .kb-footer, .card .footer-btn, .reports-card .report-action-btn, .footer-btn {
+    padding: 6px !important;
+}
+
+/* Buttons: smaller, denser */
+.fluent-card .fluent-button, .fluent-button, button.action-tile, .fluent-button .ms-Button {
+    padding: 6px 8px !important;
+    font-size: 0.86rem !important;
+}
+
+/* Icons: scale down subtlely to reduce vertical rhythm */
+fluent-icon svg, .fluent-icon svg, .ms-Icon, .icon-small {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Inputs compact */
+input[type="text"], input[type="password"], select, textarea, .fluent-search, .search-full {
+    height: 30px !important;
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+}
+
+/* Truncate long text to avoid wrapping and tall cards */
+.fluent-card .doc-filename, .fluent-card .kb-title, .fluent-card .ticket-title, .fluent-card .activity-title,
+.card .doc-filename, .card .kb-title, .card .ticket-title, .card .activity-title {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Compact grid settings */
+.responsive-data-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important; gap: 12px !important; }
+
+/* Reduce default line-heights and margins to tighten layout */
+body, .fluent-card, .card { line-height: 1.2 !important; }
+
+/* Utility: force a compact card where needed */
+.card--glass-compact { padding: var(--ui-padding-compact-sm) !important; border-radius: calc(var(--ui-radius-compact) - 2px) !important; }
+
+
+/* =========================================================================
+   🛑 PERMANENT DUPLICATE BORDER KILLER: STRIPS INTERNAL SEARCH INPUTS
+   ========================================================================= */
+
+/* Tells the browser to completely ignore text input borders inside search boxes */
+.search-container input[type="text"],
+.search-container .search-input {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }

@@ -1,100 +1,120 @@
-﻿.crm-snapshot-card {
+﻿/* ========================================================================= 
+   CRMPANEL ISOLATED COMPACT DESIGN SPECIFICATION (CLEAN SPECIFICITY)
+   ========================================================================= */
+
+/* The main layout wrapper constraints shrink the cards height */
+.crm-snapshot-card {
     width: 100%;
-    border-radius: 8px;
-    padding: 16px;
-    min-height: 350px;
-}
-
-/* Panel Header from Dashboard.razor.css logic */
-.panel-header {
+    border-radius: 12px;
+    padding: 10px 12px;
+    min-height: 140px; /* Squeezes oversized 350px panel walls down to high-density */
+    max-height: 200px;
+    box-sizing: border-box;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
 }
 
-    .panel-header h3 {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
+    /* Panel Header positioning alignment */
+    .crm-snapshot-card .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+        padding: 0;
     }
 
-/* Company Selector */
-.company-selector {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #f8fafc;
-    padding: 10px 14px;
-    border-radius: 6px;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 24px;
-    cursor: pointer;
-}
+        .crm-snapshot-card .panel-header h3 {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #475569;
+        }
 
-.company-name {
-    flex-grow: 1;
-    font-weight: 600;
-    color: #1e293b;
-    font-size: 0.95rem;
-}
-
-/* Grid Layout */
-.crm-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 20px;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.stat-label {
-    color: var(--text-muted);
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-}
-
-.stat-value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-dark);
-}
-
-    .stat-value.small {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #475569;
+    /* Company Dropdown Selector */
+    .crm-snapshot-card .company-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(248, 250, 252, 0.6);
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 8px;
+        height: 28px;
+        box-sizing: border-box;
     }
 
-/* Credit Limit Progress Bar */
-.limit-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+    .crm-snapshot-card .company-name {
+        flex-grow: 1;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 12px;
+    }
 
-.limit-progress {
-    height: 6px;
-    border-radius: 10px;
-}
+    /* High Density Metrics Grid Layout */
+    .crm-snapshot-card .crm-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
 
-/* Global status colors from Dashboard.razor.css */
-.snapshot-red {
-    color: #ef4444;
-}
+        .crm-snapshot-card .crm-grid.bottom-row {
+            margin-bottom: 0;
+        }
 
-.snapshot-green {
-    color: var(--sage-green);
-}
+    .crm-snapshot-card .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
 
-/* Dark mode handling */
-::deep .dark-mode .company-selector {
+    .crm-snapshot-card .stat-label {
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+    }
+
+    .crm-snapshot-card .stat-value {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.1;
+    }
+
+        .crm-snapshot-card .stat-value.small {
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+    /* Credit Limit Progress Bar variables */
+    .crm-snapshot-card .limit-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .crm-snapshot-card ::deep .limit-progress {
+        height: 4px;
+        border-radius: 10px;
+    }
+
+    /* State color mappings */
+    .crm-snapshot-card .snapshot-red {
+        color: #ef4444;
+    }
+
+    .crm-snapshot-card .snapshot-green {
+        color: #10b981;
+    }
+
+/* Dark mode handling using deep isolation rules checks */
+::deep .dark-mode .crm-snapshot-card .company-selector {
     background: #1e293b;
     border-color: #334155;
 }

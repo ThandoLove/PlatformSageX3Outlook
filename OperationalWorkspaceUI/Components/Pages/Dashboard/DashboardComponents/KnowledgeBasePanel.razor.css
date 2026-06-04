@@ -1,32 +1,63 @@
 ﻿.kb-widget-card {
     width: 100%;
-    padding: 16px;
+    padding: 8px;
     border-radius: 8px;
-    min-height: 350px;
+    min-height: 140px; /* compact */
+}
+
+.kb-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.75);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+}
+
+.kb-overlay-ring {
+    width: 28px !important;
+    height: 28px !important;
+}
+
+.kb-overlay-text {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: #008272;
+    font-weight: 600;
+}
+
+.kb-search {
+    width: 100%;
 }
 
 .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
 }
 
-    .panel-header h3 {
+.panel-header h3 {
         margin: 0;
-        font-size: 1.1rem;
+        font-size: 0.98rem;
         font-weight: 600;
     }
 
 .kb-search-container {
-    margin-bottom: 20px;
+    margin-bottom: 8px;
 }
 
 .kb-links-container {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    max-height: 200px;
+    max-height: 120px;
     overflow-y: auto;
 }
 
@@ -51,20 +82,27 @@
 
 .kb-text-group {
     flex-grow: 1;
-    margin-left: 12px;
+    margin-left: 8px;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .kb-title {
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.86rem;
+    font-weight: 600;
     color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .kb-meta {
     font-size: 0.7rem;
     color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .arrow-icon {
@@ -77,15 +115,15 @@
 }
 
 .kb-empty {
-    padding: 30px;
+    padding: 12px;
     text-align: center;
     color: var(--text-muted);
 }
 
 .kb-footer {
-    margin-top: 16px;
+    margin-top: 8px;
     border-top: 1px solid #f1f5f9;
-    padding-top: 12px;
+    padding-top: 8px;
     text-align: center;
 }
 

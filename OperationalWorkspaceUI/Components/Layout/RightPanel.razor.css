@@ -5,14 +5,15 @@
 .right-panel-wrapper,
 .right-panel {
     position: relative !important;
-    height: 100% !important; /* Force right wrapper block to 100% row match */
-    min-height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important; /* allow the container to size based on layout */
+    min-height: 0 !important; /* allow inner scroll regions to compute correctly */
+    max-height: none !important;
     display: flex !important;
     flex-direction: row !important;
     flex-shrink: 0 !important;
     transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-sizing: border-box !important;
+    align-self: stretch !important;
 }
 
     /* Master Open/Close Toggle Animations Framework */
@@ -33,11 +34,11 @@
 }
 
 /* The actual white background container sheet */
-.right-panel-container {
+    .right-panel-container {
     width: 100% !important;
-    height: 100% !important; /* Force card container down to panel floor bounds */
-    min-height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important; /* allow content to determine height */
+    min-height: 0 !important;
+    max-height: none !important;
     background-color: #ffffff !important;
     border-left: 1px solid #e2e8f0 !important;
     overflow-y: auto !important;

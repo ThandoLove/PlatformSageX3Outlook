@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus;
+
 namespace OperationalWorkspaceUI.State
 {
     public class WorkspaceState : IDisposable
@@ -25,104 +26,121 @@ namespace OperationalWorkspaceUI.State
         public List<string> Knowledge { get; set; } = new();
         public List<OpenOrderDto> Quotes { get; set; } = new();
         public EmailInsightDto? SelectedEmail { get; set; }
+
+        // 🚀 SHARED SYSTEM AUDIT TELEMETRY HIGHWAY
+        public List<GlobalActivityItem> SharedSystemLogs { get; private set; } = new();
+
         // ======================================================
         // GLOBAL FLAGS
         // ======================================================
         public bool IsUploading { get; set; }
         public bool IsSendingKnowledge { get; set; }
         public bool IsLoadingTasks { get; set; }
+
         // ======================================================
         // CONSTRUCTOR
         // ======================================================
         public WorkspaceState()
         {
             Attachments = new List<AttachmentDto>
-{
-new(
-Guid.NewGuid(),
-"QTE-7789_Proposal.pdf",
-"Proposal",
-1240000,
-"#",
-"Quote - QTE-7789",
-DateTime.Now),
+            {
+                new(
+                    Guid.NewGuid(),
+                    "QTE-7789_Proposal.pdf",
+                    "Proposal",
+                    1240000,
+                    "#",
+                    "Quote - QTE-7789",
+                    DateTime.Now),
 
-new(
-Guid.NewGuid(),
-"INV-2024-00567_Invoice.pdf",
-"Invoice",
-960000,
-"#",
-"Invoice - INV-2024-00567",
-DateTime.Now)
-};
+                new(
+                    Guid.NewGuid(),
+                    "INV-2024-00567_Invoice.pdf",
+                    "Invoice",
+                    960000,
+                    "#",
+                    "Invoice - INV-2024-00567",
+                    DateTime.Now)
+            };
+
+            // =========================================================================
+            // ✅ FIXED MATRIX: PASSES THE REQUIRED VIEWS INTEGER PARAMETER
+            // =========================================================================
             KnowledgeBase = new List<KnowledgeDto>
+{
+    new KnowledgeDto(
+        Guid.NewGuid(),
+        "Pricing Guidelines 2024",
+        "Sage X3 pricing tiered structure for 2024.",
+        "Pricing Guidelines",
+        "#",
+        "Sales",
+        0), // Passed default views integer resolves compilation error 1
 
-                {
-new KnowledgeDto(
-Guid.NewGuid(),
-"Pricing Guidelines 2024",
-"Sage X3 pricing tiered structure for 2024.",
-"Pricing Guidelines",
-"#",
-"Sales"),
-new KnowledgeDto(
-Guid.NewGuid(),
-"Product Installation Guide",
-"Step-by-step server configuration...",
-"Product Documentation",
-"#",
-"IT"),
-new KnowledgeDto(
-Guid.NewGuid(),
-"Frequently Asked Questions",
-"Top user permission answers...",
-"FAQ",
-"#",
-"Support"),
-new KnowledgeDto(
-Guid.NewGuid(),
-"How to Create a Sales Order",
-"Full O-WS interface instructions...",
-"How To Guides",
-"#",
-"Guides")
+    new KnowledgeDto(
+        Guid.NewGuid(),
+        "Product Installation Guide",
+        "Step-by-step server configuration...",
+        "Product Documentation",
+        "#",
+        "IT",
+        0), // Passed default views integer resolves compilation error 2
+
+    new KnowledgeDto(
+        Guid.NewGuid(),
+        "Frequently Asked Questions",
+        "Top user permission answers...",
+        "FAQ",
+        "#",
+        "Support",
+        0), // Passed default views integer resolves compilation error 3
+
+    new KnowledgeDto(
+        Guid.NewGuid(),
+        "How to Create a Sales Order",
+        "Full O-WS interface instructions...",
+        "How To Guides",
+        "#",
+        "Guides",
+        0)  // Passed default views integer resolves compilation error 4
 };
             Tickets = new List<TicketDto>
-{
-new TicketDto
-{
-Id = Guid.NewGuid(),
-TicketNumber = "TKT-1001",
-Title = "Sage X3 Connection Timeout",
-CustomerName = "Tech Innovations Inc.",
-Priority = "High",
-Status = "Open",
-CreatedAt = DateTime.Now.AddDays(-2)
-},
-new TicketDto
-{
-Id = Guid.NewGuid(),
-TicketNumber = "TKT-1002",
-Title = "Invoice Export Error",
-CustomerName = "Global Systems",
-Priority = "Medium",
-Status = "In Progress",
-CreatedAt = DateTime.Now.AddDays(-1)
-},
-new TicketDto
-{
-Id = Guid.NewGuid(),
-TicketNumber = "TKT-1003",
-Title = "New User Onboarding",
-CustomerName = "Brightwave",
-Priority = "Low",
-Status = "Resolved",
-CreatedAt = DateTime.Now
-}
-};
+            {
+                new TicketDto
+                {
+                    Id = Guid.NewGuid(),
+                    TicketNumber = "TKT-1001",
+                    Title = "Sage X3 Connection Timeout",
+                    CustomerName = "Tech Innovations Inc.",
+                    Priority = "High",
+                    Status = "Open",
+                    CreatedAt = DateTime.Now.AddDays(-2)
+                },
+                new TicketDto
+                {
+                    Id = Guid.NewGuid(),
+                    TicketNumber = "TKT-1002",
+                    Title = "Invoice Export Error",
+                    CustomerName = "Global Systems",
+                    Priority = "Medium",
+                    Status = "In Progress",
+                    CreatedAt = DateTime.Now.AddDays(-1)
+                },
+                new TicketDto
+                {
+                    Id = Guid.NewGuid(),
+                    TicketNumber = "TKT-1003",
+                    Title = "New User Onboarding",
+                    CustomerName = "Brightwave",
+                    Priority = "Low",
+                    Status = "Resolved",
+                    CreatedAt = DateTime.Now
+                }
+            };
+
             _ = LoadTasksAsync();
         }
+
         // ======================================================
         // EVENTS
         // ======================================================
@@ -132,6 +150,7 @@ CreatedAt = DateTime.Now
         {
             OnChange?.Invoke();
         }
+
         // ======================================================
         // STATE HELPERS
         // ======================================================
@@ -150,13 +169,14 @@ CreatedAt = DateTime.Now
             IsLoadingTasks = status;
             Notify();
         }
+
         // ======================================================
-        // LOGGING
+        // LOGGING & CENTRAL PIPELINES
         // ======================================================
         public void LogActivity(
-        string title,
-        string action,
-        string user = "Current User")
+            string title,
+            string action,
+            string user = "Current User")
         {
             var newLog = new ActivityDto
             {
@@ -167,6 +187,21 @@ CreatedAt = DateTime.Now
                 Timestamp = DateTime.Now
             };
             ActivityLogs.Insert(0, newLog);
+            Notify();
+        }
+
+        // 🚀 SHARED METHOD DISPATCHER BRIDGES DATA CONTEXT TRACKS ACROSS NAVIGATION MODALS
+        public void LogGlobalAction(string category, string text, string icon, string uiTintClass)
+        {
+            SharedSystemLogs.Insert(0, new GlobalActivityItem
+            {
+                Category = category,
+                Description = text,
+                Icon = icon,
+                ImpactClass = uiTintClass,
+                Timestamp = DateTime.Now
+            });
+
             Notify();
         }
         // ======================================================
@@ -181,63 +216,62 @@ CreatedAt = DateTime.Now
                 await Task.Delay(100);
                 var now = DateTime.Now;
                 Tasks = new List<TaskDto>
-{
-new TaskDto
-{
-Id = Guid.NewGuid(),
-Title = "Inquiry about Product XYZ",
-CompanyName = "Tech Innovations Inc.",
-Priority = TaskPriority.Urgent,
-DueDate = DateTime.Today,
-Status = TaskStatus.Open
-},
-
-new TaskDto
-{
-Id = Guid.NewGuid(),
-Title = "Setup Sage X3 Connector",
-CompanyName = "Sage Internal",
-Priority = TaskPriority.Urgent,
-DueDate = DateTime.Today,
-Status = TaskStatus.Open
-},
-new TaskDto
-{
-Id = Guid.NewGuid(),
-Title = "Review Sales Forecast Q3",
-CompanyName = "Global Systems",
-Priority = TaskPriority.High,
-DueDate = DateTime.Today,
-Status = TaskStatus.Open
-},
-new TaskDto
-{
-Id = Guid.NewGuid(),
-Title = "Verify Invoice #8821",
-CompanyName = "Brightwave",
-Priority = TaskPriority.Urgent,
-DueDate = DateTime.Today,
-Status = TaskStatus.Open
-},
-new TaskDto
-{
-Id = Guid.NewGuid(),
-Title = "Submit Expense Report",
-CompanyName = "Finance Dept",
-Priority = TaskPriority.High,
-DueDate = DateTime.Today,
-Status = TaskStatus.Open
-},
-new TaskDto
-{
-Id = Guid.NewGuid(),
-Title = "Daily Team Sync",
-CompanyName = "Operational Team",
-Priority = TaskPriority.Medium,
-DueDate = DateTime.Today,
-Status = TaskStatus.Open
-}
-};
+                {
+                    new TaskDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Inquiry about Product XYZ",
+                        CompanyName = "Tech Innovations Inc.",
+                        Priority = TaskPriority.Urgent,
+                        DueDate = DateTime.Today,
+                        Status = TaskStatus.Open
+                    },
+                    new TaskDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Setup Sage X3 Connector",
+                        CompanyName = "Sage Internal",
+                        Priority = TaskPriority.Urgent,
+                        DueDate = DateTime.Today,
+                        Status = TaskStatus.Open
+                    },
+                    new TaskDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Review Sales Forecast Q3",
+                        CompanyName = "Global Systems",
+                        Priority = TaskPriority.High,
+                        DueDate = DateTime.Today,
+                        Status = TaskStatus.Open
+                    },
+                    new TaskDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Verify Invoice #8821",
+                        CompanyName = "Brightwave",
+                        Priority = TaskPriority.Urgent,
+                        DueDate = DateTime.Today,
+                        Status = TaskStatus.Open
+                    },
+                    new TaskDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Submit Expense Report",
+                        CompanyName = "Finance Dept",
+                        Priority = TaskPriority.High,
+                        DueDate = DateTime.Today,
+                        Status = TaskStatus.Open
+                    },
+                    new TaskDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Daily Team Sync",
+                        CompanyName = "Operational Team",
+                        Priority = TaskPriority.Medium,
+                        DueDate = DateTime.Today,
+                        Status = TaskStatus.Open
+                    }
+                };
 
                 // Ensure all tasks have basic metadata used by the UI
                 foreach (var t in Tasks)
@@ -257,6 +291,7 @@ Status = TaskStatus.Open
                 SetLoadingTasks(false);
             }
         }
+
         public void ReloadKnowledge(List<KnowledgeDto> articles)
         {
             KnowledgeBase = articles;
@@ -279,13 +314,23 @@ Status = TaskStatus.Open
         {
             Notify();
         }
+
         // ======================================================
         // MEMORY CLEANUP
         // ======================================================
-
         public void Dispose()
         {
             OnChange = null;
         }
+    }
+
+    // 🚀 NESTED CENTRAL AUDIT DTO DATA MODEL
+    public class GlobalActivityItem
+    {
+        public string Category { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string ImpactClass { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
     }
 }

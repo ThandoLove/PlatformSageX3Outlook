@@ -1,123 +1,129 @@
-﻿/* Container matching Dashboard Grid */
+﻿/* =========================================================================
+   TASKSPANEL HIGH-DENSITY ENTERPRISE ROW SYSTEM (NO IMPORTANT TAGS)
+   ========================================================================= */
 .tasks-widget-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     width: 100%;
-    padding: 16px;
-    border-radius: 8px;
-    background: white;
-    min-height: 350px;
-    display: flex;
-    flex-direction: column;
+    box-sizing: border-box;
 }
 
-/* Header matching Sage X3 Uppercase style */
-.panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
+    .tasks-widget-card .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 8px;
+    }
 
-    .panel-header h3 {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--text-dark);
+        .tasks-widget-card .panel-header h3 {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+    /* Squeezes internal tab headers into a tight row layout track */
+    .tasks-widget-card .task-tabs {
+        display: flex;
+        gap: 12px;
+        border-bottom: 1px solid #f1f5f9;
+        margin-bottom: 6px;
+        padding-bottom: 2px;
+    }
+
+    .tasks-widget-card .task-tab {
+        cursor: pointer;
+        font-size: 10px;
+        font-weight: 700;
+        color: #64748b;
         text-transform: uppercase;
+        transition: color 0.15s ease;
     }
 
-/* TAB NAVIGATION (Image Match) */
-.task-tabs {
-    display: flex;
-    border-bottom: 2px solid #f1f5f9;
-    margin-bottom: 16px;
-}
+        .tasks-widget-card .task-tab.active {
+            color: #2563eb;
+        }
 
-.task-tab {
-    cursor: pointer;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px; /* Overlaps container border */
-    transition: all 0.2s ease;
-}
-
-    .task-tab.active {
-        color: var(--sage-blue);
-        border-bottom-color: var(--sage-blue);
+    /* Hyper-locks scroller ceiling context dimensions */
+    .tasks-widget-card .task-list-container {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-right: 2px;
     }
 
-/* TASK LIST LOGIC */
-.task-list-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-.task-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 10px 8px;
-    gap: 12px;
-    border-bottom: 1px solid var(--border-color);
-    transition: background 0.2s;
-}
-
-    .task-item:hover {
-        background-color: #f8fafc;
+    /* FIXED ROW ALIGNMENT: Plugs check indicators directly next to task strings */
+    .tasks-widget-card .task-item {
+        display: flex;
+        align-items: center; /* Centers checkbox and text vertically */
+        gap: 8px;
+        padding: 4px 0;
+        border-bottom: 1px solid #f1f5f9;
+        width: 100%;
     }
 
-/* Strikethrough Logic */
-.task-done {
-    opacity: 0.6;
-}
+        .tasks-widget-card .task-item input[type="checkbox"] {
+            width: 13px;
+            height: 13px;
+            margin: 0;
+            flex-shrink: 0;
+        }
 
-    .task-done .task-title {
-        text-decoration: line-through;
-        color: var(--text-muted);
+    .tasks-widget-card .task-details {
+        display: flex;
+        flex-direction: row; /* Horizontal text flow track alignment */
+        align-items: center;
+        justify-content: space-between;
+        flex: 1;
+        min-width: 0;
     }
 
-.task-details {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
+    .tasks-widget-card .task-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-right: 6px;
+    }
 
-.task-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-dark);
-}
+    .tasks-widget-card .task-due {
+        font-size: 10px;
+        color: #94a3b8;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
 
-.task-due {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 2px;
-}
+    .tasks-widget-card .task-prio-tag {
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 4px;
+        border-radius: 4px;
+        background: #fee2e2;
+        color: #ef4444;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
 
-.date-highlight {
-    font-weight: 600;
-}
+    /* High density clean footer */
+    .tasks-widget-card .task-footer {
+        margin-top: auto;
+        padding-top: 6px;
+        border-top: 1px solid #f1f5f9;
+        text-align: center;
+    }
 
-/* PRIORITY TAGS */
-.task-prio-tag {
-    margin-left: auto;
-}
-
-/* FOOTER */
-.task-footer {
-    margin-top: auto;
-    border-top: 1px solid #f1f5f9;
-    padding-top: 12px;
-    text-align: center;
-}
-
-::deep .footer-link {
-    color: var(--sage-light-blue) !important;
-    font-weight: 600;
-    font-size: 12px;
-    text-decoration: none;
-}
+    .tasks-widget-card ::deep .footer-link {
+        color: #2563eb !important;
+        font-weight: 600;
+        font-size: 11px;
+        text-decoration: none;
+    }

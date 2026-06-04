@@ -7,17 +7,16 @@
 @inject DashboardState State
 @inject WorkspaceState WorkspaceState
 
-
-
+@* FIXED: Kept FluentCard but attached your component class so nesting inheritance targets it cleanly *@
 <FluentCard Class="crm-snapshot-card">
     @* Header *@
     <div class="panel-header">
         <h3>CRM Snapshot</h3>
     </div>
 
-    @* Company Selector (Matches the Building icon in image) *@
+    @* Company Selector *@
     <div class="company-selector">
-        <FluentIcon Value="@(new Icons.Regular.Size20.Building())" Color="@Color.Success" />
+        <FluentIcon Value="@(new Icons.Regular.Size16.Building())" Color="@Color.Success" />
         <span class="company-name">Tech Innovations Inc.</span>
         <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="@Color.Neutral" />
     </div>
@@ -51,11 +50,8 @@
 </FluentCard>
 
 @code {
-
-    
-        [Parameter]
-        public List<ClientDto>? Clients { get; set; }
-    
+    [Parameter]
+    public List<ClientDto>? Clients { get; set; }
 
     protected override void OnInitialized() => State.OnChange += Refresh;
 
@@ -74,7 +70,4 @@
     }
 
     public void Dispose() => State.OnChange -= Refresh;
-
-    }
-
-
+}

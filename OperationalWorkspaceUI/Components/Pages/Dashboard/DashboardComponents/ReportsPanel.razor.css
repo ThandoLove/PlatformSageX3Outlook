@@ -1,0 +1,57 @@
+/* Compact Reports panel styles */
+.reports-card {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.reports-title {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.report-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.report-card {
+    border: 1px solid var(--border-light);
+    padding: 8px;
+    border-radius: 6px;
+    background: var(--card-bg-light);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.report-card-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.report-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.report-action-btn {
+    flex: 1;
+    font-size: 0.82rem;
+}

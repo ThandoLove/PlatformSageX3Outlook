@@ -2,10 +2,15 @@
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State
 @inject NavigationManager NavigationService
+@inject WorkspaceState WState
+
+@implements IDisposable
 
 <div class="enterprise-page-layout">
 
+    <!-- COHESIVE GLASS NAVIGATION TABS -->
     <div class="sage-tabs" style="margin-top: 0; margin-bottom: 8px;">
         <div class="tab @(activeTab == "list" ? "active" : "")" @onclick='() => activeTab = "list"'>Contacts</div>
         <div class="tab @(activeTab == "recent" ? "active" : "")" @onclick='() => activeTab = "recent"'>Recent Activity</div>
@@ -15,6 +20,7 @@
     {
         <div class="sage-content animate-fade-in">
 
+            <!-- HIGH-DENSITY HEADER BAR ACTIONS CONTROL -->
             <div class="sage-header-row">
                 <div>
                     <h2 class="title">Contacts</h2>
@@ -30,6 +36,7 @@
                 </div>
             </div>
 
+            <!-- COMPACT FILTER FILTER ROW TOOLBAR -->
             <div class="toolbar-row">
                 <div class="search-container">
                     <span class="search-icon">🔍</span>
@@ -43,9 +50,9 @@
 
             @if (IsFilterOpen)
             {
-                <div class="customer-card" style="display: flex; flex-direction: column; gap: 4px; padding: 12px; align-items: flex-start;">
-                   
-                    <select @bind="StatusFilter" style="max-width: 200px; height: 32px; font-size: 12px; padding: 0 8px;">
+                <div class="filter-tray-box animate-fade-in">
+                    <label class="filter-label">Status Filter</label>
+                    <select @bind="StatusFilter" class="sage-select">
                         <option value="All">All Contacts</option>
                         <option value="Active">Active Only</option>
                         <option value="Inactive">Inactive Only</option>
@@ -53,6 +60,7 @@
                 </div>
             }
 
+            <!-- PRIMARY RESPONSIVE LIQUID DATA TABLES CANVAS -->
             <div class="responsive-table-wrapper">
                 <table class="sage-table">
                     <thead>
@@ -87,15 +95,51 @@
 
     @if (activeTab == "recent")
     {
-        <div class="customer-card animate-fade-in">
-            <p style="padding: 4px; margin: 0; color: #64748b; font-size: 13px;">No recent activity found.</p>
+        <div class="recent-activity-container animate-fade-in">
+            @if (FilteredActivityLogs == null || !FilteredActivityLogs.Any())
+            {
+                <div class="recent-activity-placeholder">
+                    <p>No recent contact activity logs recorded in this session.</p>
+                </div>
+            }
+            else
+            {
+                <!-- DYNAMIC HIGH-DENSITY MODERN GLASSMORPHIC RECENT ACTIVITY AUDIT TABLE -->
+                <div class="responsive-table-wrapper">
+                    <table class="sage-activity-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">Trace</th>
+                                <th style="width: 100px;">Timestamp</th>
+                                <th style="width: 100px;">Subsystem</th>
+                                <th>Operational Description Audit Log</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in FilteredActivityLogs)
+                            {
+                                <tr class="activity-row-line">
+                                    <td class="td-icon-cell">
+                                        <span class="activity-badge-dot @log.ImpactClass">@log.Icon</span>
+                                    </td>
+                                    <td class="td-time-cell">@log.Timestamp.ToString("hh:mm:ss tt")</td>
+                                    <td class="td-tag-cell">
+                                        <span class="subsystem-pill">@log.Category</span>
+                                    </td>
+                                    <td class="td-description-cell">@log.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     }
 </div>
 
 @code {
     private string activeTab = "list";
-    private bool IsFilterOpen = true;
+    private bool IsFilterOpen = false;
     private string SearchQuery = string.Empty;
     private string StatusFilter = "All";
     private bool isRefreshing = false;
@@ -107,6 +151,10 @@
     protected override void OnInitialized()
     {
         LoadMockContacts();
+        WState.OnChange += Refresh;
+
+        // Push initial page setup telemetry down to central state logger
+        WState.LogGlobalAction("Contact", "User loaded the contacts workspace dashboard registry grid tracking array view.", "💡", "tint-info");
     }
 
     private void LoadMockContacts()
@@ -118,12 +166,20 @@
         };
     }
 
+    // THE CENTRAL FILTER: Pulls only logs tagged to our specific operational category
+    private IEnumerable<GlobalActivityItem> FilteredActivityLogs =>
+        WState.SharedSystemLogs.Where(log => log.Category.Equals("Contact", StringComparison.OrdinalIgnoreCase));
+
     private IEnumerable<ContactCreateDto> FilteredContacts =>
         ContactsList.Where(c =>
             (StatusFilter == "All" || (StatusFilter == "Active" && c.Category == "Active") || (StatusFilter == "Inactive" && c.Category != "Active")) &&
             (string.IsNullOrWhiteSpace(SearchQuery) || (c.FullName != null && c.FullName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))));
 
-    private void Create() => NavigationService.NavigateTo("/forms/add-contact");
+    private void Create()
+    {
+        WState.LogGlobalAction("Contact", "Redirected workspace down to '/forms/add-contact' client creation panel view layer path entries.", "➕", "tint-success");
+        NavigationService.NavigateTo("/forms/add-contact");
+    }
 
     private async Task RefreshContactsAsync()
     {
@@ -138,10 +194,11 @@
             {
                 await Task.Delay(1000);
                 LoadMockContacts();
+                WState.LogGlobalAction("Contact", $"Triggered manual refresh. Successfully updated internal context memory buffers with {ContactsList.Count} active profiles data rows.", "🔄", "tint-primary");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Contacts async reload pipeline encountered an issue: {ex.Message}");
+                WState.LogGlobalAction("Contact", $"Synchronization channel pass unexpected execution error generated: {ex.Message}", "❌", "tint-danger");
             }
             finally
             {
@@ -151,5 +208,16 @@
         });
     }
 
-    private void Open(ContactCreateDto contact) => NavigationService.NavigateTo($"/workspace/contacts/{contact.Email}");
+    private void Open(ContactCreateDto contact)
+    {
+        WState.LogGlobalAction("Contact", $"Inspected active corporate operational registry records files context parameters for partner profile: {contact.FullName}", "👤", "tint-info");
+        NavigationService.NavigateTo($"/workspace/contacts/{contact.Email}");
+    }
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        WState.OnChange -= Refresh;
+    }
 }

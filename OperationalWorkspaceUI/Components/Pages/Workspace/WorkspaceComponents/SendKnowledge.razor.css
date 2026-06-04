@@ -1,59 +1,74 @@
-﻿/* BASE CONTAINER */
+﻿/* =========================================================================
+   RE-RESTORED ORIGINAL SAGE WORKSPACE STYLESHEET
+   ========================================================================= */
+
+/* BASE CONTAINER */
 .kb-page-container {
-    padding: 20px;
+    padding: 24px 24px 12px 24px;
     background-color: #f8fafc;
     min-height: 100vh;
-    position: relative;
+    width: 100%;
 }
 
 /* HEADER */
 .kb-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    align-items: flex-start;
+    margin-bottom: 28px;
 }
 
 .kb-title {
+    font-size: 1.5rem;
     font-weight: 900;
     color: #002d5a;
     margin: 0;
-    font-size: 1.8rem;
-    border-bottom: 3px solid #002d5a;
+    display: inline-block;
+    border-bottom: 4px solid #002d5a;
     padding-bottom: 8px;
+    line-height: 1;
 }
 
 .kb-new-btn {
     background-color: #0061d5;
     font-weight: 600;
+    min-width: 120px;
+    height: 42px;
 }
-
 /* FILTERS */
 .kb-filter-bar {
     background: white;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 16px;
+    border-radius: 10px;
     border: 1px solid #e2e8f0;
     display: flex;
-    gap: 12px;
     align-items: center;
-    margin-bottom: 20px;
+    gap: 18px;
+    margin-bottom: 26px;
 }
 
 .search-wrapper {
-    flex-grow: 1;
-    max-width: 350px;
+    width: 420px;
+    flex: 0 0 420px;
 }
 
 .full-width {
     width: 100%;
 }
 
+/* 🛠️ ISOLATED INNER COMPACT SEARCH BAR FIX (LEAVES REST OF UI UNTOUCHED) */
+::deep fluent-search::part(control) {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+}
+
 /* TABLE */
 .kb-table-container {
     background: white;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #e2e8f0;
+    min-height: 430px;
     overflow: hidden;
 }
 
@@ -64,15 +79,16 @@
 }
 
 .kb-table-header {
-    color: #94a3b8;
+    color: #8fa0bb;
     text-transform: uppercase;
     font-weight: 700;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #e5e7eb;
     text-align: left;
 }
 
-.kb-table th, .kb-table td {
-    padding: 12px;
+.kb-table th,
+.kb-table td {
+    padding: 18px 16px;
 }
 
 .kb-row-hover {
@@ -102,12 +118,15 @@
     color: #64748b;
 }
 
+
+
 .col-actions {
     text-align: right;
+    white-space: nowrap;
 }
 
 .btn-send {
-    background-color: #008272;
+    background-color: #0061d5;
     margin: 0 8px;
 }
 
@@ -206,8 +225,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
-    padding: 0 10px;
+    margin-top: 28px;
+    padding: 0 20px;
 }
 
 .sage-link {

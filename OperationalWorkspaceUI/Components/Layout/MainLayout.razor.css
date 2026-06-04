@@ -9,13 +9,10 @@ fluent-layout,
 .app-container {
     display: flex !important;
     flex-direction: column !important;
-    height: 100vh !important;
     min-height: 100vh !important;
-    max-height: 100vh !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
     background-color: #f8fafc !important;
     font-family: Inter, "Segoe UI", sans-serif !important;
 }
@@ -33,20 +30,23 @@ fluent-layout,
     flex-direction: row !important; /* Side-by-side layout on desktops */
     flex: 1 !important;
     width: 100% !important;
-    min-height: 0 !important;
+    min-height: calc(100vh - 40px) !important; /* account for global header */
     min-width: 0 !important;
     align-items: stretch !important;
     overflow: visible !important;
 }
 
 .sidebar-wrapper {
-    width: 240px !important;
-    height: 100% !important;
+    width: var(--sidebar-desktop) !important;
+    height: calc(100vh - 40px) !important; /* full height minus header */
     flex-shrink: 0 !important;
     background-color: #003366 !important;
     border-right: 1px solid #cbd5e1 !important;
     z-index: 1000 !important;
     transition: width 0.2s ease !important;
+    position: sticky !important;
+    top: 40px !important;
+    overflow-y: auto !important;
 }
 
     .sidebar-wrapper.is-collapsed-active {
@@ -110,9 +110,9 @@ fluent-layout,
    ========================================================================= */
 
 :root {
-    --sidebar-desktop: 240px;
-    --sidebar-laptop: 230px;
-    --sidebar-small-laptop: 200px;
+    --sidebar-desktop: 280px;
+    --sidebar-laptop: 260px;
+    --sidebar-small-laptop: 220px;
     --sidebar-tablet: 72px; /* compact nav */
     --sidebar-mobile: 100%;
     --content-padding-desktop: 24px;

@@ -13,34 +13,34 @@
 @inject Radzen.NotificationService NotificationService
 @inject IJSRuntime JS
 
-<div class="workspace-container" style="flex-direction: column; background: #f3f4f6; min-height: 100vh;">
+<div class="workspace-container quotes-root">
     
     <WorkspaceHeader Title="Quotes" Subtitle="Manage quotations lifecycle synced with Sage X3" />
 
-    <div class="page-container" style="padding: 24px;">
+    <div class="page-container quotes-page">
         
         @* OVERVIEW KPIS *@
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="dashboard-card p-3 text-center" style="border-radius: 10px;">
+                <div class="dashboard-card p-3 text-center card-radius">
                     <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase;">Total Quotes</div>
                     <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">@TotalQuotes</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="dashboard-card p-3 text-center" style="border-radius: 10px;">
+                <div class="dashboard-card p-3 text-center card-radius">
                     <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; text-transform: uppercase;">Draft</div>
                     <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">@DraftCount</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="dashboard-card p-3 text-center" style="border-radius: 10px;">
+                <div class="dashboard-card p-3 text-center card-radius">
                     <div style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase;">Approved</div>
                     <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">@ApprovedCount</div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="dashboard-card p-3 text-center" style="border-radius: 10px;">
+                <div class="dashboard-card p-3 text-center card-radius">
                     <div style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">Total Value</div>
                     <div style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">@TotalValue.ToString("C0")</div>
                 </div>
@@ -50,25 +50,20 @@
         <div class="dashboard-card shadow-sm" style="background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
             
             @* HEADER & ACTIONS *@
-            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-4 quotes-header">
                 <div>
-                    <h2 style="font-weight: 700; color: #111827; margin: 0; font-size: 1.5rem;">Quotations List</h2>
+                    <h2 class="quotes-title">Quotations List</h2>
                     
                     <div class="d-flex flex-column gap-3 mt-4">
                         <div class="d-flex gap-2">
                             @* SEARCH BAR *@
-                            <div style="width: 350px; position: relative;">
-                                <span style="position: absolute; left: 16px; top: 12px; color: #94a3b8;">🔍</span>
-                                <input type="text" class="form-control ps-5" 
-                                       style="height: 45px; border-radius: 8px; border: 1px solid #e2e8f0;" 
-                                       placeholder="Search Sage X3 Quotes..." 
-                                       @bind="SearchQuery" @bind:event="oninput" />
+                            <div class="search-wrapper">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" class="form-control ps-5 quotes-search-input" placeholder="Search Sage X3 Quotes..." @bind="SearchQuery" @bind:event="oninput" />
                             </div>
 
                             @* FILTER TOGGLE *@
-                            <button class="btn btn-light border d-flex align-items-center gap-2" 
-                                    style="height: 45px; border-radius: 8px; background: white; color: #475569; font-weight: 500;"
-                                    @onclick="() => IsFilterOpen = !IsFilterOpen">
+                            <button class="btn btn-light border d-flex align-items-center gap-2 filter-btn" @onclick="() => IsFilterOpen = !IsFilterOpen">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                                 </svg>
@@ -79,7 +74,7 @@
                         @* WORKING FILTER TRAY *@
                         @if (IsFilterOpen)
                         {
-                            <div class="filter-tray d-flex gap-3 p-3 mb-2" style="background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <div class="filter-tray d-flex gap-3 p-3 mb-2 filter-tray-custom">
                                 <div class="filter-item">
                                     <label style="font-size: 0.75rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">STATUS</label>
                                     <select class="form-select form-select-sm" @bind="SelectedStatus">
@@ -94,14 +89,10 @@
                     </div>
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary px-3 py-2" style="border-radius: 6px; font-weight: 600;" @onclick="Refresh">
-                        Refresh
-                    </button>
-                    <button class="btn btn-primary px-4 py-2" style="background-color: #0061d5; border: none; border-radius: 6px; font-weight: 600;" @onclick="CreateQuote">
-                        + New Quote
-                    </button>
-                </div>
+                    <div class="d-flex gap-2 header-actions">
+                        <button class="btn btn-outline-secondary px-3 py-2 btn-refresh" @onclick="Refresh">Refresh</button>
+                        <button class="btn btn-primary px-4 py-2 btn-newquote" @onclick="CreateQuote">+ New Quote</button>
+                    </div>
             </div>
 
             @* HIGH DENSITY TABLE *@
@@ -112,9 +103,9 @@
                 }
                 else
                 {
-                    <table class="table table-hover" style="border: none;">
+                    <table class="table table-hover quote-table">
                         <thead>
-                            <tr style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; border-bottom: 1px solid #f1f5f9;">
+                            <tr class="quote-table-head">
                                 <th class="pb-3 border-0">Quote #</th>
                                 <th class="pb-3 border-0">Client</th>
                                 <th class="pb-3 border-0">Date</th>
@@ -126,16 +117,16 @@
                         <tbody>
                             @foreach (var q in FilteredQuotes)
                             {
-                                <tr @onclick="() => HandleRowClick(q)" style="cursor: pointer; border-bottom: 1px solid #f8fafc;" class="sage-row">
-                                    <td class="py-4 border-0 fw-bold" style="color: #2563eb;">@q.OrderNumber</td>
-                                    <td class="py-4 border-0" style="color: #374151;">@q.ClientName</td>
+                                <tr @onclick="() => HandleRowClick(q)" class="sage-row">
+                                    <td class="py-4 border-0 fw-bold order-number">@q.OrderNumber</td>
+                                    <td class="py-4 border-0 client-name">@q.ClientName</td>
                                     <td class="py-4 border-0 text-muted">@(q.OrderDate?.ToString("MMM dd, yyyy") ?? "N/A")</td>
-                                    <td class="py-4 border-0 fw-bold" style="color: #1e293b;">@q.TotalAmount.ToString("C0")</td>
+                                    <td class="py-4 border-0 fw-bold amount-col">@q.TotalAmount.ToString("C0")</td>
                                     <td class="py-4 border-0">
                                         <span class="status-pill @q.Status.ToLower()">@q.Status</span>
                                     </td>
                                     <td class="py-4 border-0 text-center">
-                                        <div class="d-flex justify-content-center gap-2">
+                                        <div class="quote-actions">
                                             @if (q.Status == "Draft")
                                             {
                                                 <button class="btn btn-sm btn-light border" title="Approve" @onclick:stopPropagation="true" @onclick="() => ApproveQuote(q)">✅</button>
@@ -159,6 +150,25 @@
     .status-pill.draft { background-color: #f3f4f6; color: #4b5563; }
     .status-pill.approved { background-color: #dcfce7; color: #16a34a; }
     .status-pill.rejected { background-color: #fee2e2; color: #b91c1c; }
+
+    /* Quotes specific migrated styles */
+    .quotes-root { flex-direction: column; background: var(--bg-workspace); min-height: 100vh; }
+    .quotes-page { padding: 24px; }
+    .card-radius { border-radius: 10px; }
+    .quotes-title { font-weight:700; color:#111827; margin:0; font-size:1.5rem; }
+    .search-wrapper { position:relative; width:350px; }
+    .search-icon { position:absolute; left:16px; top:12px; color:#94a3b8; }
+    .quotes-search-input { height:45px; border-radius:8px; border:1px solid #e2e8f0; padding-left:40px; }
+    .filter-btn { height:45px; border-radius:8px; background:white; color:#475569; font-weight:500; }
+    .filter-tray-custom { background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; }
+    .btn-refresh { border-radius:6px; font-weight:600; }
+    .btn-newquote { background-color:#0061d5; border:none; border-radius:6px; font-weight:600; }
+    .quote-table { border:none; }
+    .quote-table-head { color:#94a3b8; font-size:0.75rem; text-transform:uppercase; font-weight:700; border-bottom:1px solid #f1f5f9; }
+    .sage-row { cursor:pointer; border-bottom:1px solid #f8fafc; }
+    .order-number { color:#2563eb; }
+    .client-name { color:#374151; }
+    .amount-col { color:#1e293b; }
 </style>
 
 @code {

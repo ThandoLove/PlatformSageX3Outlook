@@ -1,114 +1,387 @@
-﻿/* ========================================================= 
-   DASHBOARD.RAZOR.CSS - Full Layout & Component Details
-   ========================================================= */
+﻿/* ========================================================================= 
+   DASHBOARD.RAZOR.CSS - UNIFIED HIGH-DENSITY COLORFUL METRICS CORE
+   ========================================================================= */
 
-/* 1. THE GRID SYSTEM (Renamed to match your .dashboard-wrapper) */
+/* THE CANVAS CHASSIS */
 .dashboard-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    background-color: var(--bg-light);
-    min-height: 100vh;
-}
-
-/* 2. KPI GRID (Row 1) */
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-}
-
-/* 3. COMPONENT ROWS (Rows 2-7) */
-.sage-dashboard-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 12px;
     width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
-    /* Quick Actions / Single Column Rows */
-    .sage-dashboard-row.single {
-        grid-template-columns: 1fr;
+/* --- ROW 1: THE COLORFUL METRICS HEADER STRIP --- */
+.metrics-grid {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Base style for all metric box panels */
+.flat-layout-cell.kpi-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+    box-sizing: border-box;
+    justify-content: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .flat-layout-cell.kpi-box:hover {
+        transform: translateY(-1px);
     }
 
-/* 4. PANEL HEADERS */
-.panel-header {
+    /* 📦 BLUE TINT: Open Orders Box */
+    .flat-layout-cell.kpi-box.orders-box-tint {
+        background: rgba(37, 99, 235, 0.08);
+        border: 1px solid rgba(37, 99, 235, 0.2);
+    }
+
+        .flat-layout-cell.kpi-box.orders-box-tint .card-label-tiny {
+            color: #1d4ed8;
+        }
+
+    /* ⚠️ RED TINT: Open Tickets Box */
+    .flat-layout-cell.kpi-box.tickets-box-tint {
+        background: rgba(220, 38, 38, 0.08);
+        border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+        .flat-layout-cell.kpi-box.tickets-box-tint .card-label-tiny {
+            color: #b91c1c;
+        }
+
+        .flat-layout-cell.kpi-box.tickets-box-tint:hover {
+            background: rgba(220, 38, 38, 0.12) !important;
+        }
+
+    /* 🔒 SLATE/GREEN TINT: System Gateway Switcher Box */
+    .flat-layout-cell.kpi-box.gateway-box-tint {
+        background: rgba(71, 85, 105, 0.08);
+        border: 1px solid rgba(71, 85, 105, 0.2);
+    }
+
+        .flat-layout-cell.kpi-box.gateway-box-tint .card-label-tiny {
+            color: #334155;
+        }
+
+        .flat-layout-cell.kpi-box.gateway-box-tint:hover {
+            background: rgba(37, 99, 235, 0.08) !important; /* Visual cue when clickable */
+        }
+
+    /* 🏢 TEAL TINT: Active Linked Customer Box */
+    .flat-layout-cell.kpi-box.customer-box-tint {
+        background: rgba(13, 148, 136, 0.08);
+        border: 1px solid rgba(13, 148, 136, 0.2);
+    }
+
+        .flat-layout-cell.kpi-box.customer-box-tint .card-label-tiny {
+            color: #0f766e;
+        }
+
+/* Global typography sizing overrides inside metrics row */
+.card-label-tiny {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 800;
+}
+
+.metric-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+    margin-top: 2px;
+}
+
+.customer-title-lock {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metric-subtext {
+    font-size: 11px;
+    color: #475569;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+/* ========================================================================= 
+   🎨 MODERN COLORFUL ACTION STRIP RIBBON BANNER STYLES (PART 2)
+   ========================================================================= */
+.modern-action-strip {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    font-weight: 600;
-    color: var(--text-dark);
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    flex-wrap: wrap;
 }
 
-/* 5. EMAIL INSIGHT (AI Summary) */
-.ai-summary {
-    background: rgba(59, 130, 246, 0.05);
-    border-left: 4px solid var(--sage-light-blue);
-    padding: 12px;
-    margin-top: 15px;
-    font-size: 0.85rem;
-    color: var(--text-dark);
+    .modern-action-strip .strip-btn {
+        height: 32px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        padding: 0 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .modern-action-strip .primary-tint {
+        background: rgba(37, 99, 235, 0.12);
+        color: #1d4ed8;
+        border: 1px solid rgba(37, 99, 235, 0.25);
+    }
+
+        .modern-action-strip .primary-tint:hover {
+            background: #2563eb;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .modern-action-strip .secondary-tint {
+        background: rgba(79, 70, 229, 0.12);
+        color: #4338ca;
+        border: 1px solid rgba(79, 70, 229, 0.25);
+    }
+
+        .modern-action-strip .secondary-tint:hover {
+            background: #4f46e6;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+    .modern-action-strip .accent-tint {
+        background: rgba(13, 148, 136, 0.12);
+        color: #0f766e;
+        border: 1px solid rgba(13, 148, 136, 0.25);
+    }
+
+        .modern-action-strip .accent-tint:hover {
+            background: #0d9488;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+        }
+
+    .modern-action-strip .success-tint {
+        background: rgba(220, 38, 38, 0.1);
+        color: #b91c1c;
+        border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+        .modern-action-strip .success-tint:hover {
+            background: #dc2626;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+        }
+
+    .modern-action-strip .dark-tint {
+        background: rgba(217, 119, 6, 0.12);
+        color: #b45309;
+        border: 1px solid rgba(217, 119, 6, 0.25);
+    }
+
+        .modern-action-strip .dark-tint:hover {
+            background: #d97706;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+        }
+
+    .modern-action-strip .purple-tint {
+        background: rgba(147, 51, 234, 0.12);
+        color: #7e22ce;
+        border: 1px solid rgba(147, 51, 234, 0.25);
+    }
+
+        .modern-action-strip .purple-tint:hover {
+            background: #9333ea;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
+        }
+
+/* ========================================================================= 
+   ⚡ THE FIXED HEIGHT ANCHOR SYSTEM FOR LOWER CARDS (PART 3)
+   ========================================================================= */
+.sage-dashboard-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+    align-items: stretch;
 }
 
-/* 6. TIMELINE LOGIC */
-.timeline-container {
-    position: relative;
-    padding-left: 20px;
-    margin-left: 20px;
-    border-left: 2px solid var(--border-color);
+.flat-layout-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
-.timeline-marker {
-    position: absolute;
-    left: -31px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--card-bg);
+    .flat-layout-cell ::deep .hub-container,
+    .flat-layout-cell ::deep .timeline-card,
+    .flat-layout-cell ::deep .tasks-widget-card,
+    .flat-layout-cell ::deep .health-widget-card,
+    .flat-layout-cell ::deep .crm-snapshot-card,
+    .flat-layout-cell ::deep .email-insight-card {
+        background: rgba(255, 255, 255, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-radius: 12px;
+        box-shadow: 0 4px 25px rgba(15, 23, 42, 0.02);
+        padding: 12px 14px;
+        margin: 0;
+        width: 100%;
+        height: 245px;
+        min-height: 245px;
+        max-height: 245px;
+        box-sizing: border-box;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .flat-layout-cell ::deep .timeline-scroll-area,
+    .flat-layout-cell ::deep .document-list,
+    .flat-layout-cell ::deep .task-list-scroller,
+    .flat-layout-cell ::deep .ticket-list,
+    .flat-layout-cell ::deep .task-list-container {
+        max-height: 145px;
+        background: transparent;
+        padding: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex-grow: 1;
+    }
+
+/* MODAL ENGINE OVERLAYS */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 5000;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--sage-light-blue);
+    padding: 16px;
+    box-sizing: border-box;
 }
 
-/* 7. CRM SNAPSHOT */
-.snapshot-red {
-    color: #ef4444;
-    font-weight: 700;
+.modal-box {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 440px;
+    max-height: 380px;
 }
 
-.snapshot-green {
-    color: var(--sage-green);
-    font-weight: 700;
+.modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
 }
 
-/* 8. LOADING SPINNER */
-.sage-spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid rgba(59, 130, 246, 0.2);
-    border-radius: 50%;
-    border-top-color: var(--sage-light-blue);
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
+    .modal-header-row h4 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: #1e293b;
+        text-transform: uppercase;
     }
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 14px;
+    cursor: pointer;
 }
 
-/* 9. RESPONSIVE FIX */
-@media (max-width: 1024px) {
+    .close-btn:hover {
+        color: #ef4444;
+    }
+
+.modal-content-scroller {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+    .modal-content-scroller ::deep .tasks-widget-card, .modal-content-scroller ::deep .health-widget-card {
+        height: auto;
+        min-height: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
+
+@media (max-width: 900px) {
     .metrics-grid {
+        display: grid;
         grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
+
+    .flat-layout-cell.kpi-box {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 4px;
+        padding-right: 0;
+    }
+
+        .flat-layout-cell.kpi-box:nth-child(3),
+        .flat-layout-cell.kpi-box:nth-child(4) {
+            border-bottom: none;
+        }
+
 
     .sage-dashboard-row {
         grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .flat-layout-cell ::deep .hub-container, .flat-layout-cell ::deep .timeline-card, .flat-layout-cell ::deep .tasks-widget-card, .flat-layout-cell ::deep .health-widget-card, .flat-layout-cell ::deep .crm-snapshot-card, .flat-layout-cell ::deep .email-insight-card {
+        height: auto;
+        min-height: 150px;
+        max-height: 240px;
     }
 }

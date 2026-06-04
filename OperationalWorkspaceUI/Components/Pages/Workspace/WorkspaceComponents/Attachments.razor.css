@@ -5,9 +5,7 @@
 /* 1. LAYOUT ROOT - Fluid height anchor context */
 .attach-container {
     background: #fdfdfd;
-    height: 100% !important; /* Force layout match to eliminate double windows */
-    min-height: 100% !important;
-    max-height: 100% !important;
+    min-height: calc(100vh - 40px) !important; /* grow under header */
     font-family: 'Inter', 'Segoe UI', sans-serif;
     display: flex !important;
     flex-direction: column !important;
@@ -23,11 +21,14 @@
     flex-shrink: 0 !important;
 }
 
-    .page-title-header h1 {
-        font-size: 22px !important;
-        font-weight: 800 !important;
+    .page-title-header .page-title {
+        font-size: 20px !important;
+        font-weight: 700 !important;
         color: #0f172a !important;
         margin: 0 !important;
+        border-bottom: 3px solid #002d5a !important;
+        padding-bottom: 8px !important;
+        display: inline-block !important;
     }
 
 /* 3. TOP ACTION BAR */
@@ -79,21 +80,27 @@
     outline: none !important;
 }
 
+
 .btn-upload-primary {
     background: #0061e0 !important;
     color: white !important;
     border: none !important;
-    border-radius: 6px !important;
-    padding: 0 16px !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 8px !important;
     font-weight: 600 !important;
     font-size: 13px !important;
     cursor: pointer !important;
-    height: 32px !important;
+    height: 34px !important;
     box-sizing: border-box !important;
 }
+
+.btn-upload-primary.is-disabled { opacity: 0.6; cursor: not-allowed; }
+
+.upload-ring { width: 16px; height: 16px; margin-right: 8px; }
+.upload-text { font-size: 13px; }
 
 
 /* ========================================================= 
@@ -104,8 +111,7 @@
 .main-layout {
     display: flex !important;
     flex-direction: row !important;
-    flex: 1 !important;
-    height: calc(100vh - 120px) !important; /* Absolute structural canvas layout tracker limits */
+    flex: 1 1 auto !important;
     min-height: 0 !important;
     gap: 0 !important;
     background: #f1f5f9 !important;
@@ -116,12 +122,12 @@
 /* 5. DOCUMENT LIST PANE */
 .document-list-pane {
     background: white !important;
-    flex: 1 !important; /* Fills remaining left footprint */
+    flex: 1 1 auto !important; /* Fills remaining left footprint */
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
     min-width: 0 !important;
-    height: 100% !important;
+    min-height: 0 !important;
 }
 
 .pane-header {
@@ -288,11 +294,12 @@
     display: flex !important;
     flex-direction: column !important;
     border-left: 1px solid #e2e8f0 !important;
-    width: 350px !important; /* Fixed parameter metrics pull the details panel completely into view */
-    min-width: 350px !important;
-    max-width: 350px !important;
+    width: 420px !important; /* increased width for better preview space */
+    min-width: 360px !important;
+    max-width: 520px !important;
     flex-shrink: 0 !important;
-    height: 100% !important;
+    min-height: 0 !important;
+    align-self: stretch !important;
     box-sizing: border-box !important;
 }
 
@@ -415,3 +422,60 @@
     .btn-delete-full:hover {
         background: #fef2f2 !important;
     }
+/* Small helpers to replace inline style attributes removed from markup */
+::deep .hidden-file,
+.hidden-file {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    position: absolute !important;
+}
+
+    /* Deletes the internal browser string text inside Chrome, Edge, and Safari */
+    ::deep .hidden-file::-webkit-file-upload-button {
+        display: none !important;
+    }
+
+    ::deep .hidden-file::file-selector-button {
+        display: none !important;
+    }
+
+.file-name-cell-inner {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+.file-name-text {
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    color: #0f172a !important;
+}
+
+.dismiss-icon {
+    cursor: pointer !important;
+}
+
+.preview-empty {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    color: #94a3b8 !important;
+    gap: 8px !important;
+}
+
+@media (max-width: 800px) {
+    .document-preview-pane {
+        display: none !important;
+    }
+}
+
+.pagination-info {
+    margin: 0 10px;
+    font-size: 12px;
+}
+

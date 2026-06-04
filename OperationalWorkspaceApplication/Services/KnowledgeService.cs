@@ -30,7 +30,8 @@ public sealed class KnowledgeService : IKnowledgeService
             article.Content,
             article.Category,
             article.Summary,
-            article.Url);
+            article.Url,
+            0);
     }
 
     public async Task<IEnumerable<KnowledgeDto>> SearchAsync(string query)
@@ -45,7 +46,8 @@ public sealed class KnowledgeService : IKnowledgeService
             a.Content,
             a.Category,
             a.Summary,
-            a.Url));
+            a.Url,
+            0));
     }
 
     public async Task<List<KnowledgeDto>> GetRecentArticlesAsync()
@@ -58,7 +60,8 @@ public sealed class KnowledgeService : IKnowledgeService
             a.Content,
             a.Category,
             a.Summary,
-            a.Url)).ToList();
+            a.Url,
+            0)).ToList();
     }
 
     // ADDED: Implementation to satisfy the interface

@@ -16,18 +16,24 @@
     <div class="timeline-scroll-area">
         @if (WState.ActivityLogs != null && WState.ActivityLogs.Any())
         {
-            @foreach (var group in WState.ActivityLogs.OrderByDescending(a => a.Timestamp).GroupBy(a => a.Timestamp.Date))
+            @* Only show the 2 most recent activity items (latest first) to keep the card compact. *@
+            var recent = WState.ActivityLogs
+                         .OrderByDescending(a => a.Timestamp)
+                         .Take(2)
+                         .GroupBy(a => a.Timestamp.Date);
+
+            @foreach (var group in recent)
             {
                 <div class="timeline-date-label">@GetDateHeader(group.Key)</div>
 
                 <div class="timeline-group-container">
-                    @foreach (var activity in group)
+                    @foreach (var activity in group.OrderByDescending(a => a.Timestamp))
                     {
                         <div class="timeline-item">
-                            <div class="timeline-marker" style="background-color: @GetActivityColor(activity.Action);">
+                            <div class="timeline-marker" data-color="@GetActivityColor(activity.Action)">
                                 <FluentIcon Value="@GetActivityIcon(activity.Action)" Color="@Color.Custom" CustomColor="white" />
                             </div>
-                            
+
                             <div class="timeline-content">
                                 <div class="activity-main">
                                     <span class="activity-title">@activity.Title</span>

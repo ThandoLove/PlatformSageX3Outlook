@@ -11,48 +11,44 @@
 
 @* Added to handle opening document links *@
 
-<FluentCard Class="kb-widget-card" Style="position: relative; display: flex; flex-direction: column;">
+<FluentCard Class="kb-widget-card">
     
     @* --- LIVE OVERLAY --- *@
     @if (WState.IsSendingKnowledge)
     {
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: inherit;">
-            <FluentProgressRing Style="width: 32px; height: 32px;" />
-            <span style="margin-top: 12px; font-size: 0.85rem; color: #008272; font-weight: 600;">Sending Article...</span>
+        <div class="kb-overlay">
+            <FluentProgressRing Class="kb-overlay-ring" />
+            <span class="kb-overlay-text">Sending Article...</span>
         </div>
     }
 
     @* Panel Header *@
-    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
-        <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: #002d5a;">Knowledge Base</h3>
+    <div class="panel-header">
+        <h3>Knowledge Base</h3>
         <FluentIcon Value="@(new Icons.Regular.Size16.ChevronUp())" Color="@Color.Neutral" />
     </div>
 
     @* Search Bar *@
-    <div class="kb-search-container" style="padding: 0 15px 10px 15px;">
+    <div class="kb-search-container">
         <FluentSearch Placeholder="Search articles..."
-                      Style="width: 100%;"
+                      Class="kb-search"
                       @bind-Value="@_searchQuery"
                       @bind-Value:event="oninput" />
     </div>
 
     @* Resource Links *@
-    <div class="kb-links-container" style="flex-grow: 1; overflow-y: auto; padding: 0 15px;">
+    <div class="kb-links-container">
         @if (FilteredArticles != null && FilteredArticles.Any())
         {
-            @foreach (var kb in FilteredArticles.Take(4))
+            @foreach (var kb in FilteredArticles.OrderByDescending(k => k.Title).Take(2))
             {
-                @* CHANGE: Called OpenDocument(kb) instead of NavigateToKB *@
-                <div class="kb-link-wrapper" style="cursor: pointer; padding: 8px 0; border-bottom: 1px solid #f1f5f9;" 
-                     @onclick="() => OpenDocument(kb)">
-                    <div class="kb-link-item" style="display: flex; align-items: center; gap: 10px;">
+                <div class="kb-link-wrapper" @onclick="() => OpenDocument(kb)">
+                    <div class="kb-link-item">
                         <FluentIcon Value="@GetIcon(kb.Title)" Color="@GetIconColor(kb.Title)" />
-                        
-                        <div class="kb-text-group" style="flex-grow: 1;">
-                            <div style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">@kb.Title</div>
-                            <div style="font-size: 0.75rem; color: #64748b;">@kb.Category</div>
+                        <div class="kb-text-group">
+                            <div class="kb-title">@kb.Title</div>
+                            <div class="kb-meta">@kb.Category</div>
                         </div>
-                        
                         <FluentIcon Value="@(new Icons.Regular.Size16.ArrowRight())" Color="@Color.Accent" />
                     </div>
                 </div>
@@ -60,17 +56,15 @@
         }
         else
         {
-            <div style="text-align: center; padding: 20px; color: #94a3b8;">
+            <div class="kb-empty">
                 <p>No matching articles found.</p>
             </div>
         }
     </div>
 
     @* Footer Button: Keep this for the Main Page *@
-    <div class="kb-footer" style="padding: 12px; border-top: 1px solid #f1f5f9;">
-        <FluentButton Appearance="Appearance.Lightweight" 
-                      Style="width: 100%; font-size: 0.8rem;"
-                      OnClick="@NavigateToKB">
+    <div class="kb-footer">
+        <FluentButton Appearance="Appearance.Lightweight" Class="footer-btn" OnClick="@NavigateToKB">
             Open Full Knowledge Base
         </FluentButton>
     </div>

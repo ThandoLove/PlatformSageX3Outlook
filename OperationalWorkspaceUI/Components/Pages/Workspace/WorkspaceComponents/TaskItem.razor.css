@@ -180,6 +180,14 @@
     cursor: pointer !important;
     box-sizing: border-box !important;
     flex-shrink: 0 !important;
+    /* =========================================================================
+       🔥 FIXED WORDS SIZING: CRUSHES OVERSIZED BUTTON TEXT BLOAT
+       ========================================================================= */
+    font-size: 10px !important; /* Shrinks the words down to a crisp density */
+    font-weight: 400 !important; /* Makes the text bold, clean, and legible */
+    letter-spacing: 0.02em !important; /* Spaces out the lettering like a real app */
+    text-transform: uppercase !important; /* Converts text to a clean corporate style */
+    white-space: nowrap !important; /* Prevents the words from wrapping or splitting */
 }
 
     .btn-blue-square-icon:hover {

@@ -21,7 +21,7 @@ public sealed class ActivityService : IActivityService
         _logger = logger;
     }
 
-    // NEW METHOD: Fetches all activities from the repository for the Activity Log page
+    // FETCH ACTIONS: Loads global database records up to the tracking layout grids
     public async System.Threading.Tasks.Task<IEnumerable<ActivityDto>> GetActivitiesAsync()
     {
         var activities = await _repo.GetAllAsync(default);
@@ -36,34 +36,6 @@ public sealed class ActivityService : IActivityService
             a.CreatedBy,
             a.Timestamp,
             a.Action)).ToList();
-    }
-
-    public async System.Threading.Tasks.Task<ActivityDto> CreateAsync(CreateActivityDto dto, string userEmail)
-    {
-        var entity = new Activity
-        {
-            Title = dto.Title,
-            Description = dto.Description,
-            ActivityType = dto.ActivityType,
-            RelatedEntityId = dto.RelatedEntityId ?? Guid.Empty,
-            CreatedBy = userEmail,
-            CreatedAt = DateTime.UtcNow,
-            Timestamp = DateTime.UtcNow,
-            Action = "Create"
-        };
-
-        await _repo.AddAsync(entity, default);
-
-        return new ActivityDto(
-            entity.Id,
-            entity.Title,
-            entity.Description,
-            entity.ActivityType,
-            entity.RelatedEntityId ?? Guid.Empty,
-            entity.CreatedAt,
-            entity.CreatedBy,
-            entity.Timestamp,
-            entity.Action);
     }
 
     public async System.Threading.Tasks.Task<ActivityDto?> GetByIdAsync(Guid id)
@@ -98,6 +70,33 @@ public sealed class ActivityService : IActivityService
             a.Timestamp,
             a.Action)).ToList();
     }
+    public async System.Threading.Tasks.Task<ActivityDto> CreateAsync(CreateActivityDto dto, string userEmail)
+    {
+        var entity = new Activity
+        {
+            Title = dto.Title,
+            Description = dto.Description,
+            ActivityType = dto.ActivityType,
+            RelatedEntityId = dto.RelatedEntityId ?? Guid.Empty,
+            CreatedBy = userEmail,
+            CreatedAt = DateTime.UtcNow,
+            Timestamp = DateTime.UtcNow,
+            Action = "Create"
+        };
+
+        await _repo.AddAsync(entity, default);
+
+        return new ActivityDto(
+            entity.Id,
+            entity.Title,
+            entity.Description,
+            entity.ActivityType,
+            entity.RelatedEntityId ?? Guid.Empty,
+            entity.CreatedAt,
+            entity.CreatedBy,
+            entity.Timestamp,
+            entity.Action);
+    }
 
     public async System.Threading.Tasks.Task AttachEmailAsync(object model)
     {
@@ -109,7 +108,6 @@ public sealed class ActivityService : IActivityService
     {
         _logger.LogInformation("Logging activity: {Title}", activity.Title);
 
-        // Ensure the activity is actually saved to the repo so it doesn't disappear
         var entity = new Activity
         {
             Id = activity.Id,
@@ -124,5 +122,27 @@ public sealed class ActivityService : IActivityService
         };
 
         await _repo.AddAsync(entity, default);
+    }
+
+    // 🚀 NEW INTERACTIVE ENGINE METHOD: DIRECT PERSISTENCE TO REPOSITORY DATABASE HOOK
+    // This allows components to instantly save and audit real-time clicks session states!
+    public async System.Threading.Tasks.Task LogSystemActionAsync(string subsystem, string textDescription, string actionType, string userEmail)
+    {
+        _logger.LogInformation("System tracking execution intercepted: [{Subsystem}] - {Description}", subsystem, textDescription);
+
+        var persistenceEntity = new Activity
+        {
+            Id = Guid.NewGuid(),
+            Title = subsystem,             // Maps category like "Contact" or "Ticket" to table header
+            Description = textDescription, // Detailed string event logs data
+            ActivityType = "SystemTrace",
+            RelatedEntityId = Guid.Empty,
+            CreatedBy = userEmail,
+            CreatedAt = DateTime.UtcNow,
+            Timestamp = DateTime.UtcNow,
+            Action = actionType            // e.g., "Refresh", "View", "Update"
+        };
+
+        await _repo.AddAsync(persistenceEntity, default);
     }
 }

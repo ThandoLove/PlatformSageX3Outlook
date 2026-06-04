@@ -14,7 +14,7 @@
 <div class="attach-container">
     @* HEADER *@
     <div class="page-title-header">
-        <h1 style="font-weight: 800; color: #002d5a; border-bottom: 3px solid #002d5a; padding-bottom: 8px;">Documents</h1>
+        <h1 class="page-title">Documents</h1>
     </div>
 
     @* TOP BAR *@
@@ -37,21 +37,21 @@
             </div>
         </div>
 
-        <div class="upload-wrapper">
-            <InputFile id="fileInput" OnChange="HandleFileUpload" style="display:none" disabled="@State.IsUploading" />
-            <label for="fileInput" class="btn-upload-primary" style="cursor: @(State.IsUploading ? "not-allowed" : "pointer"); opacity: @(State.IsUploading ? "0.6" : "1")">
-                @if (State.IsUploading)
-                {
-                    <FluentProgressRing Style="width: 16px; height: 16px; margin-right: 8px;" />
-                    <span>Uploading...</span>
-                }
-                else
-                {
-                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowUpload())" Color="Color.Fill" />
-                    <span>Upload</span>
-                }
-            </label>
-        </div>
+            <div class="upload-wrapper">
+                <InputFile id="fileInput" OnChange="HandleFileUpload" class="hidden-file" disabled="@State.IsUploading" />
+                <label for="fileInput" class="btn-upload-primary @(State.IsUploading ? "is-disabled" : "")">
+                    @if (State.IsUploading)
+                    {
+                        <FluentProgressRing Class="upload-ring" />
+                        <span class="upload-text">Uploading...</span>
+                    }
+                    else
+                    {
+                        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowUpload())" Color="Color.Fill" />
+                        <span>Upload</span>
+                    }
+                </label>
+            </div>
     </div>
 
     <div class="main-layout">
@@ -106,7 +106,7 @@
                 <button class="btn-sage-browse" @onclick="BrowseSageX3">Browse Sage X3 →</button>
                 <div class="pagination">
                     <button class="ui-select" disabled="@(CurrentPage == 1)" @onclick="() => CurrentPage--">Prev</button>
-                    <span style="margin: 0 10px; font-size: 12px;">@CurrentPage of @TotalPages</span>
+                    <span class="pagination-info">@CurrentPage of @TotalPages</span>
                     <button class="ui-select" disabled="@(CurrentPage == TotalPages)" @onclick="() => CurrentPage++">Next</button>
                 </div>
             </div>
@@ -114,11 +114,11 @@
 
         @* RIGHT: PREVIEW PANE *@
         <div class="document-preview-pane">
-            <div class="pane-header">
+                <div class="pane-header">
                 <span class="title">Document Preview</span>
                 @if (SelectedDoc != null)
                 {
-                    <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" @onclick="() => SelectedDoc = null" Style="cursor:pointer" />
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" @onclick="() => SelectedDoc = null" Class="dismiss-icon" />
                 }
             </div>
 
@@ -126,7 +126,7 @@
             {
                 <div class="preview-info">
                     <div class="preview-hero">
-                        <FluentIcon Value="@GetIcon(SelectedDoc.FileName)" Style="width:32px; height:32px;" Color="Color.Error" />
+                        <FluentIcon Value="@GetIcon(SelectedDoc.FileName)" Class="preview-icon" Color="Color.Error" />
                         <span class="hero-filename">@SelectedDoc.FileName</span>
                     </div>
                     <div class="preview-meta">Version 1.0 — @FormatSize(SelectedDoc.FileSize)</div>
@@ -137,7 +137,7 @@
                     </div>
 
                     @* RELATED RECORDS SECTION *@
-                    <div style="margin: 20px 0; display: flex; flex-direction: column; gap: 15px;">
+                    <div class="related-records">
                         <RelatedRecordsPanel Title="Linked Order"
                                              Records="@(new List<string> { SelectedDoc.RelatedEntity })"
                                              OnRecordClicked="@((n) => Nav.NavigateTo("/orders"))" />
@@ -153,7 +153,7 @@
             }
             else
             {
-                <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#94a3b8;">
+                <div class="preview-empty">
                     <FluentIcon Value="@(new Icons.Regular.Size32.DocumentSearch())" />
                     <p>Select a file to preview</p>
                 </div>

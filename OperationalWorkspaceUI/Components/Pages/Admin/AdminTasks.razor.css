@@ -95,7 +95,8 @@
     grid-template-columns: 250px minmax(0, 1fr) 360px;
     gap: 16px;
     padding: 16px;
-    overflow: hidden;
+    overflow-y: auto; /* single vertical scroll provided here */
+    overflow-x: hidden;
     min-width: 0;
     min-height: 0;
     box-sizing: border-box;
@@ -123,13 +124,13 @@
     flex-direction: column;
     gap: 14px;
     padding: 14px;
-    overflow-y: auto;
+    overflow-y: visible; /* allow main layout to provide scrolling */
 }
 
 .col-board {
     background: transparent;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible; /* central board will not have its own vertical scrollbar */
 }
 
 .col-details {
@@ -141,8 +142,8 @@
 
 .task-details-panel {
     padding: 18px;
-    height: 100%;
-    overflow-y: auto;
+    height: auto;
+    overflow-y: visible; /* rely on hub-main-layout for vertical scrolling */
     display: flex;
     flex-direction: column;
     box-sizing: border-box;

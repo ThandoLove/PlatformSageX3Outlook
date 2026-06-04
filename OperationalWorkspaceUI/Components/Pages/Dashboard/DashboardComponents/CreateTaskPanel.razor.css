@@ -1,102 +1,107 @@
-﻿.hub-container {
+﻿/* High-Density Fix for CreateTaskPanel - No Important Tags */
+.hub-container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: white;
-    border-radius: 12px;
+    background: transparent;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
-/* HUB HEADER: TITLE + TABS ON ONE LINE */
-.hub-header {
-    display: flex;
-    align-items: center;
-    padding: 0 25px;
-    border-bottom: 1px solid #f1f5f9;
-    height: 52px;
-    flex-shrink: 0;
-}
-
-.hub-title-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 800;
-    font-size: 14px;
-    color: #1e293b;
-    margin-right: 40px;
-}
-
-.hub-tabs {
-    display: flex;
-    gap: 30px;
-    height: 100%;
-}
-
-.tab-item {
-    display: flex;
-    align-items: center;
-    font-weight: 700;
-    color: #64748b;
-    cursor: pointer;
-    border-bottom: 3.5px solid transparent;
-    font-size: 12px;
-    transition: all 0.2s;
-}
-
-    .tab-item.active {
-        color: #2563eb;
-        border-bottom-color: #2563eb;
+    .hub-container .hub-header {
+        display: flex;
+        align-items: center;
+        padding: 0 4px;
+        border-bottom: 1px solid #f1f5f9;
+        height: 32px;
+        flex-shrink: 0;
     }
 
-/* SUB HEADER BAR */
-.sub-header-bar {
-    display: flex;
-    justify-content: space-between; /* PUSHES BUTTON TO FAR RIGHT */
-    align-items: center;
-    padding: 12px 25px;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-}
+    .hub-container .hub-title-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+        font-size: 11px;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-right: 20px;
+    }
 
-.pill-dropdown {
-    background: #f1f5f9;
-    padding: 5px 14px;
-    border-radius: 20px;
-    font-weight: 800;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #475569;
-    cursor: pointer;
-}
+    .hub-container .hub-tabs {
+        display: flex;
+        gap: 16px;
+        height: 100%;
+    }
 
-.btn-source-top {
-    background: white;
-    border: 1.5px solid #1e293b;
-    border-radius: 4px;
-    padding: 5px 15px;
-    font-weight: 800;
-    font-size: 11px;
-    color: #1e293b;
-    cursor: pointer;
-}
+    .hub-container .tab-item {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        font-size: 11px;
+        text-transform: uppercase;
+        transition: color 0.15s;
+    }
 
-/* THE SCROLLER AREA */
-.task-list-scroller {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-    background: #f1f5f9; /* LIGHT GRAY BACKGROUND FOR WHITE CARDS */
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .hub-container .tab-item.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
 
-.empty-msg {
-    text-align: center;
-    padding: 40px;
-    color: #94a3b8;
-    font-size: 12px;
-}
+    .hub-container .sub-header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 4px;
+        background: transparent;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .hub-container .pill-dropdown {
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #475569;
+        cursor: pointer;
+        height: 24px;
+        box-sizing: border-box;
+    }
+
+    .hub-container .btn-source-top {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 0 10px;
+        height: 24px;
+        font-weight: 700;
+        font-size: 10px;
+        color: #1e293b;
+        cursor: pointer;
+    }
+
+    .hub-container .task-list-scroller {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 110px;
+        padding: 4px 0;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .hub-container .empty-msg {
+        text-align: center;
+        padding: 16px;
+        color: #94a3b8;
+        font-size: 11px;
+    }

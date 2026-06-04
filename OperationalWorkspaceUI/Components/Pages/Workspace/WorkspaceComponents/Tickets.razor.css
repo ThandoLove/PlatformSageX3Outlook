@@ -1,40 +1,118 @@
-﻿.tickets-container {
-    padding: 2rem;
-    background-color: var(--bg-light);
-    min-height: 100vh;
+﻿/* =========================================================================
+   💎 TICKETS.RAZOR.CSS - ULTRA-COMPACT GLASMORPHIC TICKETING DASHBOARD
+   ========================================================================= */
+
+/* THE CONTENT BACKDROP: Enforces tight padding and prevents desktop layout blowouts */
+.tickets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 1200px; /* Limits table stretch across massive monitor screens */
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 0;
 }
 
+/* --- COMPACT PAGE HEADER BAR --- */
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 4px;
+    width: 100%;
 }
 
 .header-text h2 {
     margin: 0;
-    color: var(--sage-blue);
+    font-size: 18px;
     font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
 }
 
 .header-text p {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    margin: 2px 0 0 0;
+    color: #64748b;
+    font-size: 12px;
 }
 
+/* --- HIGH-DENSITY TABS INJECTOR --- */
+::deep fluent-tabs,
+::deep fluent-tab {
+    --control-corner-radius: 6px;
+    font-size: 12px !important;
+    font-weight: 600;
+}
+
+/* --- PREMIUM FROSTED MESH DATA CARD GRID --- */
 .grid-card {
-    padding: 0; /* Let the grid touch the edges */
+    background: rgba(255, 255, 255, 0.42) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.02) !important;
+    padding: 0 !important;
     overflow: hidden;
+    width: 100%;
 }
 
-/* Badge Styling */
+/* --- TUNNELING OVERRIDES DIRECTLY INTO NATIVE FLUENT DATA GRID CELLS --- */
+::deep .fluent-data-grid {
+    width: 100%;
+    background: transparent !important;
+    font-size: 12px !important;
+}
+
+    /* Tight high-density grid headers */
+    ::deep .fluent-data-grid thead,
+    ::deep .column-header {
+        background-color: rgba(248, 250, 252, 0.5) !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        font-size: 10px !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+        padding: 8px 12px !important;
+    }
+
+/* Squeezes data rows to prevent chunky, vertical height leaking */
+::deep .fluent-data-grid-row {
+    border-bottom: 1px solid rgba(241, 245, 249, 0.6) !important;
+    transition: background 0.12s ease !important;
+}
+
+::deep .fluent-data-grid-cell {
+    padding: 8px 12px !important;
+    color: #334155 !important;
+    display: flex;
+    align-items: center;
+}
+
+::deep .fluent-data-grid-row:hover {
+    background-color: rgba(255, 255, 255, 0.45) !important;
+    cursor: pointer;
+}
+
+/* --- HIGH-DENSITY PAGINATOR RE-SHAPE --- */
+::deep fluent-paginator {
+    background: rgba(248, 250, 252, 0.3) !important;
+    border-top: 1px solid #cbd5e1 !important;
+    font-size: 11px !important;
+    padding: 4px 12px !important;
+}
+
+/* --- CRISP MINI PRIORITY PILLS --- */
 .prio-badge {
-    font-size: 0.7rem;
+    font-size: 10px;
     font-weight: 700;
-    padding: 2px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
     text-transform: uppercase;
+    display: inline-block;
+    letter-spacing: 0.02em;
 }
 
     .prio-badge.high {
@@ -52,13 +130,31 @@
         color: #16a34a;
     }
 
-/* Scoped Grid Header Overrides */
-::deep .fluent-data-grid thead {
-    background-color: #f8fafc;
-    border-bottom: 2px solid var(--border-color);
+/* --- RE-SCALE MINIMAL STEALTH ACTION BUTTONS --- */
+::deep fluent-button[appearance="stealth"] {
+    height: 24px !important;
+    min-width: 24px !important;
+    padding: 0 !important;
+    color: #64748b !important;
 }
 
-::deep .fluent-data-grid-row:hover {
-    background-color: #f1f5f9 !important;
-    cursor: pointer;
+    ::deep fluent-button[appearance="stealth"]:hover {
+        color: #2563eb !important;
+        background: transparent !important;
+    }
+
+/* =========================================================================
+   📱 RESPONSIVE MEDIA BREAKPOINTS (OUTLOOK ACCENTS INTERFACE BOUNDS)
+   ========================================================================= */
+@media (max-width: 880px) {
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    ::deep fluent-button[appearance="accent"] {
+        width: 100% !important;
+    }
 }

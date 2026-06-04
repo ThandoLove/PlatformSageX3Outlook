@@ -33,9 +33,9 @@ else
                 {
                     <tr style="cursor: pointer; vertical-align: middle;">
                         <td class="ps-4 py-3" @onclick="() => OnDownload.InvokeAsync(file)">
-                            <div class="d-flex align-items-center gap-3">
+                            <div class="grid-file">
                                 <FluentIcon Value="@GetFileIcon(file.FileName)" Color="@Color.Accent" />
-                                <span class="fw-bold text-dark">@file.FileName</span>
+                                <div class="grid-file-name fw-bold text-dark">@file.FileName</div>
                             </div>
                         </td>
                         <td class="text-muted">@file.ContentType</td>

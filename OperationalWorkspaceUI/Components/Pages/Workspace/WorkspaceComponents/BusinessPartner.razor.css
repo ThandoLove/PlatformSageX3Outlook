@@ -1,213 +1,419 @@
-﻿.sage-container {
-    background: #fff;
-    padding: 24px;
-    font-family: 'Segoe UI', sans-serif;
-}
+﻿/* =========================================================================
+   💎 CONTACTS VIEW CHASSIS MASTER LAYOUT RESETS
+   ========================================================================= */
 
-/* TABS */
+/* --- TABS SYSTEM NAVIGATION TRACKS --- */
 .sage-tabs {
     display: flex;
-    gap: 25px;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
+    gap: 16px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    margin-bottom: 12px;
 }
 
 .tab {
-    padding: 10px 0;
+    padding: 6px 0;
     cursor: pointer;
-    color: #666;
+    color: #64748b;
     border-bottom: 2px solid transparent;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.15s ease;
 }
 
     .tab.active {
-        color: #005ce6;
-        border-bottom-color: #005ce6;
+        color: #2563eb;
+        border-bottom-color: #2563eb;
         font-weight: 700;
     }
-/* TAB HOVER */
-.tab:hover {
-    color: #0041b3;
-    border-bottom-color: rgba(0,92,230,0.15);
-}
 
-/* HEADER */
+    .tab:hover {
+        color: #1d4ed8;
+    }
+
+/* --- TITLE HEADERS ARCHITECTURE --- */
 .sage-header-row {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 25px;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 .title {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 18px;
     font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
 }
 
 .subtitle {
-    margin: 0;
-    color: #888;
-    font-size: 0.85rem;
+    margin: 2px 0 0 0;
+    color: #64748b;
+    font-size: 12px;
 }
 
 .action-group {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
-/* BUTTONS */
+/* --- HIGH-DENSITY RE-PALETTE BLUE & WHITE ENTRY BUTTONS --- */
 .btn-sage-blue {
-    background: #005ce6;
-    color: white;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 4px;
-    font-weight: 600;
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
 }
-.btn-sage-blue:hover {
-    background: #0041b3;
-}
+
+    .btn-sage-blue:hover {
+        background: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
 
 .btn-sage-white {
-    background: #fff;
-    border: 1px solid #ddd;
-    padding: 8px 18px;
-    border-radius: 4px;
-    color: #444;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid #cbd5e1;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    color: #334155;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
     cursor: pointer;
-}
-.btn-sage-white:hover {
-    background: #f7fafc;
-    border-color: #e2e8f0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
 }
 
-/* TOOLBAR & SEARCH */
-.sage-toolbar {
+    .btn-sage-white:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+    }
+
+/* --- FIXED SEARCH CONTAINER FIELDS (ELIMINATES DOUBLE CONTAINER OUTLINES) --- */
+.toolbar-row {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px;
+    box-sizing: border-box;
 }
 
-.search-box {
-    position: relative;
-    width: 350px;
-}
-
-    .search-box input {
-        width: 100%;
-        padding: 8px 12px 8px 35px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-    }
-
-    .search-box .icon {
-        position: absolute;
-        left: 12px;
-        top: 8px;
-        color: #aaa;
-    }
-
-.btn-filter {
-    background: #fff;
-    border: 1px solid #ddd;
-    padding: 8px 15px;
-    border-radius: 6px;
+.search-container {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    height: 36px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 380px;
+    flex: none;
+}
+
+.search-icon {
+    font-size: 13px;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.search-input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    color: #0f172a;
+}
+
+.btn-ghost.filter-toggle {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    height: 36px;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     cursor: pointer;
     color: #475569;
-    font-weight: 500;
-}
-
-/* FILTER TRAY FROM KNOWLEDGE PAGE */
-.filter-tray {
-    display: flex;
-    gap: 24px;
-    padding: 16px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.filter-item label {
-    display: block;
-    font-size: 0.75rem;
     font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+}
+
+    .btn-ghost.filter-toggle:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+    }
+
+.filter-tray-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+    box-sizing: border-box;
+}
+
+.filter-label {
+    font-size: 9px;
+    font-weight: 800;
     color: #64748b;
-    margin-bottom: 4px;
     text-transform: uppercase;
 }
 
 .sage-select {
     border: 1px solid #cbd5e1;
-    border-radius: 4px;
-    padding: 6px;
-    font-size: 0.85rem;
-    background: white;
+    border-radius: 6px;
+    padding: 0 8px;
+    font-size: 12px;
+    background: #ffffff;
+    height: 28px;
+    max-width: 180px;
 }
 
-/* TABLE */
+/* --- MASTER WORKSPACE CLIENT DATA GRID TABLE SELECTORS --- */
+.responsive-table-wrapper {
+    background: rgba(255, 255, 255, 0.42);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.02);
+    width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
 .sage-table {
     width: 100%;
     border-collapse: collapse;
+    text-align: left;
+    font-size: 12px;
+    background: transparent;
 }
 
-    .sage-table th {
-        text-align: left;
-        padding: 12px;
-        border-bottom: 2px solid #f5f5f5;
-        color: #999;
-        font-size: 0.75rem;
+    .sage-table thead th {
+        padding: 10px 14px;
+        border-bottom: 1px solid #cbd5e1;
+        color: #475569;
+        font-size: 10px;
+        font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: rgba(248, 250, 252, 0.45);
     }
 
-    .sage-table td {
-        padding: 15px 12px;
-        border-bottom: 1px solid #f9f9f9;
-        font-size: 0.9rem;
-    }
-
-.name-link {
-    color: #005ce6;
-    font-weight: 600;
+.contact-row {
+    border-bottom: 1px solid rgba(241, 245, 249, 0.6);
     cursor: pointer;
+    transition: background 0.12s ease;
 }
 
-.email-text {
-    color: #777;
+    .contact-row:hover {
+        background: rgba(255, 255, 255, 0.45) !important;
+    }
+
+.sage-table td {
+    padding: 10px 14px;
+    color: #334155;
 }
 
-/* STATUS BADGES */
-.badge {
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.75rem;
+.td-name {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+.td-company {
+    color: #0f172a;
     font-weight: 600;
 }
 
-.active {
-    background: #e6f4ea;
-    color: #1e7e34;
+.td-email, .td-phone {
+    color: #64748b;
 }
 
-.inactive {
-    background: #fce8e6;
-    color: #d93025;
+.status-pill {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
 }
 
-/* ANIMATION */
+.status-online {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.status-offline {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+/* =========================================================================
+   📈 MODERN GLASSMORPHIC RECENT ACTIVITY AUDIT TABLE MATRIX
+   ========================================================================= */
+
+.recent-activity-container {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.sage-activity-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 12px;
+    background: transparent;
+}
+
+    /* High-Density Header Columns Cells */
+    .sage-activity-table thead th {
+        padding: 10px 14px;
+        border-bottom: 1px solid #cbd5e1;
+        color: #475569;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        background: rgba(248, 250, 252, 0.45);
+    }
+
+.activity-row-line {
+    border-bottom: 1px solid rgba(241, 245, 249, 0.7);
+    transition: background 0.12s ease;
+}
+
+    .activity-row-line:hover {
+        background: rgba(255, 255, 255, 0.5) !important;
+    }
+
+.sage-activity-table td {
+    padding: 10px 14px;
+    vertical-align: middle;
+}
+
+/* CELL CONTENT CONSTRAINTS */
+.td-icon-cell {
+    text-align: center;
+    padding-right: 0 !important;
+}
+
+.activity-badge-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    box-sizing: border-box;
+}
+
+    /* Status backdrop tints */
+    .activity-badge-dot.tint-info {
+        background: #ecfeff;
+        border-color: #cffafe;
+        color: #0891b2;
+    }
+
+    .activity-badge-dot.tint-primary {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #2563eb;
+    }
+
+    .activity-badge-dot.tint-success {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #16a34a;
+    }
+
+    .activity-badge-dot.tint-danger {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #dc2626;
+    }
+
+.td-time-cell {
+    font-weight: 700;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.td-tag-cell {
+    white-space: nowrap;
+}
+
+.subsystem-pill {
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #475569;
+    background: rgba(241, 245, 249, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.td-description-cell {
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.4;
+}
+
+.recent-activity-placeholder {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .animate-fade-in {
-    animation: fadeIn 0.25s ease-out;
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-4px);
     }
 
     to {
@@ -216,111 +422,45 @@
     }
 }
 
-.recent-activity-placeholder {
-    padding: 60px;
-    text-align: center;
-    color: #94a3b8;
-}
-
-/* Additional styles matching the razor markup used in BusinessPartner.razor */
-.sage-content {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    width: 100%;
-}
-
-.sage-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-}
-
-.toolbar-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    width: 100%;
-    flex-wrap: wrap;
-}
-
-.search-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: #fff;
-    border: 1px solid #e6eef8;
-    border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(2,6,23,0.03);
-    flex: 1 1 420px;
-    min-width: 160px;
-}
-
-.search-icon { font-size: 15px; color: #94a3b8; }
-.search-input {
-    border: none;
-    outline: none;
-    background: transparent;
-    font-size: 14px;
-    width: 100%;
-    color: #0f172a;
-}
-/* Placeholder color */
-.search-input::placeholder { color: #9aa6b2; }
-
-.btn-ghost, .filter-toggle {
-    background: transparent;
-    border: 1px solid #e6eef8;
-    padding: 8px 12px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-.btn-new-task {
-    background: #2563eb;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.customer-card { background: white; border: 1px solid #eef4fb; padding: 12px; border-radius: 8px; }
-
-.responsive-table-wrapper { width: 100%; overflow: hidden; border-radius: 8px; background: #fff; border: 1px solid #eef4fb; box-shadow: 0 6px 18px rgba(2,6,23,0.03); }
-
-.contact-row {
-    transition: background 0.08s ease, transform 0.08s ease;
-}
-.contact-row:hover { background: #fbfdff; transform: translateY(-1px); }
-
-.td-name { color: #0f172a; font-weight: 700; }
-.td-company, .td-email, .td-phone { color: #64748b; }
-
-/* Table header polish */
-.sage-table thead th { background: #fbfdff; color: #475569; font-weight: 600; padding: 12px 18px; border-bottom: 1px solid #eef4fb; }
-.sage-table { background: transparent; }
-
-/* Make rows slightly taller and spaced */
-.sage-table td { padding: 14px 18px; }
-
-.status-pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-.status-online { background: #ecfdf5; color: #059669; }
-.status-offline { background: #f8fafc; color: #64748b; border: 1px solid #eef2f7; }
-
-/* Recent Activity card style */
-.customer-card.animate-fade-in { display: block; }
-
-/* Responsive: convert table to cards on small screens */
+/* =========================================================================
+   📱 MOBILE LAYOUT BREAKPOINT CONVERTER (OUTLOOK ADD-IN PANEL OPTIMIZATION)
+   ========================================================================= */
 @media (max-width: 880px) {
-    .sage-table thead { display: none; }
-    .sage-table, .sage-table tbody, .sage-table tr, .sage-table td { display: block; width: 100%; }
-    .sage-table tr { margin: 8px 0; border-radius: 8px; box-shadow: 0 4px 12px rgba(2,6,23,0.04); overflow: hidden; }
-    .sage-table td { padding: 12px; border: none; display: flex; justify-content: space-between; align-items: center; }
+    .sage-table thead, .sage-activity-table thead {
+        display: none;
+    }
+
+    .sage-table, .sage-table tbody, .sage-table tr, .sage-table td,
+    .sage-activity-table, .sage-activity-table tbody, .sage-activity-table tr, .sage-activity-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .contact-row, .activity-row-line {
+        margin: 8px 0;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.01);
+        overflow: hidden;
+    }
+
+    .sage-table td, .sage-activity-table td {
+        padding: 8px 12px;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(241, 245, 249, 0.4);
+    }
+
+        .sage-table td:last-child, .sage-activity-table td:last-child {
+            border-bottom: none;
+        }
+
+    .td-icon-cell {
+        text-align: left;
+    }
 }
+

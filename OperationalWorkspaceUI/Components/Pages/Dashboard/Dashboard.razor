@@ -8,10 +8,7 @@
 
 @* 1. COMPONENT NAMESPACES *@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
-
-@using OperationalWorkspaceUI.Components.Shared
 @using OperationalWorkspaceUI.State
-
 @using Microsoft.JSInterop
 
 @* 2. SERVICE INJECTIONS *@
@@ -25,10 +22,8 @@
 
 <PageTitle>Sage X3 | Operational Dashboard</PageTitle>
 
-@* Note: Top div still uses AppUIState.IsDarkMode to react to the Global Toggle *@
 <div class="dashboard-wrapper @(AppUIState.IsDarkMode ? "dark-mode" : "")">
 
-    @* EXTRACTION PROCESSING NOTICE FOR OUTLOOK USERS *@
     @if (_isProcessingOutlookData)
     {
         <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center justify-content-between shadow-sm">
@@ -43,111 +38,132 @@
         </div>
     }
 
-    @* --- ROW 1: DYNAMIC KPI CARDS --- *@
+    <!-- --- ROW 1: UPDATED HIGH-DENSITY COLORFUL METRICS HEADER STRIP --- -->
     <div class="metrics-grid">
-
         @{
             var customer = DState.TopClients?.FirstOrDefault();
             var customerName = customer?.Name ?? "No Customer Linked";
         }
 
-        <!-- OPEN ORDERS CARD -->
-        <Card Title="Open Orders">
+        <!-- OPEN ORDERS: BLUE TINT -->
+        <div class="flat-layout-cell kpi-box orders-box-tint">
+            <div class="card-label-tiny">Open Orders</div>
             <div class="metric-value">@(WState.Orders?.Count ?? 0)</div>
             <span class="metric-subtext">@customerName</span>
-        </Card>
+        </div>
 
-        <!-- OPEN TICKETS CARD (FILTERED) -->
-        <Card Title="Open Tickets">
+        <!-- OPEN TICKETS: RED INTERACTIVE JUMP TINT -->
+        <div class="flat-layout-cell kpi-box tickets-box-tint clickable-kpi-card"
+             @onclick="() => _showTicketsModal = true"
+             title="Click to view Active Tickets Panel">
+            <div class="card-label-tiny">Open Tickets ➔</div>
             <div class="metric-value">
                 @(WState.Tickets?.Count(t => t.Status != "Closed" && t.Status != "Resolved") ?? 0)
             </div>
             <span class="metric-subtext">
                 @(WState.Tickets?.Any(t => t.Priority == "High" && t.Status != "Closed") == true ? "Urgent Action Required" : "Active work items")
             </span>
-        </Card>
+        </div>
 
-        <!-- RECENT ACTIVITY CARD -->
-        <Card Title="Recent Activity">
-            <div class="metric-value">@(WState.ActivityLogs?.Count ?? 0)</div>
-            <span class="metric-subtext">Updated Today</span>
-        </Card>
+        <!-- SYSTEM GATEWAY: ADMIN/EMPLOYEE IDENTITY SECURED TINT -->
+        <div class="flat-layout-cell kpi-box gateway-box-tint clickable-kpi-card"
+             @onclick="OpenAdminHealthModal"
+             title="@(DState.IsAdminEnvironment ? "Click to view System Health Diagnostics" : "Admin Permission Required")">
+            <div class="card-label-tiny">System Gateway @(DState.IsAdminEnvironment ? "➔" : "🔒")</div>
+            <div class="metric-value" style="font-size: 14px; font-weight: 800; color: @(DState.IsAdminEnvironment ? "#10b981" : "#64748b");">
+                @(DState.IsAdminEnvironment ? "ADMIN LOGGED" : "EMPLOYEE")
+            </div>
+            <span class="metric-subtext">@(DState.IsAdminEnvironment ? "Diagnostics Available" : "Identity Locked")</span>
+        </div>
 
-        <!-- CUSTOMER STATUS CARD -->
-        <Card Title="Customer">
-            <div class="metric-value" style="font-size: 1.2rem;">@customerName</div>
+        <!-- CUSTOMER CONTEXT: TEAL TINT -->
+        <div class="flat-layout-cell kpi-box customer-box-tint">
+            <div class="card-label-tiny">Customer</div>
+            <div class="metric-value customer-title-lock">@customerName</div>
             <span class="metric-subtext">Active Status</span>
-        </Card>
+        </div>
     </div>
 
-    @* --- ROW 2: CONTEXTUAL INSIGHTS --- *@
+    @* --- ROW 2: MODERN COLORFUL ACTION STRIP RIBBON BANNER --- *@
+    <div class="modern-action-strip">
+        <button class="strip-btn primary-tint">👤 Add Contact</button>
+        <button class="strip-btn secondary-tint">🔗 Link Existing</button>
+        <button class="strip-btn accent-tint">📝 Add Quote</button>
+        <button class="strip-btn success-tint">🎫 Create Ticket</button>
+        <button class="strip-btn dark-tint">📊 Add Invoice</button>
+        <button class="strip-btn purple-tint">📎 Attach to Email</button>
+    </div>
+
+    @* --- ROW 3: FIRST 3-COLUMN COMPACT CARDS ROW --- *@
     <div class="sage-dashboard-row">
-        <Card Title="Email Context">
-            <EmailContextPanel />
-        </Card>
-
-        <Card Title="Crm Snapshot">
-            <CrmPanel Clients="@DState.TopClients" />
-        </Card>
+        <div class="flat-layout-cell"><EmailContextPanel /></div>
+        <div class="flat-layout-cell"><CrmPanel Clients="@DState.TopClients" /></div>
+        <div class="flat-layout-cell"><KnowledgeBasePanel /></div>
     </div>
 
-    @* --- ROW 3: QUICK ACTIONS --- *@
-    <div class="sage-dashboard-row single">
-        <Card Title="Quick Actions">
-            <QuickActionsPanel />
-        </Card>
-    </div>
-
-    @* --- ROW 4: OPERATIONAL TOOLS --- *@
+    @* --- ROW 4: SECOND 3-COLUMN COMPACT CARDS ROW --- *@
     <div class="sage-dashboard-row">
-        <Card Title="Knowledge">
-            <KnowledgeBasePanel />
-        </Card>
-        <Card Title="Documents">
-            <AttachDocumentsPanel />
-        </Card>
+        <div class="flat-layout-cell"><AttachDocumentsPanel /></div>
+        <div class="flat-layout-cell"><TasksPanel /></div>
+        <div class="flat-layout-cell"><RecentActivityPanel /></div>
     </div>
 
-    @* --- ROW 5: LISTS & ACTIVITY --- *@
-    <div class="sage-dashboard-row">
-        <Card Title="Tasks & Approvals">
-            <TasksPanel />
-        </Card>
-        <Card Title="Recent Activity">
-            <RecentActivityPanel />
-        </Card>
-    </div>
+    @* --- HIGH-DENSITY INTERACTIVE DIALOG MODALS --- *@
+    @if (_showTicketsModal)
+    {
+        <div class="modal-overlay" @onclick="() => _showTicketsModal = false">
+            <div class="modal-box" @onclick:stopPropagation>
+                <div class="modal-header-row">
+                    <h4>Contextual Active Tickets</h4>
+                    <button class="close-btn" @onclick="() => _showTicketsModal = false">✕</button>
+                </div>
+                <div class="modal-content-scroller">
+                    <TicketsPanel />
+                </div>
+            </div>
+        </div>
+    }
 
-    @* --- ROW 6: SYSTEM HEALTH & TICKETS --- *@
-    <div class="sage-dashboard-row">
-        <Card Title="System Health">
-            <SystemHealthPanel Status="@DState.AdminHealth" />
-        </Card>
-        <Card Title="Active Tickets">
-            <TicketsPanel />
-        </Card>
-    </div>
+    @if (_showHealthModal && DState.IsAdminEnvironment)
+    {
+        <div class="modal-overlay" @onclick="() => _showHealthModal = false">
+            <div class="modal-box success-border" @onclick:stopPropagation>
+                <div class="modal-header-row">
+                    <h4>System Gateway Health Telemetry</h4>
+                    <button class="close-btn" @onclick="() => _showHealthModal = false">✕</button>
+                </div>
+                <div class="modal-content-scroller">
+                    <SystemHealthPanel Status="@DState.AdminHealth" />
+                </div>
+            </div>
+        </div>
+    }
 
 </div>
 
 @code {
     private bool _isProcessingOutlookData = false;
     private string _activeManifestActionContext = string.Empty;
+    private bool _showTicketsModal = false;
+    private bool _showHealthModal = false;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        // 1. Initial Data Load
-        await DState.LoadDashboardAsync();
+        _ = InvokeAsync(async () =>
+        {
+            await DState.LoadDashboardAsync(isAdmin: DState.IsAdminEnvironment);
+        });
 
-        // 2. SUBSCRIBE: Listen to states so the UI updates when the Global Toggle or data changes
         DState.OnChange += Refresh;
         WState.OnChange += Refresh;
-        AppUIState.OnChange += Refresh; // Listen for theme changes specifically
+        AppUIState.OnChange += Refresh;
     }
 
-    private void Refresh()
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    private void OpenAdminHealthModal()
     {
-        InvokeAsync(StateHasChanged);
+        if (DState.IsAdminEnvironment) _showHealthModal = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -156,7 +172,6 @@
         {
             try
             {
-                // Trace active ribbon routing names dynamically
                 var activeUriPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
 
                 if (activeUriPath.Contains("taskpane"))
@@ -172,15 +187,11 @@
                     };
                     StateHasChanged();
 
-                    // Asynchronously pulls the email data object extracted from Outlook by your App.razor file
                     var rawOfficePayload = await JS.InvokeAsync<System.Text.Json.JsonElement?>("eval", "window['initialOfficeItem']");
-
                     if (rawOfficePayload.HasValue)
                     {
                         _isProcessingOutlookData = false;
                         StateHasChanged();
-
-                        // Your local state containers can now read rawOfficePayload to update panels!
                     }
                 }
             }
@@ -194,7 +205,6 @@
 
     public void Dispose()
     {
-        // 3. CLEANUP
         DState.OnChange -= Refresh;
         WState.OnChange -= Refresh;
         AppUIState.OnChange -= Refresh;

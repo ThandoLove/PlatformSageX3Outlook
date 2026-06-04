@@ -160,12 +160,49 @@
         State.Notify();
     }
 
-    private IEnumerable<ActivityDto> FilteredLogs => (State.ActivityLogs ?? Enumerable.Empty<ActivityDto>())
-        .Where(l => (string.IsNullOrWhiteSpace(SearchQuery) ||
-                     l.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
-                     l.CreatedBy.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)))
-        .Where(l => string.IsNullOrWhiteSpace(SelectedAction) || l.Action == SelectedAction)
-        .OrderByDescending(l => l.Timestamp);
+    // FIXED: Strict structural validation gate filters out routine navigation loops noise
+    private IEnumerable<ActivityDto> FilteredLogs
+    {
+        get
+        {
+            var combinedList = new List<ActivityDto>();
+
+            // 1. Fetch standard historical database logs context blocks
+            if (State.ActivityLogs != null)
+            {
+                combinedList.AddRange(State.ActivityLogs);
+            }
+
+            // 2. Extract and sanitize live shared cross-page traces
+            if (State.SharedSystemLogs != null)
+            {
+                var translatedSharedLogs = State.SharedSystemLogs.Select(sl => new ActivityDto
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedBy = "System Agent",
+                    Action = sl.Category,       // Maps "Contact", "Ticket", or "Order"
+                    Title = sl.Description,     // Detailed operational text description string
+                    Timestamp = sl.Timestamp
+                });
+
+                combinedList.AddRange(translatedSharedLogs);
+            }
+
+            // 3. 🔥 THE ESSENTIALS GATEWAY: Ignores passive load traces to focus on true operations
+            return combinedList
+                .Where(l => !string.IsNullOrEmpty(l.Title))
+                .Where(l => !l.Title.Contains("loaded", StringComparison.OrdinalIgnoreCase) &&
+                             !l.Title.Contains("view", StringComparison.OrdinalIgnoreCase) &&
+                             !l.Title.Contains("inspected", StringComparison.OrdinalIgnoreCase))
+                .Where(l => string.IsNullOrWhiteSpace(SearchQuery) ||
+                             l.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
+                             l.CreatedBy.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
+                .Where(l => string.IsNullOrWhiteSpace(SelectedAction) ||
+                             l.Action.Equals(SelectedAction, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(l => l.Timestamp);
+        }
+    }
+
 
     private List<string> UniqueActions => (State.ActivityLogs ?? Enumerable.Empty<ActivityDto>())
         .Select(l => l.Action)

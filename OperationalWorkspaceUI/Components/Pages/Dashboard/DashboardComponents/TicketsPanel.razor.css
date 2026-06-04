@@ -1,0 +1,91 @@
+.tasks-widget-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.panel-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-title {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.ticket-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+}
+
+.ticket-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(248,250,252,0.6);
+    gap: 10px;
+}
+
+.ticket-main {
+    flex-grow: 1;
+    min-width: 0; /* allow truncation */
+}
+
+.ticket-title {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ticket-meta {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.prio-badge {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.prio-badge.low { background: #e6f4ea; color: #097a46; }
+.prio-badge.medium { background: #fff7e6; color: #7a4d00; }
+.prio-badge.high { background: #fff1f0; color: #7a1f1f; }
+
+.ticket-empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.panel-footer {
+    padding: 10px;
+    border-top: 1px solid var(--border-light);
+    text-align: center;
+}
+
+.footer-btn {
+    width: 100%;
+    font-size: 0.82rem;
+}

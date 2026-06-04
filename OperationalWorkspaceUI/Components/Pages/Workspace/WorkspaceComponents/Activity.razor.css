@@ -1,147 +1,272 @@
-﻿/* activities.razor.css */
+﻿/* =========================================================================
+   💎 ACTIVITIES.RAZOR.CSS - COMPACT GLASSMORPHIC SYSTEM AUDIT DASHBOARD
+   ========================================================================= */
 
-/* BASE CONTAINER */
+/* THE CANVAS TRACK: Enforces high-density breathing room constraints */
 .page-layout {
-    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 1200px; /* Locks desktop tracking grid width limits safely */
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: 0;
 }
 
-/* HEADER SECTION */
+/* --- STREAMLINED PAGE HEADER SECTION --- */
 .activity-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    border-bottom: 3px solid #002d5a;
-    padding-bottom: 12px;
+    align-items: center;
+    margin-bottom: 4px;
+    width: 100%;
+    padding-bottom: 4px;
+    border-bottom: none; /* PURGES THE OLD HEAVY DARK NAVY BORDER LAYER */
 }
 
 .header-title {
     margin: 0;
-    color: #1e293b;
-    font-size: 1.75rem;
+    font-size: 18px;
     font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
 }
 
 .header-sub {
-    margin: 4px 0 0 0;
+    margin: 2px 0 0 0;
     color: #64748b;
+    font-size: 12px;
 }
 
-/* SEARCH & FILTER BAR */
-.filter-bar {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
+.header-actions {
+    display: inline-flex;
     align-items: center;
 }
 
+/* Compact scaling for Fluent action buttons layout */
+::deep fluent-button {
+    --control-corner-radius: 8px;
+    font-size: 11px !important;
+    font-weight: 700;
+    height: 32px !important;
+}
+
+/* --- COMPACT AUDIT SEARCHBAR & FILTER RIBBON (ZERO DOUBLE BORDERS) --- */
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* input and select elements are cleanly styled with zero conflicting double-outlines */
 .search-input {
-    padding: 10px 15px;
-    width: 320px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    padding: 0 12px;
+    width: 100%;
+    max-width: 280px; /* Hard-locked structural horizontal bounds profile */
+    height: 34px;
+    background: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid #cbd5e1 !important; /* Singular crisp boundary alignment line */
+    border-radius: 8px;
+    font-size: 12px;
+    color: #0f172a;
+    box-sizing: border-box;
 }
 
 .filter-select {
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.9rem;
+    padding: 0 12px;
+    height: 34px;
+    background: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+    box-sizing: border-box;
+    cursor: pointer;
 }
 
-/* TABLE STYLING */
+    .search-input:focus, .filter-select:focus {
+        background: #ffffff !important;
+        border-color: #2563eb !important;
+        outline: none !important;
+    }
+
+/* --- RE-STRUCTURED LIQUID GLASS SYSTEM AUDIT TABLE --- */
 .table-container {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #ddd;
-    overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.42) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.02) !important;
+    width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
 }
 
 .activity-table {
     width: 100%;
     border-collapse: collapse;
+    text-align: left;
+    font-size: 12px;
 }
 
+    /* High-density grid header columns cells */
     .activity-table th {
-        background: #f9f9f9;
-        padding: 15px;
-        text-align: left;
-        font-size: 0.75rem;
+        background: rgba(248, 250, 252, 0.45) !important;
+        padding: 10px 14px;
+        border-bottom: 1px solid #cbd5e1;
+        color: #475569;
+        font-size: 10px;
+        font-weight: 700;
         text-transform: uppercase;
-        color: #64748b;
-        border-bottom: 1px solid #ddd;
+        letter-spacing: 0.04em;
     }
+
+    /* High-density compressed data item lines mapping rows */
+    .activity-table tr {
+        border-bottom: 1px solid rgba(241, 245, 249, 0.6);
+        transition: background 0.12s ease;
+    }
+
+        .activity-table tr:hover {
+            background: rgba(255, 255, 255, 0.45) !important;
+        }
 
     .activity-table td {
-        padding: 15px;
-        border-bottom: 1px solid #ddd;
-        text-align: left;
-        font-size: 0.9rem;
-        color: #1e293b;
+        padding: 10px 14px;
+        color: #334155;
+        vertical-align: middle;
     }
 
-/* COLUMN SPECIFIC STYLES */
+/* COLUMN SPECIFIC CELL CONTROLS */
 .col-time {
-    font-size: 0.85rem;
-    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    white-space: nowrap;
 }
 
 .col-user {
-    font-weight: 600;
+    font-weight: 700;
+    color: #0f172a;
 }
 
 .col-target {
-    color: #64748b;
-    font-style: italic;
+    color: #1e293b;
+    font-weight: 600;
 }
 
-/* STATE STYLES */
+/* --- STATE FALLBACK HOOK RE-SHAPE --- */
 .loading-container {
     display: flex;
     justify-content: center;
-    padding: 100px;
+    align-items: center;
+    padding: 60px;
 }
 
-.empty-card {
-    padding: 40px;
+::deep .empty-card {
+    background: rgba(255, 255, 255, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-radius: 12px !important;
+    padding: 40px !important;
     text-align: center;
-    border-radius: 12px;
-    color: gray;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
-/* ACTION BADGE STYLES */
+    ::deep .empty-card p {
+        margin: 0;
+    }
+
+/* --- HIGH-DENSITY AUDIT PILL CHIPS --- */
 .badge {
-    padding: 4px 10px;
+    padding: 2px 8px;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     display: inline-block;
+    letter-spacing: 0.02em;
 }
 
 .badge-danger {
     background: #fee2e2;
-    color: #991b1b;
+    color: #dc2626;
 }
 
 .badge-success {
     background: #dcfce7;
-    color: #166534;
+    color: #16a34a;
 }
 
 .badge-warning {
     background: #fef9c3;
-    color: #854d0e;
+    color: #d97706;
 }
 
 .badge-info {
     background: #e0f2fe;
-    color: #075985;
+    color: #2563eb;
 }
 
 .badge-neutral {
     background: #f1f5f9;
     color: #475569;
+}
+
+/* =========================================================================
+   📱 RESPONSIVE LAYOUT CONVERTER GRID BREAKPOINTS
+   ========================================================================= */
+@media (max-width: 800px) {
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .search-input {
+        max-width: 100%;
+    }
+
+    .activity-table thead {
+        display: none;
+    }
+
+    .activity-table, .activity-table tbody, .activity-table tr, .activity-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .activity-table tr {
+            margin: 8px 0;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            overflow: hidden;
+        }
+
+        .activity-table td {
+            padding: 8px 12px;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(241, 245, 249, 0.4);
+        }
+
+            .activity-table td:last-child {
+                border-bottom: none;
+            }
 }

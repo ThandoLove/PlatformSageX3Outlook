@@ -11,50 +11,51 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 
-<FluentCard Style="width: 100%; height: 100%; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: none; display: flex; flex-direction: column; position: relative;">
+<FluentCard Class="attach-card">
     
     @* LIVE OVERLAY: Only shows when WorkspaceState.IsUploading is true *@
     @if (WorkspaceState.IsUploading)
     {
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px;">
-            <FluentProgressRing Style="width: 32px; height: 32px;" />
-            <span style="margin-top: 12px; font-size: 0.85rem; color: #005fb8; font-weight: 600;">Processing Upload...</span>
+        <div class="upload-overlay">
+            <FluentProgressRing Class="overlay-ring" />
+            <span class="overlay-text">Processing Upload...</span>
         </div>
     }
 
     @* HEADER *@
-    <div class="panel-header" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b;">Documents</h3>
-        <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => UploadToEmail())">
+    <div class="panel-header">
+        <h3 class="panel-title">Documents</h3>
+        <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => UploadToEmail())" Class="panel-action">
             <FluentIcon Value="@(new Icons.Regular.Size20.ArrowUpload())" Color="@Color.Accent" />
         </FluentButton>
     </div>
 
     @* SEARCH *@
-    <div style="margin-bottom: 12px;">
-        <FluentSearch Placeholder="Search files..." @bind-Value="_searchQuery" @bind:event="oninput" Style="width: 100%;" />
+    <div class="search-row">
+        <FluentSearch Placeholder="Search files..." @bind-Value="_searchQuery" @bind:event="oninput" Class="search-full" />
     </div>
 
     @* DOCUMENT LIST *@
-    <div class="document-list" style="flex-grow: 1; overflow-y: auto; min-height: 150px;">
+    <div class="document-list">
         @if (WorkspaceState.Attachments == null)
         {
-            <div style="display:flex; justify-content:center; padding: 20px;">
-                <FluentProgressRing Style="width:24px; height:24px;" />
+            <div class="loading-placeholder">
+                <FluentProgressRing Class="loading-ring" />
             </div>
         }
         else if (!FilteredAttachments.Any())
         {
-            <p style="font-size: 0.8rem; color: #64748b; padding: 10px;">No documents found.</p>
+            <p class="no-docs">No documents found.</p>
         }
         else
         {
-            @foreach (var doc in FilteredAttachments)
+            @* Show only the 2 most recent attachments to keep the card compact; latest first *@
+            @foreach (var doc in FilteredAttachments.OrderByDescending(d => d.UploadedAtUtc).Take(2))
             {
-                <div class="doc-item" style="display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; gap: 12px;">
+                <div class="doc-item">
                     <FluentIcon Value="@GetFileIcon(doc.FileName)" Color="@GetIconColor(doc.FileName)" />
-                    <div style="flex-grow: 1;">
-                        <div style="font-size: 0.9rem; font-weight: 500;">@doc.FileName</div>
+                    <div class="doc-name-cell">
+                        <div class="doc-filename">@doc.FileName</div>
                     </div>
                     <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size16.Attach())" OnClick="@(() => Attach(doc.FileName))" />
                 </div>
@@ -63,10 +64,8 @@
     </div>
 
     @* FOOTER *@
-    <div style="border-top: 1px solid #f1f5f9; padding-top: 12px;">
-        <FluentButton Appearance="Appearance.Stealth"
-                      Style="width: 100%; font-size: 0.8rem; color: #005fb8; justify-content: center;"
-                      OnClick="@(() => NavManager.NavigateTo("/attachments"))">
+    <div class="panel-footer">
+        <FluentButton Appearance="Appearance.Stealth" Class="panel-footer-btn" OnClick="@(() => NavManager.NavigateTo("/attachments"))">
             Go to Attachments &nbsp; <FluentIcon Value="@(new Icons.Regular.Size16.Open())" />
         </FluentButton>
     </div>

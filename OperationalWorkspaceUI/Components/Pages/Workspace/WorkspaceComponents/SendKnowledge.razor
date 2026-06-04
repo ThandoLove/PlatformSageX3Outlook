@@ -14,7 +14,7 @@
 @inject Radzen.NotificationService Notifications
 
 <div class="kb-page-container">
-    
+
     @* 1. HEADER SECTION *@
     <div class="kb-header">
         <h1 class="kb-title">Knowledge Base</h1>
@@ -60,11 +60,11 @@
                             </FluentButton>
                         </td>
                         <td class="col-category">@article.Category</td>
-                        <td class="col-views">0</td> @* Placeholder for views *@
+                        <td class="col-views">0</td>
                         <td class="col-actions">
                             <FluentButton Appearance="Appearance.Outline" class="btn-preview" OnClick="@(() => OpenPreview(article))">Preview</FluentButton>
                             <FluentButton Appearance="Appearance.Accent" class="btn-send" OnClick="@(() => OpenEmailForm(article))">Send</FluentButton>
-                            
+
                             <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => DeleteArticle(article))">
                                 <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                             </FluentButton>
@@ -145,6 +145,7 @@
 </div>
 
 @code {
+    //private string _activeTab = "active";//
     private KnowledgeDto? SelectedArticle;
     private bool IsEmailMode, IsSuccessMode, IsSending;
     private string RecipientEmail = "", SearchQuery = "", SelectedCategory = "All Categories", SortOrder = "Newest";
@@ -157,24 +158,22 @@
     private async Task SendAsAttachment()
     {
         if (SelectedArticle == null) return;
-        
-        // BROADCAST STATUS TO DASHBOARD
         WState.SetSendingKnowledge(true);
         IsSending = true;
-        
+
         try
         {
-            await Task.Delay(1500); // Simulate network latency
+            await Task.Delay(1500);
             await KBService.SendKnowledgeAsync(new SendKnowledgeModel
             {
                 SearchQuery = SelectedArticle.Title,
                 Message = RecipientEmail
             });
-            
+
             IsSuccessMode = true;
             IsSending = false;
             StateHasChanged();
-            
+
             await Task.Delay(2000);
             CloseModal();
         }
@@ -204,7 +203,6 @@
         new("Case Studies"), new("FAQ"), new("How To Guides")
     };
 
-    // Filter logic looks directly at the WorkspaceState
     private IEnumerable<KnowledgeDto> FilteredArticles => WState.KnowledgeBase
         .Where(a => (SelectedCategory == "All Categories" || a.Category == SelectedCategory) &&
                     (string.IsNullOrWhiteSpace(SearchQuery) || a.Title.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
