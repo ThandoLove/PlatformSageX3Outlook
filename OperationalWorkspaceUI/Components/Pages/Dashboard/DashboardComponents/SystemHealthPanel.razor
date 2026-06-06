@@ -5,13 +5,17 @@
 @implements IDisposable
 @inject DashboardState State
 
-<FluentCard Class="health-widget-card">
+<div class="health-widget-card">
+
+    @* HEADER PANEL *@
     <div class="panel-header">
         <h3>System Health</h3>
         <FluentIcon Value="@(new Icons.Regular.Size16.ChevronDown())" Color="@Color.Neutral" />
     </div>
 
+    @* DATA STATUS LIST *@
     <div class="health-content">
+
         <!-- Sage X3 ERP Status -->
         <div class="status-item">
             <div class="status-info">
@@ -48,21 +52,23 @@
             </div>
             <div class="status-meta">Pending Retry Queue</div>
         </div>
+
     </div>
 
-    @* FOOTER: Timestamp + Refresh Button *@
+    @* FOOTER PANEL BAR *@
     <div class="health-footer">
         <span class="refresh-label">Last updated: @_lastUpdated</span>
         <FluentButton Appearance="Appearance.Stealth"
+                      Class="fluent-button-stealth-override"
                       IconStart="@(new Icons.Regular.Size16.ArrowClockwise())"
                       OnClick="ManualRefresh"
                       Loading="_isRefreshing"
                       Title="Refresh Now" />
     </div>
-</FluentCard>
+
+</div>
 
 @code {
-    // 🔥 FIX: This parameter MUST exist to prevent the "does not have a property matching name Status" crash
     [Parameter]
     public AdminSystemHealthDto? Status { get; set; }
 
@@ -74,7 +80,6 @@
     {
         State.OnChange += Refresh;
 
-        // Auto-refresh timer (60s)
         _refreshTimer = new System.Threading.Timer(async _ =>
         {
             await ManualRefresh();
@@ -94,7 +99,7 @@
             StateHasChanged();
 
             await State.LoadDashboardAsync();
-            
+
             _lastUpdated = DateTime.Now.ToString("HH:mm:ss");
             _isRefreshing = false;
             StateHasChanged();

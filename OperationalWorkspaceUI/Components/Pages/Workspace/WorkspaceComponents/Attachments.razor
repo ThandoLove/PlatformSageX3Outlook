@@ -1,17 +1,19 @@
 ﻿@page "/attachments"
 @rendermode InteractiveServer
 
-@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.State
+
 @using OperationalWorkspaceUI.Components.Shared
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using Microsoft.Extensions.Configuration
 
-@inject WorkspaceState State
-@inject NavigationManager Nav
-@inject HttpClient Http
-@inject IJSRuntime JSRuntime
+@inherits OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents.AttachmentsBase
 
 <div class="attach-container">
+    @* MOCK MODE BANNER *@
+    @if (Configuration.GetValue<bool>("SageX3:UseMockData"))
+    {
+        <div class="mock-banner">Running in mock mode — Sage X3 integration is disabled.</div>
+    }
     @* HEADER *@
     <div class="page-title-header">
         <h1 class="page-title">Documents</h1>
@@ -51,6 +53,7 @@
                     <span>Upload</span>
                 }
             </label>
+            <button class="ui-select refresh-btn" @onclick="RefreshAttachmentsFromServer">Refresh</button>
         </div>
     </div>
 
@@ -139,7 +142,7 @@
                     @if (SelectedDoc.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                     {
                         <div class="pdf-preview-container" style="margin-top: 15px; width: 100%; border: none; border-radius: 4px; overflow: hidden; background: #ffffff; box-shadow: none;">
-                            <iframe src="@GetPdfUrl(SelectedDoc)"
+                            <iframe src="@(GetPdfUrl(SelectedDoc))"
                                     style="width: 100%; height: 680px; border: none; overflow: hidden; display: block;"
                                     scrolling="no">
                             </iframe>
@@ -171,161 +174,23 @@
         </div>
     </div>
 </div>
-@code {
-    private string SearchQuery = "";
-    private string SelectedType = "All";
-    private int CurrentPage = 1;
-    private int PageSize = 10;
-    private AttachmentDto? SelectedDoc;
+@code{
+private async Task RefreshAttachmentsFromServer()
+{
+try
+{
+// Hits your Pic 3 list endpoint to reload fresh records from the API database index
+var response = await Http.GetAsync("api/v1/Attachment/list?ownerType=SageGlobalIndex&ownerId=All");
 
-    private IEnumerable<AttachmentDto> FilteredData => State.Attachments
-        .Where(d => (SelectedType == "All" || d.ContentType == SelectedType) &&
-                    (string.IsNullOrWhiteSpace(SearchQuery) || d.FileName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)));
-
-    private IEnumerable<AttachmentDto> PaginatedDocs => FilteredData.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
-    private int TotalPages => (int)Math.Ceiling((double)FilteredData.Count() / PageSize);
-
-    // 1. HORIZONTAL ARROW ROUTE LINK (Maps to Pic 4 Stream)
-    private void OpenPdfPreviewAsync()
-    {
-        if (SelectedDoc == null)
-            return;
-
-        // Redirects directly to your standalone streaming route layout
-        Nav.NavigateTo($"/attachments/{SelectedDoc.Id}");
-    }
-
-    private string GetPdfUrl(AttachmentDto doc)
-    {
-        if (doc == null)
-            return string.Empty;
-
-        string webOptions = "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
-
-        // TOGGLE SWITCH: Set to true once backend handles live production ERP routing tasks
-        bool isProductionStreamingServiceLive = false;
-
-        if (isProductionStreamingServiceLive)
-        {
-            // Matches your 4th Swagger picture path exactly
-            return $"/api/v1/Attachment/stream/{doc.Id}{webOptions}";
-        }
-
-        return $"/mock-documents/{doc.FileName}{webOptions}";
-    }
-
-    // 2. FILE INPUT UPLOAD ACTION (Maps to Pic 1 upload-file multipart form-data)
-    private async Task HandleFileUpload(InputFileChangeEventArgs e)
-    {
-        var file = e.File;
-        if (file == null) return;
-
-        State.SetUploading(true);
-
-        try
-        {
-            using var content = new MultipartFormDataContent();
-            var fileStream = file.OpenReadStream(10 * 1024 * 1024);
-            var streamContent = new StreamContent(fileStream);
-            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
-
-            // Name must match the Swagger form field name "file" exactly
-            content.Add(streamContent, "file", file.Name);
-
-            // Calls your Pic 1 endpoint route
-            var response = await Http.PostAsync($"api/v1/Attachment/upload-file?ownerId=Tia&ownerType=DocumentList", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var newDoc = new AttachmentDto(Guid.NewGuid(), file.Name, file.ContentType, file.Size, "#", "Unlinked", DateTime.UtcNow);
-                State.Attachments.Insert(0, newDoc);
-                SelectedDoc = newDoc;
-
-                State.LogActivity(file.Name, "Uploaded Document", "Tia");
-                State.Notify();
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Upload network failure: {ex.Message}");
-        }
-        finally
-        {
-            State.SetUploading(false);
-        }
-    }
-
-    // 3. ATTACH TO RECORD JSON ACTION (Maps to Pic 2 /upload endpoint application/json)
-    private async Task HandleAttachDocument(AttachmentDto? doc)
-    {
-        if (doc == null) return;
-
-        try
-        {
-            // Builds the exact JSON request body structure seen in your 2nd Swagger picture
-            var requestBody = new
-            {
-                ownerType = "SageX3OrderContext",
-                ownerId = doc.RelatedEntity,
-                fileName = doc.FileName,
-                contentType = doc.ContentType,
-                fileSize = doc.FileSize,
-                storagePath = $"/mock-documents/{doc.FileName}"
-            };
-
-            // Posts clean JSON data directly to your Pic 2 upload endpoint
-            var response = await Http.PostAsJsonAsync("api/v1/Attachment/upload", requestBody);
-
-            if (response.IsSuccessStatusCode)
-            {
-                State.LogActivity(doc.FileName, $"Attached to ERP ({doc.RelatedEntity})", "Tia");
-                State.Notify();
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"ERP link configuration fault: {ex.Message}");
-        }
-    }
-
-    // 4. BROWSE SAGE INDEX ACTION (Maps to Pic 3 /list GET route query parameters)
-    private async Task BrowseSageX3()
-    {
-        try
-        {
-            // Calls your Pic 3 endpoint passing required parameters via the query string
-            var response = await Http.GetAsync("api/v1/Attachment/list?ownerType=SageGlobalIndex&ownerId=All");
-
-            if (response.IsSuccessStatusCode)
-            {
-                // Instantly pushes a clean record entry onto your Activity tracking page log
-                State.LogActivity("Sage Server Repository", "Queried ERP Document Index", "Tia");
-                State.Notify();
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Sage browsing lookup error: {ex.Message}");
-        }
-    }
-
-    private async Task DeleteDocument(AttachmentDto? doc)
-    {
-        if (doc == null) return;
-
-        State.Attachments.Remove(doc);
-        if (SelectedDoc?.Id == doc.Id) SelectedDoc = null;
-
-        State.LogActivity(doc.FileName, "Deleted Document", "Tia");
-        State.Notify();
-    }
-
-    private string FormatSize(long bytes) => bytes < 1048576 ? $"{(bytes / 1024.0):F1} KB" : $"{(bytes / 1048576.0):F1} MB";
-
-    private Icon GetIcon(string filename)
-    {
-        if (filename.EndsWith(".pdf")) return new Icons.Regular.Size20.DocumentPdf();
-        return new Icons.Regular.Size20.Document();
-    }
+if (response.IsSuccessStatusCode)
+{
+State.LogActivity("System Server", "Refreshed Attachments List Cache", "Tia");
+State.Notify();
 }
-
+}
+catch (Exception ex)
+{
+System.Diagnostics.Debug.WriteLine($"Server refresh sync failed: {ex.Message}");
+}
+}
+}

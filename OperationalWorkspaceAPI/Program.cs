@@ -59,6 +59,7 @@ builder.Host.UseSerilog();
 // ======================================================
 builder.Services.AddApiLayer();
 builder.Services.AddWorkspaceSwagger();
+builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();

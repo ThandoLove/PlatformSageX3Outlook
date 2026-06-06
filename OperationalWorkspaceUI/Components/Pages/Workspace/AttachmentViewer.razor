@@ -2,8 +2,10 @@
 @rendermode InteractiveServer
 
 @using OperationalWorkspaceUI.State
+@using Microsoft.Extensions.Configuration
 @inject WorkspaceState State
 @inject NavigationManager Nav
+@inject IConfiguration Configuration
 
 <div class="enterprise-attachment-viewport" style="width: 100vw; height: 100vh; overflow: hidden; background: #525659; margin: 0; padding: 0; position: fixed; top: 0; left: 0; z-index: 99999;">
 
@@ -48,24 +50,22 @@
         }
 
         AttachmentName = doc.FileName;
-
-        // Enforces strict read-only parameters for browser rendering layout views
         string webOptions = "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
 
-        // 🚨 CONFIGURATION TOGGLE: Set to true once your live production endpoints are running
-        bool isProductionSageServiceLive = false;
+        // 🔴 FIX: Ensure the section path is exactly "SageX3:UseMockData" with a colon
+        bool useMockData = Configuration.GetValue<bool>("SageX3:UseMockData");
 
-        if (isProductionSageServiceLive)
+        if (!useMockData)
         {
-            // Production stream pipeline routing pointing to your consolidated API controller
-            StreamingRoute = $"/api/attachment/stream/{Id}{webOptions}";
+            StreamingRoute = $"/api/v1/Attachment/stream/{Id}{webOptions}";
         }
         else
         {
-            // Local sandbox fallback options using your local static asset directories for mock testing [INDEX]
             StreamingRoute = $"/mock-documents/{doc.FileName}{webOptions}";
         }
     }
+
+
 
     private void NavigateBack() => Nav.NavigateTo("/attachments");
 }

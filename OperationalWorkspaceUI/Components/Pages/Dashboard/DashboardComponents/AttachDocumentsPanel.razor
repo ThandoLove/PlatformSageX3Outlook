@@ -5,7 +5,7 @@
 @using OperationalWorkspaceApplication.DTOs
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
-@inject WorkspaceState WorkspaceState
+@inject WorkspaceState WorkspaceState 
 @inject OperationalWorkspaceUI.UIServices.Workspace.AttachmentUIService AttachmentService
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 @inject NavigationManager NavManager
@@ -96,12 +96,36 @@
     {
         InvokeAsync(StateHasChanged);
     }
-
     private async Task Attach(string fileName)
     {
-        await JS.InvokeVoidAsync("officeBridge.attachDocument", "GENERAL", fileName);
-        CustomToastService.ShowSuccess($"{fileName} attached");
+        try
+        {
+            // If office bridge isn't available, warn the user that this will be a mock attach
+            var available = await JS.InvokeAsync<bool>("officeBridge.isAvailable");
+            if (!available)
+            {
+                CustomToastService.ShowInfo("Outlook Bridge not available — using mock attachments");
+            }
+
+            await JS.InvokeVoidAsync("officeBridge.attachDocument", "GENERAL", fileName);
+            CustomToastService.ShowSuccess($"{fileName} attached");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Outlook JavaScript Host missing during local test: {ex.Message}");
+
+            // Displays your real toast notification layout cleanly on screen
+            CustomToastService.ShowSuccess($"[Mock Sandbox Mode] {fileName} attached");
+
+            // ✅ FIX: Call your injected WorkspaceState variable directly. No namespace conflicts.
+            WorkspaceState.LogActivity(fileName, "Mock Attached via UI Sandbox Mode", "Tia");
+            WorkspaceState.Notify();
+        }
     }
+
+
+
+
 
     private async Task UploadToEmail()
     {

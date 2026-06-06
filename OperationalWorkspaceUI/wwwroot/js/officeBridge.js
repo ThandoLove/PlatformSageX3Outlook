@@ -67,6 +67,68 @@ window.officeBridge = {
     },
 
     // ======================================================
+    // ATTACH / UPLOAD HELPERS (Used by Blazor UI)
+    // ======================================================
+    attachDocument: function (urlOrOwner, fileName) {
+        try {
+            console.log("officeBridge.attachDocument called:", urlOrOwner, fileName);
+
+            // Normalize args: if a URL was provided use it, otherwise build a mock URL
+            let url = null;
+            if (typeof urlOrOwner === 'string' && (urlOrOwner.startsWith('/') || urlOrOwner.startsWith('http'))) {
+                url = urlOrOwner;
+            } else if (typeof fileName === 'string') {
+                url = `/mock-documents/${fileName}`;
+            }
+
+            // If running inside Outlook, attempt to use addFileAttachmentAsync where supported
+            if (Office?.context?.mailbox?.item && typeof Office.context.mailbox.item.addFileAttachmentAsync === 'function' && url) {
+                Office.context.mailbox.item.addFileAttachmentAsync(url, fileName, function (result) {
+                    if (result.status === Office.AsyncResultStatus.Failed) {
+                        console.error('addFileAttachmentAsync failed:', result.error && result.error.message);
+                    } else {
+                        console.log('Attachment added to message via Outlook host');
+                    }
+                });
+                return;
+            }
+
+            // Not running in Outlook - simulate a successful attach in development
+            console.log('[Mock] attachDocument simulated for', fileName, 'url:', url);
+            return;
+        }
+        catch (e) {
+            console.error('officeBridge.attachDocument error', e);
+        }
+    },
+
+    // Expose a small helper so Blazor can know whether the Outlook host is available
+    isAvailable: function () {
+        try {
+            return (typeof Office !== 'undefined' && Office?.context?.mailbox && typeof Office.context.mailbox.item !== 'undefined');
+        } catch (e) {
+            return false;
+        }
+    },
+
+    uploadCurrentDocument: function (mode) {
+        try {
+            console.log('officeBridge.uploadCurrentDocument called with mode:', mode);
+
+            // If running inside Outlook and host supports file APIs, we could extract the item body or attachments
+            // For now, the JS bridge triggers a success path; real implementation would integrate with backend upload endpoints.
+            if (this._dotNetHelper) {
+                // Notify the .NET layer that an upload was requested (best-effort)
+                try { this._dotNetHelper.invokeMethodAsync('OnUploadRequested', mode); } catch (_e) { }
+            }
+
+            return;
+        } catch (e) {
+            console.error('officeBridge.uploadCurrentDocument error', e);
+        }
+    },
+
+    // ======================================================
     // EMAIL CONTEXT EXTRACTION
     // ======================================================
     checkSender: async function () {

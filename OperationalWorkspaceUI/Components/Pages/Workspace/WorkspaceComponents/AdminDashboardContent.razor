@@ -1,247 +1,276 @@
-﻿
-@using OperationalWorkspaceUI.UIServices.Workspace
+﻿@using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.Requests
 
 @inject AdminDashboardUIService DashboardService
 @inject DashboardState DashboardState
+@inject IJSRuntime JS
 
 <div class="admin-dashboard-root">
 
-    <!-- HEADER -->
+    <!-- HEADER PANEL -->
     <div class="dashboard-header">
-
-        <div>
-            <h1>Admin Dashboard</h1>
-            <p>
-                Monitor workspace activity, integrations,
-                users and operational health.
+        <div class="header-text-group">
+            <h1 class="header-main-title">Admin Dashboard</h1>
+            <p class="header-sub-description">
+                Monitor workspace activity, integrations, users and operational health.
             </p>
         </div>
 
         <div class="dashboard-actions">
-
-            <button class="primary-btn">
+            <button class="primary-btn" @onclick="OpenCreateUserModal">
                 + Create User
             </button>
-
-            <button class="secondary-btn"
-                    @onclick="RefreshDashboard">
-
+            <button class="secondary-btn" @onclick="TriggerPdfDownloadReport">
                 Export Report
             </button>
-
         </div>
-
     </div>
 
-    <!-- KPI GRID -->
+    <!-- KPI METRICS SUMMARY GRID -->
     <div class="kpi-grid">
 
+        @* Total Users Card *@
         <div class="kpi-card">
-
-            <div class="kpi-icon">👥</div>
-
+            <div class="kpi-icon icon-blue">👥</div>
             <div class="kpi-content">
-                <span>Total Users</span>
-                <h2>1,284</h2>
-                <small>+12% this month</small>
+                <span class="kpi-label">Total Users</span>
+                <h2 class="kpi-value">1,284</h2>
+                <small class="kpi-trend trend-up">+12% this month</small>
             </div>
-
         </div>
 
+        @* Open Workflows Card *@
         <div class="kpi-card">
-
-            <div class="kpi-icon">📈</div>
-
+            <div class="kpi-icon icon-teal">📈</div>
             <div class="kpi-content">
-                <span>Open Workflows</span>
-                <h2>342</h2>
-                <small>18 awaiting approval</small>
+                <span class="kpi-label">Open Workflows</span>
+                <h2 class="kpi-value">342</h2>
+                <small class="kpi-trend trend-info">18 awaiting approval</small>
             </div>
-
         </div>
 
+        @* ERP Connections Card *@
         <div class="kpi-card">
-
-            <div class="kpi-icon">🔌</div>
-
+            <div class="kpi-icon icon-emerald">🔌</div>
             <div class="kpi-content">
-                <span>ERP Connections</span>
-
-                <h2>
-                    @(DashboardState.AdminHealth.SageX3Connected
-                        ? "Online"
-                        : "Offline")
+                <span class="kpi-label">ERP Connections</span>
+                <h2 class="kpi-value @(DashboardState.AdminHealth.SageX3Connected ? "status-online" : "status-offline")">
+                    @(DashboardState.AdminHealth.SageX3Connected ? "Online" : "Offline")
                 </h2>
-
-                <small>
-                    API:
-                    @DashboardState.AdminHealth.APIHealthStatus
+                <small class="kpi-subtext">
+                    API: @DashboardState.AdminHealth.APIHealthStatus
                 </small>
-
             </div>
-
         </div>
 
+        @* Failed Transactions Card *@
         <div class="kpi-card">
-
-            <div class="kpi-icon">⚠</div>
-
+            <div class="kpi-icon icon-amber">⚠</div>
             <div class="kpi-content">
-                <span>Failed Transactions</span>
-
-                <h2>
+                <span class="kpi-label">Failed Transactions</span>
+                <h2 class="kpi-value">
                     @DashboardState.AdminHealth.FailedTransactions
                 </h2>
-
-                <small>
-                    @DashboardState.AdminHealth.PendingSyncJobs
-                    pending jobs
+                <small class="kpi-trend @(DashboardState.AdminHealth.PendingSyncJobs > 0 ? "trend-warning" : "trend-muted")">
+                    @DashboardState.AdminHealth.PendingSyncJobs pending jobs
                 </small>
-
             </div>
-
         </div>
 
     </div>
 
-    <!-- MAIN GRID -->
+    <!-- MAIN CONTENT DASHBOARD GRID -->
     <div class="admin-grid">
 
-        <!-- SYSTEM HEALTH PANEL -->
-        <section class="dashboard-card dashboard-span-2">
-
+        <!-- SYSTEM HEALTH BLOCK -->
+        <div class="dashboard-span-2">
             <SystemHealthPanel Status="@DashboardState.AdminHealth" />
+        </div>
 
-        </section>
-
-        <!-- RECENT ACTIVITY -->
+        <!-- RECENT ACTIVITY FEED -->
         <section class="dashboard-card">
-
             <div class="card-header">
-                <h3>Recent Activity</h3>
+                <h3 class="panel-section-title">Recent Activity</h3>
             </div>
 
             <div class="activity-list">
-
-                @foreach (var log in RecentLogs.Take(5))
+                @if (RecentLogs != null && RecentLogs.Any())
                 {
-                    <div class="activity-item">
-
-                        <div class="activity-dot"></div>
-
-                        <div class="activity-content">
-
-                            <strong>
-                                @log.Action
-                            </strong>
-
-                            <span>
-                                @log.User •
-                                @log.Timestamp.ToString("g")
-                            </span>
-
+                    @foreach (var log in RecentLogs.Take(5))
+                    {
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div class="activity-content">
+                                <strong class="activity-action-text">@log.Action</strong>
+                                <span class="activity-meta-text">@log.User • @log.Timestamp.ToString("g")</span>
+                            </div>
                         </div>
-
-                    </div>
+                    }
                 }
-
+                else
+                {
+                    <p class="empty-state-text">No operational activity logs compiled.</p>
+                }
             </div>
-
         </section>
 
-        <!-- CURRENT USER -->
+        <!-- CURRENT SESSION OVERVIEW -->
         <section class="dashboard-card">
-
             <div class="card-header">
-                <h3>Current Session</h3>
+                <h3 class="panel-section-title">Current Session</h3>
             </div>
 
             <div class="current-user-card">
-
-                <div class="user-avatar">
-                    @GetInitials()
-                </div>
-
+                <div class="user-avatar">@GetInitials()</div>
                 <div class="user-info">
-
-                    <strong>
-                        @CurrentUser?.Name
-                    </strong>
-
-                    <span>
-                        @CurrentUser?.Role
-                    </span>
-
-                    <small>
-                        Environment:
-                        @CurrentUser?.Environment
-                    </small>
-
+                    <strong class="user-display-name">@CurrentUser?.Name</strong>
+                    <span class="user-assigned-role">Role Scope: @CurrentUser?.Role</span>
+                    <small class="user-environment-pill">Environment: <strong>@CurrentUser?.Environment</strong></small>
                 </div>
-
             </div>
-
         </section>
 
     </div>
 
+    <!-- POPUP MODAL DIALOG USER CREATION REGISTRATION FORM -->
+    @if (_isUserModalOpen)
+    {
+        <div class="modal-overlay-backdrop">
+            <div class="modal-content-window">
+                <div class="modal-form-header">
+                    <h3>Create New Profile Node Account</h3>
+                    <button class="modal-close-btn" @onclick="CloseCreateUserModal">×</button>
+                </div>
+                
+                <EditForm Model="@_formModel" OnValidSubmit="HandleSubmitUserForm">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-group-field">
+                        <label>Profile Full Name</label>
+                        <InputText @bind-Value="_formModel.Name" class="form-text-input" placeholder="e.g. Thando Mpofu" />
+                        <ValidationMessage For="@(() => _formModel.Name)" class="text-error" />
+                    </div>
+
+                    <div class="form-group-field">
+                        <label>Work Email Address</label>
+                        <InputText @bind-Value="_formModel.Email" class="form-text-input" placeholder="e.g. user@@x3consulting.com" />
+                        <ValidationMessage For="@(() => _formModel.Email)" class="text-error" />
+                    </div>
+
+                    <div class="form-group-field">
+                        <label>Security Role Assignment</label>
+                        <InputSelect @bind-Value="_formModel.Role" class="form-text-input select-arrow">
+                            <option value="">Choose Role Scope...</option>
+                            <option value="Global Administrator">Global Administrator</option>
+                            <option value="ERP Operations Manager">ERP Operations Manager</option>
+                            <option value="Standard Workspace Operator">Standard Workspace Operator</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _formModel.Role)" class="text-error" />
+                    </div>
+
+                    <div class="form-group-field">
+                        <label>System Environment Directives</label>
+                        <InputSelect @bind-Value="_formModel.Environment" class="form-text-input select-arrow">
+                            <option value="Development">Development Sandbox</option>
+                            <option value="Production">Live Production Cluster</option>
+                            <option value="Testing Core">Staging Testing Core</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="modal-form-footer">
+                        <button type="button" class="btn-cancel" @onclick="CloseCreateUserModal">Cancel</button>
+                        <button type="submit" class="btn-save-user">Generate Account Profile</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
-
     private List<AuditLogDto> RecentLogs = new();
-
     private UserDto? CurrentUser;
+
+    private bool _isUserModalOpen = false;
+    private FormUserWrapper _formModel = new FormUserWrapper();
 
     protected override async Task OnInitializedAsync()
     {
         DashboardState.OnChange += Refresh;
-
         await LoadDashboard();
     }
 
-    private void Refresh()
-    {
-        InvokeAsync(StateHasChanged);
-    }
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
     private async Task LoadDashboard()
     {
-        CurrentUser =
-            await DashboardService.GetCurrentUserAsync();
-
-        RecentLogs =
-            await DashboardService.GetRecentLogsAsync();
-
+        CurrentUser = await DashboardService.GetCurrentUserAsync();
+        RecentLogs = await DashboardService.GetRecentLogsAsync();
         await DashboardState.LoadDashboardAsync();
     }
 
-    private async Task RefreshDashboard()
+    private async Task RefreshDashboard() => await LoadDashboard();
+
+    private void OpenCreateUserModal()
     {
-        await LoadDashboard();
+        _formModel = new FormUserWrapper();
+        _isUserModalOpen = true;
+    }
+
+    private void CloseCreateUserModal() => _isUserModalOpen = false;
+
+    private async Task HandleSubmitUserForm()
+    {
+        var apiPayload = new CreateUserRequest(_formModel.Name, _formModel.Email, _formModel.Role, _formModel.Environment);
+        bool registrationSuccess = await DashboardService.CreateUserAsync(apiPayload);
+
+        if (registrationSuccess)
+        {
+            RecentLogs.Insert(0, new AuditLogDto { Action = $"Provisioned Profile ({_formModel.Role})", User = _formModel.Email, Timestamp = DateTime.Now });
+            _isUserModalOpen = false;
+            StateHasChanged();
+            await JS.InvokeVoidAsync("alert", $"Successfully Provisioned Account Profile: {_formModel.Name}");
+        }
+    }
+
+    private async Task TriggerPdfDownloadReport()
+    {
+        byte[] fileBytes = await DashboardService.DownloadReportPdfAsync();
+        if (fileBytes != null && fileBytes.Length > 0)
+        {
+            string base64String = Convert.ToBase64String(fileBytes);
+            string downloadUrl = $"data:application/pdf;base64,{base64String}";
+
+            await JS.InvokeVoidAsync("open", downloadUrl, "_blank");
+        }
     }
 
     private string GetInitials()
     {
-        if (CurrentUser == null)
-            return "AD";
-
-        var parts = CurrentUser.Name.Split(
-            ' ',
-            StringSplitOptions.RemoveEmptyEntries);
-
-        if (parts.Length == 1)
-            return parts[0][0].ToString().ToUpper();
-
-        return $"{parts[0][0]}{parts[1][0]}"
-            .ToUpper();
+        if (CurrentUser == null || string.IsNullOrWhiteSpace(CurrentUser.Name)) return "AD";
+        var parts = CurrentUser.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
+        return $"{parts[0][0]}{parts[1][0]}".ToUpper();
     }
 
-    public void Dispose()
+    public void Dispose() => DashboardState.OnChange -= Refresh;
+
+    public class FormUserWrapper
     {
-        DashboardState.OnChange -= Refresh;
-    }
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Name field is mandatory.")]
+        public string Name { get; set; } = string.Empty;
 
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email field is mandatory."), System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid email format.")]
+
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please allocate a security role scope.")]
+
+        public string Role { get; set; } = string.Empty;
+
+        public string Environment { get; set; } = "Development";
+
+        }
 }
-

@@ -1,19 +1,20 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using Microsoft.Extensions.Caching.Memory;
-using OperationalWorkspaceApplication.IServices;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using OperationalWorkspace.Domain.Entities;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Mappers;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspace.Domain.Entities;
-using OperationalWorkspaceApplication.Mappers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Services;
 
@@ -26,21 +27,27 @@ public sealed class AttachmentService : IAttachmentService
     private readonly HttpClient _httpClient;
 
     // 🚨 CONFIGURATION TOGGLE: Set to false for local dev mock data, true for live Sage servers
-    private readonly bool _isSageConnected = false;
+    private readonly bool _isSageConnected;
 
     public AttachmentService(
         IAttachmentRepository repository,
         IUnitOfWork unitOfWork,
         IClock clock,
         IMemoryCache cache,
-        HttpClient httpClient)
+        HttpClient httpClient,
+        IConfiguration configuration)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
         _clock = clock;
         _cache = cache;
         _httpClient = httpClient;
+
+        // Reads 'UseMockData' from the SageX3 section, then flips it so _isSageConnected is true if mock data is false
+        var useMockData = configuration.GetValue<bool>("SageX3:UseMockData");
+        _isSageConnected = !useMockData;
     }
+
 
     // 👇 ENTERPRISE METHOD 1: DUAL MOCK / REAL SAGE BINARY STREAMER
     public async Task<byte[]> GetAttachmentBinaryStreamAsync(Guid id, string userContext)
