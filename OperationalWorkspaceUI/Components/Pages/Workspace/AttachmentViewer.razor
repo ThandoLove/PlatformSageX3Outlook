@@ -1,0 +1,71 @@
+﻿@page "/attachments/{id:guid}"
+@rendermode InteractiveServer
+
+@using OperationalWorkspaceUI.State
+@inject WorkspaceState State
+@inject NavigationManager Nav
+
+<div class="enterprise-attachment-viewport" style="width: 100vw; height: 100vh; overflow: hidden; background: #525659; margin: 0; padding: 0; position: fixed; top: 0; left: 0; z-index: 99999;">
+
+    @* Control Ribbon Header Panel *@
+    <div style="height: 50px; background: #1f2937; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; color: white;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <button @onclick="NavigateBack" style="background: transparent; border: none; color: #9ca3af; cursor: pointer; font-size: 1rem; font-weight: 500;">
+                ← Close View
+            </button>
+            <span style="font-weight: 600; font-size: 0.95rem; color: #f9fafb;">@AttachmentName</span>
+            <span style="font-size: 0.75rem; background: #374151; color: #34d399; padding: 3px 10px; border-radius: 12px; font-weight: 600;">Secure Stream Pipeline</span>
+        </div>
+        <div style="font-size: 0.85rem; color: #9ca3af;">
+            Audit Operator: <strong style="color:white;">Tia</strong>
+        </div>
+    </div>
+
+    @* Full Window Viewport Without Scrollbars *@
+    <div style="width: 100%; height: calc(100vh - 50px); overflow: hidden; background: #525659; margin: 0; padding: 0;">
+        @if (!string.IsNullOrEmpty(StreamingRoute))
+        {
+            <iframe src="@StreamingRoute"
+                    style="width: 100%; height: 100%; border: none; display: block; overflow: hidden; margin:0; padding:0;"
+                    scrolling="no">
+            </iframe>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    private string AttachmentName { get; set; } = "Initializing Security Validation Layers...";
+    private string StreamingRoute { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        var doc = State.Attachments.FirstOrDefault(a => a.Id == Id);
+        if (doc == null)
+        {
+            Nav.NavigateTo("/attachments");
+            return;
+        }
+
+        AttachmentName = doc.FileName;
+
+        // Enforces strict read-only parameters for browser rendering layout views
+        string webOptions = "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
+
+        // 🚨 CONFIGURATION TOGGLE: Set to true once your live production endpoints are running
+        bool isProductionSageServiceLive = false;
+
+        if (isProductionSageServiceLive)
+        {
+            // Production stream pipeline routing pointing to your consolidated API controller
+            StreamingRoute = $"/api/attachment/stream/{Id}{webOptions}";
+        }
+        else
+        {
+            // Local sandbox fallback options using your local static asset directories for mock testing [INDEX]
+            StreamingRoute = $"/mock-documents/{doc.FileName}{webOptions}";
+        }
+    }
+
+    private void NavigateBack() => Nav.NavigateTo("/attachments");
+}

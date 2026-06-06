@@ -20,5 +20,9 @@ namespace OperationalWorkspaceApplication.Interfaces.IServices
             GetAttachmentsRequest request,
             CancellationToken cancellationToken);
         Task<List<AttachmentDto>> GetRecentAttachmentsAsync(string userId);
+
+        Task<byte[]> GetAttachmentBinaryStreamAsync(Guid id, string userContext);
+        Task<string> GetAttachmentMimeTypeAsync(Guid id);
+        Task LogAttachmentAuditTrailAsync(Guid id, string action, string userContext);
     }
 }

@@ -92,10 +92,6 @@ builder.Services.AddHangfireServer(options =>
 
 
 
-builder.Services.AddHangfireServer(options =>
-{
-    options.WorkerCount = Environment.ProcessorCount * 2;
-});
 
 // ======================================================
 // 2. PRODUCTION COMPRESSION & METRICS TELEMETRY

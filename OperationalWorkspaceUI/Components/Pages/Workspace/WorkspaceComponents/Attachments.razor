@@ -37,21 +37,21 @@
             </div>
         </div>
 
-            <div class="upload-wrapper">
-                <InputFile id="fileInput" OnChange="HandleFileUpload" class="hidden-file" disabled="@State.IsUploading" />
-                <label for="fileInput" class="btn-upload-primary @(State.IsUploading ? "is-disabled" : "")">
-                    @if (State.IsUploading)
-                    {
-                        <FluentProgressRing Class="upload-ring" />
-                        <span class="upload-text">Uploading...</span>
-                    }
-                    else
-                    {
-                        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowUpload())" Color="Color.Fill" />
-                        <span>Upload</span>
-                    }
-                </label>
-            </div>
+        <div class="upload-wrapper">
+            <InputFile id="fileInput" OnChange="HandleFileUpload" class="hidden-file" disabled="@State.IsUploading" />
+            <label for="fileInput" class="btn-upload-primary @(State.IsUploading ? "is-disabled" : "")">
+                @if (State.IsUploading)
+                {
+                    <FluentProgressRing Class="upload-ring" />
+                    <span class="upload-text">Uploading...</span>
+                }
+                else
+                {
+                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowUpload())" Color="Color.Fill" />
+                    <span>Upload</span>
+                }
+            </label>
+        </div>
     </div>
 
     <div class="main-layout">
@@ -111,10 +111,9 @@
                 </div>
             </div>
         </div>
-
         @* RIGHT: PREVIEW PANE *@
-        <div class="document-preview-pane">
-                <div class="pane-header">
+        <div class="document-preview-pane" style="box-shadow: none; border-left: 1px solid #f1f5f9;">
+            <div class="pane-header">
                 <span class="title">Document Preview</span>
                 @if (SelectedDoc != null)
                 {
@@ -124,30 +123,41 @@
 
             @if (SelectedDoc != null)
             {
-                <div class="preview-info">
+                <div class="preview-info" style="box-shadow: none;">
                     <div class="preview-hero">
                         <FluentIcon Value="@GetIcon(SelectedDoc.FileName)" Class="preview-icon" Color="Color.Error" />
                         <span class="hero-filename">@SelectedDoc.FileName</span>
                     </div>
                     <div class="preview-meta">Version 1.0 — @FormatSize(SelectedDoc.FileSize)</div>
+
                     <div class="detail-grid">
                         <div class="detail-row"><label>Type</label><span>@SelectedDoc.ContentType</span></div>
                         <div class="detail-row"><label>Source</label><span>Local</span></div>
                         <div class="detail-row"><label>Date</label><span>@SelectedDoc.UploadedAtUtc.ToShortDateString()</span></div>
                     </div>
 
+                    @if (SelectedDoc.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <div class="pdf-preview-container" style="margin-top: 15px; width: 100%; border: none; border-radius: 4px; overflow: hidden; background: #ffffff; box-shadow: none;">
+                            <iframe src="@GetPdfUrl(SelectedDoc)"
+                                    style="width: 100%; height: 680px; border: none; overflow: hidden; display: block;"
+                                    scrolling="no">
+                            </iframe>
+                        </div>
+                    }
+
                     @* RELATED RECORDS SECTION *@
-                    <div class="related-records">
+                    <div class="related-records" style="margin-top: 15px;">
                         <RelatedRecordsPanel Title="Linked Order"
                                              Records="@(new List<string> { SelectedDoc.RelatedEntity })"
-                                             OnRecordClicked="@((n) => Nav.NavigateTo("/orders"))" />
+                                             OnRecordClicked="@((n) => OpenPdfPreviewAsync())" />
 
                         <RelatedRecordsPanel Title="Linked Tasks"
                                              Records="@State.Tasks.Where(t => t.Title.Contains(SelectedDoc.FileName)).Select(t => t.Title).ToList()"
                                              OnRecordClicked="@((n) => Nav.NavigateTo("/activities"))" />
                     </div>
 
-                    <button class="btn-attach-full" @onclick="() => HandleAttachDocument(SelectedDoc)">Attach to Record</button>
+                    <button class="btn-attach-full" @onclick="() => HandleAttachDocument(SelectedDoc)" style="margin-top: 15px;">Attach to Record</button>
                     <button class="btn-delete-full" @onclick="() => DeleteDocument(SelectedDoc)">Delete</button>
                 </div>
             }
@@ -161,7 +171,6 @@
         </div>
     </div>
 </div>
-
 @code {
     private string SearchQuery = "";
     private string SelectedType = "All";
@@ -176,6 +185,36 @@
     private IEnumerable<AttachmentDto> PaginatedDocs => FilteredData.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
     private int TotalPages => (int)Math.Ceiling((double)FilteredData.Count() / PageSize);
 
+    // 1. HORIZONTAL ARROW ROUTE LINK (Maps to Pic 4 Stream)
+    private void OpenPdfPreviewAsync()
+    {
+        if (SelectedDoc == null)
+            return;
+
+        // Redirects directly to your standalone streaming route layout
+        Nav.NavigateTo($"/attachments/{SelectedDoc.Id}");
+    }
+
+    private string GetPdfUrl(AttachmentDto doc)
+    {
+        if (doc == null)
+            return string.Empty;
+
+        string webOptions = "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
+
+        // TOGGLE SWITCH: Set to true once backend handles live production ERP routing tasks
+        bool isProductionStreamingServiceLive = false;
+
+        if (isProductionStreamingServiceLive)
+        {
+            // Matches your 4th Swagger picture path exactly
+            return $"/api/v1/Attachment/stream/{doc.Id}{webOptions}";
+        }
+
+        return $"/mock-documents/{doc.FileName}{webOptions}";
+    }
+
+    // 2. FILE INPUT UPLOAD ACTION (Maps to Pic 1 upload-file multipart form-data)
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
         var file = e.File;
@@ -185,15 +224,30 @@
 
         try
         {
-            await Task.Delay(1500);
+            using var content = new MultipartFormDataContent();
+            var fileStream = file.OpenReadStream(10 * 1024 * 1024);
+            var streamContent = new StreamContent(fileStream);
+            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
 
-            var newDoc = new AttachmentDto(Guid.NewGuid(), file.Name, file.ContentType, file.Size, "#", "Unlinked", DateTime.UtcNow);
-            
-            State.Attachments.Insert(0, newDoc);
-            SelectedDoc = newDoc;
+            // Name must match the Swagger form field name "file" exactly
+            content.Add(streamContent, "file", file.Name);
 
-            State.LogActivity(file.Name, "Uploaded Document", "Tia");
-            State.Notify();
+            // Calls your Pic 1 endpoint route
+            var response = await Http.PostAsync($"api/v1/Attachment/upload-file?ownerId=Tia&ownerType=DocumentList", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var newDoc = new AttachmentDto(Guid.NewGuid(), file.Name, file.ContentType, file.Size, "#", "Unlinked", DateTime.UtcNow);
+                State.Attachments.Insert(0, newDoc);
+                SelectedDoc = newDoc;
+
+                State.LogActivity(file.Name, "Uploaded Document", "Tia");
+                State.Notify();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Upload network failure: {ex.Message}");
         }
         finally
         {
@@ -201,36 +255,68 @@
         }
     }
 
+    // 3. ATTACH TO RECORD JSON ACTION (Maps to Pic 2 /upload endpoint application/json)
     private async Task HandleAttachDocument(AttachmentDto? doc)
     {
         if (doc == null) return;
+
         try
         {
-            await Http.PostAsJsonAsync("api/documents/attach-to-erp", new { DocumentId = doc.Id, Name = doc.FileName, EntityContext = doc.RelatedEntity });
-            await JSRuntime.InvokeVoidAsync("alert", $"Successfully Attached File: {doc.FileName} directly inside Sage X3 ERP Context records!");
+            // Builds the exact JSON request body structure seen in your 2nd Swagger picture
+            var requestBody = new
+            {
+                ownerType = "SageX3OrderContext",
+                ownerId = doc.RelatedEntity,
+                fileName = doc.FileName,
+                contentType = doc.ContentType,
+                fileSize = doc.FileSize,
+                storagePath = $"/mock-documents/{doc.FileName}"
+            };
+
+            // Posts clean JSON data directly to your Pic 2 upload endpoint
+            var response = await Http.PostAsJsonAsync("api/v1/Attachment/upload", requestBody);
+
+            if (response.IsSuccessStatusCode)
+            {
+                State.LogActivity(doc.FileName, $"Attached to ERP ({doc.RelatedEntity})", "Tia");
+                State.Notify();
+            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Mock Sync: Document {doc.FileName} linked seamlessly to active transactional session context framework database node!");
+            System.Diagnostics.Debug.WriteLine($"ERP link configuration fault: {ex.Message}");
+        }
+    }
+
+    // 4. BROWSE SAGE INDEX ACTION (Maps to Pic 3 /list GET route query parameters)
+    private async Task BrowseSageX3()
+    {
+        try
+        {
+            // Calls your Pic 3 endpoint passing required parameters via the query string
+            var response = await Http.GetAsync("api/v1/Attachment/list?ownerType=SageGlobalIndex&ownerId=All");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Instantly pushes a clean record entry onto your Activity tracking page log
+                State.LogActivity("Sage Server Repository", "Queried ERP Document Index", "Tia");
+                State.Notify();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Sage browsing lookup error: {ex.Message}");
         }
     }
 
     private async Task DeleteDocument(AttachmentDto? doc)
     {
         if (doc == null) return;
-        
+
         State.Attachments.Remove(doc);
         if (SelectedDoc?.Id == doc.Id) SelectedDoc = null;
 
         State.LogActivity(doc.FileName, "Deleted Document", "Tia");
-        State.Notify();
-    }
-
-    private async Task BrowseSageX3()
-    {
-        var newDoc = new AttachmentDto(Guid.NewGuid(), "Sage_Manual.pdf", "PDF", 1048576, "sage", "Sage X3", DateTime.UtcNow);
-        State.Attachments.Insert(0, newDoc);
-        State.LogActivity("Sage_Manual.pdf", "Browsed Sage X3", "Tia");
         State.Notify();
     }
 
