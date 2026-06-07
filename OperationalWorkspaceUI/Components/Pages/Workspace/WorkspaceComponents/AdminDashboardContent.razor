@@ -27,11 +27,8 @@
             </button>
         </div>
     </div>
-
     <!-- KPI METRICS SUMMARY GRID -->
     <div class="kpi-grid">
-
-        @* Total Users Card *@
         <div class="kpi-card">
             <div class="kpi-icon icon-blue">👥</div>
             <div class="kpi-content">
@@ -41,7 +38,6 @@
             </div>
         </div>
 
-        @* Open Workflows Card *@
         <div class="kpi-card">
             <div class="kpi-icon icon-teal">📈</div>
             <div class="kpi-content">
@@ -51,7 +47,6 @@
             </div>
         </div>
 
-        @* ERP Connections Card *@
         <div class="kpi-card">
             <div class="kpi-icon icon-emerald">🔌</div>
             <div class="kpi-content">
@@ -65,7 +60,6 @@
             </div>
         </div>
 
-        @* Failed Transactions Card *@
         <div class="kpi-card">
             <div class="kpi-icon icon-amber">⚠</div>
             <div class="kpi-content">
@@ -78,23 +72,18 @@
                 </small>
             </div>
         </div>
-
     </div>
 
     <!-- MAIN CONTENT DASHBOARD GRID -->
     <div class="admin-grid">
-
-        <!-- SYSTEM HEALTH BLOCK -->
         <div class="dashboard-span-2">
             <SystemHealthPanel Status="@DashboardState.AdminHealth" />
         </div>
 
-        <!-- RECENT ACTIVITY FEED -->
         <section class="dashboard-card">
             <div class="card-header">
                 <h3 class="panel-section-title">Recent Activity</h3>
             </div>
-
             <div class="activity-list">
                 @if (RecentLogs != null && RecentLogs.Any())
                 {
@@ -116,12 +105,10 @@
             </div>
         </section>
 
-        <!-- CURRENT SESSION OVERVIEW -->
         <section class="dashboard-card">
             <div class="card-header">
                 <h3 class="panel-section-title">Current Session</h3>
             </div>
-
             <div class="current-user-card">
                 <div class="user-avatar">@GetInitials()</div>
                 <div class="user-info">
@@ -131,9 +118,7 @@
                 </div>
             </div>
         </section>
-
     </div>
-
     <!-- POPUP MODAL DIALOG USER CREATION REGISTRATION FORM -->
     @if (_isUserModalOpen)
     {
@@ -143,10 +128,10 @@
                     <h3>Create New Profile Node Account</h3>
                     <button class="modal-close-btn" @onclick="CloseCreateUserModal">×</button>
                 </div>
-                
+
                 <EditForm Model="@_formModel" OnValidSubmit="HandleSubmitUserForm">
                     <DataAnnotationsValidator />
-                    
+
                     <div class="form-group-field">
                         <label>Profile Full Name</label>
                         <InputText @bind-Value="_formModel.Name" class="form-text-input" placeholder="e.g. Thando Mpofu" />
@@ -249,11 +234,20 @@
 
     private string GetInitials()
     {
-        if (CurrentUser == null || string.IsNullOrWhiteSpace(CurrentUser.Name)) return "AD";
+        if (CurrentUser == null || string.IsNullOrWhiteSpace(CurrentUser.Name))
+            return "AD";
+
         var parts = CurrentUser.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
-        return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+
+        // ✅ FIX: Fixed string indexing format to satisfy the compiler
+        if (parts.Length == 1)
+            return parts[0].Substring(0, 1).ToUpper();
+
+        // ✅ FIX: Clean string slice layout methods
+        return (parts[0].Substring(0, 1) + parts[1].Substring(0, 1)).ToUpper();
     }
+
+
 
     public void Dispose() => DashboardState.OnChange -= Refresh;
 
@@ -263,14 +257,11 @@
         public string Name { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email field is mandatory."), System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid email format.")]
-
         public string Email { get; set; } = string.Empty;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Please allocate a security role scope.")]
-
         public string Role { get; set; } = string.Empty;
 
         public string Environment { get; set; } = "Development";
-
-        }
+    }
 }

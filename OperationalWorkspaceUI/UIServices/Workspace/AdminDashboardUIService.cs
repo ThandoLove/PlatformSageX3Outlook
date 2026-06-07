@@ -12,13 +12,12 @@ public class AdminDashboardUIService
 {
     private readonly HttpClient _httpClient;
 
-    // Inject your application's synchronized HttpClient context block [INDEX]
     public AdminDashboardUIService(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
 
-    // 1. LIVE PIPELINE: CREATE USER FORM CONTROLLER ACTION (Maps to Step 4 submit) [INDEX]
+    // 1. LIVE PIPELINE: CREATE USER FORM CONTROLLER ACTION
     public async Task<bool> CreateUserAsync(CreateUserRequest request)
     {
         try
@@ -28,12 +27,13 @@ public class AdminDashboardUIService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"User registration transit error: {ex.Message}");
+            // 🔴 FIX: Prefix with global:: to bypass your local custom folder namespace collision
+            global::System.Diagnostics.Debug.WriteLine($"User registration transit error: {ex.Message}");
             return false;
         }
     }
 
-    // 2. LIVE PIPELINE: EXPORT REPORT FILE BYTES DOWNLOAD STREAM [INDEX]
+    // 2. LIVE PIPELINE: EXPORT REPORT FILE BYTES DOWNLOAD STREAM
     public async Task<byte[]> DownloadReportPdfAsync()
     {
         try
@@ -47,12 +47,12 @@ public class AdminDashboardUIService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Report generation download fault: {ex.Message}");
+            // 🔴 FIX: Prefix with global:: to bypass your local custom folder namespace collision
+            global::System.Diagnostics.Debug.WriteLine($"Report generation download fault: {ex.Message}");
             return Array.Empty<byte>();
         }
     }
 
-    // Keep all your original method signature templates intact below so your views load safely [INDEX]
     public async Task<List<ActivityDto>> GetRecentActivityAsync()
     {
         await Task.Delay(100);
@@ -72,7 +72,7 @@ public class AdminDashboardUIService
         {
             Name = "System Administrator",
             Role = "Global Administrator",
-            Environment = "Production" // Added field assignment value to populate small pill label cleanly
+            Environment = "Production"
         };
     }
 
