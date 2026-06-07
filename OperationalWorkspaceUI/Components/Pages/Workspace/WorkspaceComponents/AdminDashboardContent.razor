@@ -80,14 +80,15 @@
             <SystemHealthPanel Status="@DashboardState.AdminHealth" />
         </div>
 
+        <!-- RECENT OPERATIONAL ACTIVITIES PANEL -->
         <section class="dashboard-card">
             <div class="card-header">
                 <h3 class="panel-section-title">Recent Activity</h3>
             </div>
             <div class="activity-list">
-                @if (RecentLogs != null && RecentLogs.Any())
+                @if (LocalRecentLogs != null && LocalRecentLogs.Any())
                 {
-                    @foreach (var log in RecentLogs.Take(5))
+                    @foreach (var log in LocalRecentLogs.Take(5))
                     {
                         <div class="activity-item">
                             <div class="activity-dot"></div>
@@ -105,6 +106,7 @@
             </div>
         </section>
 
+        <!-- CURRENT SESSION OVERVIEW -->
         <section class="dashboard-card">
             <div class="card-header">
                 <h3 class="panel-section-title">Current Session</h3>
@@ -112,9 +114,9 @@
             <div class="current-user-card">
                 <div class="user-avatar">@GetInitials()</div>
                 <div class="user-info">
-                    <strong class="user-display-name">@CurrentUser?.Name</strong>
-                    <span class="user-assigned-role">Role Scope: @CurrentUser?.Role</span>
-                    <small class="user-environment-pill">Environment: <strong>@CurrentUser?.Environment</strong></small>
+                    <strong class="user-display-name">@LocalCurrentUser?.Name</strong>
+                    <span class="user-assigned-role">Role Scope: @LocalCurrentUser?.Role</span>
+                    <small class="user-environment-pill">Environment: <strong>@LocalCurrentUser?.Environment</strong></small>
                 </div>
             </div>
         </section>
@@ -140,7 +142,9 @@
 
                     <div class="form-group-field">
                         <label>Work Email Address</label>
-                        <InputText @bind-Value="_formModel.Email" class="form-text-input" placeholder="e.g. user@@x3consulting.com" />
+                        <InputText @bind-Value="_formModel.Email"
+           class="form-text-input"
+           placeholder="user@x3consulting.com" />
                         <ValidationMessage For="@(() => _formModel.Email)" class="text-error" />
                     </div>
 
@@ -175,8 +179,9 @@
 </div>
 
 @code {
-    private List<AuditLogDto> RecentLogs = new();
-    private UserDto? CurrentUser;
+    // ✅ FIX: Declared as local component variables to completely clear missing state model errors
+    private List<AuditLogDto> LocalRecentLogs = new();
+    private UserDto? LocalCurrentUser;
 
     private bool _isUserModalOpen = false;
     private FormUserWrapper _formModel = new FormUserWrapper();
@@ -191,9 +196,10 @@
 
     private async Task LoadDashboard()
     {
-        CurrentUser = await DashboardService.GetCurrentUserAsync();
-        RecentLogs = await DashboardService.GetRecentLogsAsync();
-        await DashboardState.LoadDashboardAsync();
+        LocalCurrentUser = await DashboardService.GetCurrentUserAsync();
+        LocalRecentLogs = await DashboardService.GetRecentLogsAsync();
+        DashboardState.AdminHealth = await DashboardService.GetLiveMetricsAsync();
+        DashboardState.NotifyStateChanged();
     }
 
     private async Task RefreshDashboard() => await LoadDashboard();
@@ -213,7 +219,8 @@
 
         if (registrationSuccess)
         {
-            RecentLogs.Insert(0, new AuditLogDto { Action = $"Provisioned Profile ({_formModel.Role})", User = _formModel.Email, Timestamp = DateTime.Now });
+            // Dynamically logs the activity using local component arrays
+            LocalRecentLogs.Insert(0, new AuditLogDto { Action = $"Provisioned Profile ({_formModel.Role})", User = _formModel.Email, Timestamp = DateTime.Now });
             _isUserModalOpen = false;
             StateHasChanged();
             await JS.InvokeVoidAsync("alert", $"Successfully Provisioned Account Profile: {_formModel.Name}");
@@ -234,20 +241,19 @@
 
     private string GetInitials()
     {
-        if (CurrentUser == null || string.IsNullOrWhiteSpace(CurrentUser.Name))
+        if (LocalCurrentUser == null || string.IsNullOrWhiteSpace(LocalCurrentUser.Name))
             return "AD";
 
-        var parts = CurrentUser.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var parts = LocalCurrentUser.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // ✅ FIX: Fixed string indexing format to satisfy the compiler
         if (parts.Length == 1)
-            return parts[0].Substring(0, 1).ToUpper();
+            return parts[0].Length > 0 ? parts[0].Substring(0, 1).ToUpper() : "AD";
 
-        // ✅ FIX: Clean string slice layout methods
-        return (parts[0].Substring(0, 1) + parts[1].Substring(0, 1)).ToUpper();
+        string firstInitial = parts[0].Length > 0 ? parts[0].Substring(0, 1) : "";
+        string secondInitial = parts[1].Length > 0 ? parts[1].Substring(0, 1) : "";
+
+        return (firstInitial + secondInitial).ToUpper();
     }
-
-
 
     public void Dispose() => DashboardState.OnChange -= Refresh;
 
