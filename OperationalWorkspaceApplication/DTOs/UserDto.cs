@@ -15,10 +15,10 @@ namespace OperationalWorkspaceApplication.DTOs
         public string Role { get; set; } = string.Empty;
         public string Environment { get; set; } = "Production";
 
-      
+        public string Status { get; set; } = "Active";
+
         public string? TenantId { get; set; }
-
-
+        public string Email { get; set; }= string.Empty;
     }
 
 

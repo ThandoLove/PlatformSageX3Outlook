@@ -35,51 +35,39 @@ window.dashboardCharts = {
 // 2. OFFICE.JS BRIDGE (FIXED)
 // =========================
 
-// =========================
-// 2. OFFICE.JS BRIDGE (FIXED)
-// =========================
-
 window.officeBridge = {
     initialize: function (dotNetHelper) {
 
         // 🔥 SAFETY: handle browser mode first
         if (typeof Office === 'undefined') {
-            console.log("Office.js not available → using polling mode");
+            console.log("Office.js not available → running browser mode (Single Fetch)");
 
-            const pollIntervalMs = 2000;
-            let lastMessageId = null;
-
-            setInterval(async () => {
+            // 🔥 FIX: Fetches ONCE on application load instead of looping on a 2-second timer
+            (async () => {
                 try {
-                    // FIX: Changed relative path to use your exact backend API host port 7123
                     const resp = await fetch('https://localhost:7123/api/testemail/latest');
                     if (!resp.ok) return;
 
                     const json = await resp.json();
                     if (!json) return;
 
-                    if (json.messageId && json.messageId !== lastMessageId) {
-                        lastMessageId = json.messageId;
+                    const data = {
+                        SenderName: json.senderName || json.sender || 'Test Sender',
+                        SenderEmail: json.senderEmail || json.sender || 'test@example.com',
+                        Subject: json.subject || 'Test Subject',
+                        MessageId: json.messageId || ''
+                    };
 
-                        const data = {
-                            SenderName: json.senderName || json.sender || 'Test Sender',
-                            SenderEmail: json.senderEmail || json.sender || 'test@example.com',
-                            Subject: json.subject || 'Test Subject',
-                            MessageId: json.messageId || ''
-                        };
+                    console.log('Single Polling TestEmail Loaded:', data);
 
-                        console.log('Polling TestEmail:', data);
-
-                        dotNetHelper.invokeMethodAsync('OnEmailReceived', data);
-                    }
+                    dotNetHelper.invokeMethodAsync('OnEmailReceived', data);
                 } catch {
                     // silent fail (dev mode)
                 }
-            }, pollIntervalMs);
+            })();
 
             return; // 🔥 IMPORTANT: stop here in browser mode
         }
-
 
 
         // =========================
@@ -90,17 +78,15 @@ window.officeBridge = {
             if (info.host === Office.HostType.Outlook) {
                 console.log("Office.js Ready. Outlook Host Detected.");
 
-                // 🔥 FIX: preserve context
-                const self = this;
-
+                // 🔥 FIX: Using arrow functions preserves 'this' context perfectly
                 // Initial load
-                self.extractEmailData(dotNetHelper);
+                this.extractEmailData(dotNetHelper);
 
                 // Listen for email changes
                 Office.context.mailbox.addHandlerAsync(
                     Office.EventType.ItemChanged,
-                    function () {
-                        self.extractEmailData(dotNetHelper);
+                    () => {
+                        this.extractEmailData(dotNetHelper);
                     }
                 );
             }
@@ -184,10 +170,10 @@ window.renderAgingHistogram = function (canvasId, dataArray) {
         if (!ctx) return;
         var w = canvas.width = canvas.clientWidth || 200;
         var h = canvas.height = canvas.clientHeight || 60;
-        ctx.clearRect(0,0,w,h);
+        ctx.clearRect(0, 0, w, h);
         var max = Math.max.apply(null, dataArray || [0]);
         var barWidth = Math.floor(w / ((dataArray && dataArray.length) || 1)) - 4;
-        for (var i=0;i<(dataArray?dataArray.length:0);i++) {
+        for (var i = 0; i < (dataArray ? dataArray.length : 0); i++) {
             var v = dataArray[i] || 0;
             var barH = max > 0 ? (v / max) * (h - 8) : 0;
             var x = i * (barWidth + 4) + 4;

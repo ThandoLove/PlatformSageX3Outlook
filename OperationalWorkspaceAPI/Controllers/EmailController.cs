@@ -85,4 +85,23 @@ namespace OperationalWorkspaceAPI.Controllers
             return Ok(context);
         }
     }
+
+    //[ApiController]
+    //[Route("api/testemail")]
+    //public class TestEmailController : ControllerBase
+    //{
+      //  [HttpGet("latest")]
+        //public IActionResult Latest()
+        //{
+          //  return Ok(new
+            //{
+              //  messageId = Guid.NewGuid().ToString(),
+                //senderName = "Demo User",
+                //senderEmail = "demo@test.com",
+                //subject = "Demo Email"
+            //});
+        //}
+    //}
+
+
 }

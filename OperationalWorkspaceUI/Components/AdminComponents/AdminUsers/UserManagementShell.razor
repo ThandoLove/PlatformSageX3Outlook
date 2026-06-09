@@ -1,65 +1,339 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceApplication.Requests
 
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@inject HttpClient Http
+@inject IJSRuntime JS
 
-<div class="users-shell">
-
-    <UserToolbar />
-
-    <UserStatsPanel />
-
-    <div class="users-workspace-grid">
-
-        <UserFiltersPanel />
-
-        <UserTable Users="Users"
-                   SelectedUser="SelectedUser"
-                   SelectedUserChanged="HandleUserSelected" />
-
-        <UserDetailsPanel User="SelectedUser" />
-
+<div class="user-mgmt-container">
+    
+    <!-- HEADER PANEL ROW -->
+    <div class="mgmt-header-row">
+        <div>
+            <h1>User Management</h1>
+            <p class="sub-desc">Manage users, permissions, environments, and access policies.</p>
+        </div>
+        <div class="header-actions-group">
+            <div class="search-input-wrapper">
+                <input type="text" placeholder="Search users..." @bind="SearchQuery" @bind:event="oninput" class="compact-search-box" />
+                <button class="search-tab-btn" @onclick="ExecuteSearchAction">Search</button>
+            </div>
+            <button class="primary-action-btn" @onclick="OpenAddUserModal">+ Add User</button>
+        </div>
     </div>
 
+    <!-- METRICS CARD ROW -->
+    <div class="metrics-cards-row">
+        <div class="mini-stats-card">
+            <span class="stats-card-label">Total Users</span>
+            <h2>@FilteredUsers.Count()</h2>
+        </div>
+        <div class="mini-stats-card">
+            <span class="stats-card-label">Administrators</span>
+            <h2>@FilteredUsers.Count(u => u.Role == "Admin")</h2>
+        </div>
+        <div class="mini-stats-card">
+            <span class="stats-card-label">Managers</span>
+            <h2>@FilteredUsers.Count(u => u.Role == "Manager")</h2>
+        </div>
+        <div class="mini-stats-card">
+            <span class="stats-card-label">Disabled Accounts</span>
+            <h2>@FilteredUsers.Count(u => u.Status == "Disabled")</h2>
+        </div>
+    </div>
+
+    <!-- THREE-COLUMN WORKSPACE FRAME SYSTEM -->
+    <div class="workspace-layout-grid">
+        <!-- LEFT PANEL SIDEBAR: FILTERS -->
+        <div class="sidebar-filters-panel">
+            <h3>Filters</h3>
+            <div class="filter-field-group">
+                <label>Role Scope</label>
+                <select @bind="SelectedRoleFilter" class="compact-select-input">
+                    <option value="">All Roles</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Manager">Manager</option>
+                    <option value="User">User</option>
+                </select>
+            </div>
+            <div class="filter-field-group">
+                <label>Target Environment</label>
+                <select @bind="SelectedEnvFilter" class="compact-select-input">
+                    <option value="">All Environments</option>
+                    <option value="Production">Production</option>
+                    <option value="Development">Development</option>
+                    <option value="Testing">Testing</option>
+                </select>
+            </div>
+            <div class="checkbox-row-field">
+                <input type="checkbox" id="showDisabledToggle" @bind="ShowDisabledOnly" />
+                <label for="showDisabledToggle">Show Disabled Users</label>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL CONTAINER: DATA GRIDS TABLE -->
+        <div class="accounts-list-table-wrapper">
+            <table class="compact-users-data-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Environment</th>
+                        <th>Status</th>
+                        <th>Last Login</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in FilteredUsers)
+                    {
+                        <tr class="@(SelectedUser?.Id == user.Id ? "is-selected-data-row" : "")" @onclick="() => SetSelectedUser(user)">
+                            <td>
+                                <div class="profile-cell-wrapper">
+                                    <div class="avatar-bubble-icon">
+                                        @GetInitial(user.Name)
+                                    </div>
+
+                                    <strong class="fullname-label">
+                                        @user.Name
+                                    </strong>
+
+                                    <span class="email-subtext">
+                                        @user.Email
+                                    </span>
+                                </div>
+                            </td>
+                            <td><span class="badge-role pill-@user.Role.ToLower()">@user.Role</span></td>
+                            <td><span class="env-text-label">@user.Environment</span></td>
+                            <td><span class="status-indicator-dot @user.Status.ToLower()"></span><span class="status-text-span">@user.Status</span></td>
+                            <td><span class="login-timestamp-text">Today, 10:42 AM</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    <!-- RIGHT PANEL SIDEBAR: DETAIL CONSOLE -->
+    <div class="sidebar-details-panel">
+        @if (SelectedUser != null)
+        {
+            <div class="details-avatar-hero">
+                <div class="hero-avatar-large">@GetInitial(SelectedUser.Name)</div>
+                <h3>@SelectedUser.Name</h3>
+                <p>@SelectedUser.Role</p>
+            </div>
+            <div class="meta-details-box">
+                <div class="meta-item-line"><label>Environment:</label><strong>@SelectedUser.Environment</strong></div>
+                <div class="meta-item-line"><label>Account Status:</label><strong class="status-@SelectedUser.Status.ToLower()">@SelectedUser.Status</strong></div>
+            </div>
+
+            <div class="role-modification-box">
+                <h4>Role Management</h4>
+                <div class="filter-field-group">
+                    <label>Alter Access Level</label>
+                    <select @bind="SelectedUser.Role" class="compact-select-input">
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                        <option value="User">User</option>
+                    </select>
+                </div>
+                <button class="btn-save-role-accent" @onclick="SaveAssignedRoleChanges">Save Role</button>
+            </div>
+
+            <!-- TIMELINE AUDIT FEED -->
+            <div class="inner-activity-logs-block">
+                <h4 class="logs-header-title">Recent Activity Timeline</h4>
+                <div class="logs-scroll-viewport">
+                    @foreach (var log in RecentLogs.Where(l => l.User == SelectedUser.Email || l.User == SelectedUser.Name))
+                    {
+                        <div class="log-item-line">
+                            <strong class="log-action-header">@log.Action</strong>
+                            <div class="log-timestamp-sub">@log.Timestamp.ToString("t")</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state-pane-msg">
+                <p>Select an individual user from the main table grid list.</p>
+            </div>
+        }
+    </div>
 </div>
 
+<!-- CENTERED EYE-LEVEL GLASS MODAL WINDOW USER CREATION FORM -->
+@if (_isUserModalOpen)
+{
+    <div class="modal-overlay-backdrop">
+        <div class="modal-content-window">
+            <div class="modal-form-header">
+                <h3>Create New Profile Account</h3>
+                <button class="modal-close-btn" @onclick="CloseAddUserModal">×</button>
+            </div>
+
+            <EditForm Model="@_formModel" OnValidSubmit="HandleSubmitUserForm">
+                <DataAnnotationsValidator />
+
+                <div class="form-group-field">
+                    <label>Profile Full Name</label>
+                    <InputText @bind-Value="_formModel.Name" class="form-text-input" placeholder="e.g. Tia Smith" />
+                    <ValidationMessage For="@(() => _formModel.Name)" class="text-error" />
+                </div>
+
+                <div class="form-group-field">
+                    <label>Work Email Address</label>
+                    <InputText @bind-Value="_formModel.Email" class="form-text-input" placeholder="e.g. operator@test.com" />
+                    <ValidationMessage For="@(() => _formModel.Email)" class="text-error" />
+                </div>
+
+                <div class="form-group-field">
+                    <label>Security Role Assignment</label>
+                    <InputSelect @bind-Value="_formModel.Role" class="compact-select-input select-bg-white">
+                        <option value="Admin">Admin</option>
+                        <option value="Manager">Manager</option>
+                        <option value="User">User</option>
+                    </InputSelect>
+                </div>
+
+                <div class="form-group-field">
+                    <label>Target System Environment</label>
+                    <InputSelect @bind-Value="_formModel.Environment" class="compact-select-input select-bg-white">
+                        <option value="Production">Production</option>
+                        <option value="Development">Development</option>
+                        <option value="Testing">Testing</option>
+                    </InputSelect>
+                </div>
+
+                <div class="modal-form-footer">
+                    <button type="button" class="btn-cancel" @onclick="CloseAddUserModal">Cancel</button>
+                    <button type="submit" class="btn-submit-profile">Generate Profile</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+</div>
 @code {
+    private string SearchQuery = "";
+    private string ActiveSearchTerm = "";
+    private string SelectedRoleFilter = "";
+    private string SelectedEnvFilter = "";
+    private bool ShowDisabledOnly = false;
+    private bool _isUserModalOpen = false;
 
+    private List<UserDto> UsersRegistryCollection = new();
+    private List<AuditLogDto> RecentLogs = new();
     private UserDto? SelectedUser;
+    private FormUserWrapper _formModel = new FormUserWrapper();
 
-    private List<UserDto> Users = new()
+    private IEnumerable<UserDto> FilteredUsers => UsersRegistryCollection
+        .Where(u => (string.IsNullOrWhiteSpace(ActiveSearchTerm) || u.Name.Contains(ActiveSearchTerm, StringComparison.OrdinalIgnoreCase) || (u.Email != null && u.Email.Contains(ActiveSearchTerm, StringComparison.OrdinalIgnoreCase))) &&
+                    (string.IsNullOrEmpty(SelectedRoleFilter) || u.Role == SelectedRoleFilter) &&
+                    (string.IsNullOrEmpty(SelectedEnvFilter) || u.Environment == SelectedEnvFilter) &&
+                    (!ShowDisabledOnly || u.Status == "Disabled"));
+
+    protected override async Task OnInitializedAsync()
     {
-        new()
-        {
-            Id = "1",
-            Name = "System Administrator",
-            Role = "Admin",
-            Environment = "Production"
-        },
+        bool useMockData = Configuration.GetValue<bool>("SageX3:UseMockData");
 
-        new()
+        if (!useMockData)
         {
-            Id = "2",
-            Name = "Operations Manager",
-            Role = "Manager",
-            Environment = "Production"
-        },
-
-        new()
-        {
-            Id = "3",
-            Name = "Support Agent",
-            Role = "User",
-            Environment = "Production"
+            try
+            {
+                var response = await Http.GetFromJsonAsync<List<UserDto>>("api/v1/AdminDashboard/users-list");
+                if (response != null && response.Any())
+                {
+                    UsersRegistryCollection = response;
+                    LoadSampleAuditTrail();
+                    SelectedUser = FilteredUsers.FirstOrDefault();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                global::System.Diagnostics.Debug.WriteLine($"API connection fault: {ex.Message}");
+            }
         }
-    };
 
-    protected override void OnInitialized()
-    {
-        SelectedUser = Users.FirstOrDefault();
+        UsersRegistryCollection = new List<UserDto>
+        {
+            new() { Id = "1", Name = "System Administrator", Role = "Admin", Environment = "Production", Email = "admin@sagex3.com", Status = "Active" },
+            new() { Id = "2", Name = "Operations Manager", Role = "Manager", Environment = "Production", Email = "manager@sagex3.com", Status = "Active" },
+            new() { Id = "3", Name = "Support Agent", Role = "User", Environment = "Production", Email = "agent@sagex3.com", Status = "Active" },
+            new() { Id = "4", Name = "Disabled Sandbox Account", Role = "User", Environment = "Testing", Email = "disabled@test.com", Status = "Disabled" }
+        };
+
+        LoadSampleAuditTrail();
+        SelectedUser = FilteredUsers.FirstOrDefault();
     }
 
-    private void HandleUserSelected(UserDto user)
+    private void LoadSampleAuditTrail()
     {
-        SelectedUser = user;
+        RecentLogs = new List<AuditLogDto>
+        {
+            new() { Action = "Logged into system", User = "admin@sagex3.com", Timestamp = DateTime.Now.AddMinutes(-20) },
+            new() { Action = "Updated ticket SLA", User = "manager@sagex3.com", Timestamp = DateTime.Now.AddMinutes(-5) }
+        };
+    }
+
+    private void ExecuteSearchAction()
+    {
+        ActiveSearchTerm = SearchQuery;
+        SelectedUser = FilteredUsers.FirstOrDefault();
+        StateHasChanged();
+    }
+
+    private void SetSelectedUser(UserDto user) => SelectedUser = user;
+    private void OpenAddUserModal() { _formModel = new FormUserWrapper(); _isUserModalOpen = true; }
+    private void CloseAddUserModal() => _isUserModalOpen = false;
+
+    private async Task HandleSubmitUserForm()
+    {
+        var requestPayload = new CreateUserRequest(_formModel.Name, _formModel.Email, _formModel.Role, _formModel.Environment);
+        var response = await Http.PostAsJsonAsync("api/v1/AdminDashboard/create-user", requestPayload);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var newUser = new UserDto { Id = Guid.NewGuid().ToString(), Name = _formModel.Name, Email = _formModel.Email, Role = _formModel.Role, Environment = _formModel.Environment, Status = "Active" };
+            UsersRegistryCollection.Insert(0, newUser);
+
+            RecentLogs.Insert(0, new AuditLogDto { Action = "Provisioned Profile Account", User = newUser.Email, Timestamp = DateTime.Now });
+            SelectedUser = newUser;
+            _isUserModalOpen = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveAssignedRoleChanges()
+    {
+        if (SelectedUser == null) return;
+        var response = await Http.PutAsJsonAsync($"api/v1/AdminDashboard/update-role/{SelectedUser.Id}", SelectedUser.Role);
+
+        if (response.IsSuccessStatusCode)
+        {
+            RecentLogs.Insert(0, new AuditLogDto { Action = $"Altered Security Scope Clearances to ({SelectedUser.Role})", User = SelectedUser.Email, Timestamp = DateTime.Now });
+            await JS.InvokeVoidAsync("alert", $"Successfully Updated Role Assignment for {SelectedUser.Name}!");
+            StateHasChanged();
+        }
+    }
+
+    private string GetInitial(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        string txt = name.Trim();
+        return txt.Length > 0 ? txt.Substring(0, 1).ToUpper() : "U";
+    }
+
+    public class FormUserWrapper
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Name field is mandatory.")]
+        public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email field is mandatory."), System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid email format.")]
+        public string Email { get; set; } = string.Empty;
+
+        public string Role { get; set; } = "User";
+        public string Environment { get; set; } = "Production";
     }
 }
-

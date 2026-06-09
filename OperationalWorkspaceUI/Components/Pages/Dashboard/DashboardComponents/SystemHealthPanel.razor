@@ -1,6 +1,7 @@
 ﻿@using OperationalWorkspaceUI.State
 @using Microsoft.FluentUI.AspNetCore.Components
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+@using OperationalWorkspaceApplication.DTOs
 
 @implements IDisposable
 @inject DashboardState State
@@ -20,12 +21,12 @@
         <div class="status-item">
             <div class="status-info">
                 <span class="status-label">Sage X3 ERP</span>
-                <span class="status-pill @(State.AdminHealth.SageX3Connected ? "status-online" : "status-offline")">
-                    @if (State.AdminHealth.SageX3Connected)
+                <span class="status-pill @(State.AdminHealth?.SageX3Connected == true ? "status-online" : "status-offline")">
+                    @if (State.AdminHealth?.SageX3Connected == true)
                     {
                         <span class="pulse-dot"></span>
                     }
-                    @(State.AdminHealth.SageX3Connected ? "Connected" : "Disconnected")
+                    @(State.AdminHealth?.SageX3Connected == true ? "Connected" : "Disconnected")
                 </span>
             </div>
             <div class="status-meta">Primary ERP Endpoint</div>
@@ -35,8 +36,8 @@
         <div class="status-item">
             <div class="status-info">
                 <span class="status-label">API Gateway</span>
-                <span class="status-pill @(State.AdminHealth.APIHealthStatus == "Healthy" ? "status-online" : "status-warning")">
-                    @State.AdminHealth.APIHealthStatus
+                <span class="status-pill @(State.AdminHealth?.APIHealthStatus == "Healthy" ? "status-online" : "status-warning")">
+                    @(State.AdminHealth?.APIHealthStatus ?? "Unknown")
                 </span>
             </div>
             <div class="status-meta">Gateway Connectivity</div>
@@ -46,15 +47,14 @@
         <div class="status-item">
             <div class="status-info">
                 <span class="status-label">Failed Syncs</span>
-                <span class="status-pill @(State.AdminHealth.FailedTransactions > 0 ? "status-warning" : "status-online")">
-                    @State.AdminHealth.FailedTransactions Errors
+                <span class="status-pill @(State.AdminHealth?.FailedTransactions > 0 ? "status-warning" : "status-online")">
+                    @(State.AdminHealth?.FailedTransactions == -1 ? 0 : State.AdminHealth?.FailedTransactions) Errors
                 </span>
             </div>
             <div class="status-meta">Pending Retry Queue</div>
         </div>
 
     </div>
-
     @* FOOTER PANEL BAR *@
     <div class="health-footer">
         <span class="refresh-label">Last updated: @_lastUpdated</span>

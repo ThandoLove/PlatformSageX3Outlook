@@ -1,0 +1,323 @@
+﻿/* =========================================================
+   COMPACT SYSTEM HEALTH HIGH-DENSITY FRAME CSS
+========================================================= */
+.health-shell-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+    background: #f8fafc;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.environment-telemetry-ribbon {
+    background: #f1f5f9;
+    border: 1px dashed #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.pulse-health-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+}
+
+    .pulse-health-dot.production-emerald {
+        background: #10b981;
+    }
+
+    .pulse-health-dot.sandbox-orange {
+        background: #f59e0b;
+    }
+
+.health-toolbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+    .health-toolbar-row h1 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: -0.01em;
+    }
+
+.toolbar-subtext {
+    margin: 2px 0 0 0;
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.btn-refresh-accent {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.1s ease;
+}
+
+    .btn-refresh-accent:hover:not(:disabled) {
+        background: #1d4ed8;
+    }
+
+    .btn-refresh-accent:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+/* COMPACT METRICS TILES GRID */
+.metrics-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.mini-health-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.01);
+}
+
+.metric-card-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 0.02em;
+}
+
+.metric-value-text {
+    margin: 4px 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.metric-positive {
+    color: #16a34a;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.metric-neutral {
+    color: #2563eb;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.metric-warning-label {
+    color: #d97706;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+/* INTERNAL GRID WORKSPACE PANELS */
+.health-workspace-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.compact-health-card, .compact-activity-timeline-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.01);
+    box-sizing: border-box;
+}
+
+.panel-card-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+    .panel-card-header h3 {
+        margin: 0;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #334155;
+        letter-spacing: 0.04em;
+    }
+
+.health-data-list-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.integration-two-column-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.health-list-item-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    box-sizing: border-box;
+}
+
+.item-main-title {
+    display: block;
+    color: #0f172a;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.item-sub-description {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.integration-label, .metric-item-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.metric-item-bold-value {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* REUSABLE LIGHTWEIGHT COLOR LABELS */
+.text-success-color {
+    color: #16a34a !important;
+}
+
+.text-warning-color {
+    color: #d97706 !important;
+}
+
+.text-danger-color {
+    color: #dc2626 !important;
+}
+
+/* PILL BADGE FORMATTING SHEETS */
+.status-pill-badge {
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+    .status-pill-badge.pill-online {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .status-pill-badge.pill-warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .status-pill-badge.pill-offline {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+/* DYNAMIC EVENT LOG LINES FEED */
+.system-activity-timeline-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.timeline-log-line-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 4px 0;
+}
+
+.timeline-dot-decor {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3b82f6;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.timeline-log-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.timeline-log-text-message {
+    font-size: 0.78rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+.timeline-log-time-stamp {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* SPINNER LOADING REFRESH KEY ANIMATION */
+.spinner-icon {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ffffff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    animation: healthSpin 0.7s linear infinite;
+}
+
+@keyframes healthSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 1024px) {
+    .metrics-cards-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .health-workspace-grid {
+        grid-template-columns: 1fr;
+    }
+}
