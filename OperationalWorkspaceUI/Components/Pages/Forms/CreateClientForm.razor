@@ -5,12 +5,14 @@
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceApplication.DTOs
+@using OperationalWorkspaceUI.State @* Ensures DashboardState discovery *@
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.BusinessPartnerUIService BPService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
+@inject DashboardState DState   
 @inject Radzen.NotificationService NotificationService
 @inject NavigationManager NavManager
-
+@* Injects your global email context state chassis *@
 <FormSection Title="Create Sage X3 Client"
              SubmitLabel="Save Client to Sage"
              OnSubmit="SaveClientAsync"
@@ -21,14 +23,12 @@
 
         @* SECTION 1: IDENTITY & CATEGORY *@
         <div class="sage-form-group">
-            @* FIXED: Changed Typography.Caption to Typography.Body *@
             <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">BUSINESS IDENTITY</FluentLabel>
             <div class="form-grid-2-col">
                 <div>
                     <FluentTextField Label="Client Name" @bind-Value="NewClient.Name" FullWidth="true" />
                     <ValidationMessage For="@(() => NewClient.Name)" />
                 </div>
-                @* FIXED: Added TOption="string" *@
                 <FluentSelect Label="Client Category" TOption="string" Style="width: 100%;">
                     <FluentOption TOption="string" Value="DOM">Domestic Customer</FluentOption>
                     <FluentOption TOption="string" Value="INT">International Customer</FluentOption>
@@ -68,6 +68,17 @@
 @code {
     private ClientDto NewClient = new();
 
+    protected override void OnInitialized()
+    {
+        // 🚀 AUTOMATED PREFILL INTERFACE PIPELINE:
+        // Pulls context metadata values straight from the active Outlook selection envelope!
+        if (DState?.EmailContext != null)
+        {
+            NewClient.Name = DState.EmailContext.SenderName ?? string.Empty;
+            NewClient.Email = DState.EmailContext.SenderEmail ?? string.Empty;
+        }
+    }
+
     private async Task SaveClientAsync()
     {
         var success = await BPService.CreateClientAsync(NewClient);
@@ -84,7 +95,11 @@
                 Duration = 4000
             });
 
-            NavManager.NavigateTo("/workspace/businesspartners");
+            // After successful creation, clear the fallback wizard flag to restore the primary panel workspace view
+            DState.ShowAddClientUI = false;
+            DState.NotifyStateChanged();
+
+            NavManager.NavigateTo("/dashboard");
         }
         else
         {
@@ -99,6 +114,10 @@
 
     private void HandleCancel()
     {
-        NavManager.NavigateTo("/workspace/businesspartners");
+        // Reset view panel layout switches upon cancellation tasks
+        DState.ShowAddClientUI = false;
+        DState.NotifyStateChanged();
+        
+        NavManager.NavigateTo("/dashboard");
     }
 }

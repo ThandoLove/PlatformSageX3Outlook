@@ -10,6 +10,7 @@
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.UIServices.ToastUIService
+@using OperationalWorkspaceUI.UIServices.EmailService
 
 @implements IDisposable
 
@@ -23,6 +24,7 @@
 @inject IJSRuntime JS
 @inject IToastUIService ToastService
 @inject HttpClient Http
+@inject EmailContextUIService EmailUiService
 
 <FluentLayout Class="app-container">
 
@@ -96,7 +98,30 @@
                 UIState.IsLoading = true;
                 await InvokeAsync(StateHasChanged);
 
-                await Http.PostAsJsonAsync($"api/email/{email.Id}/enrich", email);
+                // 1. Ingest email envelope record over to persistence / tracking layers
+                var syncResponse = await Http.PostAsJsonAsync("api/email/send", email);
+
+                if (syncResponse.IsSuccessStatusCode)
+                {
+                    // 2. Query Sage X3 environment routing intelligence layer via the message identity string
+                    var result = await EmailUiService.LoadEmailContextWithStatusAsync(email.MessageId);
+
+                    // 3. Commit results directly into your synchronized Dashboard state layout engine
+                    DashboardState.SetEmailContextState(result.Context, result.IsUnknownSender);
+
+                    if (result.IsUnknownSender)
+                    {
+                        ToastService.ShowInfo("Sender email address not matched in Sage X3 records. Prompting registration.");
+                    }
+                    else
+                    {
+                        ToastService.ShowSuccess($"Sage X3 Customer context loaded: {result.Context?.Email?.BusinessPartnerName}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Email synchronization endpoint declined payload ingestion.");
+                }
             }
             catch (Exception ex)
             {

@@ -9,4 +9,6 @@ public interface ISageSyncJobs
     Task ExecuteSyncAsync(string orderId, string userId);
 
     Task EnqueueContactCreationAsync(ContactCreateDto dto);
+
+    Task EnqueueClientCreationAsync(ClientDto dto);
 }

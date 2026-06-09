@@ -1,5 +1,5 @@
 ﻿/* ========================================================================= 
-   DASHBOARD.RAZOR.CSS - UNIFIED HIGH-DENSITY COLORFUL METRICS CORE
+   DASHBOARD.RAZOR.CSS - UNIFIED HIGH-DENSITY COLORFUL METRICS CORE (PART 1)
    ========================================================================= */
 
 /* THE CANVAS CHASSIS */
@@ -224,6 +224,31 @@
         }
 
 /* ========================================================================= 
+   🆕 ADD CLIENT REGISTRATION CONTAINER WIZARD LAYOUT
+   ========================================================================= */
+.workspace-viewport {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 2px;
+}
+
+.fade-in-animation {
+    animation: fadeInFrame 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeInFrame {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================================================= 
    ⚡ THE FIXED HEIGHT ANCHOR SYSTEM FOR LOWER CARDS (PART 3)
    ========================================================================= */
 .sage-dashboard-row {
@@ -372,7 +397,6 @@
         .flat-layout-cell.kpi-box:nth-child(4) {
             border-bottom: none;
         }
-
 
     .sage-dashboard-row {
         grid-template-columns: 1fr;

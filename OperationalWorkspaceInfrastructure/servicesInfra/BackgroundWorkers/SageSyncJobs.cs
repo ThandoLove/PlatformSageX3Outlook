@@ -60,13 +60,12 @@ public class SageSyncJobs : ISageSyncJobs
     }
 
     // ===================================================================================
-    // STABILIZED: ASYNCHRONOUS CONTACT CREATION SYNC WORKER
+    // STABILIZED: ASYNCHRONOUS CONTACT CREATION SYNC WORKER (100% Preserved)
     // ===================================================================================
     public async Task EnqueueContactCreationAsync(ContactCreateDto dto)
     {
         _logger.LogInformation("Background thread pulled contact background processing task for: {Email}", dto.Email);
 
-        // 🚀 STABILIZED AT RUNTIME: Resolves the business partner service inside an isolated thread scope
         using var scope = _serviceProvider.CreateScope();
         var bpService = scope.ServiceProvider.GetRequiredService<IBusinessPartnerService>();
 
@@ -84,6 +83,38 @@ public class SageSyncJobs : ISageSyncJobs
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed executing background contact upload synchronization for: {Email}. Job will automatically retry.", dto.Email);
+            throw;
+        }
+    }
+
+    // ===================================================================================
+    // 🔥 NEW BACKGROUND WORKER ENGINE TASK: ASYNCHRONOUS CLIENT CREATION
+    // ===================================================================================
+    public async Task EnqueueClientCreationAsync(ClientDto dto)
+    {
+        if (dto == null) return;
+
+        _logger.LogInformation("Background channel worker dequeued Client integration process execution task for: {Name}", dto.Name);
+
+        // 🚀 THREAD INSULATION LAYER: Generates a temporary runtime worker scope to safely resolve business logic dependencies
+        using var scope = _serviceProvider.CreateScope();
+        var bpService = scope.ServiceProvider.GetRequiredService<IBusinessPartnerService>();
+
+        try
+        {
+            // Triggers the real-time Sage X3 REST payload mapping translation pipelines
+            var success = await bpService.CreateNewSageClientAsync(dto);
+
+            if (!success)
+            {
+                throw new Exception($"Sage X3 ERP API refused customer payload setup parameters for: {dto.Name}");
+            }
+
+            _logger.LogInformation("Successfully completed background business partner configuration upload sync for: {Name}", dto.Name);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed executing background customer ingestion upload sync task for: {Name}. Worker will automatically re-queue.", dto.Name);
             throw;
         }
     }

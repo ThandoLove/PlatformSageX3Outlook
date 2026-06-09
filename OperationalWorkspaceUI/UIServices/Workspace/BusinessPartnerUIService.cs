@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceUI.State;
@@ -9,43 +11,46 @@ namespace OperationalWorkspaceUI.UIServices.Workspace
     public class BusinessPartnerUIService
     {
         private readonly WorkspaceState _state;
+        private readonly HttpClient _http; // 🔥 Added HttpClient parameter
 
-        public BusinessPartnerUIService(WorkspaceState state)
+        public BusinessPartnerUIService(WorkspaceState state, HttpClient http)
         {
             _state = state;
+            _http = http ?? throw new ArgumentNullException(nameof(http));
         }
 
         public async Task LoadClientsAsync()
         {
-            // Standardize on ClientDto (PascalCase)
             if (_state.Clients == null)
             {
                 _state.Clients = new List<ClientDto>();
             }
-
-            // Example: _state.Clients = await _http.GetFromJsonAsync<List<ClientDto>>("api/partners") ?? new();
-
             await Task.CompletedTask;
         }
 
-        // FIX: Ensure return type matches the WorkspaceState.Clients type exactly
         public Task<List<ClientDto>> GetPartnersAsync()
         {
             return Task.FromResult(_state.Clients ?? new List<ClientDto>());
         }
 
-        // FIX: Added missing method called by CreateClient.razor
+        // 🔥 UPGRADED TO TALK TO THE BACKEND CONTROLLER REAL-TIME
         public async Task<bool> CreateClientAsync(ClientDto partner)
         {
             try
             {
-                // Simulate API POST call here
-                _state.Clients?.Add(partner);
-                await Task.CompletedTask;
-                return true;
+                // Dispatches the clean UI DTO down into your actual backend API endpoints
+                var response = await _http.PostAsJsonAsync("api/businesspartner/create", partner);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _state.Clients?.Add(partner);
+                    return true;
+                }
+                return false;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"UI Service transmission failed: {ex.Message}");
                 return false;
             }
         }

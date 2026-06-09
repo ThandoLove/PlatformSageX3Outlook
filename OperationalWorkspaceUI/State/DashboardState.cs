@@ -98,7 +98,29 @@ namespace OperationalWorkspaceUI.State
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();
         public List<ReportDto> AvailableReports { get; set; } = new();
         public List<ClientDto> TopClients { get; set; } = new();
+
         public EmailInsightDto EmailContext { get; set; } = new();
+
+        // ======================================================
+        // 🔥 NEW STATE MANAGEMENT FOR EXISTING VS NEW SAGE CLIENTS
+        // ======================================================
+        public bool ShowAddClientUI { get; set; } = false;
+        public EmailContextDto? ActiveCompositeContext { get; set; }
+
+        public void SetEmailContextState(EmailContextDto? context, bool isUnknownSender)
+        {
+            ActiveCompositeContext = context;
+            ShowAddClientUI = isUnknownSender;
+
+            if (context?.Email != null)
+            {
+                EmailContext = context.Email;
+            }
+
+            NotifyStateChanged();
+        }
+        // ======================================================
+
         public DashboardDto DashboardData { get; set; } = new();
         public AdminErpDto AdminErp { get; set; } = new();
         public AdminCrmDto AdminCrm { get; set; } = new();

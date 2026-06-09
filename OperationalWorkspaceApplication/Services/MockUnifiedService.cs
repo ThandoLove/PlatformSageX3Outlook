@@ -516,5 +516,15 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<int> CountInvoicesGeneratedAsync() => 120;
         public async Task<int> CountInvoicesDueAsync(string userId) => 3;
         public async Task<int> CountHighRiskAccountsAsync() => 2;
+
+        // =========================================================================
+        // 🧪 MOCK COMPLIANCE LAYER STUB (ADDED)
+        // =========================================================================
+        public async Task<bool> CreateNewSageClientAsync(ClientDto clientDto)
+        {
+            // Instantly returns true to satisfy the interface contract 
+            // and simulate a successful background sync queue completion
+            return await Task.FromResult(true);
+        }
     }
 }

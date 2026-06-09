@@ -2,10 +2,17 @@
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp; // 🔥 Ensures background interface discovery
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
+using System;
 using System.Text.Json;
 using System.Text;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Polly;
 using Polly.Retry;
@@ -22,7 +29,11 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _config;
 
-    // 🚀 Resilience pipeline field protecting your Sage X3 transactions
+    // 🔥 NEW BACKGROUND THREADING ENGINES BINDINGS
+    private readonly ISageSyncJobs _syncWorker;
+    private readonly IBackgroundTaskQueue _backgroundQueue;
+
+    // 🚀 Resilience pipeline field protecting your Sage X3 network operations
     private readonly AsyncRetryPolicy<HttpResponseMessage> _sageRetryPolicy;
 
     public BusinessPartnerService(
@@ -32,28 +43,33 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         IUnitOfWork uow,
         IClock clock,
         HttpClient httpClient,
-        IConfiguration config)
+        IConfiguration config,
+        ISageSyncJobs syncWorker,              // 🔥 Injected dependency
+        IBackgroundTaskQueue backgroundQueue)  // 🔥 Injected dependency
     {
-        _partnerRepo = partnerRepo;
-        _invoiceRepo = invoiceRepo;
-        _salesRepo = salesRepo;
-        _uow = uow;
-        _clock = clock;
-        _httpClient = httpClient;
-        _config = config;
+        _partnerRepo = partnerRepo ?? throw new ArgumentNullException(nameof(partnerRepo));
+        _invoiceRepo = invoiceRepo ?? throw new ArgumentNullException(nameof(invoiceRepo));
+        _salesRepo = salesRepo ?? throw new ArgumentNullException(nameof(salesRepo));
+        _uow = uow ?? throw new ArgumentNullException(nameof(uow));
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _config = config ?? throw new ArgumentNullException(nameof(config));
+        _syncWorker = syncWorker ?? throw new ArgumentNullException(nameof(syncWorker));
+        _backgroundQueue = backgroundQueue ?? throw new ArgumentNullException(nameof(backgroundQueue));
 
-        // 🚀 Exponential retry: Tries 3 times waiting 2s, 4s, then 8s on network cuts or 5xx server issues
+        // 🚀 Exponential retry engine setup
         _sageRetryPolicy = Policy
             .Handle<HttpRequestException>()
             .OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500 || r.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
             .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     }
-
     // ==========================================
     // 🚀 STABILIZED: CREATE CONTACT IN SAGE X3
     // ==========================================
     public async Task<bool> CreateContactAsync(ContactCreateDto contact)
     {
+        if (contact == null) return false;
+
         try
         {
             var baseUrl = _config["SageX3:BaseUrl"];
@@ -64,14 +80,14 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             var payload = new
             {
                 CNPFNA = contact.FullName, // First Name
-                CNPLNA = contact.FullName, // Last Name (X3 often needs both)
+                CNPLNA = contact.FullName, // Last Name
                 WEB = contact.Email,
                 TEL = contact.Phone,
                 MOB = contact.Mobile,
                 BPRNUM = contact.Company,   // Linked BP Code
                 BPCAT = contact.Category,   // Category
 
-                // Address Mapping (If your representation includes BPAADD)
+                // Address Mapping
                 ADDRESS1 = contact.Street,
                 CITY = contact.City,
                 ZIP = contact.ZipCode,
@@ -81,7 +97,6 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             var jsonPayload = JsonSerializer.Serialize(payload);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-            // 🚀 Executed inside our safe retry pipeline wrapper
             var response = await _sageRetryPolicy.ExecuteAsync(async () =>
             {
                 return await _httpClient.PostAsync(url, content);
@@ -89,12 +104,12 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
 
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"CreateContactAsync failed: {ex.Message}");
             return false;
         }
     }
-
 
     // ==========================================
     // 📧 CREATE CLIENT FROM EMAIL
@@ -193,7 +208,6 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
 
         return new BusinessPartnersResponse(dto);
     }
-
     // ==========================================
     // 📊 DASHBOARD KPI METHODS
     // ==========================================
@@ -224,5 +238,31 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         await _uow.SaveChangesAsync(ct);
 
         return new UpdateCreditLimitResponse(true);
+    }
+
+    // =========================================================================
+    // 🔥 NEW STABILIZED BACKGROUND ENGINE ENTRYPOINT: CREATE CLIENT IN SAGE X3
+    // =========================================================================
+    public async Task<bool> CreateNewSageClientAsync(ClientDto clientDto)
+    {
+        if (clientDto == null) return false;
+
+        try
+        {
+            // 🚀 AUTOMATED BACKGROUND WORKER DELEGATION
+            // Pushes execution loops off the interactive thread instantly to protect Blazor performance
+            await _backgroundQueue.QueueBackgroundWorkItemAsync(async token =>
+            {
+                // Dispatches task to background sync workers via your platform interfaces
+                await _syncWorker.EnqueueClientCreationAsync(clientDto);
+            });
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Critical failure allocating background processing queue task: {ex.Message}");
+            return false;
+        }
     }
 }

@@ -30,8 +30,7 @@ public interface IBusinessPartnerService
     Task<CreateClientFromEmailResponse> CreateFromEmailAsync(
         CreateClientFromEmailRequest request,
         CancellationToken ct = default);
-
-
+    Task<bool> CreateNewSageClientAsync(ClientDto clientDto);
 }
 
 

@@ -32,7 +32,7 @@ window.dashboardCharts = {
 
 
 // =========================
-// 2. OFFICE.JS BRIDGE (FIXED)
+// 2. OFFICE.JS BRIDGE (FIXED & ALIGNED)
 // =========================
 
 window.officeBridge = {
@@ -51,11 +51,13 @@ window.officeBridge = {
                     const json = await resp.json();
                     if (!json) return;
 
+                    // 🔥 FIX: Aligned properties directly with PascalCase EmailInsightDto naming
                     const data = {
                         SenderName: json.senderName || json.sender || 'Test Sender',
                         SenderEmail: json.senderEmail || json.sender || 'test@example.com',
                         Subject: json.subject || 'Test Subject',
-                        MessageId: json.messageId || ''
+                        MessageId: json.messageId || 'MOCK_SAGE_X3_TEST_CONVERSATION',
+                        From: json.senderEmail || json.sender || 'test@example.com'
                     };
 
                     console.log('Single Polling TestEmail Loaded:', data);
@@ -105,14 +107,16 @@ window.officeBridge = {
         if (!item) return;
 
         try {
+            // 🔥 FIX: Standardised to PascalCase keys to prevent payload mapping dropping out
             const data = {
-                subject: item.subject || "No Subject",
-                senderEmail: item.from?.emailAddress || "",
-                senderName: item.from?.displayName || "",
-                conversationId: item.conversationId || ""
+                Subject: item.subject || "No Subject",
+                SenderEmail: item.from?.emailAddress || "",
+                SenderName: item.from?.displayName || "",
+                MessageId: item.conversationId || "", // Maps conversationId directly to MessageId container
+                From: item.from?.emailAddress || ""
             };
 
-            console.log("Extracting Email Data for Blazor:", data.senderEmail);
+            console.log("Extracting Email Data for Blazor:", data.SenderEmail);
 
             dotNetHelper.invokeMethodAsync('OnEmailReceived', data);
 
