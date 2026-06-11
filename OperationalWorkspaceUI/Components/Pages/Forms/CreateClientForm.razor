@@ -1,82 +1,77 @@
-﻿@page "/forms/create-client"
-@rendermode InteractiveServer
-
-@using Microsoft.FluentUI.AspNetCore.Components
+﻿@using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceUI.State @* Ensures DashboardState discovery *@
+@using OperationalWorkspaceUI.State
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.BusinessPartnerUIService BPService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
 @inject DashboardState DState   
 @inject Radzen.NotificationService NotificationService
-@inject NavigationManager NavManager
-@* Injects your global email context state chassis *@
+@inject ModalService ModalService 
+@* 🚀 FIXED: Injected your custom ModalService to manage clean dismiss actions *@
+
 <FormSection Title="Create Sage X3 Client"
              SubmitLabel="Save Client to Sage"
              OnSubmit="SaveClientAsync"
              OnCancel="HandleCancel">
 
-    <EditForm Model="NewClient" OnValidSubmit="SaveClientAsync">
-        <DataAnnotationsValidator />
+    <DataAnnotationsValidator />
 
-        @* SECTION 1: IDENTITY & CATEGORY *@
-        <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">BUSINESS IDENTITY</FluentLabel>
-            <div class="form-grid-2-col">
-                <div>
-                    <FluentTextField Label="Client Name" @bind-Value="NewClient.Name" FullWidth="true" />
-                    <ValidationMessage For="@(() => NewClient.Name)" />
-                </div>
-                <FluentSelect Label="Client Category" TOption="string" Style="width: 100%;">
-                    <FluentOption TOption="string" Value="DOM">Domestic Customer</FluentOption>
-                    <FluentOption TOption="string" Value="INT">International Customer</FluentOption>
-                    <FluentOption TOption="string" Value="EU">EU Customer</FluentOption>
-                </FluentSelect>
+    @* SECTION 1: IDENTITY & CATEGORY *@
+    <div class="sage-form-group">
+        <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">BUSINESS IDENTITY</FluentLabel>
+        <div class="form-grid-2-col">
+            <div>
+                <FluentTextField Label="Client Name" @bind-Value="NewClient.Name" FullWidth="true" />
+                <ValidationMessage For="@(() => NewClient.Name)" />
             </div>
-            <div style="margin-top: 12px;">
-                <FluentTextField Label="Tax / VAT Number" Placeholder="e.g. GB123456789" FullWidth="true" />
-            </div>
+            <FluentSelect Label="Client Category" TOption="string" Style="width: 100%;">
+                <FluentOption TOption="string" Value="DOM">Domestic Customer</FluentOption>
+                <FluentOption TOption="string" Value="INT">International Customer</FluentOption>
+                <FluentOption TOption="string" Value="EU">EU Customer</FluentOption>
+            </FluentSelect>
         </div>
-
-        @* SECTION 2: CONTACT INFORMATION *@
-        <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
-            <FluentTextField Label="Email Address" @bind-Value="NewClient.Email" FullWidth="true" />
-            
-            <div class="form-grid-2-col" style="margin-top: 12px;">
-                <FluentTextField Label="Phone Number" @bind-Value="NewClient.PhoneNumber" FullWidth="true" />
-                <FluentTextField Label="Website" Placeholder="https://" FullWidth="true" />
-            </div>
+        <div style="margin-top: 12px;">
+            <FluentTextField Label="Tax / VAT Number" Placeholder="e.g. GB123456789" FullWidth="true" />
         </div>
+    </div>
 
-        @* SECTION 3: ADDRESS *@
-        <div class="sage-form-group" style="margin-top: 24px;">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
-            <FluentTextArea Label="Full Address" @bind-Value="NewClient.Address" Rows="3" FullWidth="true" />
-            
-            <div class="form-grid-2-col" style="margin-top: 12px;">
-                <FluentTextField Label="City" FullWidth="true" />
-                <FluentTextField Label="Postal Code" FullWidth="true" />
-            </div>
+    @* SECTION 2: CONTACT INFORMATION *@
+    <div class="sage-form-group" style="margin-top: 24px;">
+        <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
+        <FluentTextField Label="Email Address" @bind-Value="NewClient.Email" FullWidth="true" />
+        
+        <div class="form-grid-2-col" style="margin-top: 12px;">
+            <FluentTextField Label="Phone Number" @bind-Value="NewClient.PhoneNumber" FullWidth="true" />
+            <FluentTextField Label="Website" Placeholder="https://" FullWidth="true" />
         </div>
+    </div>
 
-    </EditForm>
+    @* SECTION 3: ADDRESS *@
+    <div class="sage-form-group" style="margin-top: 24px;">
+        <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
+        <FluentTextArea Label="Full Address" @bind-Value="NewClient.Address" Rows="3" FullWidth="true" />
+        
+        <div class="form-grid-2-col" style="margin-top: 12px;">
+            <FluentTextField Label="City" FullWidth="true" />
+            <FluentTextField Label="Postal Code" FullWidth="true" />
+        </div>
+    </div>
+
 </FormSection>
 
 @code {
+    [Parameter] public string? Email { get; set; }
+    [Parameter] public string? FullName { get; set; }
+
     private ClientDto NewClient = new();
 
     protected override void OnInitialized()
     {
-        // 🚀 AUTOMATED PREFILL INTERFACE PIPELINE:
-        // Pulls context metadata values straight from the active Outlook selection envelope!
-        if (DState?.EmailContext != null)
-        {
-            NewClient.Name = DState.EmailContext.SenderName ?? string.Empty;
-            NewClient.Email = DState.EmailContext.SenderEmail ?? string.Empty;
-        }
+        // 🚀 AUTOMATED PREFILL HOOKS: Pulls email coordinates safely from injection parameters
+        NewClient.Name = !string.IsNullOrEmpty(FullName) ? FullName : (DState?.EmailContext?.SenderName ?? string.Empty);
+        NewClient.Email = !string.IsNullOrEmpty(Email) ? Email : (DState?.EmailContext?.SenderEmail ?? string.Empty);
     }
 
     private async Task SaveClientAsync()
@@ -95,11 +90,11 @@
                 Duration = 4000
             });
 
-            // After successful creation, clear the fallback wizard flag to restore the primary panel workspace view
             DState.ShowAddClientUI = false;
             DState.NotifyStateChanged();
 
-            NavManager.NavigateTo("/dashboard");
+            // 🔥 FIXED: Safely closes the custom layout modal window instead of crashing page navigation
+            await ModalService.CloseModal();
         }
         else
         {
@@ -112,12 +107,12 @@
         }
     }
 
-    private void HandleCancel()
+    private async Task HandleCancel()
     {
-        // Reset view panel layout switches upon cancellation tasks
+        // 🚀 FIXED: Invokes your modal controller's OnClose event instead of navigating away and breaking active layout layers!
         DState.ShowAddClientUI = false;
         DState.NotifyStateChanged();
         
-        NavManager.NavigateTo("/dashboard");
+        await ModalService.CloseModal();
     }
 }

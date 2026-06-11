@@ -12,6 +12,7 @@
 @implements IDisposable
 @inject WorkspaceState WState
 @inject AppStateContainer AppState
+@inject DashboardState DState
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
@@ -85,7 +86,9 @@
     [Parameter] public Guid? TicketId { get; set; }
 
     private TicketDto _ticket = new();
-    private bool IsEmailContextLive => AppState.CurrentEmail != null;
+    
+    // 🔥 FIXED: Toggles read-only mode based on active DState context availability
+    private bool IsEmailContextLive => !string.IsNullOrEmpty(DState.EmailContext?.SenderEmail);
 
     protected override void OnInitialized()
     {
@@ -101,9 +104,13 @@
         }
         else
         {
-            // Intelligent pre-filling evaluation loop
-            string resolvedCustomer = AppState.MatchedClient?.FullName ?? AppState.CurrentEmail?.SenderName ?? string.Empty;
-            string resolvedSubject = AppState.CurrentEmail?.Subject ?? string.Empty;
+            // 🚀 AUTOMATED INTELLIGENT AUTO-FILL PIPELINE:
+            // Checks for a verified Sage X3 company name first, falling back cleanly to the raw sender data [INDEX].
+            string resolvedCustomer = !string.IsNullOrEmpty(DState.EmailContext?.BusinessPartnerName)
+                ? DState.EmailContext.BusinessPartnerName
+                : (DState.EmailContext?.SenderName ?? string.Empty);
+                
+            string resolvedSubject = DState.EmailContext?.Subject ?? string.Empty;
 
             _ticket = new TicketDto
             {

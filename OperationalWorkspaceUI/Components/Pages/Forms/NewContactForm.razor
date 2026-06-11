@@ -6,11 +6,12 @@
 @using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
-
 @using OperationalWorkspaceApplication.ApplicationState
+@using OperationalWorkspaceUI.State @* 🔥 Ensures DashboardState discovery *@
 
 @inject IBusinessPartnerService BPService
 @inject AppStateContainer AppState
+@inject DashboardState DState 
 @inject OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp.ISageSyncJobs SyncWorker
 
 @using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp
@@ -81,13 +82,21 @@
     [Parameter][SupplyParameterFromQuery(Name = "email")] public string? Email { get; set; }
 
     private ContactCreateDto contactModel = new();
-    private bool IsContextActive => !string.IsNullOrEmpty(Email) || AppState.CurrentEmail != null;
+    
+    // 🔥 FIXED: Check both the query string input and unified DState fields for active context values
+    private bool IsContextActive => !string.IsNullOrEmpty(Email) || !string.IsNullOrEmpty(DState.EmailContext?.SenderEmail);
 
     protected override void OnInitialized()
     {
-        contactModel.FullName = FullName ?? AppState.CurrentEmail?.SenderName ?? string.Empty;
-        contactModel.Email = Email ?? AppState.CurrentEmail?.SenderEmail ?? string.Empty;
-        contactModel.Company = AppState.MatchedClient?.BpCode ?? string.Empty;
+        // 🚀 AUTOMATED RE-MAPPING PIPELINE: 
+        // Corrected targets to look inside DState.EmailContext to fetch active prefill values [INDEX]
+        contactModel.FullName = FullName ?? DState.EmailContext?.SenderName ?? string.Empty;
+        contactModel.Email = Email ?? DState.EmailContext?.SenderEmail ?? string.Empty;
+        
+        // Use business partner code from active context if matched
+        contactModel.Company = !string.IsNullOrEmpty(DState.EmailContext?.BusinessPartnerCode)
+            ? DState.EmailContext.BusinessPartnerCode
+            : (AppState.MatchedClient?.BpCode ?? string.Empty);
     }
 
     private async Task HandleSubmit()

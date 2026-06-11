@@ -1,23 +1,22 @@
 ﻿/* ========================================================================= 
-   DASHBOARD.RAZOR.CSS - UNIFIED HIGH-DENSITY COLORFUL METRICS CORE (PART 1)
+   DASHBOARD.RAZOR.CSS - FULL UNIFIED CHASSIS (PART 1)
    ========================================================================= */
 
-/* THE CANVAS CHASSIS */
+/* --- THE CANVAS CHASSIS --- */
 .dashboard-wrapper {
     display: flex;
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    max-width: 1280px;
+    max-width: 1600px;
     margin: 0 auto;
     box-sizing: border-box;
 }
 
-/* --- ROW 1: THE COLORFUL METRICS HEADER STRIP --- */
+/* --- ROW 1: THE DYNAMIC REPEATING METRICS GRID --- */
 .metrics-grid {
-    display: flex;
-    align-items: stretch;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
     width: 100%;
     box-sizing: border-box;
@@ -42,7 +41,7 @@
         transform: translateY(-1px);
     }
 
-    /* 📦 BLUE TINT: Open Orders Box */
+    /* BLUE TINT: Open Orders Box */
     .flat-layout-cell.kpi-box.orders-box-tint {
         background: rgba(37, 99, 235, 0.08);
         border: 1px solid rgba(37, 99, 235, 0.2);
@@ -52,7 +51,7 @@
             color: #1d4ed8;
         }
 
-    /* ⚠️ RED TINT: Open Tickets Box */
+    /* RED TINT: Open Tickets Box */
     .flat-layout-cell.kpi-box.tickets-box-tint {
         background: rgba(220, 38, 38, 0.08);
         border: 1px solid rgba(220, 38, 38, 0.2);
@@ -66,7 +65,7 @@
             background: rgba(220, 38, 38, 0.12) !important;
         }
 
-    /* 🔒 SLATE/GREEN TINT: System Gateway Switcher Box */
+    /* SLATE/GREEN TINT: System Gateway Switcher Box */
     .flat-layout-cell.kpi-box.gateway-box-tint {
         background: rgba(71, 85, 105, 0.08);
         border: 1px solid rgba(71, 85, 105, 0.2);
@@ -77,10 +76,10 @@
         }
 
         .flat-layout-cell.kpi-box.gateway-box-tint:hover {
-            background: rgba(37, 99, 235, 0.08) !important; /* Visual cue when clickable */
+            background: rgba(37, 99, 235, 0.08) !important;
         }
 
-    /* 🏢 TEAL TINT: Active Linked Customer Box */
+    /* TEAL TINT: Active Linked Customer Box */
     .flat-layout-cell.kpi-box.customer-box-tint {
         background: rgba(13, 148, 136, 0.08);
         border: 1px solid rgba(13, 148, 136, 0.2);
@@ -122,9 +121,11 @@
     margin-top: 1px;
 }
 
+
 /* ========================================================================= 
-   🎨 MODERN COLORFUL ACTION STRIP RIBBON BANNER STYLES (PART 2)
+   🎨 MODERN COLORFUL ACTION STRIP & WIDGET PANELS STYLES (PART 2)
    ========================================================================= */
+
 .modern-action-strip {
     display: flex;
     align-items: center;
@@ -187,16 +188,17 @@
             box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
         }
 
+    /* GREEN TINT: Fixed to real green instead of error red */
     .modern-action-strip .success-tint {
-        background: rgba(220, 38, 38, 0.1);
-        color: #b91c1c;
-        border: 1px solid rgba(220, 38, 38, 0.2);
+        background: rgba(22, 163, 74, 0.12);
+        color: #15803d;
+        border: 1px solid rgba(22, 163, 74, 0.25);
     }
 
         .modern-action-strip .success-tint:hover {
-            background: #dc2626;
+            background: #16a34a;
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
         }
 
     .modern-action-strip .dark-tint {
@@ -223,9 +225,7 @@
             box-shadow: 0 4px 12px rgba(147, 51, 234, 0.2);
         }
 
-/* ========================================================================= 
-   🆕 ADD CLIENT REGISTRATION CONTAINER WIZARD LAYOUT
-   ========================================================================= */
+/* LAYER A: CLIENT REGISTRATION PROSPECT VIEW */
 .workspace-viewport {
     width: 100%;
     box-sizing: border-box;
@@ -248,9 +248,7 @@
     }
 }
 
-/* ========================================================================= 
-   ⚡ THE FIXED HEIGHT ANCHOR SYSTEM FOR LOWER CARDS (PART 3)
-   ========================================================================= */
+/* LOWER PANELS GRID ROW CHASSIS */
 .sage-dashboard-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -265,6 +263,7 @@
     min-width: 0;
 }
 
+    /* Fixed 'height: 245px' clamping limits removed completely as requested */
     .flat-layout-cell ::deep .hub-container,
     .flat-layout-cell ::deep .timeline-card,
     .flat-layout-cell ::deep .tasks-widget-card,
@@ -273,16 +272,14 @@
     .flat-layout-cell ::deep .email-insight-card {
         background: rgba(255, 255, 255, 0.55);
         border: 1px solid rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         border-radius: 12px;
         box-shadow: 0 4px 25px rgba(15, 23, 42, 0.02);
         padding: 12px 14px;
         margin: 0;
         width: 100%;
-        height: 245px;
         min-height: 245px;
-        max-height: 245px;
         box-sizing: border-box;
         overflow: hidden;
         display: flex;
@@ -299,113 +296,177 @@
         padding: 0;
         overflow-y: auto;
         overflow-x: hidden;
-        flex-grow: 1;
-    }
+        flex-grow: 1; /* ========================================================================= 
+   🏛️ RECLEANED MODAL CHASSIS: ZERO DUPLICATE MODALS OR !IMPORTANT TAGS (PART 3)
+   ========================================================================= */
 
-/* MODAL ENGINE OVERLAYS */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(15, 23, 42, 0.25);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    z-index: 5000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    box-sizing: border-box;
-}
-
-.modal-box {
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.15);
-    border-radius: 14px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: 440px;
-    max-height: 380px;
-}
-
-.modal-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 6px;
-    margin-bottom: 12px;
-    flex-shrink: 0;
-}
-
-    .modal-header-row h4 {
-        margin: 0;
-        font-size: 12px;
-        font-weight: 700;
-        color: #1e293b;
-        text-transform: uppercase;
-    }
-
-.close-btn {
-    background: none;
-    border: none;
-    color: #94a3b8;
-    font-size: 14px;
-    cursor: pointer;
-}
-
-    .close-btn:hover {
-        color: #ef4444;
-    }
-
-.modal-content-scroller {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-}
-
-    .modal-content-scroller ::deep .tasks-widget-card, .modal-content-scroller ::deep .health-widget-card {
-        height: auto;
-        min-height: 0;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-        padding: 0;
-    }
-
-@media (max-width: 900px) {
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .flat-layout-cell.kpi-box {
-        border-right: none;
-        border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 4px;
-        padding-right: 0;
-    }
-
-        .flat-layout-cell.kpi-box:nth-child(3),
-        .flat-layout-cell.kpi-box:nth-child(4) {
-            border-bottom: none;
+        .custom-modal-shroud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            box-sizing: border-box;
         }
 
-    .sage-dashboard-row {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        .custom-modal-viewport {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 560px;
+            max-height: calc(100vh - 48px);
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-sizing: border-box;
+            animation: normalPopAnimationLocal 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes normalPopAnimationLocal {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .custom-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+            .custom-modal-header h3 {
+                margin: 0;
+                font-size: 16px;
+                font-weight: 700;
+                color: #0f172a;
+                text-transform: uppercase;
+                letter-spacing: 0.02em;
+            }
+
+        .custom-modal-close-btn {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #94a3b8;
+            line-height: 1;
+            transition: color 0.15s ease;
+            padding: 4px;
+        }
+
+            .custom-modal-close-btn:hover {
+                color: #ef4444;
+            }
+
+        .custom-modal-body {
+            width: 100%;
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            box-sizing: border-box;
+        }
+
+        .modal-content-scroller ::deep .tasks-widget-card,
+        .modal-content-scroller ::deep .health-widget-card {
+            height: auto;
+            min-height: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+        }
+        /* --- MODERN SCROLLBAR REFINEMENTS --- */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 900px) {
+            .metrics-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .flat-layout-cell.kpi-box {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                padding-bottom: 4px;
+                padding-right: 0;
+            }
+
+                .flat-layout-cell.kpi-box:nth-child(3),
+                .flat-layout-cell.kpi-box:nth-child(4) {
+                    border-bottom: none;
+                }
+
+            .sage-dashboard-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .flat-layout-cell ::deep .hub-container,
+            .flat-layout-cell ::deep .timeline-card,
+            .flat-layout-cell ::deep .tasks-widget-card,
+            .flat-layout-cell ::deep .health-widget-card,
+            .flat-layout-cell ::deep .crm-snapshot-card,
+            .flat-layout-cell ::deep .email-insight-card {
+                height: auto;
+                min-height: 150px;
+                max-height: 240px;
+            }
+        }
     }
 
-    .flat-layout-cell ::deep .hub-container, .flat-layout-cell ::deep .timeline-card, .flat-layout-cell ::deep .tasks-widget-card, .flat-layout-cell ::deep .health-widget-card, .flat-layout-cell ::deep .crm-snapshot-card, .flat-layout-cell ::deep .email-insight-card {
-        height: auto;
-        min-height: 150px;
-        max-height: 240px;
-    }
+/* =========================================================================
+   🔒 SYSTEM GATEWAY IDENTITY TEXT MATRIX HOOKS (REPLACES INLINE RAZOR STYLE)
+   ========================================================================= */
+.gateway-identity-value {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-top: 2px;
 }
+
+    /* Dynamically evaluates conditional tones smoothly without compiler evaluation overrides */
+    .gateway-identity-value.is-admin-active {
+        color: #10b981; /* Emerald Green */
+    }
+
+    .gateway-identity-value.is-employee-active {
+        color: #64748b; /* Slate Gray */
+    }

@@ -3,15 +3,11 @@
 @using OperationalWorkspaceUI.Components.AdminComponents
 @using TaskDto = OperationalWorkspaceApplication.DTOs.TaskDto
 @using OperationalWorkspace.Domain.Enums
-
-@* Explicit namespace type alias mapping rules out System.Threading compiler ambiguity *@
 @using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus
 @implements IDisposable
-
 @inject DashboardState State
 
 <div class="hub-viewport-lock">
-    @* --- TOP HEADER WITH FUNCTIONAL ROUTING BINDINGS --- *@
     <header class="hub-header">
         <div class="header-left">
             <h1>Tasks Hub</h1>
@@ -19,12 +15,12 @@
         </div>
         <div class="header-right">
             <button class="btn-ghost @(isFilterActive ? "filter-engaged" : "")" @onclick="ToggleGlobalFilters">
-                <i class="oi oi-fullscreen-exit" style="margin-right: 4px;"></i> Filters
+                <i class="oi oi-fullscreen-exit"></i> Filters
             </button>
             
             <div class="dropdown-wrapper">
                 <button class="btn-ghost" @onclick="ToggleGroupingMenu">
-                    Group: @ActiveGroupingCriterion <i class="oi oi-chevron-bottom" style="margin-left: 4px; font-size: 10px;"></i>
+                    Group: @ActiveGroupingCriterion <i class="oi oi-chevron-bottom"></i>
                 </button>
                 @if (showGroupingMenu)
                 {
@@ -36,7 +32,7 @@
             </div>
 
             <div class="dropdown-wrapper">
-                <span class="hub-dots" @onclick="ToggleEllipsisMenu" style="padding: 4px 8px; font-weight: 800; user-select: none;">...</span>
+                <span class="hub-dots" @onclick="ToggleEllipsisMenu">...</span>
                 @if (showEllipsisMenu)
                 {
                     <div class="header-context-menu right-align animate-pop">
@@ -48,6 +44,8 @@
             </div>
         </div>
     </header>
+
+
 
     <AdminTaskToolbar />
 
@@ -77,14 +75,14 @@
     }
 
     <div class="hub-main-layout">
-        @* --- COLUMN 1: LEFT OVERSIGHT --- *@
         <aside class="col-oversight">
             <AdminSlaMonitor />
             <AdminQueuePanel />
             <AdminAnalyticsPanel />
         </aside>
 
-        @* --- COLUMN 2: CENTER KANBAN BOARD MATRIX (DYNAMIC TUNNEL SORTING) --- *@
+
+
         <main class="col-board">
             <div class="board-canvas">
                 @if (ActiveGroupingCriterion == "Status")
@@ -102,79 +100,85 @@
             </div>
         </main>
 
-        @* --- COLUMN 3: RIGHT HIGH-FIDELITY DETAILS --- *@
         <aside class="col-details">
             <AdminTaskDetailsPanel Task="@(State.SelectedTask ?? FilteredTasksArray.FirstOrDefault(t => t.CompanyName == "Brightwave Solutions"))" OnActionsUpdated="Refresh" />
         </aside>
     </div>
 
 
-    @* =========================================================
-       MODERN ENTERPRISE NEW TASK CREATION POP-UP MODAL FRAME
-       ========================================================= *@
     @if (showCreateModal)
     {
-        <div class="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15,23,42,0.4); backdrop-filter: blur(12px); z-index: 99999; display: flex; align-items: center; justify-content: center;">
-            <div class="modal-box text-left-align animate-pop" style="background: white; border-radius: 20px; padding: 28px; width: 440px; box-shadow: 0 25px 50px -12px rgba(15,23,42,0.15); display: flex; flex-direction: column; gap: 16px; box-sizing: border-box;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a; letter-spacing: -0.02em;">Create New Corporate Task</h3>
-                    <span style="font-size: 20px; cursor: pointer; color: #94a3b8;" @onclick="() => showCreateModal = false">&times;</span>
+        <div class="modal-overlay">
+            <div class="modal-box text-left-align animate-pop">
+                <div class="modal-header-row">
+                    <h3 class="modal-title-bold">Create New Corporate Task</h3>
+                    <span class="modal-close-x" @onclick="CloseCreateModal">&times;</span>
                 </div>
 
-                <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.4;">Initialize a transaction card workflow mapping directly into your Sage X3 enterprise database pipelines.</p>
+                <p class="modal-subtitle-tiny">Initialize a transaction card workflow mapping directly into your Sage X3 enterprise database pipelines.</p>
 
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Task Title / Subject</label>
-                    <input type="text" @bind="NewTaskTitle" placeholder="e.g., Resolve Invoice mismatch INV-10045" class="modal-input" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 12px; font-size:13px;" />
+                <div class="modal-field-stack">
+                    <label class="section-label-tiny">Task Title / Subject</label>
+                    <input type="text" @bind="NewTaskTitle" placeholder="e.g., Resolve Invoice mismatch INV-10045" class="modal-input" />
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Client / Company Name</label>
-                    <input type="text" @bind="NewTaskCompany" placeholder="e.g., Tech Innovations Inc." class="modal-input" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 12px; font-size:13px;" />
+                <div class="modal-field-stack">
+                    <label class="section-label-tiny">Client / Company Name</label>
+                    <input type="text" @bind="NewTaskCompany" placeholder="e.g., Tech Innovations Inc." class="modal-input" />
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Initial Priority</label>
-                        <select @bind="NewTaskPriority" class="modal-select" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 8px; font-size:13px; background:white;">
-                            <option value="@TaskPriority.Low">Low</option>
-                            <option value="@TaskPriority.Medium">Medium</option>
-                            <option value="@TaskPriority.High">High</option>
-                            <option value="@TaskPriority.Urgent">Urgent</option>
+                <div class="modal-grid-split-row">
+                    <div class="modal-field-stack">
+                        <label class="section-label-tiny">Urgency</label>
+                        <select @bind="NewTaskPriority" class="modal-select">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
                         </select>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">Assign To Specialist</label>
-                        <select @bind="NewTaskAssignee" class="modal-select" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 8px; font-size:13px; background:white;">
-                            <option value="Unassigned">Leave Unassigned</option>
-                            <option value="Amit Patel">Amit Patel</option>
-                            <option value="Deepa Patel">Deepa Patel</option>
-                            <option value="John Smith">John Smith</option>
-                            <option value="alex.turner@company.com">Alex Turner</option>
-                        </select>
+                    <div class="modal-field-stack">
+                        <label class="section-label-tiny">Due Date</label>
+                        <input type="date" @bind="NewTaskDueDate" class="modal-input" />
                     </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase;">SLA Due Target Timeline</label>
-                    <select @bind="SlaHoursTimelineWindow" class="modal-select" style="width:100%; height:38px; border-radius:8px; border:1px solid #cbd5e1; padding:0 8px; font-size:13px; background:white;">
-                        <option value="12">Standard Tier (12h Target)</option>
-                        <option value="24">Elevated Tier (24h Target)</option>
-                        <option value="-2">Instant Overdue Alert Tester (-2h Target)</option>
-                    </select>
-                </div>
-
-                <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 8px;">
-                    <button class="btn-m-save priority-high" @onclick="SubmitNewCorporateTask" disabled="@(string.IsNullOrWhiteSpace(NewTaskTitle) || string.IsNullOrWhiteSpace(NewTaskCompany))" style="flex:1; height:38px; border-radius:10px; font-weight:600; font-size:13px; background:#2563eb; color:white; border:none; cursor:pointer;">Dispatch Task</button>
-                    <button class="btn-m-cancel" @onclick="() => showCreateModal = false" style="flex:1; height:38px; border-radius:10px; font-weight:600; font-size:13px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; cursor:pointer;">Cancel</button>
+                <div class="modal-actions">
+                    <button class="btn-m-save priority-high" @onclick="SubmitNewCorporateTask" disabled="@(string.IsNullOrWhiteSpace(NewTaskTitle) || string.IsNullOrWhiteSpace(NewTaskCompany))">Dispatch Task</button>
+                    <button class="btn-m-cancel" @onclick="CloseCreateModal">Cancel</button>
                 </div>
             </div>
         </div>
     }
 </div>
+
+
+
+
+
 @code {
     // LAYOUT MODAL CONTROL FLAGS
-    private bool showCreateModal = false;
+    private bool _showCreateModal = false;
+    private bool showCreateModal
+    {
+        get => _showCreateModal;
+        set
+        {
+            if (_showCreateModal != value)
+            {
+                _showCreateModal = value;
+                if (_showCreateModal)
+                {
+                    // 🚀 INTERCEPTOR: Prefills properties from active email context arrays [INDEX]
+                    NewTaskTitle = State.EmailContext?.Subject ?? string.Empty;
+                    NewTaskCompany = !string.IsNullOrEmpty(State.EmailContext?.BusinessPartnerName)
+                        ? State.EmailContext.BusinessPartnerName
+                        : (State.EmailContext?.SenderName ?? string.Empty);
+                }
+            }
+        }
+    }
+
     private bool isFilterActive = false;
     private bool showGroupingMenu = false;
     private bool showEllipsisMenu = false;
@@ -190,6 +194,7 @@
     private TaskPriority NewTaskPriority = TaskPriority.Medium;
     private string NewTaskAssignee = "Unassigned";
     private int SlaHoursTimelineWindow = 24;
+    private DateTime NewTaskDueDate { get; set; } = DateTime.Today.AddDays(3);
 
     protected override void OnInitialized()
     {
@@ -210,16 +215,12 @@
         };
     }
 
-    // =========================================================================
-    // 🔥 THIS IS EXACTLY WHERE THE FILTER PROPERTIES AND ENUM METHODS LIVE:
-    // =========================================================================
     private IEnumerable<TaskDto> FilteredTasksArray
     {
         get
         {
             var collection = State.AllTasks ?? Enumerable.Empty<TaskDto>();
 
-            // 1. Live Toolbar Search Text Filter
             if (!string.IsNullOrWhiteSpace(State.SearchTerm))
             {
                 collection = collection.Where(t =>
@@ -227,19 +228,16 @@
                     t.CompanyName.Contains(State.SearchTerm, StringComparison.OrdinalIgnoreCase));
             }
 
-            // 2. Toolbar Employee Dropdown Filter
             if (!string.IsNullOrWhiteSpace(State.SelectedEmployeeFilter))
             {
                 collection = collection.Where(t => t.AssignedTo == State.SelectedEmployeeFilter);
             }
 
-            // 3. Header Action Bar Urgency Dropdown Tray Filter
             if (GlobalPriorityFilter != "All")
             {
                 collection = collection.Where(t => t.Priority.ToString().Equals(GlobalPriorityFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            // 4. Header Action Bar SLA Timeline Tray Filter
             if (GlobalSlaFilter == "Overdue")
             {
                 collection = collection.Where(t => t.DueDate.HasValue && DateTime.UtcNow > t.DueDate.Value);
@@ -259,9 +257,6 @@
     private IEnumerable<TaskDto> GetTasksByPriority(TaskPriority priorityTarget) =>
         FilteredTasksArray.Where(t => t.Priority == priorityTarget);
 
-    // =========================================================================
-    // UI LAYOUT NAVIGATION TRAYS & MODAL SUBMISSIONS CONTINUE DIRECTLY BELOW:
-    // =========================================================================
     private void ToggleGlobalFilters() => isFilterActive = !isFilterActive;
     private void ToggleGroupingMenu() { showGroupingMenu = !showGroupingMenu; showEllipsisMenu = false; }
     private void ToggleEllipsisMenu() { showEllipsisMenu = !showEllipsisMenu; showGroupingMenu = false; }
@@ -271,6 +266,16 @@
         ActiveGroupingCriterion = selectedCriterion;
         showGroupingMenu = false;
         StateHasChanged();
+    }
+
+    private void CloseCreateModal()
+    {
+        showCreateModal = false;
+        NewTaskTitle = "";
+        NewTaskCompany = "";
+        NewTaskAssignee = "Unassigned";
+        NewTaskPriority = TaskPriority.Medium;
+        NewTaskDueDate = DateTime.Today.AddDays(3);
     }
 
     private void SubmitNewCorporateTask()
@@ -287,7 +292,7 @@
             Status = assignedStatus,
             AssignedTo = NewTaskAssignee,
             CreatedDate = DateTime.UtcNow,
-            DueDate = DateTime.UtcNow.AddHours(SlaHoursTimelineWindow),
+            DueDate = NewTaskDueDate,
             Completed = false,
             OutlookItemId = Guid.NewGuid().ToString()
         };
@@ -295,10 +300,7 @@
         State.AllTasks.Insert(0, createdTask);
         State.SetSelectedTask(createdTask);
 
-        NewTaskTitle = "";
-        NewTaskCompany = "";
-        NewTaskAssignee = "Unassigned";
-        showCreateModal = false;
+        CloseCreateModal();
 
         State.NotifyStateChanged();
     }
@@ -311,4 +313,3 @@
 
     public void Dispose() => State.OnChange -= Refresh;
 }
-

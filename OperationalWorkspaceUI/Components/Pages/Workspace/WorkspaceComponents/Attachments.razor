@@ -174,23 +174,3 @@
         </div>
     </div>
 </div>
-@code{
-private async Task RefreshAttachmentsFromServer()
-{
-try
-{
-// Hits your Pic 3 list endpoint to reload fresh records from the API database index
-var response = await Http.GetAsync("api/v1/Attachment/list?ownerType=SageGlobalIndex&ownerId=All");
-
-if (response.IsSuccessStatusCode)
-{
-State.LogActivity("System Server", "Refreshed Attachments List Cache", "Tia");
-State.Notify();
-}
-}
-catch (Exception ex)
-{
-System.Diagnostics.Debug.WriteLine($"Server refresh sync failed: {ex.Message}");
-}
-}
-}

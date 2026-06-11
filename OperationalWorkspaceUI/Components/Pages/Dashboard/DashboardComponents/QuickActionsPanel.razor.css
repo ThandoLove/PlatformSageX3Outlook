@@ -21,10 +21,10 @@
         color: var(--text-dark);
     }
 
-/* THE IMAGE MATCH: 6 columns across the middle of the dashboard */
+/* THE IMAGE MATCH: 7 columns across the middle of the dashboard row */
 .quick-actions-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     gap: 10px;
     text-align: center;
 }
@@ -54,7 +54,7 @@
     white-space: nowrap;
 }
 
-/* SOLID COLOR CIRCLES - This replaces your white .action-icon circles */
+/* SOLID COLOR CIRCLES */
 .icon-circle {
     width: 48px;
     height: 48px;
@@ -65,31 +65,30 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-/* EXACT IMAGE PALETTE */
+/* EXACT IMAGE PALETTE COLORS */
 .circle-blue {
     background-color: #3b82f6;
 }
-/* Add Partner */
+
 .circle-teal {
     background-color: #14b8a6;
 }
-/* Link Existing */
+
 .circle-orange {
     background-color: #f59e0b;
 }
-/* Create Quote */
+
 .circle-indigo {
     background-color: #6366f1;
 }
-/* Add Sales */
+
 .circle-blue-dark {
     background-color: #2563eb;
 }
-/* Create Invoice */
+
 .circle-green {
     background-color: #22c55e;
 }
-/* Attach Email */
 
 /* Ensuring FluentIcons inside stay white */
 ::deep .icon-circle fluent-icon {

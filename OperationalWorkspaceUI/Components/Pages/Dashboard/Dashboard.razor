@@ -6,18 +6,17 @@
 @page "/taskpane/compose/followup"
 @rendermode InteractiveServer
 
-@* 1. COMPONENT NAMESPACES *@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
-@using OperationalWorkspaceUI.Components.Pages.Forms @* Ensures CreateClient can be discovered *@
+@using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.State
 @using Microsoft.JSInterop
 
-@* 2. SERVICE INJECTIONS *@
 @inject DashboardState DState
 @inject WorkspaceState WState
 @inject UIState AppUIState
 @inject IJSRuntime JS
 @inject NavigationManager NavManager
+@inject OperationalWorkspaceUI.UIServices.System.ModalService DashboardModalService
 
 @implements IDisposable
 
@@ -38,13 +37,10 @@
             }
         </div>
     }
-    @* =====================================================================
-       🆕 LAYER A: NEW SAGE X3 PROSPECT WORKFLOW (SHOWS YOUR CREATECLIENT FORM)
-       ===================================================================== *@
+
     @if (DState.ShowAddClientUI)
     {
         <div class="workspace-viewport fade-in-animation">
-            
             <div class="alert alert-warning py-3 px-4 mb-4 shadow-sm d-flex align-items-start gap-3 border-start border-4 border-warning">
                 <div class="fs-4">⚠️</div>
                 <div>
@@ -54,91 +50,57 @@
                     </p>
                 </div>
             </div>
-
             <div class="card shadow-sm border-0 mb-4 rounded-lg">
                 <div class="card-header bg-light border-bottom-0 py-3">
                     <h3 class="card-title h5 mb-0 font-weight-bold text-dark">Create New Sage X3 Business Partner</h3>
                 </div>
                 <div class="card-body p-4">
-                    
-                    @* 🛠️ WIRED DIRECTLY TO YOUR SEPARATE COMPONENT AS REQUESTED *@
                     <CreateClientForm />
-                                   
                 </div>
             </div>
-
         </div>
     }
-    @* =====================================================================
-       🏛️ LAYER B: VERIFIED ERP PARTNER WORKFLOW (RESTORES ORIGINAL PANELS)
-       ===================================================================== *@
     else
     {
-        <!-- --- ROW 1: UPDATED HIGH-DENSITY COLORFUL METRICS HEADER STRIP --- -->
         <div class="metrics-grid">
             @{
-                var customerName = !string.IsNullOrWhiteSpace(DState.EmailContext.BusinessPartnerName) 
-                    ? DState.EmailContext.BusinessPartnerName 
+                var customerName = !string.IsNullOrWhiteSpace(DState.EmailContext.BusinessPartnerName)
+                    ? DState.EmailContext.BusinessPartnerName
                     : (DState.TopClients?.FirstOrDefault()?.Name ?? "No Customer Linked");
             }
-
-            <!-- OPEN ORDERS: BLUE TINT -->
             <div class="flat-layout-cell kpi-box orders-box-tint">
                 <div class="card-label-tiny">Open Orders</div>
                 <div class="metric-value">@(DState.EmailContext.OpenOrderCount > 0 ? DState.EmailContext.OpenOrderCount : (WState.Orders?.Count ?? 0))</div>
                 <span class="metric-subtext">@customerName</span>
             </div>
-
-            <!-- OPEN TICKETS: RED INTERACTIVE JUMP TINT -->
-            <div class="flat-layout-cell kpi-box tickets-box-tint clickable-kpi-card"
-                 @onclick="() => _showTicketsModal = true"
-                 title="Click to view Active Tickets Panel">
+            <div class="flat-layout-cell kpi-box tickets-box-tint clickable-kpi-card" @onclick="OpenTicketsPanelModal">
                 <div class="card-label-tiny">Open Tickets ➔</div>
-                <div class="metric-value">
-                    @(WState.Tickets?.Count(t => t.Status != "Closed" && t.Status != "Resolved") ?? 0)
-                </div>
-                <span class="metric-subtext">
-                    @(WState.Tickets?.Any(t => t.Priority == "High" && t.Status != "Closed") == true ? "Urgent Action Required" : "Active work items")
-                </span>
+                <div class="metric-value">@(WState.Tickets?.Count(t => t.Status != "Closed" && t.Status != "Resolved") ?? 0)</div>
+                <span class="metric-subtext">@(WState.Tickets?.Any(t => t.Priority == "High" && t.Status != "Closed") == true ? "Urgent Action Required" : "Active work items")</span>
             </div>
-
-            <!-- SYSTEM GATEWAY: ADMIN/EMPLOYEE IDENTITY SECURED TINT -->
-            <div class="flat-layout-cell kpi-box gateway-box-tint clickable-kpi-card"
-                 @onclick="OpenAdminHealthModal"
-                 title="@(DState.IsAdminEnvironment ? "Click to view System Health Diagnostics" : "Admin Permission Required")">
+            <div class="flat-layout-cell kpi-box gateway-box-tint clickable-kpi-card" @onclick="OpenAdminHealthModal">
                 <div class="card-label-tiny">System Gateway @(DState.IsAdminEnvironment ? "➔" : "🔒")</div>
-                <div class="metric-value" style="font-size: 14px; font-weight: 800; color: @(DState.IsAdminEnvironment ? "#10b981" : "#64748b");">
-                    @(DState.IsAdminEnvironment ? "ADMIN LOGGED" : "EMPLOYEE")
-                </div>
-                <span class="metric-subtext">@(DState.IsAdminEnvironment ? "Diagnostics Available" : "Identity Locked")</span>
+                @(DState.IsAdminEnvironment ? "ADMIN LOGGED" : "EMPLOYEE")
             </div>
 
-            <!-- CUSTOMER CONTEXT: TEAL TINT -->
+            <span class="metric-subtext">@(DState.IsAdminEnvironment ? "Diagnostics Available" : "Identity Locked")</span>
+        </div>
+
             <div class="flat-layout-cell kpi-box customer-box-tint">
                 <div class="card-label-tiny">Customer</div>
                 <div class="metric-value customer-title-lock">@customerName</div>
                 <span class="metric-subtext">Account: @DState.EmailContext.AccountStatus</span>
             </div>
-        </div>
+    
 
-        @* --- ROW 2: MODERN COLORFUL ACTION STRIP RIBBON BANNER --- *@
-        <div class="modern-action-strip">
-            <button class="strip-btn primary-tint">👤 Add Contact</button>
-            <button class="strip-btn secondary-tint">🔗 Link Existing</button>
-            <button class="strip-btn accent-tint">📝 Add Quote</button>
-            <button class="strip-btn success-tint">🎫 Create Ticket</button>
-            <button class="strip-btn dark-tint">📊 Add Invoice</button>
-            <button class="strip-btn purple-tint">📎 Attach to Email</button>
-        </div>
+        <QuickActionsPanel />
 
-        @* --- ROW 3: FIRST 3-COLUMN COMPACT CARDS ROW --- *@
         <div class="sage-dashboard-row">
             <div class="flat-layout-cell"><EmailContextPanel /></div>
             <div class="flat-layout-cell"><CrmPanel Clients="@DState.TopClients" /></div>
             <div class="flat-layout-cell"><KnowledgeBasePanel /></div>
         </div>
 
-        @* --- ROW 4: SECOND 3-COLUMN COMPACT CARDS ROW --- *@
         <div class="sage-dashboard-row">
             <div class="flat-layout-cell"><AttachDocumentsPanel /></div>
             <div class="flat-layout-cell"><TasksPanel /></div>
@@ -146,37 +108,20 @@
         </div>
     }
 
-    @* --- HIGH-DENSITY INTERACTIVE DIALOG MODALS --- *@
-    @if (_showTicketsModal)
+    @if (_isCustomModalOpen)
     {
-        <div class="modal-overlay" @onclick="() => _showTicketsModal = false">
-            <div class="modal-box" @onclick:stopPropagation>
-                <div class="modal-header-row">
-                    <h4>Contextual Active Tickets</h4>
-                    <button class="close-btn" @onclick="() => _showTicketsModal = false">✕</button>
+        <div class="custom-modal-shroud" @onclick="CloseDashboardModal">
+            <div class="custom-modal-viewport" @onclick:stopPropagation>
+                <div class="custom-modal-header">
+                    <h3>@_customModalTitle</h3>
+                    <button class="custom-modal-close-btn" @onclick="CloseDashboardModal">✕</button>
                 </div>
-                <div class="modal-content-scroller">
-                    <TicketsPanel />
+                <div class="custom-modal-body">
+                    @_customModalContent
                 </div>
             </div>
         </div>
     }
-
-    @if (_showHealthModal && DState.IsAdminEnvironment)
-    {
-        <div class="modal-overlay" @onclick="() => _showHealthModal = false">
-            <div class="modal-box success-border" @onclick:stopPropagation>
-                <div class="modal-header-row">
-                    <h4>System Gateway Health Telemetry</h4>
-                    <button class="close-btn" @onclick="() => _showHealthModal = false">✕</button>
-                </div>
-                <div class="modal-content-scroller">
-                    <SystemHealthPanel Status="@DState.AdminHealth" />
-                </div>
-            </div>
-        </div>
-    }
-
 </div>
 @code {
     private bool _isProcessingOutlookData = false;
@@ -184,8 +129,15 @@
     private bool _showTicketsModal = false;
     private bool _showHealthModal = false;
 
+    private bool _isCustomModalOpen = false;
+    private string _customModalTitle = string.Empty;
+    private RenderFragment? _customModalContent;
+
     protected override void OnInitialized()
     {
+        DashboardModalService.OnShow += HandleShowModal;
+        DashboardModalService.OnClose += HandleCloseModal;
+
         _ = InvokeAsync(async () =>
         {
             await DState.LoadDashboardAsync(isAdmin: DState.IsAdminEnvironment);
@@ -196,12 +148,50 @@
         AppUIState.OnChange += Refresh;
     }
 
-    private void Refresh() => InvokeAsync(StateHasChanged);
-
-    private void OpenAdminHealthModal()
+    private async Task HandleShowModal(string title, RenderFragment content)
     {
-        if (DState.IsAdminEnvironment) _showHealthModal = true;
+        _customModalTitle = title;
+        _customModalContent = content;
+        _isCustomModalOpen = true;
+        await InvokeAsync(StateHasChanged);
     }
+
+    private async Task HandleCloseModal()
+    {
+        _isCustomModalOpen = false;
+        _customModalTitle = string.Empty;
+        _customModalContent = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CloseDashboardModal()
+    {
+        await DashboardModalService.CloseModal();
+    }
+
+    private async Task OpenTicketsPanelModal()
+    {
+        await DashboardModalService.ShowModal("Contextual Active Tickets", builder =>
+        {
+            builder.OpenComponent<TicketsPanel>(0);
+            builder.CloseComponent();
+        });
+    }
+
+    private async Task OpenAdminHealthModal()
+    {
+        if (DState.IsAdminEnvironment)
+        {
+            await DashboardModalService.ShowModal("System Gateway Health Telemetry", builder =>
+            {
+                builder.OpenComponent<SystemHealthPanel>(0);
+                builder.AddAttribute(1, "Status", DState.AdminHealth);
+                builder.CloseComponent();
+            });
+        }
+    }
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -241,6 +231,9 @@
 
     public void Dispose()
     {
+        DashboardModalService.OnShow -= HandleShowModal;
+        DashboardModalService.OnClose -= HandleCloseModal;
+
         DState.OnChange -= Refresh;
         WState.OnChange -= Refresh;
         AppUIState.OnChange -= Refresh;

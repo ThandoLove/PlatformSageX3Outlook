@@ -1,5 +1,5 @@
 ﻿/* =========================================================
-   ROOT
+   PART 1: ROOT STYLING & VIEWPORT WRAPPERS
 ========================================================= */
 .hub-viewport-lock {
     height: 100vh;
@@ -10,10 +10,11 @@
     background: #f6f8fb;
     font-family: Inter, "Segoe UI", sans-serif;
     color: #1e293b;
+    box-sizing: border-box;
 }
 
 /* =========================================================
-   HEADER
+   PART 2: GLOBAL GLASSMORPHIC HEADER CHASSIS
 ========================================================= */
 .hub-header {
     height: 64px;
@@ -23,8 +24,10 @@
     padding: 0 20px;
     background: rgba(255, 255, 255, 0.78);
     backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid rgba(226, 232, 240, 0.7);
     flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .header-left,
@@ -43,68 +46,21 @@
 }
 
 /* =========================================================
-   BUTTONS
-========================================================= */
-.btn-new-task {
-    height: 36px;
-    padding: 0 14px;
-    border: none;
-    border-radius: 10px;
-    background: #2563eb;
-    color: white;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: 0.18s ease;
-}
-
-    .btn-new-task:hover {
-        background: #1d4ed8;
-    }
-
-.btn-ghost {
-    height: 34px;
-    padding: 0 12px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: rgba(255, 255, 255, 0.7);
-    color: #475569;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: 0.18s ease;
-}
-
-    .btn-ghost:hover {
-        background: white;
-    }
-
-.hub-dots {
-    color: #94a3b8;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-/* =========================================================
-   GRID LAYOUT
+   PART 3: MAIN LAYOUT GRIDS & COLUMN BOUNDARIES
 ========================================================= */
 .hub-main-layout {
     flex: 1;
     display: grid;
-    /* FIX: Tightened columns spacing to prevent task pane container blowout */
     grid-template-columns: 250px minmax(0, 1fr) 360px;
     gap: 16px;
     padding: 16px;
-    overflow-y: auto; /* single vertical scroll provided here */
+    overflow-y: auto;
     overflow-x: hidden;
     min-width: 0;
     min-height: 0;
     box-sizing: border-box;
 }
 
-/* =========================================================
-   SHARED PANELS
-========================================================= */
 .col-oversight,
 .col-board,
 .col-details {
@@ -112,282 +68,14 @@
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(226, 232, 240, 0.6);
     overflow: hidden;
-}
-
-/* =========================================================
-   LEFT SIDEBAR
-========================================================= */
-.col-oversight {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 14px;
-    overflow-y: visible; /* allow main layout to provide scrolling */
-}
-
-.col-board {
-    background: transparent;
-    overflow-x: auto;
-    overflow-y: visible; /* central board will not have its own vertical scrollbar */
-}
-
-.col-details {
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.82);
-    display: flex;
-    flex-direction: column;
-}
-
-.task-details-panel {
-    padding: 18px;
-    height: auto;
-    overflow-y: visible; /* rely on hub-main-layout for vertical scrolling */
-    display: flex;
-    flex-direction: column;
     box-sizing: border-box;
 }
 
 /* =========================================================
-   HEADER
-========================================================= */
-.details-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 22px;
-    flex-shrink: 0;
-}
-
-.alert-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: #fef2f2;
-    color: #ef4444;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 600;
-    flex-shrink: 0;
-}
-
-.header-content {
-    flex: 1;
-    min-width: 0;
-}
-
-    .header-content h3 {
-        margin: 0;
-        font-size: 16px;
-        line-height: 1.3;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        color: #0f172a;
-        word-break: break-all;
-    }
-
-    .header-content p {
-        margin-top: 4px;
-        font-size: 13px;
-        color: #64748b;
-        font-weight: 400;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-.close-btn {
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 10px;
-    background: transparent;
-    color: #94a3b8;
-    font-size: 18px;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-    .close-btn:hover {
-        background: #f8fafc;
-    }
-
-/* =========================================================
-   METADATA
-========================================================= */
-.metadata-grid {
-    border-top: 1px solid #f1f5f9;
-    border-bottom: 1px solid #f1f5f9;
-    flex-shrink: 0;
-}
-
-.meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f8fafc;
-    font-size: 13px;
-}
-
-    .meta-row:last-child {
-        border-bottom: none;
-    }
-
-    .meta-row label {
-        color: #94a3b8;
-        font-weight: 500;
-    }
-
-.value-blue {
-    color: #2563eb;
-    font-weight: 600;
-}
-
-.value-red {
-    color: #ef4444;
-    font-weight: 600;
-}
-
-/* =========================================================
-   SECTIONS
-========================================================= */
-.details-section {
-    margin-top: 20px;
-    flex-shrink: 0;
-}
-
-.section-label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #94a3b8;
-    font-weight: 600;
-}
-/* =========================================================
-   ROOT
-========================================================= */
-.hub-viewport-lock {
-    height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: #f6f8fb;
-    font-family: Inter, "Segoe UI", sans-serif;
-    color: #1e293b;
-}
-
-/* =========================================================
-   HEADER
-========================================================= */
-.hub-header {
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    background: rgba(255, 255, 255, 0.78);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
-    flex-shrink: 0;
-}
-
-.header-left,
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.hub-header h1 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: #0f172a;
-}
-
-/* =========================================================
-   BUTTONS
-========================================================= */
-.btn-new-task {
-    height: 36px;
-    padding: 0 14px;
-    border: none;
-    border-radius: 10px;
-    background: #2563eb;
-    color: white;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: 0.18s ease;
-}
-
-    .btn-new-task:hover {
-        background: #1d4ed8;
-    }
-
-.btn-ghost {
-    height: 34px;
-    padding: 0 12px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: rgba(255, 255, 255, 0.7);
-    color: #475569;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: 0.18s ease;
-}
-
-    .btn-ghost:hover {
-        background: white;
-    }
-
-.hub-dots {
-    color: #94a3b8;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-
-/* =========================================================
-   GRID LAYOUT
-========================================================= */
-.hub-main-layout {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 250px minmax(0, 1fr) 360px;
-    gap: 16px;
-    padding: 16px;
-    overflow: hidden;
-    min-width: 0;
-    min-height: 0;
-    box-sizing: border-box;
-}
-
-/* =========================================================
-   SHARED PANELS
-========================================================= */
-.col-oversight,
-.col-board,
-.col-details {
-    min-height: 0;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(226, 232, 240, 0.6);
-    overflow: hidden;
-}
-
-/* =========================================================
-   LEFT SIDEBAR
+   PART 4: SIDEBARS & DETAILS PANELS SCROLLER FLOW
 ========================================================= */
 .col-oversight {
     display: flex;
@@ -419,9 +107,8 @@
     box-sizing: border-box;
 }
 
-
 /* =========================================================
-   HEADER
+   PART 5: TASK DETAILS COMPONENT TEXT HOOKS
 ========================================================= */
 .details-header {
     display: flex;
@@ -470,407 +157,54 @@
         text-overflow: ellipsis;
     }
 
-.close-btn {
-    width: 32px;
-    height: 32px;
+
+/* =========================================================
+   PART 6: BUTTON INTERACTION ACTIONS & CURSORS
+========================================================= */
+.btn-new-task {
+    height: 36px;
+    padding: 0 14px;
     border: none;
     border-radius: 10px;
-    background: transparent;
+    background: #2563eb;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.18s ease;
+}
+
+    .btn-new-task:hover {
+        background: #1d4ed8;
+    }
+
+.btn-ghost {
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: rgba(255, 255, 255, 0.7);
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.18s ease;
+}
+
+    .btn-ghost:hover {
+        background: white;
+    }
+
+.hub-dots {
     color: #94a3b8;
     font-size: 18px;
     cursor: pointer;
-    flex-shrink: 0;
 }
 
-    .close-btn:hover {
-        background: #f8fafc;
-    }
 
 /* =========================================================
-   METADATA
+   PART 7: CONTEXT POPUP FLYOUT MENUS & TRANSITION PIPELINES
 ========================================================= */
-.metadata-grid {
-    border-top: 1px solid #f1f5f9;
-    border-bottom: 1px solid #f1f5f9;
-    flex-shrink: 0;
-}
-
-.meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f8fafc;
-    font-size: 13px;
-}
-
-    .meta-row:last-child {
-        border-bottom: none;
-    }
-
-    .meta-row label {
-        color: #94a3b8;
-        font-weight: 500;
-    }
-
-.value-blue {
-    color: #2563eb;
-    font-weight: 600;
-}
-
-.value-red {
-    color: #ef4444;
-    font-weight: 600;
-}
-
-/* =========================================================
-   SECTIONS
-========================================================= */
-.details-section {
-    margin-top: 20px;
-    flex-shrink: 0;
-}
-
-.section-label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #94a3b8;
-    font-weight: 600;
-}
-
-/* =========================================================
-   CARDS
-========================================================= */
-.customer-card,
-.link-list,
-.admin-action-controls,
-.admin-escalation-panel,
-.white-metrics-card,
-.queue-panel-locked,
-.navy-health-card,
-.sla-navy-card {
-    background: rgba(255, 255, 255, 0.72) !important;
-    border: 1px solid rgba(226, 232, 240, 0.7) !important;
-    border-radius: 16px !important;
-    box-shadow: none !important;
-    padding: 12px !important;
-}
-
-.customer-card {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-}
-
-.customer-name {
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    color: #1e293b !important;
-}
-
-.link-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-}
-
-.link-item {
-    display: flex !important;
-    justify-content: space-between !important;
-    font-size: 12px !important;
-}
-
-    .link-item span:first-child {
-        color: #64748b !important;
-        font-weight: 500 !important;
-    }
-
-.blue-link {
-    color: #2563eb !important;
-    font-weight: 600 !important;
-    text-decoration: underline !important;
-}
-
-/* =========================================================
-   REMOVE HARSH NAVY
-========================================================= */
-.navy-health-card,
-.sla-navy-card {
-    background: #f8fafc !important;
-    color: #1e293b !important;
-}
-
-.service-name,
-.sla-box .l,
-.sla-box .sub,
-.live-pill {
-    color: #64748b !important;
-}
-
-/* =========================================================
-   ACTION BUTTONS
-========================================================= */
-.action-btn,
-.btn-primary-admin,
-.btn-escalate-action,
-.btn-deescalate-action {
-    height: 38px;
-    border-radius: 10px !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    transition: 0.18s ease;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    padding: 0 14px !important;
-}
-
-.action-btn {
-    background: white;
-    border: 1px solid #e2e8f0;
-    color: #334155 !important;
-    text-align: left !important;
-}
-
-    .action-btn:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-    }
-
-    .action-btn.danger {
-        color: #ef4444 !important;
-        border-color: #fee2e2 !important;
-    }
-
-        .action-btn.danger:hover {
-            background: #fef2f2 !important;
-        }
-
-    .action-btn.success {
-        color: #10b981 !important;
-        border-color: #d1fae5 !important;
-    }
-
-        .action-btn.success:hover {
-            background: #ecfdf5 !important;
-        }
-
-/* =========================================================
-   TOOLBAR
-========================================================= */
-.admin-toolbar {
-    padding: 14px 18px !important;
-    background: transparent !important;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.6) !important;
-}
-
-/* =========================================================
-   SEARCH
-========================================================= */
-.search-container {
-    height: 42px;
-    border-radius: 12px !important;
-    background: #f8fafc !important;
-    border: 1px solid transparent !important;
-}
-
-    .search-container:focus-within {
-        border-color: #dbeafe !important;
-        background: white !important;
-    }
-
-    .search-container input {
-        font-size: 13px !important;
-        font-weight: 400 !important;
-    }
-
-/* =========================================================
-   SMALL LABELS
-========================================================= */
-.section-label-tiny,
-.q-header label,
-.sla-header label,
-.live-pill,
-.total-count-pill {
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.04em;
-}
-
-/* =========================================================
-   SCROLLBARS
-========================================================= */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #dbe2ea;
-    border-radius: 999px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-@media (max-width: 1500px) {
-    .hub-main-layout {
-        grid-template-columns: 230px minmax(0, 1fr) 340px;
-    }
-}
-
-@media (max-width: 1300px) {
-    .hub-main-layout {
-        grid-template-columns: 210px minmax(0, 1fr) 320px;
-    }
-}
-
-/* =========================================================
-   TAB BED CONSTRAINTS & INTERACTIVE INTERACTION GLASS OVERLAYS
-   ========================================================= */
-.details-tabs {
-    display: flex !important;
-    background-color: #f1f5f9 !important;
-    padding: 4px !important;
-    gap: 4px !important;
-    border-radius: 8px !important;
-    margin-top: 16px !important;
-    flex-shrink: 0 !important;
-}
-
-.tab-btn {
-    flex: 1 !important;
-    padding: 6px 12px !important;
-    background: transparent !important;
-    border: none !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    border-radius: 6px !important;
-    color: #475569 !important;
-    transition: all 0.15s ease !important;
-}
-
-    .tab-btn.active {
-        background-color: #ffffff !important;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-        color: #2563eb !important;
-    }
-
-.modal-overlay {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: rgba(15, 23, 42, 0.45) !important;
-    backdrop-filter: blur(8px) !important;
-    z-index: 9999 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-.modal-box {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 16px !important;
-    padding: 24px !important;
-    width: 320px !important;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    box-sizing: border-box !important;
-    animation: modalPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-    .modal-box.danger-border {
-        border-top: 4px solid #ef4444 !important;
-    }
-
-    .modal-box.success-border {
-        border-top: 4px solid #10b981 !important;
-    }
-
-@keyframes modalPop {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.modal-select, .modal-input {
-    width: 100% !important;
-    height: 36px !important;
-    border-radius: 8px !important;
-    border: 1px solid #cbd5e1 !important;
-    padding: 0 10px !important;
-    font-size: 13px !important;
-    background: #ffffff !important;
-    color: #1e293b !important;
-    outline: none !important;
-    box-sizing: border-box !important;
-}
-
-.modal-actions {
-    display: flex !important;
-    gap: 8px !important;
-    margin-top: 8px !important;
-}
-
-.btn-m-save, .btn-m-danger, .btn-m-success, .btn-m-cancel {
-    flex: 1 !important;
-    height: 34px !important;
-    border-radius: 6px !important;
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border: none !important;
-}
-
-.btn-m-save {
-    background: #2563eb !important;
-    color: white !important;
-}
-
-.btn-m-danger {
-    background: #ef4444 !important;
-    color: white !important;
-}
-
-.btn-m-success {
-    background: #10b981 !important;
-    color: white !important;
-}
-
-.btn-m-cancel {
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
-}
-
-/* =========================================================================
-   HEADER DROPDOWN CONTEXT FLYOUT MENUS & EXPANSION TRAYS
-   ========================================================================= */
-
 .dropdown-wrapper {
     position: relative !important;
     display: inline-block !important;
@@ -883,7 +217,7 @@
     background: #ffffff !important;
     border: 1px solid #cbd5e1 !important;
     border-radius: 10px !important;
-    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04) !important;
+    box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08) !important;
     width: 180px !important;
     z-index: 9999 !important;
     padding: 6px 0 !important;
@@ -916,7 +250,10 @@
         font-weight: 600 !important;
     }
 
-/* EXPANDABLE HORIZONTAL GLOBAL FILTERS TRAYS */
+
+/* =========================================================
+   PART 8: EXPANDABLE FILTER TRAYS & SELECTION ENGINES
+========================================================= */
 .global-filter-expansion-tray {
     background: #ffffff !important;
     border-bottom: 1px solid #e2e8f0 !important;
@@ -956,28 +293,6 @@
         width: 160px !important;
     }
 
-/* ANIMATION TRANSITION TUNNELS */
-.animate-pop {
-    animation: popEntry 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    transform-origin: top left !important;
-}
-
-.header-context-menu.right-align.animate-pop {
-    transform-origin: top right !important;
-}
-
-@keyframes popEntry {
-    from {
-        opacity: 0;
-        transform: scale(0.96) translateY(-4px);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
 .btn-ghost.filter-engaged {
     background-color: #eff6ff !important;
     border-color: #bfdbfe !important;
@@ -985,29 +300,119 @@
     font-weight: 600 !important;
 }
 
-/* =========================================================
-   INTEGRATION TEXT INDICATORS COLOR HOOK OVERRIDES
-   ========================================================= */
 
-.status-indicator {
-    font-size: 11px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    padding: 2px 6px !important;
-    border-radius: 4px !important;
+/* =========================================================
+   PART 9: SUB-PANEL RESET ENVELOPE MODIFIERS
+========================================================= */
+.metadata-grid {
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    flex-shrink: 0;
 }
 
-    .status-indicator.online {
-        background-color: #ecfdf5 !important;
-        color: #059669 !important;
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 13px;
+}
+
+    .meta-row label {
+        color: #94a3b8;
+        font-weight: 500;
     }
 
-    .status-indicator.delayed {
-        background-color: #fffbeb !important;
-        color: #d97706 !important;
+.section-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #dbe2ea;
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* =========================================================
+   PART 10: CLEAN COMPONENT FIELD LAYOUT ANCHORS
+========================================================= */
+.modal-title-bold {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+}
+
+.modal-close-x {
+    font-size: 20px;
+    cursor: pointer;
+    color: #94a3b8;
+}
+
+.modal-subtitle-tiny {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.modal-field-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-grid-split-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.animate-slide {
+    animation: slideEntry 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideEntry {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
     }
 
-    .status-indicator.offline {
-        background-color: #fef2f2 !important;
-        color: #dc2626 !important;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
+}
+
+@media (max-width: 1500px) {
+    .hub-main-layout {
+        grid-template-columns: 230px minmax(0, 1fr) 340px;
+    }
+}
+
+@media (max-width: 1300px) {
+    .hub-main-layout {
+        grid-template-columns: 210px minmax(0, 1fr) 320px;
+    }
+}
