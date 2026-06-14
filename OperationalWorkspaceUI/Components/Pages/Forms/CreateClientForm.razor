@@ -1,4 +1,5 @@
 ﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
 @using OperationalWorkspaceUI.Components.Pages.Forms.FormComponents
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceApplication.DTOs
@@ -6,60 +7,33 @@
 
 @inject OperationalWorkspaceUI.UIServices.Workspace.BusinessPartnerUIService BPService
 @inject OperationalWorkspaceUI.State.WorkspaceState WorkspaceState
-@inject DashboardState DState   
+@inject DashboardState DState
 @inject Radzen.NotificationService NotificationService
-@inject ModalService ModalService 
-@* 🚀 FIXED: Injected your custom ModalService to manage clean dismiss actions *@
+@inject ModalService ModalService
+@inject NavigationManager NavManager
 
-<FormSection Title="Create Sage X3 Client"
-             SubmitLabel="Save Client to Sage"
-             OnSubmit="SaveClientAsync"
-             OnCancel="HandleCancel">
+@{
+    var currentPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+    bool isEmbeddedModal = currentPath.Contains("dashboard") || currentPath.Contains("workspace");
+}
 
-    <DataAnnotationsValidator />
-
-    @* SECTION 1: IDENTITY & CATEGORY *@
-    <div class="sage-form-group">
-        <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">BUSINESS IDENTITY</FluentLabel>
-        <div class="form-grid-2-col">
-            <div>
-                <FluentTextField Label="Client Name" @bind-Value="NewClient.Name" FullWidth="true" />
-                <ValidationMessage For="@(() => NewClient.Name)" />
-            </div>
-            <FluentSelect Label="Client Category" TOption="string" Style="width: 100%;">
-                <FluentOption TOption="string" Value="DOM">Domestic Customer</FluentOption>
-                <FluentOption TOption="string" Value="INT">International Customer</FluentOption>
-                <FluentOption TOption="string" Value="EU">EU Customer</FluentOption>
-            </FluentSelect>
-        </div>
-        <div style="margin-top: 12px;">
-            <FluentTextField Label="Tax / VAT Number" Placeholder="e.g. GB123456789" FullWidth="true" />
-        </div>
+@if (isEmbeddedModal)
+{
+    <div class="modal-form-inline-title">
+        <h2>Create Sage X3 Client</h2>
     </div>
 
-    @* SECTION 2: CONTACT INFORMATION *@
-    <div class="sage-form-group" style="margin-top: 24px;">
-        <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
-        <FluentTextField Label="Email Address" @bind-Value="NewClient.Email" FullWidth="true" />
-        
-        <div class="form-grid-2-col" style="margin-top: 12px;">
-            <FluentTextField Label="Phone Number" @bind-Value="NewClient.PhoneNumber" FullWidth="true" />
-            <FluentTextField Label="Website" Placeholder="https://" FullWidth="true" />
-        </div>
-    </div>
-
-    @* SECTION 3: ADDRESS *@
-    <div class="sage-form-group" style="margin-top: 24px;">
-        <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
-        <FluentTextArea Label="Full Address" @bind-Value="NewClient.Address" Rows="3" FullWidth="true" />
-        
-        <div class="form-grid-2-col" style="margin-top: 12px;">
-            <FluentTextField Label="City" FullWidth="true" />
-            <FluentTextField Label="Postal Code" FullWidth="true" />
-        </div>
-    </div>
-
-</FormSection>
+    @FormFieldsLayout
+}
+else
+{
+    <FormSection Title="Create Sage X3 Client"
+                 SubmitLabel="Save Client to Sage"
+                 OnSubmit="SaveClientAsync"
+                 OnCancel="HandleCancel">
+        @FormFieldsLayout
+    </FormSection>
+}
 
 @code {
     [Parameter] public string? Email { get; set; }
@@ -67,9 +41,67 @@
 
     private ClientDto NewClient = new();
 
+    private RenderFragment FormFieldsLayout => __builder =>
+    {
+        <EditForm Model="NewClient" OnValidSubmit="SaveClientAsync">
+            <DataAnnotationsValidator />
+
+            @* SECTION 1: IDENTITY & CATEGORY *@
+            <div class="sage-form-group">
+                <FluentLabel Typo="Typography.Body">BUSINESS IDENTITY</FluentLabel>
+                <div class="form-grid-2-col">
+                    <div>
+                        <FluentTextField Label="Client Name" @bind-Value="NewClient.Name" FullWidth="true" />
+                        <ValidationMessage For="@(() => NewClient.Name)" />
+                    </div>
+                    <FluentSelect Label="Client Category" TOption="string" FullWidth="true">
+                        <FluentOption TOption="string" Value="DOM">Domestic Customer</FluentOption>
+                        <FluentOption TOption="string" Value="INT">International Customer</FluentOption>
+                        <FluentOption TOption="string" Value="EU">EU Customer</FluentOption>
+                    </FluentSelect>
+                </div>
+                <div class="single-field-row">
+                    <FluentTextField Label="Tax / VAT Number" Placeholder="e.g. GB123456789" FullWidth="true" />
+                </div>
+            </div>
+
+            @* SECTION 2: CONTACT INFORMATION *@
+            <div class="sage-form-group">
+                <FluentLabel Typo="Typography.Body">CONTACT INFO</FluentLabel>
+                <div class="single-field-row">
+                    <FluentTextField Label="Email Address" @bind-Value="NewClient.Email" FullWidth="true" />
+                </div>
+
+                <div class="form-grid-2-col">
+                    <FluentTextField Label="Phone Number" @bind-Value="NewClient.PhoneNumber" FullWidth="true" />
+                    <FluentTextField Label="Website" Placeholder="https://" FullWidth="true" />
+                </div>
+            </div>
+
+            @* SECTION 3: ADDRESS *@
+            <div class="sage-form-group">
+                <FluentLabel Typo="Typography.Body">LOCATION</FluentLabel>
+                <div class="single-field-row">
+                    <FluentTextArea Label="Full Address" @bind-Value="NewClient.Address" Rows="3" FullWidth="true" />
+                </div>
+
+                <div class="form-grid-2-col">
+                    <FluentTextField Label="City" FullWidth="true" />
+                    <FluentTextField Label="Postal Code" FullWidth="true" />
+                </div>
+            </div>
+
+            @* UNIVERSAL ACTION FOOTER BAR *@
+            <div class="form-footer">
+                @* 🚀 FIXED: Fully-qualified ButtonType names completely remove Radzen conflict lookup bugs *@
+                <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Button" OnClick="@(() => HandleCancel())">Cancel</FluentButton>
+                <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Submit" Appearance="Appearance.Accent" Class="sage-submit-btn">Save Client to Sage</FluentButton>
+            </div>
+        </EditForm>
+    };
+
     protected override void OnInitialized()
     {
-        // 🚀 AUTOMATED PREFILL HOOKS: Pulls email coordinates safely from injection parameters
         NewClient.Name = !string.IsNullOrEmpty(FullName) ? FullName : (DState?.EmailContext?.SenderName ?? string.Empty);
         NewClient.Email = !string.IsNullOrEmpty(Email) ? Email : (DState?.EmailContext?.SenderEmail ?? string.Empty);
     }
@@ -81,7 +113,7 @@
         if (success)
         {
             WorkspaceState.ReloadClients();
-            
+
             NotificationService.Notify(new Radzen.NotificationMessage
             {
                 Severity = Radzen.NotificationSeverity.Success,
@@ -93,8 +125,7 @@
             DState.ShowAddClientUI = false;
             DState.NotifyStateChanged();
 
-            // 🔥 FIXED: Safely closes the custom layout modal window instead of crashing page navigation
-            await ModalService.CloseModal();
+            await CleanseViewOverlayAsync();
         }
         else
         {
@@ -107,12 +138,24 @@
         }
     }
 
+    // 🚀 FIXED: Converted to a non-returning async Task tracking path wrapper to clear the CS1662 lambda exception
     private async Task HandleCancel()
     {
-        // 🚀 FIXED: Invokes your modal controller's OnClose event instead of navigating away and breaking active layout layers!
         DState.ShowAddClientUI = false;
         DState.NotifyStateChanged();
-        
-        await ModalService.CloseModal();
+        await CleanseViewOverlayAsync();
+    }
+
+    private async Task CleanseViewOverlayAsync()
+    {
+        var currentPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+        if (currentPath.Contains("dashboard") || currentPath.Contains("workspace"))
+        {
+            await ModalService.CloseModal();
+        }
+        else
+        {
+            NavManager.NavigateTo("/dashboard");
+        }
     }
 }

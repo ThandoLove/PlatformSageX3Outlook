@@ -6,11 +6,13 @@
 @page "/taskpane/compose/followup"
 @rendermode InteractiveServer
 
+@* 1. COMPONENT NAMESPACES *@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.State
 @using Microsoft.JSInterop
 
+@* 2. SERVICE INJECTIONS *@
 @inject DashboardState DState
 @inject WorkspaceState WState
 @inject UIState AppUIState
@@ -50,6 +52,7 @@
                     </p>
                 </div>
             </div>
+
             <div class="card shadow-sm border-0 mb-4 rounded-lg">
                 <div class="card-header bg-light border-bottom-0 py-3">
                     <h3 class="card-title h5 mb-0 font-weight-bold text-dark">Create New Sage X3 Business Partner</h3>
@@ -62,36 +65,60 @@
     }
     else
     {
+        <!-- --- ROW 1: RE-STABILIZED HIGH-DENSITY COMPACT METRICS GRID --- -->
         <div class="metrics-grid">
             @{
-                var customerName = !string.IsNullOrWhiteSpace(DState.EmailContext.BusinessPartnerName)
-                    ? DState.EmailContext.BusinessPartnerName
+                var customerName = !string.IsNullOrWhiteSpace(DState.EmailContext.BusinessPartnerName) 
+                    ? DState.EmailContext.BusinessPartnerName 
                     : (DState.TopClients?.FirstOrDefault()?.Name ?? "No Customer Linked");
             }
+
+            <!-- OPEN ORDERS CELL -->
             <div class="flat-layout-cell kpi-box orders-box-tint">
                 <div class="card-label-tiny">Open Orders</div>
                 <div class="metric-value">@(DState.EmailContext.OpenOrderCount > 0 ? DState.EmailContext.OpenOrderCount : (WState.Orders?.Count ?? 0))</div>
                 <span class="metric-subtext">@customerName</span>
             </div>
-            <div class="flat-layout-cell kpi-box tickets-box-tint clickable-kpi-card" @onclick="OpenTicketsPanelModal">
+
+            <!-- OPEN TICKETS CELL -->
+            <div class="flat-layout-cell kpi-box tickets-box-tint clickable-kpi-card" 
+                 @onclick="OpenTicketsPanelModal"
+                 title="Click to view Active Tickets Panel">
                 <div class="card-label-tiny">Open Tickets ➔</div>
-                <div class="metric-value">@(WState.Tickets?.Count(t => t.Status != "Closed" && t.Status != "Resolved") ?? 0)</div>
-                <span class="metric-subtext">@(WState.Tickets?.Any(t => t.Priority == "High" && t.Status != "Closed") == true ? "Urgent Action Required" : "Active work items")</span>
-            </div>
-            <div class="flat-layout-cell kpi-box gateway-box-tint clickable-kpi-card" @onclick="OpenAdminHealthModal">
-                <div class="card-label-tiny">System Gateway @(DState.IsAdminEnvironment ? "➔" : "🔒")</div>
-                @(DState.IsAdminEnvironment ? "ADMIN LOGGED" : "EMPLOYEE")
+                <div class="metric-value">
+                    @(WState.Tickets?.Count(t => t.Status != "Closed" && t.Status != "Resolved") ?? 0)
+                </div>
+                <span class="metric-subtext">
+                    @(WState.Tickets?.Any(t => t.Priority == "High" && t.Status != "Closed") == true ? "Urgent Action Required" : "Active work items")
+                </span>
             </div>
 
-            <span class="metric-subtext">@(DState.IsAdminEnvironment ? "Diagnostics Available" : "Identity Locked")</span>
-        </div>
-
+            <!-- CUSTOMER METRIC CELL: HOUSES YOUR PULSING SECURITY GATE BADGE -->
             <div class="flat-layout-cell kpi-box customer-box-tint">
-                <div class="card-label-tiny">Customer</div>
+                <div class="customer-cell-header-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="card-label-tiny">Customer</div>
+                    
+                    @* 🚀 FIXED: Wrapped raw text inside condition statements using Blazor's literal escaping tags to stop C# compiler crashes *@
+                    @if (!DState.IsAdminEnvironment)
+                    {
+                        
+                            <span><text>🔒 IDENTITY LOCKED</text>
+                        </span>
+                    }
+                    else
+                    {
+                        
+                            <span><text>🛡️ ADMIN LOGGED</text>
+                        </span>
+                    }
+                </div>
+                
                 <div class="metric-value customer-title-lock">@customerName</div>
                 <span class="metric-subtext">Account: @DState.EmailContext.AccountStatus</span>
             </div>
-    
+        </div>
+
+         @* 🚀 FIXED: Line 100 has been safely adjusted to close the metrics grid container properly *@
 
         <QuickActionsPanel />
 
@@ -122,12 +149,15 @@
             </div>
         </div>
     }
+
 </div>
+
+
+
 @code {
     private bool _isProcessingOutlookData = false;
     private string _activeManifestActionContext = string.Empty;
-    private bool _showTicketsModal = false;
-    private bool _showHealthModal = false;
+    
 
     private bool _isCustomModalOpen = false;
     private string _customModalTitle = string.Empty;
@@ -148,20 +178,22 @@
         AppUIState.OnChange += Refresh;
     }
 
-    private async Task HandleShowModal(string title, RenderFragment content)
+    private Task HandleShowModal(string title, RenderFragment content)
     {
         _customModalTitle = title;
         _customModalContent = content;
         _isCustomModalOpen = true;
-        await InvokeAsync(StateHasChanged);
+        InvokeAsync(StateHasChanged);
+        return Task.CompletedTask;
     }
 
-    private async Task HandleCloseModal()
+    private Task HandleCloseModal()
     {
         _isCustomModalOpen = false;
         _customModalTitle = string.Empty;
         _customModalContent = null;
-        await InvokeAsync(StateHasChanged);
+        InvokeAsync(StateHasChanged);
+        return Task.CompletedTask;
     }
 
     private async Task CloseDashboardModal()
@@ -239,3 +271,4 @@
         AppUIState.OnChange -= Refresh;
     }
 }
+

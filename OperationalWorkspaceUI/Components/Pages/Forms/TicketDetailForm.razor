@@ -16,79 +16,103 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService ToastService
+@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
 
-<div class="form-container" style="padding: 20px;">
-    <div class="page-header" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-        <FluentButton Appearance="Appearance.Stealth"
-                      IconStart="@(new Icons.Regular.Size20.ArrowLeft())"
-                      OnClick="@(() => NavManager.NavigateTo("/tickets"))" />
-        <h2 style="color: #002d5a; margin: 0;">@(TicketId == null ? "New Service Request" : $"Edit Ticket: {_ticket.TicketNumber}")</h2>
+@{
+    var currentPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+    bool isEmbeddedModal = currentPath.Contains("dashboard") || currentPath.Contains("workspace");
+}
+
+@if (isEmbeddedModal)
+{
+    <div class="modal-form-inline-title">
+        <h2>New Service Request</h2>
     </div>
 
-    <EditForm Model="@_ticket" OnValidSubmit="HandleSubmit">
-        <DataAnnotationsValidator />
-
-        <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="5">
-
-            <div class="form-section" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">REQUEST INFORMATION</label>
-                <FluentGrid>
-                    <FluentGridItem xs="12" sm="8">
-                        <FluentTextField Label="Subject" @bind-Value="_ticket.Title" Required="true" Style="width: 100%;" />
-                    </FluentGridItem>
-                    <FluentGridItem xs="12" sm="4">
-                        <FluentSelect TOption="string"
-                                      Label="Priority"
-                                      @bind-Value="_ticket.Priority"
-                                      Style="width: 100%;">
-                            <FluentOption TOption="string" Value="Low">Low</FluentOption>
-                            <FluentOption TOption="string" Value="Medium">Medium</FluentOption>
-                            <FluentOption TOption="string" Value="High">High</FluentOption>
-                        </FluentSelect>
-                    </FluentGridItem>
-                </FluentGrid>
-            </div>
-
-            <div class="form-section" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">SAGE X3 CONTEXT</label>
-                <FluentGrid>
-                    <FluentGridItem xs="12" sm="4">
-                        <FluentTextField Label="Customer Name" @bind-Value="_ticket.CustomerName" Readonly="@IsEmailContextLive" Placeholder="e.g. Tech Innovations" Style="width: 100%;" />
-                    </FluentGridItem>
-                    <FluentGridItem xs="12" sm="4">
-                        <FluentTextField Label="Site Code" @bind-Value="_ticket.SiteCode" Placeholder="e.g. AO011" Style="width: 100%;" />
-                    </FluentGridItem>
-                    <FluentGridItem xs="12" sm="4">
-                        <FluentTextField Label="Machine Serial" @bind-Value="_ticket.MachineCode" Style="width: 100%;" />
-                    </FluentGridItem>
-                </FluentGrid>
-            </div>
-
-            <div class="form-section" style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <label style="font-weight: 700; color: #64748b; font-size: 0.75rem; display: block; margin-bottom: 15px;">PROBLEM DESCRIPTION</label>
-                <FluentTextArea Label="Issue Details" @bind-Value="_ticket.Description" Rows="5" Style="width: 100%;" />
-            </div>
-
-            <div class="form-footer" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <FluentButton OnClick="@(() => NavManager.NavigateTo("/tickets"))">Cancel</FluentButton>
-                <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Submit"
-                              Appearance="Appearance.Accent"
-                              Style="background-color: #005fb8; min-width: 150px;">
-                    @(TicketId == null ? "Create in Sage X3" : "Update Sage X3")
-                </FluentButton>
-            </div>
-
-        </FluentStack>
-    </EditForm>
-</div>
+    @FormFieldsLayout
+}
+else
+{
+    <div class="form-container">
+        <div class="page-header">
+            <FluentButton Appearance="Appearance.Stealth"
+                          IconStart="@(new Icons.Regular.Size20.ArrowLeft())"
+                          OnClick="HandleCancel" />
+            <h2>@(TicketId == null ? "New Service Request" : $"Edit Ticket: {_ticket.TicketNumber}")</h2>
+        </div>
+        @FormFieldsLayout
+    </div>
+}
 
 @code {
     [Parameter] public Guid? TicketId { get; set; }
 
     private TicketDto _ticket = new();
-    
-    // 🔥 FIXED: Toggles read-only mode based on active DState context availability
+
     private bool IsEmailContextLive => !string.IsNullOrEmpty(DState.EmailContext?.SenderEmail);
+
+    private RenderFragment FormFieldsLayout => __builder =>
+    {
+        <EditForm Model="@_ticket" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            <FluentStack Orientation="@Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Spacing="5">
+
+                @* SECTION 1: REQUEST INFORMATION *@
+                <div class="form-section">
+                    <label>REQUEST INFORMATION</label>
+                    <FluentGrid>
+                        <FluentGridItem xs="12" sm="8">
+                            <FluentTextField Label="Subject" @bind-Value="_ticket.Title" Required="true" FullWidth="true" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="4">
+                            <FluentSelect TOption="string"
+                                          Label="Priority"
+                                          @bind-Value="_ticket.Priority"
+                                          FullWidth="true">
+                                <FluentOption TOption="string" Value="Low">Low</FluentOption>
+                                <FluentOption TOption="string" Value="Medium">Medium</FluentOption>
+                                <FluentOption TOption="string" Value="High">High</FluentOption>
+                            </FluentSelect>
+                        </FluentGridItem>
+                    </FluentGrid>
+                </div>
+
+                @* SECTION 2: SAGE X3 CONTEXT *@
+                <div class="form-section">
+                    <label>SAGE X3 CONTEXT</label>
+                    <FluentGrid>
+                        <FluentGridItem xs="12" sm="4">
+                            <FluentTextField Label="Customer Name" @bind-Value="_ticket.CustomerName" Readonly="@IsEmailContextLive" Placeholder="e.g. Tech Innovations" FullWidth="true" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="4">
+                            <FluentTextField Label="Site Code" @bind-Value="_ticket.SiteCode" Placeholder="e.g. AO011" FullWidth="true" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="4">
+                            <FluentTextField Label="Machine Serial" @bind-Value="_ticket.MachineCode" FullWidth="true" />
+                        </FluentGridItem>
+                    </FluentGrid>
+                </div>
+
+                @* SECTION 3: PROBLEM DESCRIPTION *@
+                <div class="form-section">
+                    <label>PROBLEM DESCRIPTION</label>
+                    <FluentTextArea Label="Issue Details" @bind-Value="_ticket.Description" Rows="5" FullWidth="true" />
+                </div>
+
+                @* BUTTON FOOTER BAR *@
+                <div class="form-footer">
+                    <FluentButton OnClick="HandleCancel">Cancel</FluentButton>
+                    <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Submit"
+                                  Appearance="Appearance.Accent"
+                                  Class="sage-submit-btn">
+                        @(TicketId == null ? "Create in Sage X3" : "Update Sage X3")
+                    </FluentButton>
+                </div>
+
+            </FluentStack>
+        </EditForm>
+    };
 
     protected override void OnInitialized()
     {
@@ -104,12 +128,10 @@
         }
         else
         {
-            // 🚀 AUTOMATED INTELLIGENT AUTO-FILL PIPELINE:
-            // Checks for a verified Sage X3 company name first, falling back cleanly to the raw sender data [INDEX].
             string resolvedCustomer = !string.IsNullOrEmpty(DState.EmailContext?.BusinessPartnerName)
                 ? DState.EmailContext.BusinessPartnerName
                 : (DState.EmailContext?.SenderName ?? string.Empty);
-                
+
             string resolvedSubject = DState.EmailContext?.Subject ?? string.Empty;
 
             _ticket = new TicketDto
@@ -123,10 +145,7 @@
         }
     }
 
-    private void Refresh()
-    {
-        InvokeAsync(StateHasChanged);
-    }
+    private void Refresh() => InvokeAsync(StateHasChanged);
 
     private async Task HandleSubmit()
     {
@@ -134,10 +153,8 @@
         {
             _ticket.Id = Guid.NewGuid();
             _ticket.TicketNumber = $"TKT-{Random.Shared.Next(1000, 9999)}";
-
             WState.Tickets.Add(_ticket);
             WState.Notify();
-
             ToastService.ShowSuccess("New Ticket Created and Synced.");
         }
         else
@@ -146,11 +163,26 @@
             ToastService.ShowSuccess("Ticket Updated.");
         }
 
-        NavManager.NavigateTo("/tickets");
+        await CleanseViewOverlayAsync();
     }
 
-    public void Dispose()
+    private async Task HandleCancel()
     {
-        WState.OnChange -= Refresh;
+        await CleanseViewOverlayAsync();
     }
+
+    private async Task CleanseViewOverlayAsync()
+    {
+        var currentPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+        if (currentPath.Contains("dashboard") || currentPath.Contains("workspace"))
+        {
+            await ModalService.CloseModal();
+        }
+        else
+        {
+            NavManager.NavigateTo("/tickets");
+        }
+    }
+
+    public void Dispose() => WState.OnChange -= Refresh;
 }

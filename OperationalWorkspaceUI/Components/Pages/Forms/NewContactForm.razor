@@ -7,96 +7,119 @@
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using OperationalWorkspaceApplication.ApplicationState
-@using OperationalWorkspaceUI.State @* 🔥 Ensures DashboardState discovery *@
+@using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp
 
 @inject IBusinessPartnerService BPService
 @inject AppStateContainer AppState
-@inject DashboardState DState 
-@inject OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp.ISageSyncJobs SyncWorker
-
-@using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp
-
+@inject DashboardState DState
 @inject ISageSyncJobs SyncWorker
 @inject IBackgroundTaskQueue BackgroundQueue
-
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
 
-<FormSection Title="Create Sage X3 Contact"
-             SubmitLabel="Create in Sage X3"
-             IsPrefilled="@IsContextActive"
-             OnSubmit="HandleSubmit"
-             OnCancel="HandleCancel">
+@{
+    var currentPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+    bool isEmbeddedModal = currentPath.Contains("dashboard") || currentPath.Contains("workspace");
+}
 
-    @* 🚀 RESOLVED STANDALONE ROUTING:
-       If this component is loaded inside a Modal, your ModalService provides the parent form context.
-       If loaded as a separate page, we dynamically supply an EditForm wrapper so it renders instead of turning blank! *@
-    <EditForm Model="contactModel" OnValidSubmit="HandleSubmit">
-        <DataAnnotationsValidator />
+@if (isEmbeddedModal)
+{
+    <div class="modal-form-inline-title">
+        <h2>Create Sage X3 Contact</h2>
+    </div>
 
-        @* IDENTITY SECTION *@
-        <div class="sage-form-group">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">IDENTITY</FluentLabel>
-            <div class="form-grid-2-col">
-                <div>
-                    <FluentTextField Label="Full Name" @bind-Value="contactModel.FullName" FullWidth="true" />
-                    <ValidationMessage For="@(() => contactModel.FullName)" />
-                </div>
-                <FluentTextField Label="Linked Company (BPR Code)"
-                                 @bind-Value="contactModel.Company"
-                                 Readonly="@IsContextActive"
-                                 Placeholder="Enter customer company code"
-                                 FullWidth="true" />
-            </div>
-        </div>
-
-        @* CONTACT INFO SECTION *@
-        <div class="sage-form-group" style="margin-top: 20px;">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">CONTACT INFO</FluentLabel>
-            <FluentTextField Label="Email Address" @bind-Value="contactModel.Email" Readonly="@IsContextActive" Placeholder="name@company.com" FullWidth="true" />
-
-            <div class="form-grid-2-col" style="margin-top: 12px;">
-                <FluentTextField Label="Phone" @bind-Value="contactModel.Phone" FullWidth="true" />
-                <FluentTextField Label="Mobile" @bind-Value="contactModel.Mobile" FullWidth="true" />
-            </div>
-        </div>
-
-        @* LOCATION SECTION *@
-        <div class="sage-form-group" style="margin-top: 20px;">
-            <FluentLabel Typo="Typography.Body" Style="font-weight: bold; color: #605e5c;">LOCATION</FluentLabel>
-            <FluentTextField Label="Street Address" @bind-Value="contactModel.Street" FullWidth="true" />
-
-            <div class="form-grid-2-col" style="margin-top: 12px;">
-                <FluentTextField Label="City" @bind-Value="contactModel.City" FullWidth="true" />
-                <div style="display: flex; gap: 8px;">
-                    <FluentTextField Label="Zip" @bind-Value="contactModel.ZipCode" Style="width: 80px;" />
-                    <FluentTextField Label="Country" @bind-Value="contactModel.Country" Style="flex: 1;" />
-                </div>
-            </div>
-        </div>
-    </EditForm>
-</FormSection>
+    @FormFieldsLayout
+}
+else
+{
+    <FormSection Title="Create Sage X3 Contact"
+                 SubmitLabel="Create in Sage X3"
+                 IsPrefilled="@IsContextActive"
+                 OnSubmit="HandleSubmit"
+                 OnCancel="HandleCancel">
+        @FormFieldsLayout
+    </FormSection>
+}
 
 @code {
     [Parameter][SupplyParameterFromQuery(Name = "name")] public string? FullName { get; set; }
     [Parameter][SupplyParameterFromQuery(Name = "email")] public string? Email { get; set; }
 
     private ContactCreateDto contactModel = new();
-    
-    // 🔥 FIXED: Check both the query string input and unified DState fields for active context values
+
     private bool IsContextActive => !string.IsNullOrEmpty(Email) || !string.IsNullOrEmpty(DState.EmailContext?.SenderEmail);
+
+    private RenderFragment FormFieldsLayout => __builder =>
+    {
+        <EditForm Model="contactModel" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            @* IDENTITY SECTION *@
+            <div class="sage-form-group">
+                <FluentLabel Typo="Typography.Body">IDENTITY</FluentLabel>
+                <div class="form-grid-2-col">
+                    <div>
+                        <FluentTextField Label="Full Name" @bind-Value="contactModel.FullName" FullWidth="true" />
+                        <ValidationMessage For="@(() => contactModel.FullName)" />
+                    </div>
+                    <div>
+                        <FluentTextField Label="Linked Company (BPR Code)"
+                                         @bind-Value="contactModel.Company"
+                                         Readonly="@IsContextActive"
+                                         Placeholder="Enter customer company code"
+                                         FullWidth="true" />
+                    </div>
+                </div>
+            </div>
+
+            @* CONTACT INFO SECTION *@
+            <div class="sage-form-group">
+                <FluentLabel Typo="Typography.Body">CONTACT INFO</FluentLabel>
+                <div class="single-field-row">
+                    <FluentTextField Label="Email Address" @bind-Value="contactModel.Email" Readonly="@IsContextActive" Placeholder="name@company.com" FullWidth="true" />
+                </div>
+
+                <div class="form-grid-2-col">
+                    <FluentTextField Label="Phone" @bind-Value="contactModel.Phone" FullWidth="true" />
+                    <FluentTextField Label="Mobile" @bind-Value="contactModel.Mobile" FullWidth="true" />
+                </div>
+            </div>
+
+            @* LOCATION SECTION *@
+            <div class="sage-form-group">
+                <FluentLabel Typo="Typography.Body">LOCATION</FluentLabel>
+                <div class="single-field-row">
+                    <FluentTextField Label="Street Address" @bind-Value="contactModel.Street" FullWidth="true" />
+                </div>
+
+                <div class="form-grid-2-col-aligned">
+                    <FluentTextField Label="City" @bind-Value="contactModel.City" FullWidth="true" />
+                    <div class="zip-country-cluster">
+                        <div class="zip-wrapper"><FluentTextField Label="Zip" @bind-Value="contactModel.ZipCode" FullWidth="true" /></div>
+                        <div class="country-wrapper"><FluentTextField Label="Country" @bind-Value="contactModel.Country" FullWidth="true" /></div>
+                    </div>
+                </div>
+            </div>
+
+            @* UNIVERSAL ACTION FOOTER BAR *@
+            <div class="form-footer">
+                @* 🚀 FIXED: Standardized button types using fully-qualified Fluent namespaces to resolve parsing conflicts *@
+                <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Button" OnClick="@(() => HandleCancel())">Cancel</FluentButton>
+                <FluentButton Type="@Microsoft.FluentUI.AspNetCore.Components.ButtonType.Submit" Appearance="Appearance.Accent" Class="sage-submit-btn">Create in Sage X3</FluentButton>
+            </div>
+        </EditForm>
+    };
 
     protected override void OnInitialized()
     {
-        // 🚀 AUTOMATED RE-MAPPING PIPELINE: 
-        // Corrected targets to look inside DState.EmailContext to fetch active prefill values [INDEX]
         contactModel.FullName = FullName ?? DState.EmailContext?.SenderName ?? string.Empty;
         contactModel.Email = Email ?? DState.EmailContext?.SenderEmail ?? string.Empty;
-        
-        // Use business partner code from active context if matched
+
         contactModel.Company = !string.IsNullOrEmpty(DState.EmailContext?.BusinessPartnerCode)
-            ? DState.EmailContext.BusinessPartnerCode
-            : (AppState.MatchedClient?.BpCode ?? string.Empty);
+                    ? DState.EmailContext.BusinessPartnerCode
+                    : (AppState.MatchedClient?.BpCode ?? string.Empty);
     }
 
     private async Task HandleSubmit()
@@ -121,7 +144,7 @@
             }
             catch { }
 
-            NavManager.NavigateTo("/dashboard");
+            await CleanseViewOverlayAsync();
         }
         catch (Exception)
         {
@@ -133,5 +156,21 @@
         }
     }
 
-    private void HandleCancel() => NavManager.NavigateTo("/dashboard");
+    private async Task HandleCancel()
+    {
+        await CleanseViewOverlayAsync();
+    }
+
+    private async Task CleanseViewOverlayAsync()
+    {
+        var currentPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
+        if (currentPath.Contains("dashboard") || currentPath.Contains("workspace"))
+        {
+            await ModalService.CloseModal();
+        }
+        else
+        {
+            NavManager.NavigateTo("/dashboard");
+        }
+    }
 }

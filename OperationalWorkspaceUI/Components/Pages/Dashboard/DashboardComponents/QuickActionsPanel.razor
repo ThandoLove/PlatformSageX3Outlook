@@ -9,14 +9,13 @@
 @inject DashboardState DState
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @inject IJSRuntime JS
-@inject ModalService ModalService 
-@* Instance name injected here *@
+@inject ModalService ModalService
 
 <div class="quick-actions-card">
     <div class="quick-actions-grid">
-        
+
         @* 🏢 1. Add Partner (circle-teal -> Form Modal CreateClientForm) *@
-        <button class="action-item" @onclick='() => OpenModalAction("Create Sage Client")'>
+        <button type="button" class="action-item" @onclick='async () => await OpenModalAction("Create Sage Client")'>
             <div class="icon-circle circle-teal">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Building())" Color="Color.Fill" />
             </div>
@@ -24,7 +23,7 @@
         </button>
 
         @* 👤 2. Add Contact (circle-blue -> Form Modal NewContactForm) *@
-        <button class="action-item" @onclick='() => OpenModalAction("Add Business Contact")'>
+        <button type="button" class="action-item" @onclick='async () => await OpenModalAction("Add Business Contact")'>
             <div class="icon-circle circle-blue">
                 <FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" Color="Color.Fill" />
             </div>
@@ -32,7 +31,7 @@
         </button>
 
         @* 🎫 3. Create Ticket (circle-blue-dark -> Form Modal TicketDetailForm) *@
-        <button class="action-item" @onclick='() => OpenModalAction("New Service Request")'>
+        <button type="button" class="action-item" @onclick='async () => await OpenModalAction("New Service Request")'>
             <div class="icon-circle circle-blue-dark">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Cart())" Color="Color.Fill" />
             </div>
@@ -40,7 +39,7 @@
         </button>
 
         @* 📝 4. Add Quote (circle-indigo -> Sends to Sage X3 Immutable Vault Query) *@
-        <button class="action-item" @onclick='async () => await NavigateToSage("GESQTE", "BROWSE")'>
+        <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESQTE", "BROWSE")'>
             <div class="icon-circle circle-indigo">
                 <FluentIcon Value="@(new Icons.Regular.Size20.DocumentAdd())" Color="Color.Fill" />
             </div>
@@ -48,7 +47,7 @@
         </button>
 
         @* 🔗 5. Link Existing (circle-orange -> Sends to Sage X3 GESBPR LINK Context) *@
-        <button class="action-item" @onclick='async () => await NavigateToSage("GESBPR", "LINK")'>
+        <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESBPR", "LINK")'>
             <div class="icon-circle circle-orange">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Link())" Color="Color.Fill" />
             </div>
@@ -56,7 +55,7 @@
         </button>
 
         @* 📊 6. Add Invoice (circle-green -> Sends to Sage X3 GESPNH NEW Context) *@
-        <button class="action-item" @onclick='async () => await NavigateToSage("GESPNH", "NEW")'>
+        <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESPNH", "NEW")'>
             <div class="icon-circle circle-green">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Document())" Color="Color.Fill" />
             </div>
@@ -64,7 +63,7 @@
         </button>
 
         @* 📎 7. Attach Doc (circle-blue -> Sends directly to Sage X3 to pull immutable info!) *@
-        <button class="action-item" @onclick='async () => await NavigateToSage("GESATT", "ATTACH")'>
+        <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESATT", "ATTACH")'>
             <div class="icon-circle circle-blue">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Attach())" Color="Color.Fill" />
             </div>
@@ -80,26 +79,31 @@
         bool useMock = Configuration.GetValue<bool>("SageX3:UseMockData", true);
         bool isEmailNull = DState.EmailContext == null || string.IsNullOrWhiteSpace(DState.EmailContext.SenderEmail);
 
+        // 🚀 FIXED: Restore the true, clean security wall validation block.
+        // If a developer tries to trigger creation workflows without selecting an active outlook thread, stop them immediately.
         if (!useMock && isEmailNull)
         {
             CustomToastService.ShowError("Please select an email thread first.");
             return;
         }
 
-        string emailParam = DState.EmailContext?.SenderEmail ?? "prospect-demo@testcompany.com";
-        string nameParam = DState.EmailContext?.SenderName ?? "Unknown Entity Demo";
+        // 🚀 FIXED: Stripped out the dirty mock string fallbacks. Let the components bind to the true context cleanly.
+        string? emailParam = DState.EmailContext?.SenderEmail;
+        string? nameParam = DState.EmailContext?.SenderName;
 
         try
         {
             RenderFragment modalContent = title switch
             {
-                "Create Sage Client" => builder => { builder.OpenComponent<CreateClientForm>(0); builder.AddAttribute(1, "Email", emailParam); builder.AddAttribute(2, "FullName", nameParam); builder.CloseComponent(); },
-                "Add Business Contact" => builder => { builder.OpenComponent<NewContactForm>(0); builder.AddAttribute(1, "Email", emailParam); builder.AddAttribute(2, "FullName", nameParam); builder.CloseComponent(); },
-                "New Service Request" => builder => { builder.OpenComponent<TicketDetailForm>(0); builder.CloseComponent(); },
+                "Create Sage Client" => builder => { builder.OpenComponent<CreateClientForm>(0); builder.AddAttribute(1, "Email", emailParam); builder.AddAttribute(2, "FullName", nameParam); builder.CloseComponent(); }
+                ,
+                "Add Business Contact" => builder => { builder.OpenComponent<NewContactForm>(0); builder.AddAttribute(1, "Email", emailParam); builder.AddAttribute(2, "FullName", nameParam); builder.CloseComponent(); }
+                ,
+                "New Service Request" => builder => { builder.OpenComponent<TicketDetailForm>(0); builder.CloseComponent(); }
+                ,
                 _ => throw new ArgumentException()
             };
 
-            // 🔥 FIXED: Swapped 'ModalService.ShowModal' (Uppercase Type) to 'ModalService.ShowModal' (Lowercase Property Injection instance)
             await ModalService.ShowModal(title, modalContent);
         }
         catch (Exception ex)
@@ -122,7 +126,7 @@
 
         if (useMock)
         {
-            CustomToastService.ShowSuccess($"[Sage X3 Connection Sandbox Mode] Querying non-mutable ERP files via function: {functionCode} ({action})");
+            CustomToastService.ShowSuccess($"[Sage X3 Sandbox] Querying non-mutable ERP files via function: {functionCode} ({action})");
             return;
         }
 
