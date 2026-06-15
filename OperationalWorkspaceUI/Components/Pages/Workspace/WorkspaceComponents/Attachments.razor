@@ -1,7 +1,6 @@
 ﻿@page "/attachments"
 @rendermode InteractiveServer
 
-
 @using OperationalWorkspaceUI.Components.Shared
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Microsoft.Extensions.Configuration
@@ -30,9 +29,9 @@
             <div class="filter-dropdowns">
                 <select @bind="SelectedType" class="ui-select">
                     <option value="All">Type</option>
-                    <option value="Proposal">Proposal</option>
-                    <option value="Invoice">Invoice</option>
-                    <option value="Contract">Contract</option>
+                    <option value="application/pdf">PDF Documents</option>
+                    <option value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">Word Files</option>
+                    <option value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">Excel Sheets</option>
                 </select>
                 <select class="ui-select"><option>Date</option></select>
                 <select class="ui-select"><option>Category</option></select>
@@ -93,7 +92,8 @@
                                 <td class="text-right">
                                     <div class="action-row">
                                         <button class="btn-preview-ghost" @onclick:stopPropagation @onclick="() => SelectedDoc = doc">Preview</button>
-                                        <button class="btn-attach-teal" @onclick:stopPropagation @onclick="() => HandleAttachDocument(doc)">Attach</button>
+                                        @* 🚀 FIXED: Button maps to the operational AttachToEmail command directly *@
+                                        <button class="btn-attach-teal" @onclick:stopPropagation @onclick="() => AttachToEmail(doc)">Attach</button>
                                         <button class="btn-delete-ghost" @onclick:stopPropagation @onclick="() => DeleteDocument(doc)">
                                             <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                                         </button>
@@ -110,10 +110,11 @@
                 <div class="pagination">
                     <button class="ui-select" disabled="@(CurrentPage == 1)" @onclick="() => CurrentPage--">Prev</button>
                     <span class="pagination-info">@CurrentPage of @TotalPages</span>
-                    <button class="ui-select" disabled="@(CurrentPage == TotalPages)" @onclick="() => CurrentPage++">Next</button>
+                    <button class="ui-select" disabled="@(CurrentPage == TotalPages || TotalPages == 0)" @onclick="() => CurrentPage++">Next</button>
                 </div>
             </div>
         </div>
+
         @* RIGHT: PREVIEW PANE *@
         <div class="document-preview-pane" style="box-shadow: none; border-left: 1px solid #f1f5f9;">
             <div class="pane-header">
@@ -139,13 +140,21 @@
                         <div class="detail-row"><label>Date</label><span>@SelectedDoc.UploadedAtUtc.ToShortDateString()</span></div>
                     </div>
 
-                    @if (SelectedDoc.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                    @* 🚀 FIXED: Dynamic conditional branch cleanly separates PDF iframes from restricted layout extensions *@
+                    @if (CanPreviewPdf)
                     {
                         <div class="pdf-preview-container" style="margin-top: 15px; width: 100%; border: none; border-radius: 4px; overflow: hidden; background: #ffffff; box-shadow: none;">
                             <iframe src="@(GetPdfUrl(SelectedDoc))"
                                     style="width: 100%; height: 680px; border: none; overflow: hidden; display: block;"
                                     scrolling="no">
                             </iframe>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="preview-empty" style="margin-top: 20px; padding: 30px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                            <p style="color: #64748b; font-weight: 600;">Preview unavailable. Convert to PDF.</p>
+                            <button class="btn-upload-primary" type="button" @onclick="() => ConvertToPdf(SelectedDoc)" style="margin-top: 10px;">Convert To PDF</button>
                         </div>
                     }
 
@@ -160,7 +169,8 @@
                                              OnRecordClicked="@((n) => Nav.NavigateTo("/activities"))" />
                     </div>
 
-                    <button class="btn-attach-full" @onclick="() => HandleAttachDocument(SelectedDoc)" style="margin-top: 15px;">Attach to Record</button>
+                    @* 🚀 FIXED: Direct Attach to Email operation *@
+                    <button class="btn-attach-full" @onclick="() => AttachToEmail(SelectedDoc)" style="margin-top: 15px;">Attach To Email</button>
                     <button class="btn-delete-full" @onclick="() => DeleteDocument(SelectedDoc)">Delete</button>
                 </div>
             }

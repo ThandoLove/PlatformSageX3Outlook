@@ -353,18 +353,19 @@
             box-sizing: border-box;
             animation: normalPopAnimationLocal 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
+        /* =========================================================================
+   🏛️ FIXED ANIMATION CHASSIS - REMOVED NESTED DIRECTIVES TO CLEAR WARNINGS
+   ========================================================================= */
 
-        @media all {
-            @keyframes normalPopAnimationLocal {
-                from {
-                    opacity: 0;
-                    transform: scale(0.96) translateY(6px);
-                }
+        @keyframes normalPopAnimationLocal {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(6px);
+            }
 
-                to {
-                    opacity: 1;
-                    transform: scale(1) translateY(0);
-                }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
             }
         }
 

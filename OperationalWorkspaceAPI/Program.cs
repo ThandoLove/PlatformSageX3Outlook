@@ -18,22 +18,27 @@ using OperationalWorkspaceAPI.Policies;
 using OperationalWorkspaceAPI.SecurityAPI;
 using OperationalWorkspaceAPI.Services;
 using OperationalWorkspaceApplication.DTOs;
+using OperationalWorkspaceApplication.Interfaces;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
+using OperationalWorkspaceInfrastructure.Attachments;
 using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.Configuration;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
 using OperationalWorkspaceInfrastructure.Diagnostics;
 using OperationalWorkspaceInfrastructure.Diagnostics.Health;
+using OperationalWorkspaceInfrastructure.ERPAuthentication;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
+using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.SageConfiguration;
 using OperationalWorkspaceInfrastructure.Persistence;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
+using OperationalWorkspaceInfrastructure.Providers;
 using OperationalWorkspaceInfrastructure.Resilience;
 using OperationalWorkspaceInfrastructure.SecurityInfrastructure;
-using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceInfrastructure.services;
+using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceShared.Validators;
 using Polly;
 using Polly.Extensions.Http;
@@ -218,6 +223,7 @@ builder.Services.AddAuthorization(options =>
 // 9. SAGE CONFIGURATION
 // ======================================================
 var sageConfig = builder.Configuration.GetSection("SageX3");
+builder.Services.Configure<SageSettings>(sageConfig);
 var baseUrl = sageConfig["RestBaseUrl"] ?? "https://syracuse-server.com";
 
 if (string.IsNullOrWhiteSpace(baseUrl))
@@ -281,6 +287,14 @@ builder.Services.Configure<SageSecurityOptions>(builder.Configuration.GetSection
 // 15. INFRASTRUCTURE SERVICE LAYER REGISTRATION
 // ======================================================
 InfrastructureServiceRegistration.AddInfrastructureServices(builder.Services, builder.Configuration);
+
+builder.Services.AddScoped<MockAttachmentProvider>();
+
+builder.Services.AddScoped<SageAttachmentProvider>();
+
+builder.Services.AddScoped<IAttachmentProvider, SmartAttachmentProvider>();
+
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 // ======================================================
 // 16. AUDIT LAYER STORAGE
 // ======================================================
@@ -331,7 +345,21 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
     builder.Services.AddScoped<IAuditLogService, MockAuditService>();
+
     builder.Services.AddScoped<ISystemHealthService, MockSystemHealthService>();
+
+    builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
+
+    builder.Services.AddScoped<IAttachmentProvider, MockAttachmentProvider>();
+
+    builder.Services.AddScoped<ISageRestService, MockSageRestService>();
+
+    builder.Services.AddScoped<ISageAuthService, MockSageAuthService>();
+
+    builder.Services.AddScoped<ISageX3IdentityService, MockSageX3IdentityService>();
+
+    
+
 }
 else
 {
@@ -344,10 +372,11 @@ else
     builder.Services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
     builder.Services.AddScoped<IInventoryService, InventoryService>();
     builder.Services.AddScoped<ITaskService, TaskService>();
-    builder.Services.AddScoped<IAuditLogService, AuditLogService>();
-    builder.Services.AddScoped<IAttachmentService, AttachmentService>();
+    
     builder.Services.AddScoped<IOrderService, OrderService>();
 }
+
+builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 
 // ======================================================
 // 19. REPOSITORIES
