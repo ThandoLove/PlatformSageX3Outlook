@@ -93,7 +93,13 @@
                                     <div class="action-row">
                                         <button class="btn-preview-ghost" @onclick:stopPropagation @onclick="() => SelectedDoc = doc">Preview</button>
                                         @* 🚀 FIXED: Button maps to the operational AttachToEmail command directly *@
-                                        <button class="btn-attach-teal" @onclick:stopPropagation @onclick="() => AttachToEmail(doc)">Attach</button>
+                                        <!-- 🚀 FIXED: Table button now invokes the central HandleAttachDocument check wrapper -->
+                                        <button class="btn-attach-teal"
+                                                @onclick:stopPropagation
+                                                @onclick="() => HandleAttachDocument(doc)">
+                                            Attach
+                                        </button>
+
                                         <button class="btn-delete-ghost" @onclick:stopPropagation @onclick="() => DeleteDocument(doc)">
                                             <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                                         </button>
@@ -170,7 +176,13 @@
                     </div>
 
                     @* 🚀 FIXED: Direct Attach to Email operation *@
-                    <button class="btn-attach-full" @onclick="() => AttachToEmail(SelectedDoc)" style="margin-top: 15px;">Attach To Email</button>
+                    <!-- 🚀 FIXED: Preview panel button now invokes the central HandleAttachDocument check wrapper -->
+                    <button class="btn-attach-full"
+                            @onclick="() => HandleAttachDocument(SelectedDoc)"
+                            style="margin-top: 15px;">
+                        Attach To Email
+                    </button>
+
                     <button class="btn-delete-full" @onclick="() => DeleteDocument(SelectedDoc)">Delete</button>
                 </div>
             }

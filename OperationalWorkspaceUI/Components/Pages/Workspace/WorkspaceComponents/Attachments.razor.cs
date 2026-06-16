@@ -27,7 +27,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         [Inject] protected NotificationService Notifications { get; set; } = null!;
         [Inject] protected AttachmentUIService AttachmentService { get; set; } = null!;
         [Inject] protected DashboardState DashboardState { get; set; } = null!;
-
         private string _searchQuery = "";
         protected string SearchQuery
         {
@@ -37,7 +36,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 if (_searchQuery != value)
                 {
                     _searchQuery = value;
-                    CurrentPage = 1; // 🚀 FIXED: Dynamic pagination guard prevents out-of-bound grid lockups
+                    CurrentPage = 1;
                 }
             }
         }
@@ -51,7 +50,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 if (_selectedType != value)
                 {
                     _selectedType = value;
-                    CurrentPage = 1; // 🚀 FIXED: Resets current index on dropdown mutations
+                    CurrentPage = 1;
                 }
             }
         }
@@ -59,6 +58,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         protected int CurrentPage { get; set; } = 1;
         protected int PageSize { get; set; } = 10;
         protected AttachmentDto? SelectedDoc { get; set; }
+
         protected bool CanPreviewPdf => SelectedDoc?.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
 
         protected IEnumerable<AttachmentDto> FilteredData => State.Attachments
@@ -67,13 +67,11 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
         protected IEnumerable<AttachmentDto> PaginatedDocs => FilteredData.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         protected int TotalPages => (int)Math.Ceiling((double)FilteredData.Count() / PageSize);
-
         protected override async Task OnInitializedAsync()
         {
             State.OnChange += RefreshView;
             DashboardState.OnChange += RefreshView;
 
-            // 🚀 FIXED: Auto-hydrates the repository file matrix array right on page startup to eliminate layout stuttering
             await RefreshAttachmentsFromServer();
 
             if (State.Attachments.Any())
@@ -101,12 +99,84 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 return $"{Nav.BaseUri.TrimEnd('/')}/api/v1/Attachment/stream/{doc.Id}{options}";
             }
 
-            // 🚀 FIXED: Appends complete absolute URI host to prevent Outlook container frames from blocking the pdf stream
             return $"{Nav.BaseUri.TrimEnd('/')}/mock-documents/{doc.FileName}{options}";
         }
-        // ==========================================
-        // 📧 DIRECT ATTACH TO EMAIL SYSTEM (OUTLOOK INTEROP)
-        // ==========================================
+        protected async Task HandleAttachDocument(AttachmentDto? doc)
+        {
+            if (doc == null)
+                return;
+
+            try
+            {
+                bool bridgeExists = await JSRuntime.InvokeAsync<bool>(
+                    "eval",
+                    "typeof window.officeBridge !== 'undefined'"
+                );
+
+                if (!bridgeExists)
+                {
+                    await AttachToEmail(doc);
+                    return;
+                }
+
+                bool outlookAvailable = await JSRuntime.InvokeAsync<bool>(
+                    "officeBridge.isAvailable"
+                );
+
+                if (!outlookAvailable)
+                {
+                    await AttachToEmail(doc);
+
+                    Notifications.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Info,
+                        Summary = "Browser Mode",
+                        Detail = "Attachment simulated.",
+                        Duration = 2000
+                    });
+
+                    return;
+                }
+
+                bool hasOpenDraft = await JSRuntime.InvokeAsync<bool>(
+                    "officeBridge.hasOpenDraft"
+                );
+
+                if (!hasOpenDraft)
+                {
+                    await JSRuntime.InvokeVoidAsync(
+                        "officeBridge.openNewEmail"
+                    );
+
+                    Notifications.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Info,
+                        Summary = "Draft Created",
+                        Detail = "A new email was opened. Click Attach again.",
+                        Duration = 3000
+                    });
+
+                    return;
+                }
+
+                await AttachToEmail(doc);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"HandleAttachDocument: {ex.Message}");
+
+                Notifications.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Attach Error",
+                    Detail = "Could not attach document.",
+                    Duration = 2000
+                });
+            }
+        }
+        // =========================================================================
+        // 📧 FIX 2 IMPLEMENTED: INTEGRATED OUTLOOK AVAILABILITY AND COMPOSE GAUNTLET
+        // =========================================================================
         protected async Task AttachToEmail(AttachmentDto? doc)
         {
             if (doc == null) return;
@@ -115,6 +185,21 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
             try
             {
+                // 🚀 FIXED: Dynamic verification checks if Outlook host environment variables are responsive [INDEX]
+                var result = await JSRuntime.InvokeAsync<bool>("officeBridge.isAvailable");
+
+                if (!result)
+                {
+                    Notifications.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Warning,
+                        Summary = "Outlook not available",
+                        Detail = "Open Outlook first.",
+                        Duration = 3000
+                    });
+                    return;
+                }
+
                 bool useMock = Configuration.GetValue<bool>("SageX3:UseMockData", true);
                 string attachUrl;
 
@@ -143,17 +228,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                     attachUrl = $"{baseDevelopmentHostUrl}/mock-documents/{doc.FileName}";
                 }
 
-                bool isBridgeReady = await JSRuntime.InvokeAsync<bool>("eval",
-                    "typeof window.officeBridge !== 'undefined' && typeof window.officeBridge.attachDocument === 'function'");
-
-                if (!isBridgeReady)
-                {
-                    // Sandbox local testing recovery gate
-                    Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Sandbox Attach Success", Detail = $"Attached '{doc.FileName}' into Outlook email loop context.", Duration = 2000 });
-                    State.LogActivity(doc.FileName, "Attached to Email via Outlook Bridge (Sandbox Mode)", currentUserIdentity);
-                    return;
-                }
-
                 await JSRuntime.InvokeVoidAsync("officeBridge.attachDocument", attachUrl, doc.FileName);
                 State.LogActivity(doc.FileName, "Attached to Email via Outlook Bridge", currentUserIdentity);
                 State.Notify();
@@ -165,53 +239,77 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Error, Summary = "Attachment Fault", Detail = "Could not package transaction file for Outlook dispatch.", Duration = 2000 });
             }
         }
-        // ==========================================
-        // 🏛️ BROWSE IMMUTABLE SAGE X3 WORKSPACE DATA INTEGRATION MAPPING
-        // ==========================================
         protected async Task BrowseSageX3()
         {
             string currentUserIdentity = DashboardState.IsAdminEnvironment ? "SageAdmin" : "SageEmployee";
 
             try
             {
-                // 🚀 FIXED: Correctly collects raw string filename arrays returned by your service contract
-                var fileNames = await AttachmentService.GetAttachmentsAsync();
+                bool useMock = Configuration.GetValue<bool>("SageX3:UseMockData", true);
 
-                if (fileNames != null && fileNames.Any())
+                State.Attachments.Clear();
+
+                if (useMock)
                 {
-                    State.Attachments.Clear();
-                    foreach (var name in fileNames)
+                    var fileNames = await AttachmentService.GetAttachmentsAsync();
+
+                    if (fileNames != null)
                     {
-                        string mimeType = name.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ? "application/pdf"
-                                        : name.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                                        : "application/octet-stream";
+                        foreach (var name in fileNames)
+                        {
+                            string mimeType = name.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ? "application/pdf"
+                                            : name.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                            : "application/octet-stream";
 
-                        // 🚀 FIXED: Maps the filenames into proper positional AttachmentDto record object shapes
-                        var mappedRecord = new AttachmentDto(
-                            Guid.NewGuid(),
-                            name,
-                            mimeType,
-                            0,
-                            $"/mock-documents/{name}",
-                            "SageX3-GlobalRepo",
-                            DateTime.UtcNow
-                        );
-
-                        State.Attachments.Add(mappedRecord);
+                            State.Attachments.Add(new AttachmentDto(
+                                Guid.NewGuid(),
+                                name,
+                                mimeType,
+                                0,
+                                $"/mock-documents/{name}",
+                                "SageX3-GlobalRepo",
+                                DateTime.UtcNow
+                            ));
+                        }
                     }
-                    SelectedDoc = State.Attachments.FirstOrDefault();
+                }
+                else
+                {
+                    var docs = await Http.GetFromJsonAsync<List<AttachmentDto>>("api/v1/Attachment/list?ownerType=SageGlobalIndex&ownerId=All");
+
+                    if (docs != null)
+                    {
+                        foreach (var item in docs)
+                        {
+                            State.Attachments.Add(item);
+                        }
+                    }
                 }
 
-                State.LogActivity("Sage Server Repository", "Queried ERP Document Index", currentUserIdentity);
+                SelectedDoc = State.Attachments.FirstOrDefault();
+
+                State.LogActivity("Sage Repository", "Browsed Documents", currentUserIdentity);
                 State.Notify();
 
-                // 🚀 FIXED: Added 2000ms duration tokens so toasts auto-dismiss instead of freezing on screen!
-                Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Sage Browse Success", Detail = $"Loaded {State.Attachments.Count} documents from repository index", Duration = 2000 });
+                Notifications.Notify(new Radzen.NotificationMessage
+                {
+                    Severity = Radzen.NotificationSeverity.Info,
+                    Summary = "Browse Success",
+                    Detail = $"Loaded {State.Attachments.Count} document(s) seamlessly from repository index.",
+                    Duration = 2000
+                });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ERP remote directory parsing failure: {ex.Message}");
-                Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Error, Summary = "Sage Browse Error", Detail = "Failed to query Sage repository", Duration = 2000 });
+                System.Diagnostics.Debug.WriteLine($"ERP remote directory parsing failure exception details: {ex}");
+
+                Notifications.Notify(new Radzen.NotificationMessage
+                {
+                    Severity = Radzen.NotificationSeverity.Error,
+                    Summary = "Browse Failed",
+                    Detail = "Could not load Sage X3 documents repository index.",
+                    Duration = 2000
+                });
             }
         }
 
@@ -219,24 +317,36 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         {
             try
             {
-                bool useMock = Configuration.GetValue<bool>("SageX3:UseMockData", true);
-                if (useMock)
-                {
-                    await BrowseSageX3();
-                    return;
-                }
-
-                var response = await Http.GetAsync("api/v1/Attachment/list?ownerType=SageGlobalIndex&ownerId=All");
-                if (response.IsSuccessStatusCode)
-                {
-                    await BrowseSageX3();
-                }
+                await BrowseSageX3();
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Server refresh sync failed: {ex.Message}");
-                await BrowseSageX3();
+                System.Diagnostics.Debug.WriteLine($"Server refresh sync failure exception block trace details: {ex}");
             }
+        }
+        protected async Task ConvertToPdf(AttachmentDto? doc)
+        {
+            if (doc == null) return;
+            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Conversion Triggered", Detail = "PDF format compiler engine initialized. Processing source frames...", Duration = 2000 });
+
+            await Task.Delay(1000);
+
+            var conversionResult = new AttachmentDto(
+                doc.Id,
+                System.IO.Path.GetFileNameWithoutExtension(doc.FileName) + ".pdf",
+                "application/pdf",
+                doc.FileSize,
+                doc.FileUrl,
+                doc.RelatedEntity,
+                DateTime.UtcNow
+            );
+
+            State.Attachments.Remove(doc);
+            State.Attachments.Insert(0, conversionResult);
+            SelectedDoc = conversionResult;
+
+            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Conversion Success", Detail = "File compiled successfully to immutable PDF format layer.", Duration = 2000 });
+            State.Notify();
         }
 
         protected async Task HandleFileUpload(InputFileChangeEventArgs e)
@@ -249,7 +359,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
             try
             {
                 using var content = new MultipartFormDataContent();
-                // 🚀 FIXED SIZE: Closed inside a safe using scope statement block to isolate memory leaks
                 using var fileStream = file.OpenReadStream(25 * 1024 * 1024);
                 using var streamContent = new StreamContent(fileStream);
                 streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
@@ -291,32 +400,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 State.SetUploading(false);
             }
         }
-        protected async Task ConvertToPdf(AttachmentDto? doc)
-        {
-            if (doc == null) return;
-            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Conversion Triggered", Detail = "PDF format compiler engine initialized. Processing source frames...", Duration = 2000 });
-
-            await Task.Delay(1000);
-
-            var conversionResult = new AttachmentDto(
-                doc.Id,
-                System.IO.Path.GetFileNameWithoutExtension(doc.FileName) + ".pdf",
-                "application/pdf",
-                doc.FileSize,
-                doc.FileUrl,
-                doc.RelatedEntity,
-                DateTime.UtcNow
-            );
-
-            State.Attachments.Remove(doc);
-            State.Attachments.Insert(0, conversionResult);
-            SelectedDoc = conversionResult;
-
-            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Conversion Success", Detail = "File compiled successfully to immutable PDF format layer.", Duration = 2000 });
-            State.Notify();
-        }
-
-        protected async Task HandleAttachDocument(AttachmentDto? doc) { await Task.CompletedTask; }
+        protected async Task HandleAttachDocumentPlaceholder(AttachmentDto? doc) { await Task.CompletedTask; }
 
         protected async Task DeleteDocument(AttachmentDto? doc)
         {
@@ -327,7 +411,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
             try
             {
-                // 🚀 FIXED: Orchestrates actual network API delete calls instead of memory-only shifts
                 if (!useMock)
                 {
                     var response = await Http.DeleteAsync($"api/v1/Attachment/delete/{doc.Id}");
@@ -353,7 +436,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
         protected string FormatSize(long bytes) => bytes < 1048576 ? $"{(bytes / 1024.0):F1} KB" : $"{(bytes / 1048576.0):F1} MB";
 
-        // 🚀 FIXED: Swapped 'Size16' return mapping over to 'Icon' instance allocations to clear compilation crashes
         protected Icon GetIcon(string filename)
         {
             if (!string.IsNullOrEmpty(filename) && filename.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
