@@ -22,7 +22,7 @@ using OperationalWorkspaceApplication.Interfaces;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
-using OperationalWorkspaceInfrastructure.Attachments;
+using OperationalWorkspaceInfrastructure.Providers;
 using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.Configuration;
 using OperationalWorkspaceInfrastructure.DependencyInjection;
@@ -34,12 +34,12 @@ using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.SageConfiguration;
 using OperationalWorkspaceInfrastructure.Persistence;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
-using OperationalWorkspaceInfrastructure.Providers;
+
 using OperationalWorkspaceInfrastructure.Resilience;
 using OperationalWorkspaceInfrastructure.SecurityInfrastructure;
 using OperationalWorkspaceInfrastructure.services;
 using OperationalWorkspaceInfrastructure.Services;
-using OperationalWorkspaceShared.Validators;
+using OperationalWorkspaceApplication.Validators;
 using Polly;
 using Polly.Extensions.Http;
 using Serilog;
@@ -159,6 +159,11 @@ builder.Services.AddRateLimiter(options =>
 // ======================================================
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CustomerValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<EmailInsightDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<TaskValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<TicketValidator>();
 
 // ======================================================
 // 5. SECURITY & TENANT CONTEXT
@@ -350,7 +355,7 @@ if (builder.Environment.IsDevelopment())
 
     builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
 
-    builder.Services.AddScoped<IAttachmentProvider, MockAttachmentProvider>();
+ 
 
     builder.Services.AddScoped<ISageRestService, MockSageRestService>();
 

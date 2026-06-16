@@ -25,6 +25,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\OperationalWorkspace.Domain\OperationalWorkspace.Domain.csproj" />
+		<ProjectReference Include="..\SharedProject\OperationalWorkspaceShared.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

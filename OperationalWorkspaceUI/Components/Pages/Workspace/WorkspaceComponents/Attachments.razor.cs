@@ -27,6 +27,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         [Inject] protected NotificationService Notifications { get; set; } = null!;
         [Inject] protected AttachmentUIService AttachmentService { get; set; } = null!;
         [Inject] protected DashboardState DashboardState { get; set; } = null!;
+
         private string _searchQuery = "";
         protected string SearchQuery
         {
@@ -58,7 +59,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         protected int CurrentPage { get; set; } = 1;
         protected int PageSize { get; set; } = 10;
         protected AttachmentDto? SelectedDoc { get; set; }
-
         protected bool CanPreviewPdf => SelectedDoc?.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) == true;
 
         protected IEnumerable<AttachmentDto> FilteredData => State.Attachments
@@ -67,6 +67,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
         protected IEnumerable<AttachmentDto> PaginatedDocs => FilteredData.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
         protected int TotalPages => (int)Math.Ceiling((double)FilteredData.Count() / PageSize);
+
         protected override async Task OnInitializedAsync()
         {
             State.OnChange += RefreshView;
@@ -103,15 +104,11 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         }
         protected async Task HandleAttachDocument(AttachmentDto? doc)
         {
-            if (doc == null)
-                return;
+            if (doc == null) return;
 
             try
             {
-                bool bridgeExists = await JSRuntime.InvokeAsync<bool>(
-                    "eval",
-                    "typeof window.officeBridge !== 'undefined'"
-                );
+                bool bridgeExists = await JSRuntime.InvokeAsync<bool>("eval", "typeof window.officeBridge !== 'undefined'");
 
                 if (!bridgeExists)
                 {
@@ -119,43 +116,21 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                     return;
                 }
 
-                bool outlookAvailable = await JSRuntime.InvokeAsync<bool>(
-                    "officeBridge.isAvailable"
-                );
+                bool outlookAvailable = await JSRuntime.InvokeAsync<bool>("officeBridge.isAvailable");
 
                 if (!outlookAvailable)
                 {
                     await AttachToEmail(doc);
-
-                    Notifications.Notify(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Info,
-                        Summary = "Browser Mode",
-                        Detail = "Attachment simulated.",
-                        Duration = 2000
-                    });
-
+                    Notifications.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Browser Mode", Detail = "Attachment simulated.", Duration = 2000 });
                     return;
                 }
 
-                bool hasOpenDraft = await JSRuntime.InvokeAsync<bool>(
-                    "officeBridge.hasOpenDraft"
-                );
+                bool hasOpenDraft = await JSRuntime.InvokeAsync<bool>("officeBridge.hasOpenDraft");
 
                 if (!hasOpenDraft)
                 {
-                    await JSRuntime.InvokeVoidAsync(
-                        "officeBridge.openNewEmail"
-                    );
-
-                    Notifications.Notify(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Info,
-                        Summary = "Draft Created",
-                        Detail = "A new email was opened. Click Attach again.",
-                        Duration = 3000
-                    });
-
+                    await JSRuntime.InvokeVoidAsync("officeBridge.openNewEmail");
+                    Notifications.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Draft Created", Detail = "A new email was opened. Click Attach again.", Duration = 3000 });
                     return;
                 }
 
@@ -163,20 +138,10 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"HandleAttachDocument: {ex.Message}");
-
-                Notifications.Notify(new NotificationMessage
-                {
-                    Severity = NotificationSeverity.Error,
-                    Summary = "Attach Error",
-                    Detail = "Could not attach document.",
-                    Duration = 2000
-                });
+                System.Diagnostics.Debug.WriteLine($"HandleAttachDocument Fault: {ex.Message}");
+                Notifications.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Attach Error", Detail = "Could not attach document.", Duration = 2000 });
             }
         }
-        // =========================================================================
-        // 📧 FIX 2 IMPLEMENTED: INTEGRATED OUTLOOK AVAILABILITY AND COMPOSE GAUNTLET
-        // =========================================================================
         protected async Task AttachToEmail(AttachmentDto? doc)
         {
             if (doc == null) return;
@@ -185,18 +150,11 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
             try
             {
-                // 🚀 FIXED: Dynamic verification checks if Outlook host environment variables are responsive [INDEX]
                 var result = await JSRuntime.InvokeAsync<bool>("officeBridge.isAvailable");
 
                 if (!result)
                 {
-                    Notifications.Notify(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Warning,
-                        Summary = "Outlook not available",
-                        Detail = "Open Outlook first.",
-                        Duration = 3000
-                    });
+                    Notifications.Notify(new NotificationMessage { Severity = NotificationSeverity.Warning, Summary = "Outlook not available", Detail = "Open Outlook first.", Duration = 3000 });
                     return;
                 }
 
@@ -247,8 +205,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
             {
                 bool useMock = Configuration.GetValue<bool>("SageX3:UseMockData", true);
 
-                State.Attachments.Clear();
-
                 if (useMock)
                 {
                     var fileNames = await AttachmentService.GetAttachmentsAsync();
@@ -257,6 +213,9 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                     {
                         foreach (var name in fileNames)
                         {
+                            bool alreadyExists = State.Attachments.Any(x => x.FileName.Equals(name, StringComparison.OrdinalIgnoreCase));
+                            if (alreadyExists) continue;
+
                             string mimeType = name.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) ? "application/pdf"
                                             : name.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                                             : "application/octet-stream";
@@ -276,12 +235,12 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 else
                 {
                     var docs = await Http.GetFromJsonAsync<List<AttachmentDto>>("api/v1/Attachment/list?ownerType=SageGlobalIndex&ownerId=All");
-
                     if (docs != null)
                     {
                         foreach (var item in docs)
                         {
-                            State.Attachments.Add(item);
+                            bool alreadyExists = State.Attachments.Any(x => x.Id == item.Id || x.FileName.Equals(item.FileName, StringComparison.OrdinalIgnoreCase));
+                            if (!alreadyExists) State.Attachments.Add(item);
                         }
                     }
                 }
@@ -293,23 +252,16 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
                 Notifications.Notify(new Radzen.NotificationMessage
                 {
-                    Severity = Radzen.NotificationSeverity.Info,
+                    Severity = NotificationSeverity.Info,
                     Summary = "Browse Success",
-                    Detail = $"Loaded {State.Attachments.Count} document(s) seamlessly from repository index.",
+                    Detail = $"Loaded {State.Attachments.Count} document(s) seamlessly.",
                     Duration = 2000
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ERP remote directory parsing failure exception details: {ex}");
-
-                Notifications.Notify(new Radzen.NotificationMessage
-                {
-                    Severity = Radzen.NotificationSeverity.Error,
-                    Summary = "Browse Failed",
-                    Detail = "Could not load Sage X3 documents repository index.",
-                    Duration = 2000
-                });
+                System.Diagnostics.Debug.WriteLine($"ERP remote directory parsing failure details: {ex}");
+                Notifications.Notify(new Radzen.NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Browse Failed", Detail = "Could not load Sage X3 documents.", Duration = 2000 });
             }
         }
 
@@ -321,31 +273,22 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Server refresh sync failure exception block trace details: {ex}");
+                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
         protected async Task ConvertToPdf(AttachmentDto? doc)
         {
             if (doc == null) return;
-            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Conversion Triggered", Detail = "PDF format compiler engine initialized. Processing source frames...", Duration = 2000 });
+            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Info, Summary = "Conversion Triggered", Detail = "PDF compiler initialized...", Duration = 2000 });
 
             await Task.Delay(1000);
 
-            var conversionResult = new AttachmentDto(
-                doc.Id,
-                System.IO.Path.GetFileNameWithoutExtension(doc.FileName) + ".pdf",
-                "application/pdf",
-                doc.FileSize,
-                doc.FileUrl,
-                doc.RelatedEntity,
-                DateTime.UtcNow
-            );
-
+            var conversionResult = new AttachmentDto(doc.Id, System.IO.Path.GetFileNameWithoutExtension(doc.FileName) + ".pdf", "application/pdf", doc.FileSize, doc.FileUrl, doc.RelatedEntity, DateTime.UtcNow);
             State.Attachments.Remove(doc);
             State.Attachments.Insert(0, conversionResult);
             SelectedDoc = conversionResult;
 
-            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Conversion Success", Detail = "File compiled successfully to immutable PDF format layer.", Duration = 2000 });
+            Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Conversion Success", Detail = "Compiled to PDF layer.", Duration = 2000 });
             State.Notify();
         }
 
@@ -388,19 +331,18 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
                     State.LogActivity(file.Name, "Uploaded Document", currentUserIdentity);
                     State.Notify();
-                    Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Uploaded", Detail = $"{file.Name} uploaded (id: {persistedId})", Duration = 2000 });
+                    Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Uploaded", Detail = $"{file.Name} uploaded", Duration = 2000 });
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Upload processing error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Upload error: {ex.Message}");
             }
             finally
             {
                 State.SetUploading(false);
             }
         }
-        protected async Task HandleAttachDocumentPlaceholder(AttachmentDto? doc) { await Task.CompletedTask; }
 
         protected async Task DeleteDocument(AttachmentDto? doc)
         {
@@ -416,7 +358,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                     var response = await Http.DeleteAsync($"api/v1/Attachment/delete/{doc.Id}");
                     if (!response.IsSuccessStatusCode)
                     {
-                        Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Error, Summary = "Deletion Error", Detail = "Database failed to delete document record from disk storage.", Duration = 2000 });
+                        Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Error, Summary = "Deletion Error", Detail = "Database failed to delete document record.", Duration = 2000 });
                         return;
                     }
                 }
@@ -426,7 +368,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
                 State.LogActivity(doc.FileName, "Deleted Document", currentUserIdentity);
                 State.Notify();
-                Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Purged Successfully", Detail = $"{doc.FileName} removed from repository context.", Duration = 2000 });
+                Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Success, Summary = "Purged Successfully", Detail = $"{doc.FileName} removed.", Duration = 2000 });
             }
             catch (Exception ex)
             {

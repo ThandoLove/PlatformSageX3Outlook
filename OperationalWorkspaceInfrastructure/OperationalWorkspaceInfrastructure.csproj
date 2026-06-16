@@ -34,6 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OperationalWorkspace.Domain\OperationalWorkspace.Domain.csproj" />
     <ProjectReference Include="..\OperationalWorkspaceApplication\OperationalWorkspaceApplication.csproj" />
+	  <ProjectReference Include="..\SharedProject\OperationalWorkspaceShared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,7 +6,7 @@ using System.Text;
 
 using OperationalWorkspaceApplication.DTOs;
 
-namespace OperationalWorkspaceShared.Validators;
+namespace OperationalWorkspaceApplication.Validators;
 
     public class TicketValidator : AbstractValidator<TicketDto>
     {

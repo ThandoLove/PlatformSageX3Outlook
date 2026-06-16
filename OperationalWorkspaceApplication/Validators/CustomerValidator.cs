@@ -6,7 +6,7 @@ using System.Text;
 
 
 
-namespace OperationalWorkspaceShared.Validators;
+namespace OperationalWorkspaceApplication.Validators;
 
     public class CustomerValidator : AbstractValidator<CustomerDto>
     {

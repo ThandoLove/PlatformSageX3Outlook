@@ -2,7 +2,7 @@
 using OperationalWorkspaceApplication.DTOs;
 using System.Text.RegularExpressions;
 
-namespace OperationalWorkspaceShared.Validators;
+namespace OperationalWorkspaceApplication.Validators;
 
 public class LoginRequestValidator : AbstractValidator<LoginRequestDto>
 {

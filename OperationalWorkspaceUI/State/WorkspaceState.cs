@@ -2,8 +2,8 @@
 using OperationalWorkspaceApplication.DTOs;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus;
 
 namespace OperationalWorkspaceUI.State
@@ -13,7 +13,6 @@ namespace OperationalWorkspaceUI.State
         // ======================================================
         // DATA PROPERTIES
         // ======================================================
-
         public List<ClientDto> Clients { get; set; } = new();
         public List<ContactCreateDto> Contacts { get; set; } = new();
         public List<OrderDto> Orders { get; set; } = new();
@@ -27,7 +26,6 @@ namespace OperationalWorkspaceUI.State
         public List<OpenOrderDto> Quotes { get; set; } = new();
         public EmailInsightDto? SelectedEmail { get; set; }
 
-        // 🚀 SHARED SYSTEM AUDIT TELEMETRY HIGHWAY
         public List<GlobalActivityItem> SharedSystemLogs { get; private set; } = new();
 
         // ======================================================
@@ -36,115 +34,34 @@ namespace OperationalWorkspaceUI.State
         public bool IsUploading { get; set; }
         public bool IsSendingKnowledge { get; set; }
         public bool IsLoadingTasks { get; set; }
-
         // ======================================================
         // CONSTRUCTOR
         // ======================================================
         public WorkspaceState()
         {
-            Attachments = new List<AttachmentDto>
-            {
-                new(
-                    Guid.NewGuid(),
-                    "QTE-7789_Proposal.pdf",
-                    "Proposal",
-                    1240000,
-                    "#",
-                    "Quote - QTE-7789",
-                    DateTime.Now),
+            // 🚀 FIXED: Cleared hardcoded list entries to prevent overriding your mock directory repository streams
+            Attachments = new List<AttachmentDto>();
 
-                new(
-                    Guid.NewGuid(),
-                    "INV-2024-00567_Invoice.pdf",
-                    "Invoice",
-                    960000,
-                    "#",
-                    "Invoice - INV-2024-00567",
-                    DateTime.Now)
+            KnowledgeBase = new List<KnowledgeDto>
+            {
+                new KnowledgeDto(Guid.NewGuid(), "Pricing Guidelines 2024", "Sage X3 pricing tiered structure for 2024.", "Pricing Guidelines", "#", "Sales", 0),
+                new KnowledgeDto(Guid.NewGuid(), "Product Installation Guide", "Step-by-step server configuration...", "Product Documentation", "#", "IT", 0),
+                new KnowledgeDto(Guid.NewGuid(), "Frequently Asked Questions", "Top user permission answers...", "FAQ", "#", "Support", 0),
+                new KnowledgeDto(Guid.NewGuid(), "How to Create a Sales Order", "Full O-WS interface instructions...", "How To Guides", "#", "Guides", 0)
             };
 
-            // =========================================================================
-            // ✅ FIXED MATRIX: PASSES THE REQUIRED VIEWS INTEGER PARAMETER
-            // =========================================================================
-            KnowledgeBase = new List<KnowledgeDto>
-{
-    new KnowledgeDto(
-        Guid.NewGuid(),
-        "Pricing Guidelines 2024",
-        "Sage X3 pricing tiered structure for 2024.",
-        "Pricing Guidelines",
-        "#",
-        "Sales",
-        0), // Passed default views integer resolves compilation error 1
-
-    new KnowledgeDto(
-        Guid.NewGuid(),
-        "Product Installation Guide",
-        "Step-by-step server configuration...",
-        "Product Documentation",
-        "#",
-        "IT",
-        0), // Passed default views integer resolves compilation error 2
-
-    new KnowledgeDto(
-        Guid.NewGuid(),
-        "Frequently Asked Questions",
-        "Top user permission answers...",
-        "FAQ",
-        "#",
-        "Support",
-        0), // Passed default views integer resolves compilation error 3
-
-    new KnowledgeDto(
-        Guid.NewGuid(),
-        "How to Create a Sales Order",
-        "Full O-WS interface instructions...",
-        "How To Guides",
-        "#",
-        "Guides",
-        0)  // Passed default views integer resolves compilation error 4
-};
             Tickets = new List<TicketDto>
             {
-                new TicketDto
-                {
-                    Id = Guid.NewGuid(),
-                    TicketNumber = "TKT-1001",
-                    Title = "Sage X3 Connection Timeout",
-                    CustomerName = "Tech Innovations Inc.",
-                    Priority = "High",
-                    Status = "Open",
-                    CreatedAt = DateTime.Now.AddDays(-2)
-                },
-                new TicketDto
-                {
-                    Id = Guid.NewGuid(),
-                    TicketNumber = "TKT-1002",
-                    Title = "Invoice Export Error",
-                    CustomerName = "Global Systems",
-                    Priority = "Medium",
-                    Status = "In Progress",
-                    CreatedAt = DateTime.Now.AddDays(-1)
-                },
-                new TicketDto
-                {
-                    Id = Guid.NewGuid(),
-                    TicketNumber = "TKT-1003",
-                    Title = "New User Onboarding",
-                    CustomerName = "Brightwave",
-                    Priority = "Low",
-                    Status = "Resolved",
-                    CreatedAt = DateTime.Now
-                }
+                new TicketDto { Id = Guid.NewGuid(), TicketNumber = "TKT-1001", Title = "Sage X3 Connection Timeout", CustomerName = "Tech Innovations Inc.", Priority = "High", Status = "Open", CreatedAt = DateTime.Now.AddDays(-2) },
+                new TicketDto { Id = Guid.NewGuid(), TicketNumber = "TKT-1002", Title = "Invoice Export Error", CustomerName = "Global Systems", Priority = "Medium", Status = "In Progress", CreatedAt = DateTime.Now.AddDays(-1) },
+                new TicketDto { Id = Guid.NewGuid(), TicketNumber = "TKT-1003", Title = "New User Onboarding", CustomerName = "Brightwave", Priority = "Low", Status = "Resolved", CreatedAt = DateTime.Now }
             };
 
             _ = LoadTasksAsync();
         }
-
         // ======================================================
         // EVENTS
         // ======================================================
-
         public event Action? OnChange;
         public void Notify()
         {
@@ -173,10 +90,7 @@ namespace OperationalWorkspaceUI.State
         // ======================================================
         // LOGGING & CENTRAL PIPELINES
         // ======================================================
-        public void LogActivity(
-            string title,
-            string action,
-            string user = "Current User")
+        public void LogActivity(string title, string action, string user = "Current User")
         {
             var newLog = new ActivityDto
             {
@@ -190,7 +104,6 @@ namespace OperationalWorkspaceUI.State
             Notify();
         }
 
-        // 🚀 SHARED METHOD DISPATCHER BRIDGES DATA CONTEXT TRACKS ACROSS NAVIGATION MODALS
         public void LogGlobalAction(string category, string text, string icon, string uiTintClass)
         {
             SharedSystemLogs.Insert(0, new GlobalActivityItem
@@ -201,13 +114,11 @@ namespace OperationalWorkspaceUI.State
                 ImpactClass = uiTintClass,
                 Timestamp = DateTime.Now
             });
-
             Notify();
         }
         // ======================================================
         // DATA RELOAD METHODS
         // ======================================================
-
         public async Task LoadTasksAsync()
         {
             try
@@ -217,63 +128,14 @@ namespace OperationalWorkspaceUI.State
                 var now = DateTime.Now;
                 Tasks = new List<TaskDto>
                 {
-                    new TaskDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Title = "Inquiry about Product XYZ",
-                        CompanyName = "Tech Innovations Inc.",
-                        Priority = TaskPriority.Urgent,
-                        DueDate = DateTime.Today,
-                        Status = TaskStatus.Open
-                    },
-                    new TaskDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Title = "Setup Sage X3 Connector",
-                        CompanyName = "Sage Internal",
-                        Priority = TaskPriority.Urgent,
-                        DueDate = DateTime.Today,
-                        Status = TaskStatus.Open
-                    },
-                    new TaskDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Title = "Review Sales Forecast Q3",
-                        CompanyName = "Global Systems",
-                        Priority = TaskPriority.High,
-                        DueDate = DateTime.Today,
-                        Status = TaskStatus.Open
-                    },
-                    new TaskDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Title = "Verify Invoice #8821",
-                        CompanyName = "Brightwave",
-                        Priority = TaskPriority.Urgent,
-                        DueDate = DateTime.Today,
-                        Status = TaskStatus.Open
-                    },
-                    new TaskDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Title = "Submit Expense Report",
-                        CompanyName = "Finance Dept",
-                        Priority = TaskPriority.High,
-                        DueDate = DateTime.Today,
-                        Status = TaskStatus.Open
-                    },
-                    new TaskDto
-                    {
-                        Id = Guid.NewGuid(),
-                        Title = "Daily Team Sync",
-                        CompanyName = "Operational Team",
-                        Priority = TaskPriority.Medium,
-                        DueDate = DateTime.Today,
-                        Status = TaskStatus.Open
-                    }
+                    new TaskDto { Id = Guid.NewGuid(), Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open },
+                    new TaskDto { Id = Guid.NewGuid(), Title = "Setup Sage X3 Connector", CompanyName = "Sage Internal", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open },
+                    new TaskDto { Id = Guid.NewGuid(), Title = "Review Sales Forecast Q3", CompanyName = "Global Systems", Priority = TaskPriority.High, DueDate = DateTime.Today, Status = TaskStatus.Open },
+                    new TaskDto { Id = Guid.NewGuid(), Title = "Verify Invoice #8821", CompanyName = "Brightwave", Priority = TaskPriority.Urgent, DueDate = DateTime.Today, Status = TaskStatus.Open },
+                    new TaskDto { Id = Guid.NewGuid(), Title = "Submit Expense Report", CompanyName = "Finance Dept", Priority = TaskPriority.High, DueDate = DateTime.Today, Status = TaskStatus.Open },
+                    new TaskDto { Id = Guid.NewGuid(), Title = "Daily Team Sync", CompanyName = "Operational Team", Priority = TaskPriority.Medium, DueDate = DateTime.Today, Status = TaskStatus.Open }
                 };
 
-                // Ensure all tasks have basic metadata used by the UI
                 foreach (var t in Tasks)
                 {
                     if (t.CreatedDate == default) t.CreatedDate = now.AddDays(-1);
@@ -302,29 +164,16 @@ namespace OperationalWorkspaceUI.State
             Contacts = contacts;
             Notify();
         }
-        public void ReloadClients()
-        {
-            Notify();
-        }
-        public void ReloadOrders()
-        {
-            Notify();
-        }
-        public void ReloadTasks()
-        {
-            Notify();
-        }
+        public void ReloadClients() { Notify(); }
+        public void ReloadOrders() { Notify(); }
+        public void ReloadTasks() { Notify(); }
 
-        // ======================================================
-        // MEMORY CLEANUP
-        // ======================================================
         public void Dispose()
         {
             OnChange = null;
         }
     }
 
-    // 🚀 NESTED CENTRAL AUDIT DTO DATA MODEL
     public class GlobalActivityItem
     {
         public string Category { get; set; } = string.Empty;

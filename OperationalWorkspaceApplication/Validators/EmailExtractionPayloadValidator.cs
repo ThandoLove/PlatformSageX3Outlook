@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace OperationalWorkspaceShared.Validators
+namespace OperationalWorkspaceApplication.Validators
 {
     public class EmailInsightDtoValidator : AbstractValidator<EmailInsightDto>
     {

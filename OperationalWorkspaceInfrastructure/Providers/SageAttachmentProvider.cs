@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OperationalWorkspaceInfrastructure.Attachments
+namespace OperationalWorkspaceInfrastructure.Providers
 {
     public class SageAttachmentProvider : IAttachmentProvider
     {

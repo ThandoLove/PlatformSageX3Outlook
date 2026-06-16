@@ -2,7 +2,7 @@
     using FluentValidation;
     using OperationalWorkspaceApplication.DTOs;
 
-    namespace OperationalWorkspaceShared.Validators;
+    namespace OperationalWorkspaceApplication.Validators;
 
     public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
     {
@@ -20,5 +20,7 @@
             // OrderNumber might be empty if Sage X3 generates it automatically
         }
     }
+
+
 
 

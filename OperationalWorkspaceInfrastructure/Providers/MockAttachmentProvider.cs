@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OperationalWorkspaceInfrastructure.Attachments
+namespace OperationalWorkspaceInfrastructure.Providers
 {
     public class MockAttachmentProvider : IAttachmentProvider
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces;
-using OperationalWorkspaceInfrastructure.Attachments;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
