@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceShared.Validators;
+using OperationalWorkspaceApplication.Validators;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

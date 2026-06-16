@@ -13,7 +13,7 @@ using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.Services;
 using OperationalWorkspaceInfrastructure.servicesInfra.BackgroundWorkers;
-using OperationalWorkspaceShared.Validators;
+using OperationalWorkspaceApplication.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
 using OperationalWorkspaceUI.State;
