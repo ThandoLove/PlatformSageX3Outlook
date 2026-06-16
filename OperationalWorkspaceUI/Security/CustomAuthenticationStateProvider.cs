@@ -11,15 +11,30 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        if (IsTokenExpired(_currentUser))
+        {
+            _currentUser = _anonymous;
+        }
+
         return Task.FromResult(new AuthenticationState(_currentUser));
     }
 
     public void NotifyUserAuthentication(string token)
     {
-        // Parse claims natively using JSON without needing System.IdentityModel.Tokens.Jwt
-        var claims = ParseClaimsFromJwt(token);
-        var identity = new ClaimsIdentity(claims, authenticationType: "jwt");
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            NotifyUserLogout();
+            return;
+        }
 
+        var claims = ParseClaimsFromJwt(token).ToList();
+        if (IsExpired(claims))
+        {
+            NotifyUserLogout();
+            return;
+        }
+
+        var identity = new ClaimsIdentity(claims, authenticationType: "jwt");
         _currentUser = new ClaimsPrincipal(identity);
 
         NotifyAuthenticationStateChanged(
@@ -51,5 +66,21 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
         if (keyValuePairs == null) return Enumerable.Empty<Claim>();
 
         return keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString() ?? ""));
+    }
+
+    private static bool IsTokenExpired(ClaimsPrincipal user)
+    {
+        if (user.Identity?.IsAuthenticated != true) return false;
+        return IsExpired(user.Claims);
+    }
+
+    private static bool IsExpired(IEnumerable<Claim> claims)
+    {
+        var expClaim = claims.FirstOrDefault(c => c.Type is "exp" or "Exp");
+        if (expClaim == null || !long.TryParse(expClaim.Value, out var expUnix))
+            return false;
+
+        var expiry = DateTimeOffset.FromUnixTimeSeconds(expUnix);
+        return expiry <= DateTimeOffset.UtcNow;
     }
 }

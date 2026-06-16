@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using OperationalWorkspaceApplication.DTOs;
@@ -11,6 +12,7 @@ namespace OperationalWorkspaceAPI.Controllers;
 
 #region Base Controller
 [ApiController]
+[Authorize]
 [Produces("application/json")]
 [Route("api/v1/[controller]")]
 public abstract class ApiController : ControllerBase

@@ -456,7 +456,7 @@ if (app.Environment.IsDevelopment())
 // ======================================================
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
-    Authorization = new[] { new LocalDashboardAuthorizationFilter() }
+    Authorization = new[] { new LocalDashboardAuthorizationFilter(app.Environment) }
 });
 
 // ======================================================
