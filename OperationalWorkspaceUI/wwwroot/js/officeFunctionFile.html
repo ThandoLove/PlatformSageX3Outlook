@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <script src="/js/officeBridge.js"></script>
+</head>
+<body>
+<script>
+    Office.onReady(function () { });
+
+    function onLinkToCrmClicked(event) {
+        try {
+            var item = Office.context.mailbox.item;
+            if (item && window.officeBridge) {
+                window.officeBridge.checkSender();
+            }
+        } catch (e) {
+            console.error("onLinkToCrmClicked:", e);
+        }
+        event.completed();
+    }
+
+    function onUploadAttachmentClicked(event) {
+        try {
+            if (window.officeBridge) {
+                window.officeBridge.uploadCurrentDocument("outlook");
+            }
+        } catch (e) {
+            console.error("onUploadAttachmentClicked:", e);
+        }
+        event.completed();
+    }
+
+    function onOpenInSageX3Clicked(event) {
+        try {
+            if (window.officeBridge) {
+                window.officeBridge.openSageRecord("BPCUSTOMER", "read");
+            }
+        } catch (e) {
+            console.error("onOpenInSageX3Clicked:", e);
+        }
+        event.completed();
+    }
+
+    function onInjectSignatureClicked(event) {
+        try {
+            var item = Office.context.mailbox.item;
+            if (item && item.body && item.body.setSelectedDataAsync) {
+                item.body.setSelectedDataAsync(
+                    "\n\n— Sent via Sage X3 Operational Workspace",
+                    { coercionType: Office.CoercionType.Text },
+                    function () { });
+            }
+        } catch (e) {
+            console.error("onInjectSignatureClicked:", e);
+        }
+        event.completed();
+    }
+
+    function onWorkflowActionClicked(event) {
+        try {
+            console.log("Workflow trigger requested from compose ribbon.");
+        } catch (e) {
+            console.error("onWorkflowActionClicked:", e);
+        }
+        event.completed();
+    }
+</script>
+</body>
+</html>

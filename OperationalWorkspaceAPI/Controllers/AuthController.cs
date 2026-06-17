@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -18,6 +20,7 @@ using System.Threading.Tasks;
 namespace OperationalWorkspaceAPI.Controllers
 {
     [ApiController]
+    [AllowAnonymous]
     [Route("api/v1/[controller]")]
     [EnableRateLimiting("LoginPolicy")]
     public class AuthController : ApiController
@@ -25,15 +28,18 @@ namespace OperationalWorkspaceAPI.Controllers
         private readonly IAccountRepository _repo;
         private readonly IConfiguration _config;
         private readonly ILogger<AuthController> _logger;
+        private readonly IWebHostEnvironment _env;
 
         public AuthController(
             IAccountRepository repo,
             IConfiguration config,
-            ILogger<AuthController> logger)
+            ILogger<AuthController> logger,
+            IWebHostEnvironment env)
         {
             _repo = repo ?? throw new ArgumentNullException(nameof(repo));
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _env = env ?? throw new ArgumentNullException(nameof(env));
         }
 
         [HttpPost("login")]
@@ -45,10 +51,10 @@ namespace OperationalWorkspaceAPI.Controllers
             if (string.IsNullOrWhiteSpace(dto?.Username) || string.IsNullOrWhiteSpace(dto?.Password))
                 return Failure("Username and password are required.", 401);
 
-            // =========================================================================
-            // ⏱️ INSTANT LOCAL TESTING SECURITY BYPASS ROUTE
-            // =========================================================================
-            if (dto.Username == "operator@test.com" && dto.Password == "AnyPasswordBypassedInDev")
+            // Development-only testing bypass (never active in Production)
+            if (_env.IsDevelopment()
+                && dto.Username == "operator@test.com"
+                && dto.Password == "AnyPasswordBypassedInDev")
             {
                 var mockJwtId = Guid.NewGuid().ToString();
 
@@ -56,18 +62,18 @@ namespace OperationalWorkspaceAPI.Controllers
                 {
                     Id = Guid.NewGuid(),
                     Username = "operator@test.com",
-                    Role = "Administrator"
+                    Role = "Admin"
                 }, mockJwtId);
 
                 var mockUser = new UserDto
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "operator@test.com",
-                    Role = "Administrator",
+                    Role = "Admin",
                     Environment = "Development"
                 };
 
-                _logger.LogWarning("SWAGGER DEVELOPMENT BYPASS LAYER ACTIVE: Generated valid testing token for user: {User}", dto.Username);
+                _logger.LogWarning("DEV-ONLY login bypass used for {User}", dto.Username);
 
                 return Success(new
                 {
@@ -164,10 +170,10 @@ namespace OperationalWorkspaceAPI.Controllers
             if (string.IsNullOrWhiteSpace(dto?.RefreshToken))
                 return Failure("Refresh token payload cannot be empty.", 400);
 
-            if (dto.RefreshToken == "MOCK_REFRESH_TOKEN_STRING_BYPASS")
+            if (_env.IsDevelopment() && dto.RefreshToken == "MOCK_REFRESH_TOKEN_STRING_BYPASS")
             {
                 var mockBypassId = Guid.NewGuid().ToString();
-                var bypassToken = GenerateJwtToken(new UserAccount { Id = Guid.NewGuid(), Username = "operator@test.com", Role = "Administrator" }, mockBypassId);
+                var bypassToken = GenerateJwtToken(new UserAccount { Id = Guid.NewGuid(), Username = "operator@test.com", Role = "Admin" }, mockBypassId);
                 return Success(new { token = bypassToken, refreshToken = "MOCK_REFRESH_TOKEN_STRING_BYPASS" });
             }
 

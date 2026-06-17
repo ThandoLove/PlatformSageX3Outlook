@@ -242,6 +242,7 @@
                         var p when p.Contains("ai-response") => "Action: Copy Assistant",
                         var p when p.Contains("attach-documents") => "Action: Document Sync",
                         var p when p.Contains("followup") => "Action: Follow-up Activity",
+                        var p when p.Contains("ai/summary") => "Action: AI Summary",
                         _ => "Action: Workspace Home"
                     };
                     StateHasChanged();

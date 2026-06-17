@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace OperationalWorkspaceAPI.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/email")]
     public sealed class EmailController : ControllerBase
     {

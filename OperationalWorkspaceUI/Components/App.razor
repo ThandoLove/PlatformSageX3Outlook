@@ -11,7 +11,6 @@
 
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="_content/Radzen.Blazor/css/standard-base.css">
-    <link rel="stylesheet" href="https://office.net">
     <link rel="stylesheet" href="/OperationalWorkspaceUI.styles.css" />
 
     <!-- CUSTOM DESIGN SUBSYSTEM CSS ASSETS -->
@@ -28,7 +27,7 @@
             // Cache native routing parameters prior to Office JS library interventions
             window._historyCache = { replaceState: window.history.replaceState, pushState: window.history.pushState };
     </script>
-    <script src="https://microsoft.com"></script>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <script type="text/javascript">
         window.history.replaceState = window._historyCache.replaceState;
         window.history.pushState = window._historyCache.pushState;
@@ -48,7 +47,6 @@
     <ReconnectModal />
 
     <!-- PRESENTATION RENDERING ASSETS -->
-    <script src="https://jsdelivr.net"></script>
     <script src="/js/charts.js"></script>
     <script src="/js/officeBridge.js"></script>
     <script src="/js/app.js"></script>
