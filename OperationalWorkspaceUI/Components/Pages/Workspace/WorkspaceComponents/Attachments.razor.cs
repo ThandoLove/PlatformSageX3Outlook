@@ -255,13 +255,13 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                     Severity = NotificationSeverity.Info,
                     Summary = "Browse Success",
                     Detail = $"Loaded {State.Attachments.Count} document(s) seamlessly.",
-                    Duration = 2000
+                    Duration = 3000.0
                 });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"ERP remote directory parsing failure details: {ex}");
-                Notifications.Notify(new Radzen.NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Browse Failed", Detail = "Could not load Sage X3 documents.", Duration = 2000 });
+                Notifications.Notify(new Radzen.NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Browse Failed", Detail = "Could not load Sage X3 documents.", Duration = 3000.0 });
             }
         }
 
