@@ -126,7 +126,7 @@ builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUn
 builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
 builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
 builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
-builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
+
 builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
 builder.Services.AddScoped<IAuditLogService, MockAuditService>();

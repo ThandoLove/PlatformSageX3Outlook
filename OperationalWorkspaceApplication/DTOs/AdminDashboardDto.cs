@@ -30,8 +30,7 @@ namespace OperationalWorkspaceApplication.DTOs
         // Audit & Activity
         public List<AuditLogDto> AuditLogs { get; set; } = new List<AuditLogDto>();
 
-        // Financial Watch
-        public AdminFinanceDto Finance { get; set; }= new AdminFinanceDto();
+       
 
         // Knowledge Base (shared)
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new List<KnowledgeDto>();

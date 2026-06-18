@@ -64,12 +64,10 @@ namespace OperationalWorkspaceUI.State
             await Task.CompletedTask;
         }
 
-        // DYNAMIC WORKSPACE FILTERS AND LAYOUT STATE CHASSIS BINDINGS
         public string SearchTerm { get; set; } = string.Empty;
         public string SelectedEmployeeFilter { get; set; } = string.Empty;
         public string SelectedDepartmentFilter { get; set; } = string.Empty;
 
-        // UNIFIED SIDEBAR COLLAPSE TOGGLE COMPONENT BOUNDARY
         public bool IsSidebarCollapsed { get; set; } = false;
 
         public void ToggleGlobalSidebar()
@@ -101,19 +99,15 @@ namespace OperationalWorkspaceUI.State
 
         public EmailInsightDto EmailContext { get; set; } = new();
 
-        // ======================================================
-        // 🔥 NEW STATE MANAGEMENT FOR EXISTING VS NEW SAGE CLIENTS
-        // ======================================================
         public bool ShowAddClientUI { get; set; } = false;
         public EmailContextDto? ActiveCompositeContext { get; set; }
 
-        public void SetEmailContextState(EmailContextDto? context,bool isUnknownSender)
+        public void SetEmailContextState(EmailContextDto? context, bool isUnknownSender)
         {
             if (context == null)
                 return;
 
             ActiveCompositeContext = context;
-
             ShowAddClientUI = isUnknownSender;
 
             if (context.Email != null)
@@ -123,27 +117,24 @@ namespace OperationalWorkspaceUI.State
 
             NotifyStateChanged();
         }
-        //============================
 
         public DashboardDto DashboardData { get; set; } = new();
         public AdminErpDto AdminErp { get; set; } = new();
         public AdminCrmDto AdminCrm { get; set; } = new();
-        public AdminFinanceDto AdminFinance { get; set; } = new();
-        public AdminSystemHealthDto AdminHealth { get; set; } = new();
-        public EmployeeErpDto EmployeeErp { get; set; } = new();
-        public EmployeeCRMDTO EmployeeCrm { get; set; } = new();
-        public EmployeeFinanceDto EmployeeFinance { get; set; } = new();
+
+        // 🚀 CRITICAL DECOMMISSIONING: AdminFinanceDto property line has been completely removed!
+        public AdminSystemHealthDto AdminHealth { get; set; } = new AdminSystemHealthDto();
+        public EmployeeErpDto EmployeeErp { get; set; } = new EmployeeErpDto();
+        public EmployeeCRMDTO EmployeeCrm { get; set; } = new EmployeeCRMDTO();
+
+        // 🚀 CRITICAL DECOMMISSIONING: EmployeeFinanceDto property line has been completely removed!
 
         public object CurrentCrm =>
             IsAdminEnvironment
             ? (object)AdminCrm
             : EmployeeCrm;
 
-        public object CurrentFinance =>
-            IsAdminEnvironment
-            ? (object)AdminFinance
-            : EmployeeFinance;
-
+        // 🚀 CRITICAL DECOMMISSIONING: CurrentFinance object helper method completely removed to wipe out type references!
         public event Action? OnChange;
 
         public void NotifyStateChanged()

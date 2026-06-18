@@ -346,7 +346,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    builder.Services.AddScoped<IInventoryService>(sp => sp.GetRequiredService<MockUnifiedService>());
+    
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
     builder.Services.AddScoped<IAuditLogService, MockAuditService>();
@@ -375,7 +375,7 @@ else
     builder.Services.AddScoped<IInvoiceService, InvoiceService>();
     builder.Services.AddScoped<ISalesService, SalesService>();
     builder.Services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
-    builder.Services.AddScoped<IInventoryService, InventoryService>();
+   
     builder.Services.AddScoped<ITaskService, TaskService>();
     
     builder.Services.AddScoped<IOrderService, OrderService>();
@@ -391,7 +391,7 @@ builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 builder.Services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
-builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IKnowledgeRepository, KnowledgeRepository>();
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();

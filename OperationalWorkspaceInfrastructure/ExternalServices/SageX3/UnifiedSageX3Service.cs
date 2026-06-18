@@ -25,9 +25,8 @@ namespace OperationalWorkspaceApplication.Services
         IKnowledgeService,
         ISalesService,
         IBusinessPartnerService,
-        IInventoryService,
-        ITaskService,
-        IInvoiceService
+        ITaskService
+       
     {
         private readonly IActivityRepository _activityRepo;
         private readonly ISageX3Client _sageClient;
@@ -230,16 +229,7 @@ namespace OperationalWorkspaceApplication.Services
             };
         }
 
-        // =========================================================================
-        // ---------------------------- INVENTORY SERVICE --------------------------
-        // =========================================================================
 
-        public async Task<int> CountStockAlertsAsync() => await _sageClient.GetLowStockCountAsync();
-        public async Task<InventoryItemDto?> GetItemAsync(Guid id, CancellationToken ct) => await _sageClient.GetItemDetailsAsync(id, ct);
-        public async Task<IReadOnlyList<InventoryItemDto>> GetWarehouseInventoryAsync(string wh, CancellationToken ct) => await _sageClient.GetWarehouseStockAsync(wh, ct);
-        public async Task<StockAvailabilityResponse> CheckAvailabilityAsync(CheckStockRequest r, CancellationToken ct) => await _sageClient.VerifyStockLevelsAsync(r, ct);
-        public async Task<AdjustStockResponse> AdjustStockAsync(StockAdjustmentRequest r, CancellationToken ct) => await _sageClient.PostStockAdjustmentAsync(r, ct);
-        public async Task<StockAdjustmentDto> GetAdjustmentDetailsAsync(StockAdjustmentRequest r, CancellationToken ct) => await _sageClient.FetchAdjustmentLogAsync(r, ct);
 
         // =========================================================================
         // ------------------------- BUSINESS PARTNER SERVICE -----------------------
@@ -355,22 +345,5 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<CreateSalesOrderResponse> CreateOrderAsync(CreateSalesOrderRequest req, CancellationToken ct) => await _sageClient.SubmitSalesOrderAsync(req, ct);
         public async Task<SalesOrderDetailsResponse?> GetOrderAsync(GetSalesOrderRequest req, CancellationToken ct) => await _sageClient.FetchSalesOrderAsync(req, ct);
 
-        // =========================================================================
-        // ---------------------------- INVOICE SERVICE ----------------------------
-        // =========================================================================
-
-        async Task<InvoiceDto?> IInvoiceService.GetByIdAsync(Guid id) => await _sageClient.GetInvoiceAsync(id);
-        public async Task<IEnumerable<InvoiceDto>> GetAllAsync(int page, int pageSize) => await _sageClient.GetInvoicesPagedAsync(page, pageSize);
-        public async Task<InvoiceDto> CreateInvoiceAsync(InvoiceDto dto) => await _sageClient.PostInvoiceAsync(dto);
-        public async Task<InvoiceDto> CreateFromOrderAsync(Guid orderId) => await _sageClient.GenerateInvoiceFromSalesOrderAsync(orderId);
-        public async Task<decimal> GetTotalOutstandingReceivablesAsync() => await _sageClient.SumGlobalOutstandingReceivablesAsync();
-        public async Task<decimal> GetTotalMonthlySalesAsync() => await _sageClient.SumGlobalMonthlySalesAsync();
-        public async Task<decimal> GetOutstandingReceivablesAsync() => await _sageClient.SumGlobalOutstandingReceivablesAsync();
-        public async Task<decimal> GetOutstandingReceivablesAsync(string userId) => await _sageClient.SumUserOutstandingReceivablesAsync(userId);
-        public async Task<decimal> GetMonthlySalesAsync(string userId) => await _sageClient.SumUserMonthlySalesAsync(userId);
-        public async Task<int> CountOverdueInvoicesAsync() => await _sageClient.GetOverdueInvoicesCountAsync();
-        public async Task<int> CountInvoicesGeneratedAsync() => await _sageClient.GetTotalGeneratedInvoicesCountAsync();
-        public async Task<int> CountInvoicesDueAsync(string userId) => await _sageClient.GetUserInvoicesDueCountAsync(userId);
-        public async Task<int> CountHighRiskAccountsAsync() => await _sageClient.GetHighRiskCreditAccountsCountAsync();
     }
 }

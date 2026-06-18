@@ -21,13 +21,13 @@ public class IntegrationDbContext : DbContext
 {
     private readonly IAuditLogService _auditService;
     private readonly IHttpContextAccessor _http;
-    private readonly IBackgroundTaskQueue _backgroundQueue; // 🚀 NEW: Integrated background thread pipeline
+    private readonly IBackgroundTaskQueue _backgroundQueue;
 
     public IntegrationDbContext(
         DbContextOptions<IntegrationDbContext> options,
         IAuditLogService auditService,
         IHttpContextAccessor http,
-        IBackgroundTaskQueue backgroundQueue) // Injected from your background processing architecture
+        IBackgroundTaskQueue backgroundQueue)
         : base(options)
     {
         _auditService = auditService;
@@ -36,9 +36,7 @@ public class IntegrationDbContext : DbContext
     }
 
     public DbSet<BusinessPartner> BusinessPartners => Set<BusinessPartner>();
-    public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
-    public DbSet<InventoryItem> Inventories => Set<InventoryItem>();
     public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
@@ -46,25 +44,24 @@ public class IntegrationDbContext : DbContext
     public DbSet<Knowledge> KnowledgeBase => Set<Knowledge>();
     public DbSet<Activity> Activities => Set<Activity>();
 
+    // 🚀 FIXED: Removed public DbSet<Invoice> Invoices and DbSet<InventoryItem> Inventories completely! [INDEX]
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         // Core Primary Keys Mappings (100% Preserved)
         modelBuilder.Entity<BusinessPartner>().HasKey(bp => bp.Id);
-        modelBuilder.Entity<Invoice>().HasKey(i => i.InvoiceId);
         modelBuilder.Entity<SalesOrder>().HasKey(o => o.Id);
-        modelBuilder.Entity<InventoryItem>().HasKey(i => i.Id);
         modelBuilder.Entity<TaskEntity>().HasKey(t => t.Id);
         modelBuilder.Entity<AuditLogEntry>().HasKey(a => a.Id);
         modelBuilder.Entity<Attachment>().HasKey(a => a.Id);
+
+        // 🚀 FIXED: Removed the primary key schema builders for Invoice and InventoryItem tables! [INDEX]
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // 🚀 CRITICAL ESCAPE HATCH: 
-        // If the context is currently processing internal AuditLog entries, skip generating secondary audits.
-        // This stops infinite deadlocks, database connection depletion, and application crash loops completely.
         var containsOnlyAudits = ChangeTracker.Entries().All(e => e.Entity is AuditLogEntry);
         if (containsOnlyAudits)
         {
@@ -91,7 +88,6 @@ public class IntegrationDbContext : DbContext
                 EventType = entry.State.ToString()
             };
 
-            // BEFORE STATE (100% Original Dictionary Logic Preserved)
             if (entry.State == EntityState.Modified || entry.State == EntityState.Deleted)
             {
                 var before = new Dictionary<string, object?>();
@@ -104,7 +100,6 @@ public class IntegrationDbContext : DbContext
                 audit.OldValues = JsonSerializer.Serialize(before);
             }
 
-            // AFTER STATE (100% Original Dictionary Logic Preserved)
             if (entry.State == EntityState.Modified || entry.State == EntityState.Added)
             {
                 var after = new Dictionary<string, object?>();
@@ -120,12 +115,8 @@ public class IntegrationDbContext : DbContext
             auditEntries.Add(audit);
         }
 
-        // Commit the original user business changes to the SQL Server first
         var result = await base.SaveChangesAsync(cancellationToken);
 
-        // 🚀 STABILIZED BACKGROUND AUDITING:
-        // Offloads bulk log generation to your thread-safe channel queue. The main thread returns instantly, 
-        // keeping the Outlook UI completely fluid and lag-free while processing audits in the background safely.
         if (auditEntries.Count > 0)
         {
             await _backgroundQueue.QueueBackgroundWorkItemAsync(async token =>

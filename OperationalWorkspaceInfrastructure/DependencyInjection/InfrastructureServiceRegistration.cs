@@ -103,7 +103,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
-        services.AddScoped<IInventoryRepository, InventoryRepository>();
+      
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IAttachmentRepository, AttachmentRepository>();

@@ -18,7 +18,7 @@ namespace OperationalWorkspaceApplication.Services
         IKnowledgeService,
         ISalesService,
         IBusinessPartnerService,
-        IInventoryService,
+        
         ITaskService,
         IInvoiceService
     {
@@ -238,52 +238,7 @@ namespace OperationalWorkspaceApplication.Services
                 new List<TaskDto>());
         }
 
-        // =========================================================
-        // INVENTORY SERVICE
-        // =========================================================
-        public async Task<int> CountStockAlertsAsync() => 8;
-
-        public async Task<InventoryItemDto?> GetItemAsync(
-            Guid id,
-            CancellationToken ct)
-        {
-            return await Task.FromResult(
-                new InventoryItemDto());
-        }
-
-        public async Task<IReadOnlyList<InventoryItemDto>> GetWarehouseInventoryAsync(
-            string wh,
-            CancellationToken ct)
-        {
-            return await Task.FromResult(
-                (IReadOnlyList<InventoryItemDto>)
-                new List<InventoryItemDto>());
-        }
-
-        public async Task<StockAvailabilityResponse> CheckAvailabilityAsync(
-            CheckStockRequest r,
-            CancellationToken ct)
-        {
-            return await Task.FromResult(
-                new StockAvailabilityResponse(true, 10));
-        }
-
-        public async Task<AdjustStockResponse> AdjustStockAsync(
-            StockAdjustmentRequest r,
-            CancellationToken ct)
-        {
-            return await Task.FromResult(
-                new AdjustStockResponse(true, "Success"));
-        }
-
-        public async Task<StockAdjustmentDto> GetAdjustmentDetailsAsync(
-            StockAdjustmentRequest r,
-            CancellationToken ct)
-        {
-            return await Task.FromResult(
-                new StockAdjustmentDto());
-        }
-
+       
         // =========================================================
         // BUSINESS PARTNER SERVICE
         // =========================================================

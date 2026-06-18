@@ -1,27 +1,29 @@
 ﻿using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspace.Domain.ValueObjects;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceApplication.IServices;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Services;
 
 public sealed class SalesService : ISalesService
 {
     private readonly ISalesOrderRepository _salesRepo;
-    private readonly IInventoryRepository _inventoryRepo;
     private readonly IUnitOfWork _uow;
 
     public SalesService(
         ISalesOrderRepository salesRepo,
-        IInventoryRepository inventoryRepo,
         IUnitOfWork uow)
     {
         _salesRepo = salesRepo;
-        _inventoryRepo = inventoryRepo;
         _uow = uow;
     }
 
@@ -38,15 +40,9 @@ public sealed class SalesService : ISalesService
     {
         var lines = new List<SalesOrderLine>();
 
+        // 🚀 FIXED: Local stock checks are removed to map directly to standard sales entries
         foreach (var l in request.Lines)
         {
-            var item = await _inventoryRepo.GetBySkuAsync(l.Sku, ct)
-                       ?? throw new InvalidOperationException($"SKU {l.Sku} not found");
-
-            if (item.AvailableQuantity < l.Quantity)
-                throw new InvalidOperationException("Insufficient stock");
-
-            item.Reserve(l.Quantity);
             lines.Add(new SalesOrderLine(l.Sku, l.Quantity, new Money(l.UnitPrice)));
         }
 
@@ -63,13 +59,12 @@ public sealed class SalesService : ISalesService
         var order = await _salesRepo.GetByIdAsync(request.OrderId, ct);
         if (order is null) return null;
 
-        // FIXED: Using object initializer {} because SalesOrderDto has 'init' properties
         var dto = new SalesOrderDto
         {
             Id = order.Id,
             BusinessPartnerCode = order.BpCode,
             TotalAmount = order.TotalAmount,
-            OrderDate = DateTime.UtcNow, // Map to your entity's date if it exists
+            OrderDate = DateTime.UtcNow,
             OrderStatus = "Open"
         };
 

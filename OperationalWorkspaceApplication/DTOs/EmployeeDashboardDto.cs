@@ -27,8 +27,7 @@ namespace OperationalWorkspaceApplication.DTOs
         // Recent Activity
         public List<ActivityDto> RecentActivity { get; set; } = new List<ActivityDto>();
 
-        // Financial snapshot
-        public EmployeeFinanceDto Finance { get; set; } = new EmployeeFinanceDto();
+      
 
         // Knowledge Base (optional)
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new List<KnowledgeDto>();

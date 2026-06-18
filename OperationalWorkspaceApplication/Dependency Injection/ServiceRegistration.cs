@@ -15,8 +15,8 @@ public static class ServiceRegistration
 
         // Core ERP Services (Removed duplicates)
         services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
-        services.AddScoped<IFinancialService, FinancialService>();
-        services.AddScoped<IInventoryService, InventoryService>();
+       
+       
         services.AddScoped<ITaskService, TaskService>();
 
         return services;
