@@ -168,6 +168,18 @@ namespace OperationalWorkspaceUI.State
         public void ReloadOrders() { Notify(); }
         public void ReloadTasks() { Notify(); }
 
+        // ======================================================
+        // 🚀 COMPILER FIX ALIAS: MAPS OPENORDERS TO QUOTES INFRASTRUCTURE
+        // ======================================================
+        public List<OpenOrderDto> OpenOrders
+        {
+            get => Quotes;
+            set => Quotes = value;
+        }
+
+        // ======================================================
+        // MEMORY CLEANUP
+        // ======================================================
         public void Dispose()
         {
             OnChange = null;

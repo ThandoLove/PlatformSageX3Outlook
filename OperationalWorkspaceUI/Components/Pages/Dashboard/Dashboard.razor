@@ -10,7 +10,9 @@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.Interfaces.IServices
 @using Microsoft.JSInterop
+@using OperationalWorkspaceApplication.DTOs
 
 @* 2. SERVICE INJECTIONS *@
 @inject DashboardState DState
@@ -195,21 +197,32 @@
                 Subject = context.Subject,
 
                 BusinessPartnerName =
-                    partner?.Company
-                    ?? "Unknown Customer",
+         partner?.Company
+         ?? "Unknown Customer",
 
                 AccountStatus =
-                    partner != null
-                    ? "Linked"
-                    : "New Prospect",
+         partner != null
+         ? "Linked"
+         : "New Prospect",
 
                 OpenOrderCount =
-                    partner?.OpenOrderCount
-                    ?? 0
+         partner?.OpenOrderCount
+         ?? 0,
+
+                ReceivedAt = DateTime.Now
             };
 
-            DState.UpdateEmailContext(
-                email,
+            var emailContext = new EmailContextDto
+            {
+                Email = email,
+
+                LinkedOrders = email.LinkedOrders,
+
+                LinkedTasks = new List<TaskDto>()
+            };
+
+            DState.SetEmailContextState(
+                emailContext,
                 partner == null
             );
         }

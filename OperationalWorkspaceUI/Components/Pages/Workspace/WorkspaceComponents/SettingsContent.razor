@@ -1,7 +1,8 @@
-﻿@using OperationalWorkspaceUI.UIServices.Workspace
+﻿@using OperationalWorkspaceUI.UIServices.ToastUIService 
+@using OperationalWorkspaceUI.UIServices.Workspace
 
 @inject SettingsUIService SettingsService
-@inject IJSRuntime JS
+@inject IToastUIService ToastService
 
 <div class="settings-root">
 
@@ -218,21 +219,29 @@
         await Task.Delay(800); // Simulate network latency loop
 
         _isSavingProfile = false;
-        await JS.InvokeVoidAsync("alert", $"Account profile details updated safely: {_profileModel.Name}");
+
         StateHasChanged();
+
+        ToastService.ShowSuccess(
+            $"Profile updated successfully for {_profileModel.Name}."
+        );
     }
 
     private async Task ExecuteGlobalPreferencesCommit()
     {
         await SettingsService.SaveSettingsAsync();
-        await JS.InvokeVoidAsync("alert", "Workspace telemetry notification metrics synchronized safely.");
+        ToastService.ShowSuccess(
+    "Notification preferences saved successfully."
+);
     }
 
     private async Task ExecuteSecurityMutationPipeline()
     {
         if (_securityModel.NewPassword != _securityModel.ConfirmPassword)
         {
-            await JS.InvokeVoidAsync("alert", "Error: Security assignment validation strings do not match.");
+            ToastService.ShowError(
+    "Passwords do not match."
+);
             return;
         }
 
@@ -243,13 +252,17 @@
 
         _isSavingSecurity = false;
         _securityModel = new SecurityWrapperModel(); // Clear memory password values
-        await JS.InvokeVoidAsync("alert", "Security credentials modified and encrypted successfully.");
+        ToastService.ShowSuccess(
+    "Security settings updated successfully."
+);
         StateHasChanged();
     }
 
-    private async Task TriggerFeatureConfigurePrompt(string platform)
+    private void TriggerFeatureConfigurePrompt(string platform)
     {
-        await JS.InvokeVoidAsync("alert", $"Launching endpoint handshake routing module for {platform}...");
+        ToastService.ShowInfo(
+            $"{platform} configuration launched."
+        );
     }
 
     public class ProfileWrapperModel

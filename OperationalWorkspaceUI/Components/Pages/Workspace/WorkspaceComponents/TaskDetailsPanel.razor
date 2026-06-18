@@ -2,6 +2,8 @@
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.State
 @using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceUI.UIServices.ToastUIService
+@inject IToastUIService ToastService
 @inject TasksUIService TasksUIService
 @inject WorkspaceState State
 @inject DashboardState AdminState
@@ -184,13 +186,29 @@
                     masterTask.UpdatedDate = DateTime.Now;
                 }
 
-                State.LogActivity(Task.Title, $"Delegated to {SelectedMember.Name}", "Alex Turner");
+                var delegatedUserName = SelectedMember.Name;
+
+                State.LogActivity(
+                    Task.Title,
+                    $"Delegated to {delegatedUserName}",
+                    "Alex Turner"
+                );
+
                 SelectedMember = null;
+
                 State.Notify();
+
+                ToastService.ShowSuccess(
+                    $"Task delegated to {delegatedUserName}."
+                );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Delegation process threw an exception: {ex.Message}");
+                ToastService.ShowError($"Delegation failed: {ex.Message}");
+
+                Console.WriteLine(
+                $"Delegation process threw an exception: {ex.Message}"
+                );
             }
             finally
             {

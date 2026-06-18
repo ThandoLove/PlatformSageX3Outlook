@@ -46,7 +46,8 @@
     [Parameter]
     public List<ActivityDto>? Activities { get; set; }
 
-    private object GetIcon(string action)
+    // 🚀 FIXED: Swapped return type from 'object' to 'Icon' to satisfy Blazor type parameters
+    private Icon GetIcon(string action)
     {
         action = action?.ToLower() ?? "";
 

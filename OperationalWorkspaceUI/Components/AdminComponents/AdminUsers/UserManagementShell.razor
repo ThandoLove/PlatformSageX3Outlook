@@ -2,6 +2,8 @@
 @using OperationalWorkspaceApplication.Requests
 
 @using Microsoft.Extensions.Configuration
+@using OperationalWorkspaceUI.UIServices.ToastUIService
+@inject IToastUIService ToastService
 @inject IConfiguration Configuration
 @inject HttpClient Http
 @inject IJSRuntime JS
@@ -295,13 +297,38 @@
 
         if (response.IsSuccessStatusCode)
         {
-            var newUser = new UserDto { Id = Guid.NewGuid().ToString(), Name = _formModel.Name, Email = _formModel.Email, Role = _formModel.Role, Environment = _formModel.Environment, Status = "Active" };
+            var newUser = new UserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = _formModel.Name,
+                Email = _formModel.Email,
+                Role = _formModel.Role,
+                Environment = _formModel.Environment,
+                Status = "Active"
+            };
+
             UsersRegistryCollection.Insert(0, newUser);
 
-            RecentLogs.Insert(0, new AuditLogDto { Action = "Provisioned Profile Account", User = newUser.Email, Timestamp = DateTime.Now });
+            RecentLogs.Insert(0, new AuditLogDto
+            {
+                Action = "Provisioned Profile Account",
+                User = newUser.Email,
+                Timestamp = DateTime.Now
+            });
+
             SelectedUser = newUser;
+
             _isUserModalOpen = false;
+
+            ToastService.ShowSuccess(
+                $"{newUser.Name} was created successfully.");
+
             StateHasChanged();
+        }
+        else
+        {
+            ToastService.ShowError(
+                "Failed to create user.");
         }
     }
 
@@ -313,7 +340,7 @@
         if (response.IsSuccessStatusCode)
         {
             RecentLogs.Insert(0, new AuditLogDto { Action = $"Altered Security Scope Clearances to ({SelectedUser.Role})", User = SelectedUser.Email, Timestamp = DateTime.Now });
-            await JS.InvokeVoidAsync("alert", $"Successfully Updated Role Assignment for {SelectedUser.Name}!");
+            ToastService.ShowSuccess($"Successfully Updated Role Assignment for {SelectedUser.Name}!");
             StateHasChanged();
         }
     }
