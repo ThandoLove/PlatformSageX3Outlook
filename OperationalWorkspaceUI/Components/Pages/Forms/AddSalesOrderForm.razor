@@ -15,6 +15,7 @@
 @inject ModalService ModalService
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 
 <FormSection Title="New Sales Order"
              SubmitLabel="Submit to Sage X3"
@@ -110,7 +111,9 @@
     
         if (response != null && response.OrderId != Guid.Empty)
         {
-            await JS.InvokeVoidAsync("showToast", "Success: Order Created");
+            CustomToastService.ShowSuccess(
+    "Order created successfully."
+);
             await ModalService.CloseModal();
             NavManager.NavigateTo("/workspace/orders");
         }

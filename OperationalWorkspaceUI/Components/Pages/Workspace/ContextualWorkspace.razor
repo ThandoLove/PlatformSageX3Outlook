@@ -1,0 +1,49 @@
+﻿@page "/workspace"
+
+@using OperationalWorkspaceUI.State
+
+@inject DashboardState DState
+@inject WorkspaceState WState
+
+<div class="contextual-workspace">
+
+    <EmailHeader
+        Email="DState.EmailContext" />
+
+    <EmailInsight
+        Email="DState.EmailContext" />
+
+    <EmailClientMatch
+        Email="DState.EmailContext"
+        Clients="WState.Clients" />
+
+    <QuickActionsPanel />
+
+    <CrmSnapshot />
+
+    <EmailOrderSummary
+        Orders="WState.OpenOrders"
+        OnOpenOrder="OpenOrder" />
+
+    <EmailTaskSummary
+        Tasks="WState.Tasks"
+        OnOpenTask="OpenTask" />
+
+    <EmailActivityTimeline
+        Activities="WState.ActivityLogs" />
+
+</div>
+
+@code{
+
+    private Task OpenOrder(OpenOrderDto order)
+    {
+        return Task.CompletedTask;
+    }
+
+    private Task OpenTask(TaskDto task)
+    {
+        return Task.CompletedTask;
+    }
+
+}

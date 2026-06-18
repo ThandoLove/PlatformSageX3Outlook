@@ -82,25 +82,41 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
             }
         }
 
-        protected void OpenPdfPreviewAsync()
+        protected void OpenAttachmentViewer()
         {
-            if (SelectedDoc == null) return;
+            if (SelectedDoc == null)
+                return;
+
             Nav.NavigateTo($"/attachments/{SelectedDoc.Id}");
+        }
+
+        protected string GetAttachmentStreamUrl(Guid id)
+        {
+            string options =
+                "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
+
+            bool useMock =
+                Configuration.GetValue<bool>("SageX3:UseMockData", true);
+
+            var doc = State.Attachments.FirstOrDefault(x => x.Id == id);
+
+            if (doc == null)
+                return string.Empty;
+
+            if (!useMock)
+            {
+                return $"/api/v1/Attachment/stream/{id}{options}";
+            }
+
+            return $"/mock-documents/{doc.FileName}{options}";
         }
 
         protected string GetPdfUrl(AttachmentDto doc)
         {
-            if (doc == null) return string.Empty;
-            string options = "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
+            if (doc == null)
+                return string.Empty;
 
-            bool useMockData = Configuration.GetValue<bool>("SageX3:UseMockData", true);
-
-            if (!useMockData)
-            {
-                return $"{Nav.BaseUri.TrimEnd('/')}/api/v1/Attachment/stream/{doc.Id}{options}";
-            }
-
-            return $"{Nav.BaseUri.TrimEnd('/')}/mock-documents/{doc.FileName}{options}";
+            return GetAttachmentStreamUrl(doc.Id);
         }
         protected async Task HandleAttachDocument(AttachmentDto? doc)
         {

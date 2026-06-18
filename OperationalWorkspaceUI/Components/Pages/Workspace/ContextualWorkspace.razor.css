@@ -1,0 +1,21 @@
+﻿.contextual-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+    .contextual-workspace > * {
+        width: 100%;
+    }
+
+@media(max-width:768px) {
+
+    .contextual-workspace {
+        padding: 12px;
+        gap: 12px;
+    }
+}

@@ -1,0 +1,76 @@
+﻿@using OperationalWorkspaceApplication.DTOs
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+<FluentCard>
+
+    <h4>Activity Timeline</h4>
+
+    @if (Activities == null || !Activities.Any())
+    {
+        <p>No activity found.</p>
+    }
+    else
+    {
+        @foreach (var activity in Activities
+            .OrderByDescending(x => x.Timestamp))
+        {
+            <div class="timeline-item">
+
+                <FluentIcon Value="@GetIcon(activity.Action)" />
+
+                <div>
+
+                    <div>
+
+                        @GetFriendlyDate(activity.Timestamp)
+
+                    </div>
+
+                    <div>
+
+                        @activity.Title
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+    }
+
+</FluentCard>
+
+@code {
+
+    [Parameter]
+    public List<ActivityDto>? Activities { get; set; }
+
+    private object GetIcon(string action)
+    {
+        action = action?.ToLower() ?? "";
+
+        if (action.Contains("call"))
+            return new Icons.Regular.Size20.Call();
+
+        if (action.Contains("meeting"))
+            return new Icons.Regular.Size20.Calendar();
+
+        if (action.Contains("order"))
+            return new Icons.Regular.Size20.Document();
+
+        return new Icons.Regular.Size20.History();
+    }
+
+    private string GetFriendlyDate(DateTime dt)
+    {
+        if (dt.Date == DateTime.Today)
+            return "Today";
+
+        if (dt.Date == DateTime.Today.AddDays(-1))
+            return "Yesterday";
+
+        return dt.ToString("dd MMM");
+    }
+
+}

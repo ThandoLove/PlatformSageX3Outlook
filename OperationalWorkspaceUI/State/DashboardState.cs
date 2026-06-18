@@ -107,19 +107,23 @@ namespace OperationalWorkspaceUI.State
         public bool ShowAddClientUI { get; set; } = false;
         public EmailContextDto? ActiveCompositeContext { get; set; }
 
-        public void SetEmailContextState(EmailContextDto? context, bool isUnknownSender)
+        public void SetEmailContextState(EmailContextDto? context,bool isUnknownSender)
         {
+            if (context == null)
+                return;
+
             ActiveCompositeContext = context;
+
             ShowAddClientUI = isUnknownSender;
 
-            if (context?.Email != null)
+            if (context.Email != null)
             {
                 EmailContext = context.Email;
             }
 
             NotifyStateChanged();
         }
-        // ======================================================
+        //============================
 
         public DashboardDto DashboardData { get; set; } = new();
         public AdminErpDto AdminErp { get; set; } = new();

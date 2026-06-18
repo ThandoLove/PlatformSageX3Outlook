@@ -1,0 +1,74 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using OperationalWorkspaceApplication.DTOs
+
+<FluentCard>
+
+    <h4>Email Insight</h4>
+
+    <div class="row">
+
+        <label>Contact</label>
+
+        <span>@Email?.SenderName</span>
+
+    </div>
+
+    <div class="row">
+
+        <label>Company</label>
+
+        <span>@Email?.BusinessPartnerName</span>
+
+    </div>
+
+    <div class="row">
+
+        <label>Summary</label>
+
+        <span>@Email?.Message</span>
+
+    </div>
+
+    <div class="row">
+
+        <label>Detected Intent</label>
+
+        <FluentBadge Appearance="Appearance.Accent">
+
+            @GetIntent()
+
+        </FluentBadge>
+
+    </div>
+
+</FluentCard>
+
+@code {
+
+    [Parameter]
+    public EmailInsightDto? Email { get; set; }
+
+    private string GetIntent()
+    {
+        if (Email == null)
+            return "Unknown";
+
+        string text =
+            $"{Email.Subject} {Email.Message}";
+
+        if (text.Contains("quote", StringComparison.OrdinalIgnoreCase))
+            return "Quote Request";
+
+        if (text.Contains("invoice", StringComparison.OrdinalIgnoreCase))
+            return "Invoice Query";
+
+        if (text.Contains("order", StringComparison.OrdinalIgnoreCase))
+            return "Sales Order";
+
+        if (text.Contains("meeting", StringComparison.OrdinalIgnoreCase))
+            return "Meeting";
+
+        return "General";
+    }
+
+}

@@ -4,6 +4,7 @@
 @inject IConfiguration Configuration
 @inject IAuditLogService AuditLogService
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 
 <div class="audit-shell-container">
     
@@ -216,9 +217,13 @@
 
     private void SetSelectedLog(AuditLogDto log) => SelectedLog = log;
 
-    private async Task TriggerLogsExportBlob()
+    private Task TriggerLogsExportBlob()
     {
-        await JS.InvokeVoidAsync("alert", "Compiling complete cryptographic audit trails telemetry archive bundle download...");
+        CustomToastService.ShowInfo(
+            "Compiling audit log export..."
+        );
+
+        return Task.CompletedTask;
     }
 
     // FIXED CHARACTER INDEX WRAPPER ELIMINATES PARSING EXCEPTIONS [INDEX: 1]

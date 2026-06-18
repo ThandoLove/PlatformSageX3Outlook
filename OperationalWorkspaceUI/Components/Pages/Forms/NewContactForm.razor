@@ -19,6 +19,7 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 
 @{
     var currentPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
@@ -141,7 +142,7 @@ else
 
             try
             {
-                await JS.InvokeVoidAsync("showToast", "Success: Contact added to your Sage X3 background sync processing queue.");
+                CustomToastService.ShowSuccess("Contact added to the Sage X3 background sync queue.");
             }
             catch { }
 
@@ -151,7 +152,7 @@ else
         {
             try
             {
-                await JS.InvokeVoidAsync("showToast", "Error: Failed to register background execution task.");
+                CustomToastService.ShowError("Failed to register background execution task.");
             }
             catch { }
         }

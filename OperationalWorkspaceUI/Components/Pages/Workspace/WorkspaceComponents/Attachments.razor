@@ -168,7 +168,7 @@
                     <div class="related-records" style="margin-top: 15px;">
                         <RelatedRecordsPanel Title="Linked Order"
                                              Records="@(new List<string> { SelectedDoc.RelatedEntity })"
-                                             OnRecordClicked="@((n) => OpenPdfPreviewAsync())" />
+                                             OnRecordClicked="@((n) => OpenAttachmentViewer())" />
 
                         <RelatedRecordsPanel Title="Linked Tasks"
                                              Records="@State.Tasks.Where(t => t.Title.Contains(SelectedDoc.FileName)).Select(t => t.Title).ToList()"
@@ -177,13 +177,22 @@
 
                     @* 🚀 FIXED: Direct Attach to Email operation *@
                     <!-- 🚀 FIXED: Preview panel button now invokes the central HandleAttachDocument check wrapper -->
+                    <button class="btn-fullscreen"
+                            @onclick="OpenAttachmentViewer"
+                            style="margin-top:15px;">
+                        Open Full Screen
+                    </button>
+
                     <button class="btn-attach-full"
                             @onclick="() => HandleAttachDocument(SelectedDoc)"
-                            style="margin-top: 15px;">
+                            style="margin-top:15px;">
                         Attach To Email
                     </button>
 
-                    <button class="btn-delete-full" @onclick="() => DeleteDocument(SelectedDoc)">Delete</button>
+                    <button class="btn-delete-full"
+                            @onclick="() => DeleteDocument(SelectedDoc)">
+                        Delete
+                    </button>
                 </div>
             }
             else

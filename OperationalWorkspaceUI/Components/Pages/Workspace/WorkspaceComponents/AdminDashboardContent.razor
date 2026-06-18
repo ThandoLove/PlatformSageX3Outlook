@@ -6,6 +6,7 @@
 @inject AdminDashboardUIService DashboardService
 @inject DashboardState DashboardState
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 
 <div class="admin-dashboard-root">
 
@@ -223,7 +224,7 @@
             LocalRecentLogs.Insert(0, new AuditLogDto { Action = $"Provisioned Profile ({_formModel.Role})", User = _formModel.Email, Timestamp = DateTime.Now });
             _isUserModalOpen = false;
             StateHasChanged();
-            await JS.InvokeVoidAsync("alert", $"Successfully Provisioned Account Profile: {_formModel.Name}");
+            CustomToastService.ShowSuccess($"Successfully Provisioned Account Profile: {_formModel.Name}");
         }
     }
 

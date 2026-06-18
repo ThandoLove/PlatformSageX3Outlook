@@ -132,7 +132,10 @@
 
         try
         {
-            bool isBridgeReady = await JS.InvokeAsync<bool>("eval", "typeof window.officeBridge !== 'undefined' && typeof window.officeBridge.openSageRecord === 'function'");
+            bool isBridgeReady =
+ await JS.InvokeAsync<bool>(
+     "officeBridge.isAvailable"
+ );
 
             if (!isBridgeReady)
             {
