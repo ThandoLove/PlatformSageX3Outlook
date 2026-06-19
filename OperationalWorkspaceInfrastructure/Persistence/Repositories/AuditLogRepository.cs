@@ -2,7 +2,7 @@
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.Audit;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
-using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Abstractions;
 
 namespace OperationalWorkspaceInfrastructure.Persistence.Repositories;
 

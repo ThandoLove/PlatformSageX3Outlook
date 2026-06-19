@@ -1,4 +1,4 @@
-﻿using OperationalWorkspaceApplication.IServices;
+﻿using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;

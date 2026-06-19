@@ -1,7 +1,7 @@
 ﻿using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.Audit; // Add this using for AuditLogSearchCriteria
 using OperationalWorkspaceApplication.DTOs;
-using OperationalWorkspaceApplication.IServices; // Add this using
+using OperationalWorkspaceApplication.Abstractions; // Add this using
 using Task = System.Threading.Tasks.Task;
 
 namespace OperationalWorkspaceApplication.Interfaces.IRepository;

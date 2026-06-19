@@ -5,7 +5,7 @@ using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
-using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.Mappers;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;

@@ -1,6 +1,6 @@
 ﻿using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.DTOs;
 
 
