@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Abstractions;
 
 
 namespace OperationalWorkspaceInfrastructure.Persistence;

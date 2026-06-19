@@ -1,4 +1,5 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
+using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace OperationalWorkspaceApplication.Services
     {
         private readonly ISalesService _salesService;
         private readonly IInvoiceService _invoiceService;
-        
+        private readonly IInvoiceRepository _invoiceRepository;
         private readonly ITaskService _taskService;
         private readonly IBusinessPartnerService _businessPartnerService;
         private readonly IAuditLogService _auditLogService;
@@ -22,7 +23,7 @@ namespace OperationalWorkspaceApplication.Services
         public DashboardService(
             ISalesService salesService,
             IInvoiceService invoiceService,
-           
+            IInvoiceRepository invoiceRepository,
             ITaskService taskService,
             IBusinessPartnerService businessPartnerService,
             IAuditLogService auditLogService,
@@ -34,7 +35,7 @@ namespace OperationalWorkspaceApplication.Services
         {
             _salesService = salesService;
             _invoiceService = invoiceService;
-            
+            _invoiceRepository = invoiceRepository; // 🚀 FIXED: Wired up missing constructor routing initialization field
             _taskService = taskService;
             _businessPartnerService = businessPartnerService;
             _auditLogService = auditLogService;
@@ -58,7 +59,6 @@ namespace OperationalWorkspaceApplication.Services
                 Tasks = await BuildEmployeeWorkAsync(userId),
                 Approvals = await BuildEmployeeApprovalsAsync(userId),
                 RecentActivity = await BuildEmployeeRecentActivityAsync(userId),
-                // 🚀 FIXED: Cleared the assignment completely. This breaks the link to EmployeeFinanceDto!
                 KnowledgeBase = await _knowledgeService.GetRecentArticlesAsync(),
                 Attachments = await _attachmentService.GetRecentAttachmentsAsync(userId)
             };
@@ -79,7 +79,6 @@ namespace OperationalWorkspaceApplication.Services
                 Tasks = await BuildAdminTasksAsync(),
                 Approvals = await BuildAdminApprovalsAsync(),
                 AuditLogs = await BuildAdminAuditAsync(),
-                // 🚀 FIXED: Cleared the assignment completely. This breaks the link to AdminFinanceDto!
                 KnowledgeBase = await _knowledgeService.GetRecentArticlesAsync(),
                 Attachments = await _attachmentService.GetRecentAttachmentsAsync(user.Id)
             };
@@ -90,11 +89,11 @@ namespace OperationalWorkspaceApplication.Services
             return new EmployeeErpDto
             {
                 MyOpenOrders = await _salesService.CountOpenOrdersAsync(userId),
-                InvoicesDue = await _invoiceService.CountInvoicesDueAsync(userId),
-                PendingDeliveries = await _salesService.CountPendingDeliveriesAsync(userId),
-                
+                InvoicesDue = await _invoiceService.CountInvoicesDueAsync(userId), // 🚀 RESTORED: User Invoice count track
+                PendingDeliveries = await _salesService.CountPendingDeliveriesAsync(userId)
             };
         }
+
         private async Task<EmployeeCRMDTO> BuildEmployeeCRMAsync(string userId)
         {
             string? topCustomerName = await _businessPartnerService.GetTopCustomerAsync(userId);
@@ -133,9 +132,8 @@ namespace OperationalWorkspaceApplication.Services
             return new AdminErpDto
             {
                 TotalOrdersToday = await _salesService.CountTotalOrdersAsync(),
-                InvoicesGenerated = await _invoiceService.CountInvoicesGeneratedAsync(),
-                OverdueInvoices = await _invoiceService.CountOverdueInvoicesAsync(),
-                
+                InvoicesGenerated = await _invoiceService.CountInvoicesGeneratedAsync(), // 🚀 RESTORED: Admin generated invoices metric
+                OverdueInvoices = await _invoiceService.CountOverdueInvoicesAsync()       // 🚀 RESTORED: Admin overdue invoices count
             };
         }
 

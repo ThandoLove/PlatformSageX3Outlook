@@ -3,7 +3,7 @@ using OperationalWorkspace.Domain.ValueObjects;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
-using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using System;

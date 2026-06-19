@@ -36,6 +36,7 @@ public class IntegrationDbContext : DbContext
     }
 
     public DbSet<BusinessPartner> BusinessPartners => Set<BusinessPartner>();
+    public DbSet<Invoice> Invoices => Set<Invoice>(); // 🚀 RESTORED: Connected back into your entity map framework [INDEX]
     public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
     public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
@@ -44,7 +45,7 @@ public class IntegrationDbContext : DbContext
     public DbSet<Knowledge> KnowledgeBase => Set<Knowledge>();
     public DbSet<Activity> Activities => Set<Activity>();
 
-    // 🚀 FIXED: Removed public DbSet<Invoice> Invoices and DbSet<InventoryItem> Inventories completely! [INDEX]
+    // 🚀 FIXED: Removed public DbSet<InventoryItem> Inventories completely to keep inventory clean! [INDEX]
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,12 +53,13 @@ public class IntegrationDbContext : DbContext
 
         // Core Primary Keys Mappings (100% Preserved)
         modelBuilder.Entity<BusinessPartner>().HasKey(bp => bp.Id);
+        modelBuilder.Entity<Invoice>().HasKey(i => i.InvoiceId); // 🚀 RESTORED: Primary database index tracking handle key config [INDEX]
         modelBuilder.Entity<SalesOrder>().HasKey(o => o.Id);
         modelBuilder.Entity<TaskEntity>().HasKey(t => t.Id);
         modelBuilder.Entity<AuditLogEntry>().HasKey(a => a.Id);
         modelBuilder.Entity<Attachment>().HasKey(a => a.Id);
 
-        // 🚀 FIXED: Removed the primary key schema builders for Invoice and InventoryItem tables! [INDEX]
+        // 🚀 FIXED: Removed the primary key schema builders for InventoryItem tables! [INDEX]
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

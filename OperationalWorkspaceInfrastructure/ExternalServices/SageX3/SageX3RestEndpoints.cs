@@ -1,3 +1,5 @@
+using System;
+
 namespace OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
 
 /// <summary>
@@ -13,9 +15,6 @@ public static class SageX3RestEndpoints
     public const string SalesOrder = "SORDER";
     public const string SalesQuote = "SQUOTE";
     public const string SalesInvoice = "SIH";
-    public const string ItemMaster = "ITMMASTER";
-    public const string Stock = "STOCK";
-    public const string StockChange = "MVTSTO";
 
     // ── URL builders (relative to RestBaseUrl, e.g. …/api1/x3/erp/SEED) ─────
 
@@ -55,20 +54,18 @@ public static class SageX3RestEndpoints
     public static string OpenSalesOrdersQuery(int count = 50) =>
         Query(SalesOrder, count, "ORDSTA eq '1'"); // 1 = Open (site-specific; adjust when connected)
 
+    // ── Invoice REST Endpoints (🚀 RESTORED) ───────────────────────────────
     public static string SalesInvoiceByNumber(string invoiceNumber) =>
         Details(SalesInvoice, invoiceNumber);
 
     public static string SalesInvoicesQuery(int count = 100) =>
         Query(SalesInvoice, count);
 
-    public static string ItemByCode(string itemCode) =>
-        Details(ItemMaster, itemCode);
-
-    public static string StockBySite(string siteCode, int count = 200) =>
-        Query(Stock, count, $"STOFCY eq '{EscapeOData(siteCode)}'");
-
-    public static string StockAdjustmentCreate() =>
-        Create(StockChange);
+    // =========================================================================
+    // 🗑️ CRITICAL DECOMMISSIONING COMPLETED
+    // All local relational Stock, Warehouse site filters, and stock adjustment 
+    // endpoint builders have been completely scrubbed from this dictionary! [INDEX]
+    // =========================================================================
 
     private static string EscapeKey(string key) =>
         key.Replace("'", "''", StringComparison.Ordinal);

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace OperationalWorkspaceApplication.IServices;
+namespace OperationalWorkspaceApplication.Abstractions;
 
 
 public class PagedResult<T>

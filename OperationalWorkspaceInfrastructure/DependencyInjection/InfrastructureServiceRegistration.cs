@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp; // Added this using directive
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
-using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.Caching;
 using OperationalWorkspaceInfrastructure.ERPAuthentication;

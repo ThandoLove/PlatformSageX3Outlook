@@ -11,6 +11,8 @@ namespace OperationalWorkspaceApplication.DTOs
         public int InvoicesDue { get; set; }
         public int PendingDeliveries { get; set; }
         public int StockAlerts { get; set; }
+      
+
     }
     // CODE END
 }

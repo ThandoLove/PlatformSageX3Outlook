@@ -4,7 +4,12 @@ using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspace.Domain.Enums;
-using OperationalWorkspaceApplication.IServices;
+using OperationalWorkspaceApplication.Abstractions;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Services;
 
@@ -24,8 +29,6 @@ public sealed class InvoiceService : IInvoiceService
         _clock = clock;
     }
 
-    // --- existing methods (GetById, GetAll, Create, etc.) ---
-
     public async Task<InvoiceDto?> GetByIdAsync(Guid id)
     {
         var invoice = await _repository.GetByIdAsync(id);
@@ -35,7 +38,7 @@ public sealed class InvoiceService : IInvoiceService
         {
             Id = invoice.Id,
             InvoiceNumber = invoice.InvoiceNumber.ToString(),
-            Amount = invoice.Amount,
+            TotalAmount = invoice.Amount,
             Status = invoice.Status.ToString()
         };
     }
@@ -47,7 +50,7 @@ public sealed class InvoiceService : IInvoiceService
         {
             Id = i.Id,
             InvoiceNumber = i.InvoiceNumber.ToString(),
-            Amount = i.Amount,
+            TotalAmount = i.Amount,
             Status = i.Status.ToString()
         });
     }
@@ -56,16 +59,26 @@ public sealed class InvoiceService : IInvoiceService
     {
         var entity = new Invoice
         {
-            Amount = dto.Amount,
+            Amount = dto.TotalAmount,
             Status = InvoiceStatus.Draft
         };
 
         await _repository.AddAsync(entity);
         _logger.LogInformation("Invoice {Id} created successfully.", entity.Id);
 
-        dto.Id = entity.Id;
-        dto.Status = entity.Status.ToString();
-        return dto;
+        // 🚀 FIXED: Instantiates and returns a completely brand-new InvoiceDto object wrapper 
+        // to comply with init-only accessor rules instead of mutating the inbound parameter! [INDEX]
+        return new InvoiceDto
+        {
+            Id = entity.Id,
+            InvoiceNumber = dto.InvoiceNumber,
+            CustomerName = dto.CustomerName,
+            TotalAmount = entity.Amount,
+            Currency = dto.Currency,
+            IssueDate = dto.IssueDate,
+            DueDate = dto.DueDate,
+            Status = entity.Status.ToString()
+        };
     }
 
     public async Task<InvoiceDto> CreateFromOrderAsync(Guid orderId)
@@ -75,7 +88,7 @@ public sealed class InvoiceService : IInvoiceService
         {
             Id = invoice.Id,
             InvoiceNumber = invoice.InvoiceNumber.ToString(),
-            Amount = invoice.Amount,
+            TotalAmount = invoice.Amount,
             Status = invoice.Status.ToString()
         };
     }
@@ -104,19 +117,16 @@ public sealed class InvoiceService : IInvoiceService
         => await _repository.GetHighRiskAccountsCountAsync();
 
     // ============================================================
-    // FIX: Missing Interface Implementations for Admin Dashboard
+    // FIXED: Missing Interface Implementations for Admin Dashboard
     // ============================================================
 
     public async Task<decimal> GetTotalOutstandingReceivablesAsync()
     {
-        // Calls the global repository method (no userId filter)
         return await _repository.GetTotalOutstandingAmountAsync();
     }
 
     public async Task<decimal> GetTotalMonthlySalesAsync()
     {
-        // Assuming your repository has a global version of this method
-        // If not, you may need to add it to IInvoiceRepository as well
         return await _repository.GetTotalMonthlySalesAsync();
     }
 }

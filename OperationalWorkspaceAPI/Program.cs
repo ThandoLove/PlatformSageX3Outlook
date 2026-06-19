@@ -21,6 +21,7 @@ using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.Providers;
 using OperationalWorkspaceInfrastructure.Caching;
@@ -34,11 +35,10 @@ using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.SageConfiguration;
 using OperationalWorkspaceInfrastructure.Persistence;
 using OperationalWorkspaceInfrastructure.Persistence.Repositories;
-
 using OperationalWorkspaceInfrastructure.Resilience;
 using OperationalWorkspaceInfrastructure.SecurityInfrastructure;
 using OperationalWorkspaceInfrastructure.services;
-using OperationalWorkspaceInfrastructure.Services;
+using OperationalWorkspaceInfrastructure.servicesInfra;
 using OperationalWorkspaceApplication.Validators;
 using Polly;
 using Polly.Extensions.Http;
@@ -48,7 +48,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.RateLimiting;
 
-// Configure global Serilog engine early before host construction
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{CorrelationId}] {Message:lj}{NewLine}{Exception}")
@@ -56,12 +55,8 @@ Log.Logger = new LoggerConfiguration()
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Inject Serilog provider into host container framework layers
 builder.Host.UseSerilog();
 
-// ======================================================
-// 1. CORE INFRASTRUCTURE
-// ======================================================
 builder.Services.AddApiLayer();
 builder.Services.AddWorkspaceSwagger();
 builder.Services.AddMemoryCache();
@@ -70,74 +65,52 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
-// UNIFICATION HOOK: Registers the Blazor Server component tree inside the API application host execution scope
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(o => o.DetailedErrors = true);
-// ======================================================
-// HANGFIRE BACKGROUND ENGINE REGISTRATION
-// ======================================================
-//builder.Services.AddHangfire(config => config
-//.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-//.UseSimpleAssemblyNameTypeSerializer()
-//.UseRecommendedSerializerSettings()
-//.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ======================================================
-// HANGFIRE BACKGROUND ENGINE REGISTRATION
-// ======================================================
+
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseInMemoryStorage()); // Bypasses SQL Server for Hangfire tasks entirely
+    .UseInMemoryStorage());
 
 builder.Services.AddHangfireServer(options =>
 {
     options.WorkerCount = Environment.ProcessorCount * 2;
 });
 
-
-
-
-// ======================================================
-// 2. PRODUCTION COMPRESSION & METRICS TELEMETRY
-// ======================================================
 builder.Services.AddProductionCompression();
 builder.Services.AddEnterpriseTelemetry(builder.Configuration, "OperationalWorkspace-API");
 builder.Services.AddEnterpriseHealthChecks(builder.Configuration);
 
-// ======================================================
-
-// ======================================================
-// 3. ENTERPRISE RATE LIMITING CONFIGURATION
-// ======================================================
 builder.Services.AddRateLimiter(options =>
 {
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddFixedWindowLimiter("GlobalPolicy", opt =>
-    {
-        opt.PermitLimit = 100;
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.QueueLimit = 10;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
+options.AddFixedWindowLimiter("GlobalPolicy", opt =>
+{
+    opt.PermitLimit = 100;
+    opt.Window = TimeSpan.FromMinutes(1);
+    opt.QueueLimit = 10;
+    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+});
 
-    options.AddFixedWindowLimiter("LoginPolicy", opt =>
-    {
-        opt.PermitLimit = 5;
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.QueueLimit = 2;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
+options.AddFixedWindowLimiter("LoginPolicy", opt =>
+{
+    opt.PermitLimit = 5;
+    opt.Window = TimeSpan.FromMinutes(1);
+    opt.QueueLimit = 2;
+    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+});
 
-    options.AddFixedWindowLimiter("SagePolicy", opt =>
-    {
-        opt.PermitLimit = 30;
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.QueueLimit = 5;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    });
+options.AddFixedWindowLimiter("SagePolicy", opt =>
+{
+    opt.PermitLimit = 30;
+    opt.Window = TimeSpan.FromMinutes(1);
+    opt.QueueLimit = 5;
+    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+});
 
     options.AddPolicy("FixedWindowLimitPolicy", httpContext =>
     {
@@ -154,9 +127,7 @@ builder.Services.AddRateLimiter(options =>
         });
     });
 });
-// ======================================================
-// 4. VALIDATION
-// ======================================================
+
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderValidator>();
@@ -165,22 +136,13 @@ builder.Services.AddValidatorsFromAssemblyContaining<EmailInsightDtoValidator>()
 builder.Services.AddValidatorsFromAssemblyContaining<TaskValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<TicketValidator>();
 
-// ======================================================
-// 5. SECURITY & TENANT CONTEXT
-// ======================================================
 builder.Services.AddScoped<ISecurityContext, SecurityContext>();
 builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
 
-// ======================================================
-// 6. AUTH PROVIDER
-// ======================================================
 builder.Services.AddScoped<IAuthProvider, JwtAuthProvider>();
 
-// ======================================================
-// 7. JWT CONFIGURATION & VALIDATION LAYERS
-// ======================================================
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PlatformSageX3OutlookBackend";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PlatformSageX3OutlookAddin";
@@ -194,7 +156,6 @@ if (jwtKey.Length < 32)
 {
     throw new InvalidOperationException("JWT Key must be at least 32 characters long.");
 }
-
 builder.Services
     .AddAuthentication(options =>
     {
@@ -216,17 +177,11 @@ builder.Services
         };
     });
 
-// ======================================================
-// 8. AUTHORIZATION
-// ======================================================
 builder.Services.AddAuthorization(options =>
 {
     PermissionPolicies.Register(options);
 });
 
-// ======================================================
-// 9. SAGE CONFIGURATION
-// ======================================================
 var sageConfig = builder.Configuration.GetSection("SageX3");
 builder.Services.Configure<SageSettings>(sageConfig);
 var baseUrl = sageConfig["RestBaseUrl"] ?? "https://syracuse-server.com";
@@ -236,14 +191,8 @@ if (string.IsNullOrWhiteSpace(baseUrl))
     throw new InvalidOperationException("SageX3 RestBaseUrl is not configured.");
 }
 
-// ======================================================
-// 10. SAGE ATTACHMENT OPTIONS
-// ======================================================
 builder.Services.Configure<SageX3AttachmentOptions>(builder.Configuration.GetSection("SageX3"));
 
-// ======================================================
-// 11. POLLY RESILIENCE
-// ======================================================
 var sagePolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .WaitAndRetryAsync(3, retry => TimeSpan.FromSeconds(30));
@@ -252,9 +201,6 @@ var sageCircuitBreaker = HttpPolicyExtensions
     .HandleTransientHttpError()
     .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
 
-// ======================================================
-// 12. SAGE CLIENTS & ADAPTER ENVIRONMENT ISOLATION
-// ======================================================
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
@@ -270,10 +216,6 @@ else
         .AddPolicyHandler(sagePolicy)
         .AddPolicyHandler(sageCircuitBreaker);
 }
-
-// ======================================================
-// 13. SAGE REST SERVICE
-// ======================================================
 builder.Services
     .AddHttpClient<ISageRestService, SageRestService>(client =>
     {
@@ -283,32 +225,18 @@ builder.Services
     .AddPolicyHandler(sagePolicy)
     .AddPolicyHandler(sageCircuitBreaker);
 
-// ======================================================
-// 14. OPTIONS
-// ======================================================
 builder.Services.Configure<SageSecurityOptions>(builder.Configuration.GetSection("SageSecurityOptions"));
 
-// ======================================================
-// 15. INFRASTRUCTURE SERVICE LAYER REGISTRATION
-// ======================================================
 InfrastructureServiceRegistration.AddInfrastructureServices(builder.Services, builder.Configuration);
 
 builder.Services.AddScoped<MockAttachmentProvider>();
-
 builder.Services.AddScoped<SageAttachmentProvider>();
-
 builder.Services.AddScoped<IAttachmentProvider, SmartAttachmentProvider>();
-
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
-// ======================================================
-// 16. AUDIT LAYER STORAGE
-// ======================================================
+
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<AuditContext>();
 
-// ======================================================
-// 17. CORS POLICY HARDENING
-// ======================================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("OutlookAddInPolicy", policy =>
@@ -332,10 +260,6 @@ builder.Services.AddCors(options =>
         }
     });
 });
-
-// ======================================================
-// 18. APPLICATION SERVICES ENVIRONMENT BINDINGS
-// ======================================================
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<MockUnifiedService>();
@@ -346,25 +270,14 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IInvoiceService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<ISalesService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IBusinessPartnerService>(sp => sp.GetRequiredService<MockUnifiedService>());
-    
     builder.Services.AddScoped<ITaskService>(sp => sp.GetRequiredService<MockUnifiedService>());
 
     builder.Services.AddScoped<IAuditLogService, MockAuditService>();
-
     builder.Services.AddScoped<ISystemHealthService, MockSystemHealthService>();
-
     builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
-
- 
-
     builder.Services.AddScoped<ISageRestService, MockSageRestService>();
-
     builder.Services.AddScoped<ISageAuthService, MockSageAuthService>();
-
-    builder.Services.AddScoped<ISageX3IdentityService, MockSageX3IdentityService>();
-
     
-
 }
 else
 {
@@ -375,23 +288,17 @@ else
     builder.Services.AddScoped<IInvoiceService, InvoiceService>();
     builder.Services.AddScoped<ISalesService, SalesService>();
     builder.Services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
-   
     builder.Services.AddScoped<ITaskService, TaskService>();
-    
     builder.Services.AddScoped<IOrderService, OrderService>();
 }
 
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 
-// ======================================================
-// 19. REPOSITORIES
-// ======================================================
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 builder.Services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
-
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IKnowledgeRepository, KnowledgeRepository>();
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
@@ -399,78 +306,47 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
-// ======================================================
-// 20. BUSINESS SERVICES
-// ======================================================
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<JwtTokenService>();
-// ======================================================
-// 21. BUILD EXECUTABLE APPLICATION CONTEXT
-// ======================================================
+
+builder.Services.AddScoped<IClock, SystemClock>();
+
 var app = builder.Build();
 
-// ======================================================
-// HEALTH CHECKS (SMOKE TESTS)
-// ======================================================
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 app.MapGet("/health/live", () => Results.Json(new { status = "Alive" }));
 app.MapGet("/health/ready", () => Results.Json(new { status = "Ready" }));
 
-// ======================================================
-// 22. NETWORK REVERSE PROXY FORWARDED HEADERS
-// ======================================================
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-// ======================================================
-// 23. CORE PERFORMANCE RESPONSE COMPRESSION
-// ======================================================
 app.UseResponseCompression();
 
-// ======================================================
-// 24. GLOBAL EXCEPTION HANDLING & SECURITY MATRIX
-// ======================================================
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseMiddleware<EnterpriseSecurityHeadersMiddleware>();
 
 app.UseHttpsRedirection();
-
-// ======================================================
-// 25. STATIC ASSET MANAGEMENT
-// ======================================================
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
-// ======================================================
-// 26. DOCUMENTATION PLATFORM CONFIGURATIONS
-// ======================================================
 if (app.Environment.IsDevelopment())
 {
     app.UseWorkspaceSwagger();
 }
 
-// ======================================================
-// HANGFIRE RUNTIME CONTROL DASHBOARD
-// ======================================================
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = new[] { new LocalDashboardAuthorizationFilter(app.Environment) }
 });
 
-// ======================================================
-// 27. SECURITY ROUTING PIPELINE SEQUENCE
-// ======================================================
 app.UseRouting();
 app.UseRateLimiter();
 app.UseCors("OutlookAddInPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ======================================================
-// 28. STRATEGIC CONTEXT AUDITING MIDDLEWARE BLOCK
-// ======================================================
 app.UseMiddleware<RequestCorrelationMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<TenantIsolationMiddleware>();
@@ -478,20 +354,13 @@ app.UseMiddleware<AuditEnrichmentMiddleware>();
 app.UseMiddleware<AuditLoggingMiddleware>();
 app.UseMiddleware<PerformanceTrackingMiddleware>();
 
-// ======================================================
-// 29. SYSTEM ENDPOINT CONTROLLER ASSIGNMENTS
-// ======================================================
 app.MapControllers();
 app.MapCustomHealthEndpoints();
 
-// CRITICAL HOOK: Tells your API server to natively render your Blazor App component
 app.MapRazorComponents<OperationalWorkspaceUI.Components.App>()
     .AddInteractiveServerRenderMode();
 app.MapFallbackToFile("index.html");
 
-// ======================================================
-// 30. METRICS ENDPOINT
-// ======================================================
 app.MapGet("/metrics", async context =>
 {
     context.Response.ContentType = "text/plain; version=0.0.4; charset=utf-8";
@@ -502,7 +371,4 @@ app.MapGet("/metrics", async context =>
         "application_up 1\n");
 });
 
-// ======================================================
-// 31. RUN PROCESS
-// ======================================================
 app.Run();

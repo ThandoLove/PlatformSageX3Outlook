@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 
-namespace OperationalWorkspaceInfrastructure.Services;
+namespace OperationalWorkspaceInfrastructure.servicesInfra;
 
 public class SageRestService : ISageRestService
 {

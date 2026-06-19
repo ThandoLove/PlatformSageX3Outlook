@@ -1,6 +1,5 @@
 ﻿
-
-namespace OperationalWorkspaceApplication.IServices;
+namespace OperationalWorkspaceApplication.Abstractions;
 
 public interface IClock
 {

@@ -137,9 +137,23 @@ public class SageX3Client : ISageX3Client
     public Task<UpdateCreditLimitResponse> PushCreditLimitUpdateAsync(UpdateCreditLimitRequest req, CancellationToken ct = default)
         => Task.FromResult(new UpdateCreditLimitResponse(false));
 
-    // =========================================================================
-    // 🗑️ CRITICAL DECOMMISSIONING COMPLETED
-    // All local mutable Invoice, Inventory, and StockAdjustment execution blocks 
-    // have been completely scrubbed out of this file to secure your application!
-    // =========================================================================
+    // INVOICES
+
+    public async Task<InvoiceDto?> GetInvoiceAsync(Guid id, CancellationToken ct = default)
+    {
+        return null; // Return null or fetch from endpoints
+    }
+
+    public async Task<IEnumerable<InvoiceDto>> GetInvoicesPagedAsync(int page, int pageSize, CancellationToken ct = default)
+    {
+        var response = await SafeGetAsync(SageX3RestEndpoints.SalesInvoicesQuery(pageSize), ct);
+        if (response == null) return Array.Empty<InvoiceDto>();
+        return Array.Empty<InvoiceDto>();
+    }
+
+    public async Task<int> GetOverdueInvoicesCountAsync(CancellationToken ct = default) => 0;
+    public async Task<int> GetTotalGeneratedInvoicesCountAsync(CancellationToken ct = default) => 0;
+    public async Task<int> GetUserInvoicesDueCountAsync(string userId, CancellationToken ct = default) => 0;
+    public async Task<int> GetUserTotalInvoicesGeneratedCountAsync(string userId, CancellationToken ct = default) => 0;
+
 }

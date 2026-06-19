@@ -28,4 +28,14 @@ public interface ISageX3Client
     // All local mutable Invoice calculation, summary, and transaction creation
     // interface methods have been completely scrubbed from this contract!
     // =========================================================================
+
+    // invoices
+
+    Task<InvoiceDto?> GetInvoiceAsync(Guid id, CancellationToken ct = default);
+    Task<IEnumerable<InvoiceDto>> GetInvoicesPagedAsync(int page, int pageSize, CancellationToken ct = default);
+    Task<int> GetOverdueInvoicesCountAsync(CancellationToken ct = default);
+    Task<int> GetTotalGeneratedInvoicesCountAsync(CancellationToken ct = default);
+    Task<int> GetUserInvoicesDueCountAsync(string userId, CancellationToken ct = default);
+    Task<int> GetUserTotalInvoicesGeneratedCountAsync(string userId, CancellationToken ct = default);
+
 }

@@ -1,9 +1,10 @@
-﻿using OperationalWorkspaceApplication.IServices;
+﻿using OperationalWorkspaceApplication.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace OperationalWorkspaceInfrastructure.services
+
+namespace OperationalWorkspaceInfrastructure.servicesInfra
 
 {
     // This provides the actual implementation of time for your app

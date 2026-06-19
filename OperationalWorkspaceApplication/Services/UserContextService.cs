@@ -4,7 +4,7 @@ using OperationalWorkspaceApplication.Interfaces.IServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace OperationalWorkspaceInfrastructure.Services;
+namespace OperationalWorkspaceInfrastructure.servicesInfra;
 
 public class UserContextService : IUserContextService
 {
