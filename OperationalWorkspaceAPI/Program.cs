@@ -310,6 +310,9 @@ builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddScoped<IClock, SystemClock>();
+// 🚀 FIXED: Registers the context builder dependency required by the Dashboard page UI
+builder.Services.AddScoped<EmailContextBuilder>();
+
 
 var app = builder.Build();
 

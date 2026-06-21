@@ -146,7 +146,10 @@ namespace OperationalWorkspaceUI.State
         {
             try
             {
+                // 🚀 Set the identity flag explicitly before requesting data hydration
                 IsAdminEnvironment = isAdmin;
+
+                // This invokes your DashboardUIService / MockUnifiedService logic
                 await _dashboardService.LoadDashboardAsync(this);
                 RecentActivities = await _activityService.GetActivitiesAsync();
 
@@ -158,6 +161,7 @@ namespace OperationalWorkspaceUI.State
                 else
                 {
                     AdminHealth = new AdminSystemHealthDto();
+                    EmployeeCrm = new EmployeeCRMDTO { TopCustomer = "Tech Innovations Inc.", OpenOpportunities = 2 };
                 }
 
                 EnsureDefaultData();
@@ -168,6 +172,7 @@ namespace OperationalWorkspaceUI.State
                 Console.WriteLine($"DashboardState Load Error: {ex.Message}");
             }
         }
+
 
         private async Task LoadAdminSpecificDataAsync()
         {

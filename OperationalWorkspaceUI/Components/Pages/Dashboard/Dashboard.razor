@@ -8,11 +8,14 @@
 
 @* 1. COMPONENT NAMESPACES *@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
+
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using Microsoft.JSInterop
 @using OperationalWorkspaceApplication.DTOs
+
 
 @* 2. SERVICE INJECTIONS *@
 @inject DashboardState DState
@@ -23,10 +26,43 @@
 @inject OperationalWorkspaceUI.UIServices.System.ModalService DashboardModalService
 @inject OperationalWorkspaceApplication.Services.EmailContextBuilder EmailContextBuilder
 @inject IBusinessPartnerService BusinessPartnerService
+@inject IConfiguration Configuration
+@inject Radzen.NotificationService Notifications
 
 @implements IDisposable
 
 <div class="dashboard-wrapper @(AppUIState.IsDarkMode ? "dark-mode" : "")">
+
+    @* GLOBAL ROLE & DEMO SWAPPER ACTIONS HEADER ROW *@
+    <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #1e293b; color: white; border-radius: 6px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 style="margin: 0; font-size: 14px; font-weight: 600;">Sage X3 Identity Matrix</h2>
+            <span class="user-badge" style="background: #475569; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+                @(DState.IsAdminEnvironment ? "Admin Mode" : "User Mode")
+            </span>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 10px;">
+            @* 🚀 PRESENTATION MULTI-ROLE ADAPTIVE SWITCHER TOGGLE *@
+            <button type="button" 
+                    @onclick="TogglePresentationRoleAsync" 
+                    class="btn-environment-toggle"
+                    style="background: #10b981; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
+                🔄 SWAP ROLE: @(DState.IsAdminEnvironment ? "To User" : "To Admin")
+            </button>
+
+            @* 🚀 DEMO PRESENTATION INBOX INTEROP SIMULATION Activator *@
+            @if (Configuration.GetValue<bool>("SageX3:UseMockData", true))
+            {
+                <button type="button" 
+                        @onclick="ExecuteLiveDemoSimulationAsync" 
+                        class="btn-demo-simulate" 
+                        style="background: #2563eb; color: #ffffff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; animation: demoPulseGlow 2s infinite ease-in-out;">
+                    ⚡ SIMULATE INBOX SELECTION
+                </button>
+            }
+        </div>
+    </div>
 
     @if (_isProcessingOutlookData)
     {
@@ -100,18 +136,13 @@
                 <div class="customer-cell-header-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <div class="card-label-tiny">Customer</div>
                     
-                    @* 🚀 FIXED: Wrapped raw text inside condition statements using Blazor's literal escaping tags to stop C# compiler crashes *@
                     @if (!DState.IsAdminEnvironment)
                     {
-                        
-                            <span><text>🔒 IDENTITY LOCKED</text>
-                        </span>
+                        <span><text>🔒 IDENTITY LOCKED</text></span>
                     }
                     else
                     {
-                        
-                            <span><text>🛡️ ADMIN LOGGED</text>
-                        </span>
+                        <span><text>🛡️ ADMIN LOGGED</text></span>
                     }
                 </div>
                 
@@ -119,22 +150,41 @@
                 <span class="metric-subtext">Account: @DState.EmailContext.AccountStatus</span>
             </div>
         </div>
-
-         @* 🚀 FIXED: Line 100 has been safely adjusted to close the metrics grid container properly *@
-
+        @* 🚀 FIXED: Metrics grid closed cleanly above. QuickActions panel loaded below. *@
         <QuickActionsPanel />
 
-        <div class="sage-dashboard-row">
-            <div class="flat-layout-cell"><EmailContextPanel /></div>
-            <div class="flat-layout-cell"><CrmPanel Clients="@DState.TopClients" /></div>
-            <div class="flat-layout-cell"><KnowledgeBasePanel /></div>
-        </div>
+        @if (DState.IsAdminEnvironment)
+        {
+            <!-- 🏛️ ADAPTIVE PANEL GROUP REGION A: ADMIN WORKSPACE DASHBOARD -->
+            <div class="dashboard-row" style="margin-top: 15px; margin-bottom: 15px;" @onclick="OpenAdminHealthModal" title="Click to open Health Telemetry Modal">
+                <SystemHealthPanel HealthData="@DState.AdminHealth" />
+            </div>
+            
+            <div class="sage-dashboard-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div class="flat-layout-cell" style="flex: 1;">
+                    <div class="flat-layout-cell" style="flex: 1;">
+                        <ErpPanel TotalOrders="@DState.AdminErp.TotalOrdersToday" InvoicesGenerated="@DState.AdminErp.InvoicesGenerated" />
+                    </div>
+                </div>
+                <div class="flat-layout-cell" style="flex: 1;"><CrmPanel Data="@DState.AdminCrm" /></div>
+                <div class="flat-layout-cell" style="flex: 1;"><RecentActivityPanel Logs="@WState.AuditLogs" /></div>
+            </div>
+        }
+        else
+        {
+            <!-- 🧑‍💼 ADAPTIVE PANEL GROUP REGION B: NORMAL USER WORKSPACE DASHBOARD -->
+            <div class="sage-dashboard-row" style="display: flex; gap: 15px; margin-top: 15px; margin-bottom: 15px;">
+                <div class="flat-layout-cell" style="flex: 1;"><EmailContextPanel /></div>
+                <div class="flat-layout-cell" style="flex: 1;"><CrmPanel Clients="@DState.TopClients" /></div>
+                <div class="flat-layout-cell" style="flex: 1;"><KnowledgeBasePanel /></div>
+            </div>
 
-        <div class="sage-dashboard-row">
-            <div class="flat-layout-cell"><AttachDocumentsPanel /></div>
-            <div class="flat-layout-cell"><TasksPanel /></div>
-            <div class="flat-layout-cell"><RecentActivityPanel /></div>
-        </div>
+            <div class="sage-dashboard-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div class="flat-layout-cell" style="flex: 1;"><AttachDocumentsPanel /></div>
+                <div class="flat-layout-cell" style="flex: 1;"><TasksPanel /></div>
+                <div class="flat-layout-cell" style="flex: 1;"><RecentActivityPanel /></div>
+            </div>
+        }
     }
 
     @if (_isCustomModalOpen)
@@ -153,92 +203,58 @@
     }
 
 </div>
-
-
-
 @code {
     private bool _isProcessingOutlookData = false;
     private string _activeManifestActionContext = string.Empty;
-    
 
     private bool _isCustomModalOpen = false;
     private string _customModalTitle = string.Empty;
     private RenderFragment? _customModalContent;
 
     [JSInvokable]
-    public async Task OnEmailReceived(
-    OutlookEmailContext context)
+    public async Task OnEmailReceived(OutlookEmailContext context)
     {
         try
         {
             _isProcessingOutlookData = true;
-
             StateHasChanged();
 
-            if (context == null)
+            if (context == null || string.IsNullOrWhiteSpace(context.SenderEmail))
                 return;
 
-            if (string.IsNullOrWhiteSpace(
-                context.SenderEmail))
-                return;
-
-            var partner =
-                await BusinessPartnerService
-                .GetPartnerByEmailAsync(
-                    context.SenderEmail
-                );
+            var partner = await BusinessPartnerService.GetPartnerByEmailAsync(context.SenderEmail);
 
             var email = new EmailInsightDto
             {
                 SenderEmail = context.SenderEmail,
-
                 SenderName = context.SenderName,
-
                 Subject = context.Subject,
-
-                BusinessPartnerName =
-         partner?.Company
-         ?? "Unknown Customer",
-
-                AccountStatus =
-         partner != null
-         ? "Linked"
-         : "New Prospect",
-
-                OpenOrderCount =
-         partner?.OpenOrderCount
-         ?? 0,
-
+                BusinessPartnerName = partner?.Company ?? "Unknown Customer",
+                AccountStatus = partner != null ? "Linked" : "New Prospect",
+                OpenOrderCount = partner?.OpenOrderCount ?? 0,
                 ReceivedAt = DateTime.Now
             };
 
             var emailContext = new EmailContextDto
             {
                 Email = email,
-
                 LinkedOrders = email.LinkedOrders,
-
                 LinkedTasks = new List<TaskDto>()
             };
 
-            DState.SetEmailContextState(
-                emailContext,
-                partner == null
-            );
+            DState.SetEmailContextState(emailContext, partner == null);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(
-                $"Email pipeline error: {ex.Message}"
-            );
+            Console.WriteLine($"Email pipeline error: {ex.Message}");
         }
         finally
         {
             _isProcessingOutlookData = false;
-
             StateHasChanged();
         }
     }
+
     protected override void OnInitialized()
     {
         DashboardModalService.OnShow += HandleShowModal;
@@ -301,18 +317,37 @@
 
     private void Refresh() => InvokeAsync(StateHasChanged);
 
+    // =========================================================================
+    // 🔄 PRESENTATION MULTI-ROLE ADAPTIVE RE-ROUTE ACTION
+    // =========================================================================
+    protected async Task TogglePresentationRoleAsync()
+    {
+        bool targetIsAdmin = !DState.IsAdminEnvironment;
+        await DState.LoadDashboardAsync(targetIsAdmin);
+    }
+
+    // =========================================================================
+    // ⚡ INTEROP SIMULATION Activator Gateway
+    // =========================================================================
+    protected async Task ExecuteLiveDemoSimulationAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("officeBridge.triggerDemoPayloadSimulate");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Simulated interop runtime mismatch: {ex.Message}");
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            var dotNetReference = DotNetObjectReference.Create(this);
 
-            var dotNetReference =
-    DotNetObjectReference.Create(this);
-
-            await JS.InvokeVoidAsync(
-                "officeBridge.initialize",
-                dotNetReference
-            );
+            await JS.InvokeVoidAsync("officeBridge.initialize", dotNetReference);
             try
             {
                 var activeUriPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
@@ -359,10 +394,7 @@
     public class OutlookEmailContext
     {
         public string SenderEmail { get; set; } = "";
-
         public string SenderName { get; set; } = "";
-
         public string Subject { get; set; } = "";
     }
 }
-

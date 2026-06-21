@@ -169,12 +169,21 @@ namespace OperationalWorkspaceUI.State
         public void ReloadTasks() { Notify(); }
 
         // ======================================================
-        // 🚀 COMPILER FIX ALIAS: MAPS OPENORDERS TO QUOTES INFRASTRUCTURE
+        // 🚀 COMPILER FIX ALIAS: MAPS OPENORDERS TO QUOTES INFRASTRUCTURE [INDEX]
         // ======================================================
         public List<OpenOrderDto> OpenOrders
         {
             get => Quotes;
             set => Quotes = value;
+        }
+
+        // ======================================================
+        // 🚀 COMPILER FIX ALIAS: MAPS AUDITLOGS TO ACTIVITYLOGS INFRASTRUCTURE [INDEX]
+        // ======================================================
+        public List<ActivityDto> AuditLogs
+        {
+            get => ActivityLogs;
+            set => ActivityLogs = value;
         }
 
         // ======================================================
@@ -195,3 +204,4 @@ namespace OperationalWorkspaceUI.State
         public DateTime Timestamp { get; set; }
     }
 }
+
