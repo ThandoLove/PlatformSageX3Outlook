@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace OperationalWorkspaceApplication.DTOs
@@ -16,6 +14,10 @@ namespace OperationalWorkspaceApplication.DTOs
         decimal OverdueAmount,
         DateTime LastContactDate)
     {
+        // 🚀 FIXED: Added infrastructure mapping properties needed by the context builder
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string AssignedToUserId { get; init; } = string.Empty;
+
         // Additional metadata exposed as init-only properties with defaults
         public string FullName { get; init; } = string.Empty;
         public bool IsLinkedToSage { get; init; } = false;

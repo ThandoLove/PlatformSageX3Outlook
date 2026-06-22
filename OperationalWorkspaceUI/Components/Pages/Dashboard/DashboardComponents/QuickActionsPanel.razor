@@ -1,9 +1,9 @@
 ﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Microsoft.FluentUI.AspNetCore.Components
-
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.UIServices.System
 @using OperationalWorkspaceUI.State
+
 
 @inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
 @inject DashboardState DState
@@ -14,7 +14,7 @@
 <div class="quick-actions-card">
     <div class="quick-actions-grid">
 
-        @* 🏢 1. Add Partner (circle-teal -> Form Modal CreateClientForm) *@
+        @* 🏢 1. Add Partner (Form Modal CreateClientForm) *@
         <button type="button" class="action-item" @onclick='async () => await OpenModalAction("Create Sage Client")'>
             <div class="icon-circle circle-teal">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Building())" Color="Color.Fill" />
@@ -22,7 +22,7 @@
             <span class="action-label">Add Partner</span>
         </button>
 
-        @* 👤 2. Add Contact (circle-blue -> Form Modal NewContactForm) *@
+        @* 👤 2. Add Contact (Form Modal NewContactForm) *@
         <button type="button" class="action-item" @onclick='async () => await OpenModalAction("Add Business Contact")'>
             <div class="icon-circle circle-blue">
                 <FluentIcon Value="@(new Icons.Regular.Size20.PersonAdd())" Color="Color.Fill" />
@@ -30,7 +30,7 @@
             <span class="action-label">Add Contact</span>
         </button>
 
-        @* 🎫 3. Create Ticket (circle-blue-dark -> Form Modal TicketDetailForm) *@
+        @* 🎫 3. Create Ticket (Form Modal TicketDetailForm) *@
         <button type="button" class="action-item" @onclick='async () => await OpenModalAction("New Service Request")'>
             <div class="icon-circle circle-blue-dark">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Cart())" Color="Color.Fill" />
@@ -38,7 +38,7 @@
             <span class="action-label">Create Ticket</span>
         </button>
 
-        @* 📝 4. Add Quote (circle-indigo -> Sends to Sage X3 Immutable Vault Query) *@
+        @* 📝 4. Add Quote (Sends to Sage X3 Immutable Vault Query) *@
         <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESQTE", "BROWSE")'>
             <div class="icon-circle circle-indigo">
                 <FluentIcon Value="@(new Icons.Regular.Size20.DocumentAdd())" Color="Color.Fill" />
@@ -46,7 +46,7 @@
             <span class="action-label">Add Quote</span>
         </button>
 
-        @* 🔗 5. Link Existing (circle-orange -> Sends to Sage X3 GESBPR LINK Context) *@
+        @* 🔗 5. Link Existing (Sends to Sage X3 GESBPR LINK Context) *@
         <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESBPR", "LINK")'>
             <div class="icon-circle circle-orange">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Link())" Color="Color.Fill" />
@@ -54,7 +54,7 @@
             <span class="action-label">Link Existing</span>
         </button>
 
-        @* 📊 6. Add Invoice (circle-green -> Sends to Sage X3 GESPNH NEW Context) *@
+        @* 📊 6. Add Invoice (Sends to Sage X3 GESPNH NEW Context) *@
         <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESPNH", "NEW")'>
             <div class="icon-circle circle-green">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Document())" Color="Color.Fill" />
@@ -62,7 +62,7 @@
             <span class="action-label">Add Invoice</span>
         </button>
 
-        @* 📎 7. Attach Doc (circle-blue -> Sends directly to Sage X3 to pull immutable info!) *@
+        @* 📎 7. Attach Doc (Sends directly to Sage X3 to pull immutable info!) *@
         <button type="button" class="action-item" @onclick='async () => await NavigateToSage("GESATT", "ATTACH")'>
             <div class="icon-circle circle-blue">
                 <FluentIcon Value="@(new Icons.Regular.Size20.Attach())" Color="Color.Fill" />
@@ -79,15 +79,12 @@
         bool useMock = Configuration.GetValue<bool>("SageX3:UseMockData", true);
         bool isEmailNull = DState.EmailContext == null || string.IsNullOrWhiteSpace(DState.EmailContext.SenderEmail);
 
-        // 🚀 FIXED: Restore the true, clean security wall validation block.
-        // If a developer tries to trigger creation workflows without selecting an active outlook thread, stop them immediately.
         if (!useMock && isEmailNull)
         {
             CustomToastService.ShowError("Please select an email thread first.");
             return;
         }
 
-        // 🚀 FIXED: Stripped out the dirty mock string fallbacks. Let the components bind to the true context cleanly.
         string? emailParam = DState.EmailContext?.SenderEmail;
         string? nameParam = DState.EmailContext?.SenderName;
 
@@ -104,6 +101,7 @@
                 _ => throw new ArgumentException()
             };
 
+            // Broadcast directly into the matched global singleton instance channel
             await ModalService.ShowModal(title, modalContent);
         }
         catch (Exception ex)
@@ -132,10 +130,7 @@
 
         try
         {
-            bool isBridgeReady =
- await JS.InvokeAsync<bool>(
-     "officeBridge.isAvailable"
- );
+            bool isBridgeReady = await JS.InvokeAsync<bool>("officeBridge.isAvailable");
 
             if (!isBridgeReady)
             {

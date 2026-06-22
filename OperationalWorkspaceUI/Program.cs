@@ -74,6 +74,9 @@ builder.Services.AddScoped<DashboardState>();
 builder.Services.AddScoped<WorkspaceState>();
 builder.Services.AddScoped<EmailContextState>();
 builder.Services.AddScoped<UIState>();
+// 🚀 FIXED: Registers the context builder right into the active UI project container where the Dashboard lives
+builder.Services.AddScoped<EmailContextBuilder>();
+
 builder.Services.AddScoped<SageStateService>();
 
 builder.Services.AddScoped<AppStateContainer>();
@@ -104,7 +107,7 @@ builder.Services.AddScoped<QuickActionUIService>();
 builder.Services.AddScoped<BusinessPartnerUIService>();
 builder.Services.AddScoped<OrdersUIService>();
 builder.Services.AddScoped<TasksUIService>();
-builder.Services.AddScoped<ModalService>();
+builder.Services.AddSingleton<ModalService>();
 builder.Services.AddScoped<NavigationService>();
 builder.Services.AddScoped<EmailSyncService>();
 builder.Services.AddScoped<ActivityUIService>();
@@ -135,9 +138,10 @@ builder.Services.AddScoped<ISystemHealthService, MockSystemHealthService>();
 // ======================================================
 // 9. TOAST MESSAGING NOTIFICATIONS
 // ======================================================
-builder.Services.AddScoped<IToastUIService, ToastService>();
-builder.Services.AddScoped<ToastService>();
+builder.Services.AddSingleton<ToastService>();
 
+builder.Services.AddSingleton<IToastUIService>(sp =>
+    sp.GetRequiredService<ToastService>());
 // ======================================================
 // 11. BUILD WEB APPLICATION HOST ENGINE
 // ======================================================

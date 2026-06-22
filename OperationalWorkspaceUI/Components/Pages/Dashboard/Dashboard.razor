@@ -8,14 +8,12 @@
 
 @* 1. COMPONENT NAMESPACES *@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard.DashboardComponents
-@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
-
 @using OperationalWorkspaceUI.Components.Pages.Forms
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using Microsoft.JSInterop
 @using OperationalWorkspaceApplication.DTOs
-
+@using OperationalWorkspaceUI.UIServices.System
 
 @* 2. SERVICE INJECTIONS *@
 @inject DashboardState DState
@@ -23,17 +21,15 @@
 @inject UIState AppUIState
 @inject IJSRuntime JS
 @inject NavigationManager NavManager
-@inject OperationalWorkspaceUI.UIServices.System.ModalService DashboardModalService
+@inject ModalService ModalService
 @inject OperationalWorkspaceApplication.Services.EmailContextBuilder EmailContextBuilder
 @inject IBusinessPartnerService BusinessPartnerService
-@inject IConfiguration Configuration
-@inject Radzen.NotificationService Notifications
 
 @implements IDisposable
 
 <div class="dashboard-wrapper @(AppUIState.IsDarkMode ? "dark-mode" : "")">
 
-    @* GLOBAL ROLE & DEMO SWAPPER ACTIONS HEADER ROW *@
+    @* PRESENTATION LAYER ENVIRONMENT MODE BAR SWITCHER ROW *@
     <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #1e293b; color: white; border-radius: 6px; margin-bottom: 15px;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <h2 style="margin: 0; font-size: 14px; font-weight: 600;">Sage X3 Identity Matrix</h2>
@@ -41,26 +37,14 @@
                 @(DState.IsAdminEnvironment ? "Admin Mode" : "User Mode")
             </span>
         </div>
-        
+
         <div style="display: flex; align-items: center; gap: 10px;">
-            @* 🚀 PRESENTATION MULTI-ROLE ADAPTIVE SWITCHER TOGGLE *@
-            <button type="button" 
-                    @onclick="TogglePresentationRoleAsync" 
+            <button type="button"
+                    @onclick="TogglePresentationRoleAsync"
                     class="btn-environment-toggle"
                     style="background: #10b981; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
                 🔄 SWAP ROLE: @(DState.IsAdminEnvironment ? "To User" : "To Admin")
             </button>
-
-            @* 🚀 DEMO PRESENTATION INBOX INTEROP SIMULATION Activator *@
-            @if (Configuration.GetValue<bool>("SageX3:UseMockData", true))
-            {
-                <button type="button" 
-                        @onclick="ExecuteLiveDemoSimulationAsync" 
-                        class="btn-demo-simulate" 
-                        style="background: #2563eb; color: #ffffff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; animation: demoPulseGlow 2s infinite ease-in-out;">
-                    ⚡ SIMULATE INBOX SELECTION
-                </button>
-            }
         </div>
     </div>
 
@@ -103,25 +87,23 @@
     }
     else
     {
-        <!-- --- ROW 1: RE-STABILIZED HIGH-DENSITY COMPACT METRICS GRID --- -->
+        <!-- --- ROW 1: HIGH-DENSITY COMPACT METRICS GRID --- -->
         <div class="metrics-grid">
             @{
-                var customerName = !string.IsNullOrWhiteSpace(DState.EmailContext.BusinessPartnerName) 
-                    ? DState.EmailContext.BusinessPartnerName 
+                var customerName = !string.IsNullOrWhiteSpace(DState.EmailContext.BusinessPartnerName)
+                    ? DState.EmailContext.BusinessPartnerName
                     : (DState.TopClients?.FirstOrDefault()?.Name ?? "No Customer Linked");
             }
 
-            <!-- OPEN ORDERS CELL -->
             <div class="flat-layout-cell kpi-box orders-box-tint">
                 <div class="card-label-tiny">Open Orders</div>
                 <div class="metric-value">@(DState.EmailContext.OpenOrderCount > 0 ? DState.EmailContext.OpenOrderCount : (WState.Orders?.Count ?? 0))</div>
                 <span class="metric-subtext">@customerName</span>
             </div>
 
-            <!-- OPEN TICKETS CELL -->
-            <div class="flat-layout-cell kpi-box tickets-box-tint clickable-kpi-card" 
+            <div class="flat-layout-cell kpi-box tickets-box-tint clickable-kpi-card"
                  @onclick="OpenTicketsPanelModal"
-                 title="Click to view Active Tickets Panel">
+                 title="Click to view Contextual Active Tickets">
                 <div class="card-label-tiny">Open Tickets ➔</div>
                 <div class="metric-value">
                     @(WState.Tickets?.Count(t => t.Status != "Closed" && t.Status != "Resolved") ?? 0)
@@ -131,11 +113,9 @@
                 </span>
             </div>
 
-            <!-- CUSTOMER METRIC CELL: HOUSES YOUR PULSING SECURITY GATE BADGE -->
             <div class="flat-layout-cell kpi-box customer-box-tint">
                 <div class="customer-cell-header-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                     <div class="card-label-tiny">Customer</div>
-                    
                     @if (!DState.IsAdminEnvironment)
                     {
                         <span><text>🔒 IDENTITY LOCKED</text></span>
@@ -145,48 +125,27 @@
                         <span><text>🛡️ ADMIN LOGGED</text></span>
                     }
                 </div>
-                
                 <div class="metric-value customer-title-lock">@customerName</div>
                 <span class="metric-subtext">Account: @DState.EmailContext.AccountStatus</span>
             </div>
         </div>
-        @* 🚀 FIXED: Metrics grid closed cleanly above. QuickActions panel loaded below. *@
+
         <QuickActionsPanel />
 
-        @if (DState.IsAdminEnvironment)
-        {
-            <!-- 🏛️ ADAPTIVE PANEL GROUP REGION A: ADMIN WORKSPACE DASHBOARD -->
-            <div class="dashboard-row" style="margin-top: 15px; margin-bottom: 15px;" @onclick="OpenAdminHealthModal" title="Click to open Health Telemetry Modal">
-                <SystemHealthPanel HealthData="@DState.AdminHealth" />
-            </div>
-            
-            <div class="sage-dashboard-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
-                <div class="flat-layout-cell" style="flex: 1;">
-                    <div class="flat-layout-cell" style="flex: 1;">
-                        <ErpPanel TotalOrders="@DState.AdminErp.TotalOrdersToday" InvoicesGenerated="@DState.AdminErp.InvoicesGenerated" />
-                    </div>
-                </div>
-                <div class="flat-layout-cell" style="flex: 1;"><CrmPanel Data="@DState.AdminCrm" /></div>
-                <div class="flat-layout-cell" style="flex: 1;"><RecentActivityPanel Logs="@WState.AuditLogs" /></div>
-            </div>
-        }
-        else
-        {
-            <!-- 🧑‍💼 ADAPTIVE PANEL GROUP REGION B: NORMAL USER WORKSPACE DASHBOARD -->
-            <div class="sage-dashboard-row" style="display: flex; gap: 15px; margin-top: 15px; margin-bottom: 15px;">
-                <div class="flat-layout-cell" style="flex: 1;"><EmailContextPanel /></div>
-                <div class="flat-layout-cell" style="flex: 1;"><CrmPanel Clients="@DState.TopClients" /></div>
-                <div class="flat-layout-cell" style="flex: 1;"><KnowledgeBasePanel /></div>
-            </div>
+        <div class="sage-dashboard-row">
+            <div class="flat-layout-cell"><EmailContextPanel /></div>
+            <div class="flat-layout-cell"><CrmPanel Clients="@DState.TopClients" /></div>
+            <div class="flat-layout-cell"><KnowledgeBasePanel /></div>
+        </div>
 
-            <div class="sage-dashboard-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
-                <div class="flat-layout-cell" style="flex: 1;"><AttachDocumentsPanel /></div>
-                <div class="flat-layout-cell" style="flex: 1;"><TasksPanel /></div>
-                <div class="flat-layout-cell" style="flex: 1;"><RecentActivityPanel /></div>
-            </div>
-        }
+        <div class="sage-dashboard-row">
+            <div class="flat-layout-cell"><AttachDocumentsPanel /></div>
+            <div class="flat-layout-cell"><TasksPanel /></div>
+            <div class="flat-layout-cell"><RecentActivityPanel /></div>
+        </div>
     }
 
+    @* YOUR ORIGINAL CUSTOM MODAL VIEWPORT ENGINE SHROUD CONTAINER LAYER *@
     @if (_isCustomModalOpen)
     {
         <div class="custom-modal-shroud" @onclick="CloseDashboardModal">
@@ -257,8 +216,8 @@
 
     protected override void OnInitialized()
     {
-        DashboardModalService.OnShow += HandleShowModal;
-        DashboardModalService.OnClose += HandleCloseModal;
+        ModalService.OnShow += HandleShowModal;
+        ModalService.OnClose += HandleCloseModal;
 
         _ = InvokeAsync(async () =>
         {
@@ -290,12 +249,18 @@
 
     private async Task CloseDashboardModal()
     {
-        await DashboardModalService.CloseModal();
+        await ModalService.CloseModal();
+    }
+
+    protected async Task TogglePresentationRoleAsync()
+    {
+        bool targetIsAdmin = !DState.IsAdminEnvironment;
+        await DState.LoadDashboardAsync(targetIsAdmin);
     }
 
     private async Task OpenTicketsPanelModal()
     {
-        await DashboardModalService.ShowModal("Contextual Active Tickets", builder =>
+        await ModalService.ShowModal("Contextual Active Tickets", builder =>
         {
             builder.OpenComponent<TicketsPanel>(0);
             builder.CloseComponent();
@@ -306,7 +271,7 @@
     {
         if (DState.IsAdminEnvironment)
         {
-            await DashboardModalService.ShowModal("System Gateway Health Telemetry", builder =>
+            await ModalService.ShowModal("System Gateway Health Telemetry", builder =>
             {
                 builder.OpenComponent<SystemHealthPanel>(0);
                 builder.AddAttribute(1, "Status", DState.AdminHealth);
@@ -316,30 +281,6 @@
     }
 
     private void Refresh() => InvokeAsync(StateHasChanged);
-
-    // =========================================================================
-    // 🔄 PRESENTATION MULTI-ROLE ADAPTIVE RE-ROUTE ACTION
-    // =========================================================================
-    protected async Task TogglePresentationRoleAsync()
-    {
-        bool targetIsAdmin = !DState.IsAdminEnvironment;
-        await DState.LoadDashboardAsync(targetIsAdmin);
-    }
-
-    // =========================================================================
-    // ⚡ INTEROP SIMULATION Activator Gateway
-    // =========================================================================
-    protected async Task ExecuteLiveDemoSimulationAsync()
-    {
-        try
-        {
-            await JS.InvokeVoidAsync("officeBridge.triggerDemoPayloadSimulate");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Simulated interop runtime mismatch: {ex.Message}");
-        }
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -383,8 +324,8 @@
 
     public void Dispose()
     {
-        DashboardModalService.OnShow -= HandleShowModal;
-        DashboardModalService.OnClose -= HandleCloseModal;
+        ModalService.OnShow -= HandleShowModal;
+        ModalService.OnClose -= HandleCloseModal;
 
         DState.OnChange -= Refresh;
         WState.OnChange -= Refresh;

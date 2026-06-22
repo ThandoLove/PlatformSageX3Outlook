@@ -67,8 +67,6 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(o => o.DetailedErrors = true);
-
-
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -111,7 +109,6 @@ options.AddFixedWindowLimiter("SagePolicy", opt =>
     opt.QueueLimit = 5;
     opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
 });
-
     options.AddPolicy("FixedWindowLimitPolicy", httpContext =>
     {
         var partitionKey = httpContext.User.Identity?.Name
@@ -277,7 +274,9 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
     builder.Services.AddScoped<ISageRestService, MockSageRestService>();
     builder.Services.AddScoped<ISageAuthService, MockSageAuthService>();
-    
+
+    // 🚀 FIXED FOR DEVELOPMENT MODE: Registers the builder right into the active mock container [INDEX]
+    builder.Services.AddScoped<EmailContextBuilder>();
 }
 else
 {
@@ -290,6 +289,9 @@ else
     builder.Services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
     builder.Services.AddScoped<ITaskService, TaskService>();
     builder.Services.AddScoped<IOrderService, OrderService>();
+
+    // 🚀 FIXED FOR PRODUCTION MODE: Registers the builder right into the true core container [INDEX]
+    builder.Services.AddScoped<EmailContextBuilder>();
 }
 
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
@@ -309,10 +311,11 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<JwtTokenService>();
 
+// 🚀 FIXED: Registers the system clock dependency needed to activate your Attachment Service [INDEX]
 builder.Services.AddScoped<IClock, SystemClock>();
-// 🚀 FIXED: Registers the context builder dependency required by the Dashboard page UI
-builder.Services.AddScoped<EmailContextBuilder>();
 
+// 🚀 FIXED: Registers the context builder dependency required by the Dashboard page UI [INDEX]
+builder.Services.AddScoped<EmailContextBuilder>();
 
 var app = builder.Build();
 
