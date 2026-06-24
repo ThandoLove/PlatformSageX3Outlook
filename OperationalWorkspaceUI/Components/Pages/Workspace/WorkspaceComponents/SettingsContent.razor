@@ -1,5 +1,9 @@
 ﻿@using OperationalWorkspaceUI.UIServices.ToastUIService 
 @using OperationalWorkspaceUI.UIServices.Workspace
+@using OperationalWorkspaceUI.State
+
+@inject UIState UIState
+@implements IDisposable
 
 @inject SettingsUIService SettingsService
 @inject IToastUIService ToastService
@@ -201,14 +205,27 @@
 
     protected override void OnInitialized()
     {
-        // Hydrate configuration properties matching user session vectors
+        UIState.OnChange += RefreshUser;
+
+        RefreshUser();
+    }
+
+    private void RefreshUser()
+    {
         _profileModel = new ProfileWrapperModel
         {
-            Name = "John Smith",
-            Role = "Sales Representative",
-            Email = "john.smith@company.com",
-            Department = "Sales"
+            Name = UIState.UserName,
+            Email = UIState.UserEmail,
+            Role = "Sage X3 Operator",
+            Department = "Operations"
         };
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        UIState.OnChange -= RefreshUser;
     }
 
     private async Task ExecuteProfileSavePipeline()

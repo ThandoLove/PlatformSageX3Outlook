@@ -1,23 +1,25 @@
 ﻿@page "/admin-tasks"
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.Components.AdminComponents
+@using OperationalWorkspaceUI.Components.Pages.Forms
 @using TaskDto = OperationalWorkspaceApplication.DTOs.TaskDto
 @using OperationalWorkspace.Domain.Enums
 @using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus
 @implements IDisposable
 @inject DashboardState State
+@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
 
 <div class="hub-viewport-lock">
     <header class="hub-header">
         <div class="header-left">
             <h1>Tasks Hub</h1>
-            <button class="btn-new-task" @onclick="() => showCreateModal = true">+ New Task</button>
+            <button class="btn-new-task" @onclick="OpenCreateTaskModalAsync">+ New Task</button>
         </div>
         <div class="header-right">
             <button class="btn-ghost @(isFilterActive ? "filter-engaged" : "")" @onclick="ToggleGlobalFilters">
                 <i class="oi oi-fullscreen-exit"></i> Filters
             </button>
-            
+
             <div class="dropdown-wrapper">
                 <button class="btn-ghost" @onclick="ToggleGroupingMenu">
                     Group: @ActiveGroupingCriterion <i class="oi oi-chevron-bottom"></i>
@@ -44,8 +46,6 @@
             </div>
         </div>
     </header>
-
-
 
     <AdminTaskToolbar />
 
@@ -81,8 +81,6 @@
             <AdminAnalyticsPanel />
         </aside>
 
-
-
         <main class="col-board">
             <div class="board-canvas">
                 @if (ActiveGroupingCriterion == "Status")
@@ -105,96 +103,17 @@
         </aside>
     </div>
 
-
-    @if (showCreateModal)
-    {
-        <div class="modal-overlay">
-            <div class="modal-box text-left-align animate-pop">
-                <div class="modal-header-row">
-                    <h3 class="modal-title-bold">Create New Corporate Task</h3>
-                    <span class="modal-close-x" @onclick="CloseCreateModal">&times;</span>
-                </div>
-
-                <p class="modal-subtitle-tiny">Initialize a transaction card workflow mapping directly into your Sage X3 enterprise database pipelines.</p>
-
-                <div class="modal-field-stack">
-                    <label class="section-label-tiny">Task Title / Subject</label>
-                    <input type="text" @bind="NewTaskTitle" placeholder="e.g., Resolve Invoice mismatch INV-10045" class="modal-input" />
-                </div>
-
-                <div class="modal-field-stack">
-                    <label class="section-label-tiny">Client / Company Name</label>
-                    <input type="text" @bind="NewTaskCompany" placeholder="e.g., Tech Innovations Inc." class="modal-input" />
-                </div>
-
-                <div class="modal-grid-split-row">
-                    <div class="modal-field-stack">
-                        <label class="section-label-tiny">Urgency</label>
-                        <select @bind="NewTaskPriority" class="modal-select">
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                            <option value="Urgent">Urgent</option>
-                        </select>
-                    </div>
-                    <div class="modal-field-stack">
-                        <label class="section-label-tiny">Due Date</label>
-                        <input type="date" @bind="NewTaskDueDate" class="modal-input" />
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button class="btn-m-save priority-high" @onclick="SubmitNewCorporateTask" disabled="@(string.IsNullOrWhiteSpace(NewTaskTitle) || string.IsNullOrWhiteSpace(NewTaskCompany))">Dispatch Task</button>
-                    <button class="btn-m-cancel" @onclick="CloseCreateModal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    }
+    @* 🚀 DELETED THE HARDCODED BROKEN INLINE OVERLAY MARKUP ENTIRELY! *@
 </div>
 
-
-
-
-
 @code {
-    // LAYOUT MODAL CONTROL FLAGS
-    private bool _showCreateModal = false;
-    private bool showCreateModal
-    {
-        get => _showCreateModal;
-        set
-        {
-            if (_showCreateModal != value)
-            {
-                _showCreateModal = value;
-                if (_showCreateModal)
-                {
-                    // 🚀 INTERCEPTOR: Prefills properties from active email context arrays [INDEX]
-                    NewTaskTitle = State.EmailContext?.Subject ?? string.Empty;
-                    NewTaskCompany = !string.IsNullOrEmpty(State.EmailContext?.BusinessPartnerName)
-                        ? State.EmailContext.BusinessPartnerName
-                        : (State.EmailContext?.SenderName ?? string.Empty);
-                }
-            }
-        }
-    }
-
     private bool isFilterActive = false;
     private bool showGroupingMenu = false;
     private bool showEllipsisMenu = false;
 
-    // ACTIVE VIEW FILTER PARAMETERS
     private string ActiveGroupingCriterion = "Status";
     private string GlobalPriorityFilter = "All";
     private string GlobalSlaFilter = "All";
-
-    // FORM REGISTRATION VALUE BINDINGS
-    private string NewTaskTitle = "";
-    private string NewTaskCompany = "";
-    private TaskPriority NewTaskPriority = TaskPriority.Medium;
-    private string NewTaskAssignee = "Unassigned";
-  
-    private DateTime NewTaskDueDate { get; set; } = DateTime.Today.AddDays(3);
 
     protected override void OnInitialized()
     {
@@ -213,6 +132,16 @@
             new TaskDto { Id = Guid.NewGuid(), Title = "Inquiry about Product XYZ", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.High, Status = TaskStatus.Open, AssignedTo = "Deepa Patel", CreatedDate = DateTime.UtcNow.AddHours(-4), DueDate = DateTime.UtcNow.AddHours(8) },
             new TaskDto { Id = Guid.NewGuid(), Title = "Develop QTE-7823 Renewal", CompanyName = "Tech Innovations Inc.", Priority = TaskPriority.Medium, Status = TaskStatus.Assigned, AssignedTo = "John Smith", CreatedDate = DateTime.UtcNow.AddHours(-2), DueDate = DateTime.UtcNow.AddHours(22) }
         };
+    }
+
+    private async Task OpenCreateTaskModalAsync()
+    {
+        // 🚀 ROUTED: Handshakes cleanly with your shared global ModalService singleton instance!
+        await ModalService.ShowModal("Create New Corporate Task", builder =>
+        {
+            builder.OpenComponent<CreateTaskForm>(0);
+            builder.CloseComponent();
+        });
     }
 
     private IEnumerable<TaskDto> FilteredTasksArray
@@ -266,43 +195,6 @@
         ActiveGroupingCriterion = selectedCriterion;
         showGroupingMenu = false;
         StateHasChanged();
-    }
-
-    private void CloseCreateModal()
-    {
-        showCreateModal = false;
-        NewTaskTitle = "";
-        NewTaskCompany = "";
-        NewTaskAssignee = "Unassigned";
-        NewTaskPriority = TaskPriority.Medium;
-        NewTaskDueDate = DateTime.Today.AddDays(3);
-    }
-
-    private void SubmitNewCorporateTask()
-    {
-        if (string.IsNullOrWhiteSpace(NewTaskTitle) || string.IsNullOrWhiteSpace(NewTaskCompany)) return;
-
-        var assignedStatus = NewTaskAssignee == "Unassigned" ? TaskStatus.Open : TaskStatus.Assigned;
-        var createdTask = new TaskDto
-        {
-            Id = Guid.NewGuid(),
-            Title = NewTaskTitle.Trim(),
-            CompanyName = NewTaskCompany.Trim(),
-            Priority = NewTaskPriority,
-            Status = assignedStatus,
-            AssignedTo = NewTaskAssignee,
-            CreatedDate = DateTime.UtcNow,
-            DueDate = NewTaskDueDate,
-            Completed = false,
-            OutlookItemId = Guid.NewGuid().ToString()
-        };
-
-        State.AllTasks.Insert(0, createdTask);
-        State.SetSelectedTask(createdTask);
-
-        CloseCreateModal();
-
-        State.NotifyStateChanged();
     }
 
     private void ExportQueueToCsv() { showEllipsisMenu = false; }

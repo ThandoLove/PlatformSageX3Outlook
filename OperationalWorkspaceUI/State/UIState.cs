@@ -14,20 +14,21 @@ namespace OperationalWorkspaceUI.State
         }
 
         // ======================================================
-        // AUTHENTICATION & USER STATE
+        // AUTHENTICATION & USER STATE (🚀 FIXED FOR MULTI-PANEL SYNC)
         // ======================================================
 
         // In production, default this to empty. The TopBar component handles the fallback to "John Smith".
         public string UserName { get; private set; } = string.Empty;
-        public string UserEmail { get; private set; } = string.Empty;
+        public string UserEmail { get; private set; } = string.Empty; // 🚀 FIXED: Exposed with public read access
         public bool IsAuthenticated => !string.IsNullOrWhiteSpace(UserName);
 
         /// <summary>
         /// Updates the state with the production authenticated user.
         /// </summary>
-        public void SetUser(string userName)
+        public void SetUser(string userName, string userEmail)
         {
             UserName = userName;
+            UserEmail = userEmail; // 🚀 FIXED: Hydrates both fields simultaneously on successful login
             NotifyStateChanged();
         }
 
@@ -37,6 +38,7 @@ namespace OperationalWorkspaceUI.State
         public void ClearUser()
         {
             UserName = string.Empty;
+            UserEmail = string.Empty;
             NotifyStateChanged();
         }
 
@@ -46,8 +48,10 @@ namespace OperationalWorkspaceUI.State
         public void LoadDummyUser()
         {
             UserName = "John Smith";
+            UserEmail = "john.smith@company.com";
             NotifyStateChanged();
         }
+
 
         // ======================================================
         // THEME SYSTEM

@@ -229,16 +229,29 @@
         AppUIState.OnChange += Refresh;
     }
 
+   // private Task HandleShowModal(string title, RenderFragment content)
+   // {
+       // _customModalTitle = title;
+       // _customModalContent = content;
+        //_isCustomModalOpen = true;
+        //InvokeAsync(StateHasChanged);
+        //return Task.CompletedTask;
+   /// }
+
+   
     private Task HandleShowModal(string title, RenderFragment content)
     {
+        Console.WriteLine($"MODAL RECEIVED: {title}");
+
         _customModalTitle = title;
         _customModalContent = content;
         _isCustomModalOpen = true;
+
         InvokeAsync(StateHasChanged);
+
         return Task.CompletedTask;
     }
-
-    private Task HandleCloseModal()
+   private Task HandleCloseModal()
     {
         _isCustomModalOpen = false;
         _customModalTitle = string.Empty;

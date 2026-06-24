@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Authorization;
+using Majorsoft.Blazor.Extensions.BrowserStorage;
 
 namespace OperationalWorkspaceUI.Security;
 
@@ -9,14 +10,37 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     private readonly ClaimsPrincipal _anonymous = new(new ClaimsIdentity());
     private ClaimsPrincipal _currentUser = new(new ClaimsIdentity());
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (IsTokenExpired(_currentUser))
+        try
         {
-            _currentUser = _anonymous;
-        }
+            var token =
+                await _localStorage.GetItemAsync<string>("authToken");
 
-        return Task.FromResult(new AuthenticationState(_currentUser));
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return new AuthenticationState(_anonymous);
+            }
+
+            var claims = ParseClaimsFromJwt(token).ToList();
+
+            if (IsExpired(claims))
+            {
+                return new AuthenticationState(_anonymous);
+            }
+
+            var identity =
+                new ClaimsIdentity(claims, "jwt");
+
+            _currentUser =
+                new ClaimsPrincipal(identity);
+
+            return new AuthenticationState(_currentUser);
+        }
+        catch
+        {
+            return new AuthenticationState(_anonymous);
+        }
     }
 
     public void NotifyUserAuthentication(string token)
@@ -82,5 +106,13 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
         var expiry = DateTimeOffset.FromUnixTimeSeconds(expUnix);
         return expiry <= DateTimeOffset.UtcNow;
+    }
+
+    private readonly ILocalStorageService _localStorage;
+
+    public CustomAuthenticationStateProvider(
+        ILocalStorageService localStorage)
+    {
+        _localStorage = localStorage;
     }
 }

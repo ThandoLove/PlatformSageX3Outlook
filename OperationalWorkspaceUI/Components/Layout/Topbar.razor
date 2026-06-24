@@ -26,30 +26,41 @@
     </div>
 
     @* ZONE 3: RIGHT - Status and Profile *@
-    <div class="zone-right">
+    <div class="zone-right" style="display: flex; align-items: center; gap: 14px;">
         <div class="connection-status">
             <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
             <span class="conn-text">Connected to Sage X3</span>
         </div>
 
-        <div class="user-profile-section">
-            @* FIX: Added Brief layout parameter properties to output ONLY the picture bubble indicator *@
+        @* 🚀 FIXED: Displays the real authenticated user parameters dynamically from UIState! [INDEX] *@
+        <div class="user-profile-section" style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; flex-direction: column; text-align: right; font-family: Inter, sans-serif;">
+                <span style="font-size: 13px; font-weight: 600; color: white;">@DisplayName</span>
+                <span style="font-size: 10px; color: #94a3b8;">@DisplayEmail</span>
+            </div>
             <FluentPersona Name="@DisplayName" Status="@PresenceStatus.Available" AvatarSize="24" Brief="true" Class="topbar-persona" />
         </div>
     </div>
 </div>
-
 @code {
     private string PageTitle { get; set; } = "Dashboard";
 
-    // Fallback checks UIState first. If empty, falls back safely to production dummy data.
-    private string DisplayName => !string.IsNullOrWhiteSpace(UIState.UserName) ? UIState.UserName : "John Smith";
+    // 🚀 FIXED: Pulls directly from your UIState variables with smooth fallback text strings for initial boots [INDEX]
+    private string DisplayName =>
+    string.IsNullOrWhiteSpace(UIState.UserName)
+    ? "Not Logged In"
+    : UIState.UserName;
+
+    private string DisplayEmail =>
+        string.IsNullOrWhiteSpace(UIState.UserEmail)
+        ? string.Empty
+        : UIState.UserEmail;
 
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
-        UIState.OnChange += HandleStateChanged;
+        UIState.OnChange += HandleStateChanged; // Listens to your NotifyStateChanged() call automatically! [INDEX]
         UpdatePageTitle();
     }
 
@@ -61,7 +72,7 @@
 
     private void HandleStateChanged()
     {
-        // Safe thread execution update when UIState changes asynchronously on login
+        // Safe thread execution update when UIState changes asynchronously on login [INDEX]
         InvokeAsync(StateHasChanged);
     }
 
@@ -91,11 +102,11 @@
             PageTitle = "Admin Dashboard";
         else if (relativePath.StartsWith("admin-tasks"))
             PageTitle = "Admin Tasks";
-        else if (relativePath.StartsWith("admin/users")) // Cleaned absolute leading slash
+        else if (relativePath.StartsWith("admin/users"))
             PageTitle = "Users";
-        else if (relativePath.StartsWith("admin/audit-logs")) // Cleaned absolute leading slash
+        else if (relativePath.StartsWith("admin/audit-logs"))
             PageTitle = "Audit Logs";
-        else if (relativePath.StartsWith("admin/system-health")) // Cleaned absolute leading slash
+        else if (relativePath.StartsWith("admin/system-health"))
             PageTitle = "System Health";
         else if (relativePath.StartsWith("settings"))
             PageTitle = "Settings";
@@ -106,6 +117,6 @@
     public void Dispose()
     {
         Nav.LocationChanged -= HandleLocationChanged;
-        UIState.OnChange -= HandleStateChanged;
+        UIState.OnChange -= HandleStateChanged; // Safe teardown to avoid memory footprint traps [INDEX]
     }
 }

@@ -36,13 +36,11 @@
 
         <div class="main-wrapper">
 
-            @* FIX: Captures global IsSidebarCollapsed boolean state to collapse wrapper dimensions fluidly *@
             <div class="sidebar-wrapper @(DashboardState.IsSidebarCollapsed ? "is-collapsed-active" : "")">
                 <Sidebar />
             </div>
 
             <main class="page-content">
-
                 <div class="content-body">
                     @if (UIState.IsLoading || AppState.IsBusy)
                     {
@@ -53,11 +51,9 @@
                         @Body
                     }
                 </div>
-
-                <ToastNotification />
-
             </main>
 
+            <ToastNotification />
             <RightPanel />
 
         </div>
@@ -77,8 +73,19 @@
     private bool _disposed;
     private Action? _unsubscribeEmail;
 
-    private bool IsAppPage =>
-        !Nav.Uri.EndsWith("/login", StringComparison.OrdinalIgnoreCase);
+    // 🚀 FIXED: Hardened lookups reliably detect home root variants and empty directory locations cleanly [INDEX]
+    private bool IsAppPage
+    {
+        get
+        {
+            var path = Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
+            if (path.Contains("?")) path = path.Split('?')[0];
+
+            return !string.IsNullOrEmpty(path) &&
+                               path != "login" &&
+                               path != "account/login";
+        }
+    }
 
     protected override void OnInitialized()
     {
@@ -98,15 +105,11 @@
                 UIState.IsLoading = true;
                 await InvokeAsync(StateHasChanged);
 
-                // 1. Ingest email envelope record over to persistence / tracking layers
                 var syncResponse = await Http.PostAsJsonAsync("api/email/send", email);
 
                 if (syncResponse.IsSuccessStatusCode)
                 {
-                    // 2. Query Sage X3 environment routing intelligence layer via the message identity string
                     var result = await EmailUiService.LoadEmailContextWithStatusAsync(email.MessageId);
-
-                    // 3. Commit results directly into your synchronized Dashboard state layout engine
                     DashboardState.SetEmailContextState(result.Context, result.IsUnknownSender);
 
                     if (result.IsUnknownSender)

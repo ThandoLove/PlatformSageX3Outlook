@@ -6,7 +6,9 @@ namespace OperationalWorkspaceUI.Models.Constant
         // =========================================
         // CORE
         // =========================================
+        public const string Home = "/";
 
+        public const string Welcome = "/welcome";
         public const string Dashboard = "/dashboard";
         public const string Settings = "/settings";
 
@@ -20,8 +22,8 @@ namespace OperationalWorkspaceUI.Models.Constant
         public const string Knowledge = "/knowledge-page";
         public const string Tasks = "/tasks";
         public const string Attachments = "/attachments";
-        public const string Orders = "orders";
-        public const string Quotes = "quotes";
+        public const string Orders = "/orders";
+        public const string Quotes = "/quotes";
 
         // =========================================
         // ADMIN
@@ -41,6 +43,8 @@ namespace OperationalWorkspaceUI.Models.Constant
         // =========================================
 
         public const string Login = "/login";
-        public const string Welcome = "/";
+
+
+       
     }
 }

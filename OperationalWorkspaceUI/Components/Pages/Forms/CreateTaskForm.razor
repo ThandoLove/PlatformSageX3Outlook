@@ -1,45 +1,110 @@
 ﻿@using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspace.Domain.Enums
+@using TaskStatus = OperationalWorkspace.Domain.Enums.TaskStatus
 @using Microsoft.FluentUI.AspNetCore.Components
 
-<div class="form">
+@inject OperationalWorkspaceUI.State.DashboardState DState
+@inject OperationalWorkspaceUI.State.WorkspaceState WState
+@inject OperationalWorkspaceUI.UIServices.ToastUIService.ToastService CustomToastService
+@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
 
-    <FluentTextField Label="Title"
-                     @bind-Value="Model.Title" />
+<div class="task-form-container" style="display: flex; flex-direction: column; gap: 18px; padding: 12px 16px; font-family: var(--fluent-font-family, sans-serif); background: #ffffff; border-radius: 8px;">
 
-    <FluentTextField Label="Company"
-                     @bind-Value="Model.CompanyName" />
+    @* --- Top Status Info Strip Badge --- *@
+    <div style="display: flex; align-items: center; gap: 8px; background: #eff6ff; border-left: 4px solid #2563eb; padding: 8px 12px; border-radius: 4px; margin-bottom: 4px;">
+        <span style="font-size: 11px; font-weight: 600; color: #1e40af; letter-spacing: 0.02em; text-transform: uppercase;">
+            📡 Direct Sage X3 ERP Integration Tunnel Active
+        </span>
+    </div>
 
-    <FluentDatePicker Label="Due Date"
-                      @bind-Value="Model.DueDate" />
+    @* --- Field 1: Task Title --- *@
+    <div class="form-field-group" style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+        <FluentTextField Label="Task Title / Subject"
+                         Placeholder="e.g., Resolve Invoice mismatch INV-10045"
+                         Style="width: 100%; --fluent-control-corner-radius: 6px;"
+                         @bind-Value="Model.Title" />
+    </div>
 
-    <!-- ✅ FIXED ENUM SELECT -->
-    <FluentSelect TOption="string"
-                  @bind-Value="PriorityString">
+    @* --- Field 2: Company Connection --- *@
+    <div class="form-field-group" style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+        <FluentTextField Label="Client / Company Name"
+                         Placeholder="e.g., Tech Innovations Inc."
+                         Style="width: 100%; --fluent-control-corner-radius: 6px;"
+                         @bind-Value="Model.CompanyName" />
+    </div>
 
-        <FluentOption TOption="string" Value="Low">Low</FluentOption>
-        <FluentOption TOption="string" Value="Medium">Medium</FluentOption>
-        <FluentOption TOption="string" Value="High">High</FluentOption>
-        <FluentOption TOption="string" Value="Urgent">Urgent</FluentOption>
+    @* --- Field 3: Explicit Employee Recipient (🚀 RESTORED CORE SELECTION HOOK) --- *@
+    <div class="form-field-group" style="display: flex; flex-direction: column; gap: 6px; width: 100%;">
+        <FluentSelect Label="Assign / Delegate To Intended Recipient"
+                      TOption="string"
+                      Style="width: 100%; height: 32px; --fluent-control-corner-radius: 6px;"
+                      @bind-Value="NewTaskAssignee">
+            <FluentOption TOption="string" Value="Unassigned">-- Leave Unassigned (Send to General Inbox) --</FluentOption>
+            <FluentOption TOption="string" Value="Amit Patel">Amit Patel (Sales Dept)</FluentOption>
+            <FluentOption TOption="string" Value="Deepa Patel">Deepa Patel (Support Dept)</FluentOption>
+            <FluentOption TOption="string" Value="John Smith">John Smith (Finance Dept)</FluentOption>
+            <FluentOption TOption="string" Value="Sarah Johnson">Sarah Johnson (Tech Lead)</FluentOption>
+        </FluentSelect>
+    </div>
 
-    </FluentSelect>
+    @* --- Field 4 & 5 Split Grid Row --- *@
+    <div class="form-grid-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%;">
 
-    <FluentButton Appearance="Appearance.Accent"
-                  @onclick="Create">
-        Create
-    </FluentButton>
+        <div class="form-field-group" style="display: flex; flex-direction: column; gap: 6px;">
+            <FluentDatePicker Label="Due Date"
+                              Style="width: 100%; --fluent-control-corner-radius: 6px;"
+                              @bind-Value="Model.DueDate" />
+        </div>
+
+        <div class="form-field-group" style="display: flex; flex-direction: column; gap: 6px;">
+            <FluentSelect Label="Urgency / Priority"
+                          TOption="string"
+                          Style="width: 100%; min-width: 100%; height: 32px; --fluent-control-corner-radius: 6px;"
+                          @bind-Value="PriorityString">
+                <FluentOption TOption="string" Value="Low">Low</FluentOption>
+                <FluentOption TOption="string" Value="Medium">Medium</FluentOption>
+                <FluentOption TOption="string" Value="High">High</FluentOption>
+                <FluentOption TOption="string" Value="Urgent">Urgent</FluentOption>
+            </FluentSelect>
+        </div>
+
+    </div>
+
+    @* --- Form Action Strip Row --- *@
+    <div class="form-action-row" style="display: flex; justify-content: flex-end; align-items: center; margin-top: 14px; border-top: 1px solid #e2e8f0; padding-top: 16px; width: 100%;">
+        <FluentButton Appearance="Appearance.Accent"
+                      Style="min-width: 130px; height: 36px; font-weight: 700; background: #2563eb; color: white; --fluent-control-corner-radius: 6px; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);"
+                      Disabled="@(string.IsNullOrWhiteSpace(Model.Title) || string.IsNullOrWhiteSpace(Model.CompanyName))"
+                      @onclick="Create">
+            🚀 Dispatch Task
+        </FluentButton>
+    </div>
 
 </div>
 
 @code {
     private TaskDto Model = new();
-
     private string PriorityString = "Medium";
+    private string NewTaskAssignee = "Unassigned";
 
     [Parameter] public EventCallback<TaskDto> OnCreated { get; set; }
 
+    protected override void OnInitialized()
+    {
+        // Auto-prefills text metadata fields out of active email parameters natively
+        Model.Title = DState.EmailContext?.Subject ?? string.Empty;
+        Model.CompanyName = !string.IsNullOrEmpty(DState.EmailContext?.BusinessPartnerName)
+            ? DState.EmailContext.BusinessPartnerName
+            : (DState.EmailContext?.SenderName ?? string.Empty);
+
+        Model.DueDate = DateTime.Today.AddDays(3);
+    }
+
     private async Task Create()
     {
+        if (string.IsNullOrWhiteSpace(Model.Title) || string.IsNullOrWhiteSpace(Model.CompanyName)) return;
+
+        // 1. Resolve Priority enums based on selection parameters
         Model.Priority = PriorityString switch
         {
             "Low" => TaskPriority.Low,
@@ -49,9 +114,36 @@
             _ => TaskPriority.Medium
         };
 
-        await OnCreated.InvokeAsync(Model);
+        // 2. Set the owner name and transition task status immediately! [INDEX]
+        Model.AssignedTo = NewTaskAssignee;
+        var assignedStatus = NewTaskAssignee == "Unassigned" ? TaskStatus.Open : TaskStatus.Assigned;
+        Model.Status = assignedStatus;
 
-        Model = new TaskDto();
-        PriorityString = "Medium";
+        // 3. Populate baseline tracking metadata parameters
+        Model.Id = Guid.NewGuid();
+        Model.CreatedDate = DateTime.UtcNow;
+        Model.Completed = false;
+        Model.OutlookItemId = Guid.NewGuid().ToString();
+
+        // 4. Force synchronization across all active system states and lists [INDEX]
+        if (DState.AllTasks == null) DState.AllTasks = new List<TaskDto>();
+        DState.AllTasks.Insert(0, Model);
+        DState.SetSelectedTask(Model);
+
+        if (WState.Tasks == null) WState.Tasks = new List<TaskDto>();
+        WState.Tasks.Insert(0, Model);
+
+        // 5. Fire audit logs to record WHAT was sent, WHERE, and to WHOM [INDEX]
+        WState.LogActivity(Model.Title, $"Dispatched task card assigned to recipient: {NewTaskAssignee}");
+        WState.LogGlobalAction("TASK_DISPATCH", $"New workflow created for client {Model.CompanyName}. Delegatee: {NewTaskAssignee}", "oi-task", "orders-box-tint");
+
+        CustomToastService.ShowSuccess($"Task card officially dispatched and recorded to {NewTaskAssignee} cleanly.");
+
+        // Invoke optional event triggers and exit the modal shroud
+        await OnCreated.InvokeAsync(Model);
+        await ModalService.CloseModal();
+
+        DState.NotifyStateChanged();
+        WState.Notify();
     }
 }

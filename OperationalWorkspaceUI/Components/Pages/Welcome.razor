@@ -3,11 +3,6 @@
 @rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.JSInterop
-
-@implements IAsyncDisposable
-
-@inject IJSRuntime JS
 @inject NavigationManager Nav
 
 <PageTitle>Initializing Workspace</PageTitle>
@@ -28,34 +23,16 @@
         <div class="bootstrap-status">
 
             <div class="status-row">
-                <span>Office.js</span>
-                <span>@OfficeStatus</span>
+                <span>Authentication</span>
+                <span>@AuthenticationStatus</span>
             </div>
 
             <div class="status-row">
-                <span>Outlook Context</span>
-                <span>@ContextStatus</span>
-            </div>
-
-            <div class="status-row">
-                <span>Email Detection</span>
-                <span>@EmailStatus</span>
+                <span>Workspace</span>
+                <span>@WorkspaceStatus</span>
             </div>
 
         </div>
-
-        @if (!string.IsNullOrWhiteSpace(CurrentSubject))
-        {
-            <div class="email-preview">
-
-                <label>Detected Email</label>
-
-                <div class="preview-box">
-                    @CurrentSubject
-                </div>
-
-            </div>
-        }
 
         @if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
@@ -73,16 +50,11 @@
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
-    private DotNetObjectReference<Welcome>? _reference;
-
-    private bool _disposed;
     private bool _initialized;
+    private bool _disposed;
 
-    private string OfficeStatus = "Initializing...";
-    private string ContextStatus = "Waiting...";
-    private string EmailStatus = "Waiting...";
-
-    private string CurrentSubject = string.Empty;
+    private string AuthenticationStatus = "Checking...";
+    private string WorkspaceStatus = "Waiting...";
 
     private string? ErrorMessage;
 
@@ -95,162 +67,66 @@
 
         try
         {
-            OfficeStatus = "Connecting...";
+            AuthenticationStatus = "Verifying";
 
-            await SafeRefresh();
+            await InvokeAsync(StateHasChanged);
 
-            // ============================================
-            // CREATE JS CALLBACK REFERENCE
-            // ============================================
-
-            _reference =
-                DotNetObjectReference.Create(this);
-
-            // ============================================
-            // INITIALIZE OFFICE BRIDGE
-            // ============================================
-
-            await JS.InvokeVoidAsync(
-                "officeBridge.initialize",
-                _reference);
+            await Task.Delay(1000);
 
             if (_disposed)
                 return;
 
-            OfficeStatus = "Connected";
-
-            ContextStatus = "Listening";
-
-            await SafeRefresh();
-
-            // ============================================
-            // SMALL BOOTSTRAP DELAY
-            // ============================================
-
-            await Task.Delay(1500);
-
-            if (_disposed)
-                return;
-
-            // ============================================
-            // AUTHENTICATION FLOW
-            // ============================================
-
-            if (AuthenticationStateTask is not null)
+            if (AuthenticationStateTask is null)
             {
-                var authState =
-                    await AuthenticationStateTask;
+                Nav.NavigateTo("/");
+                return;
+            }
 
-                if (_disposed)
-                    return;
+            var authState = await AuthenticationStateTask;
 
-                if (authState.User.Identity?.IsAuthenticated == true)
-                {
-                    Nav.NavigateTo("/dashboard");
-                }
-                else
-                {
-                    Nav.NavigateTo("/");
-                }
+            if (_disposed)
+                return;
+
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                AuthenticationStatus = "Authenticated";
+
+                WorkspaceStatus = "Loading Dashboard";
+
+                await InvokeAsync(StateHasChanged);
+
+                await Task.Delay(500);
+
+                Nav.NavigateTo("/dashboard");
+            }
+            else
+            {
+                AuthenticationStatus = "Not Authenticated";
+
+                WorkspaceStatus = "Redirecting";
+
+                await InvokeAsync(StateHasChanged);
+
+                await Task.Delay(500);
+
+                Nav.NavigateTo("/");
             }
         }
-        catch (JSDisconnectedException)
-        {
-            // Blazor circuit disconnected safely
-        }
-        catch (ObjectDisposedException)
-        {
-            // Component disposed safely
-        }
-        catch (TaskCanceledException)
-        {
-            // Navigation interrupted safely
-        }
         catch (Exception ex)
         {
             if (_disposed)
                 return;
 
-            OfficeStatus = "Failed";
+            AuthenticationStatus = "Failed";
 
-            ErrorMessage =
-                $"Bootstrap failed: {ex.Message}";
+            ErrorMessage = ex.Message;
 
-            await SafeRefresh();
+            await InvokeAsync(StateHasChanged);
         }
     }
 
-    [JSInvokable]
-    public async Task OnEmailReceived(EmailContext context)
+    public void Dispose()
     {
-        if (_disposed)
-            return;
-
-        if (context == null)
-            return;
-
-        try
-        {
-            CurrentSubject = context.Subject;
-
-            EmailStatus = "Connected";
-
-            await SafeRefresh();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(
-                $"OnEmailReceived failed: {ex.Message}");
-        }
-    }
-
-    private async Task SafeRefresh()
-    {
-        if (_disposed)
-            return;
-
-        try
-        {
-            await InvokeAsync(() =>
-            {
-                if (!_disposed)
-                {
-                    StateHasChanged();
-                }
-            });
-        }
-        catch
-        {
-            // Ignore disposed renderer errors
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_disposed)
-            return;
-
         _disposed = true;
-
-        try
-        {
-            _reference?.Dispose();
-            _reference = null;
-        }
-        catch
-        {
-            // Ignore disposal exceptions safely
-        }
-
-        await Task.CompletedTask;
-    }
-
-    public class EmailContext
-    {
-        public string SenderEmail { get; set; } = string.Empty;
-
-        public string SenderName { get; set; } = string.Empty;
-
-        public string Subject { get; set; } = string.Empty;
     }
 }
