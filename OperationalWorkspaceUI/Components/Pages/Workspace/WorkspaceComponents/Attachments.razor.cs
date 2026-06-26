@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Microsoft.Extensions.Configuration;
 using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons;
@@ -28,6 +27,8 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         [Inject] protected AttachmentUIService AttachmentService { get; set; } = null!;
         [Inject] protected DashboardState DashboardState { get; set; } = null!;
 
+        protected bool SageConnected { get; private set; }
+
         private string _searchQuery = "";
         protected string SearchQuery
         {
@@ -41,7 +42,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 }
             }
         }
-
         private string _selectedType = "All";
         protected string SelectedType
         {
@@ -75,13 +75,8 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
             await RefreshAttachmentsFromServer();
 
-            if (State.Attachments.Any())
-            {
-                SelectedDoc = State.Attachments.FirstOrDefault(d => d.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                              ?? State.Attachments.First();
-            }
+            SelectedDoc = null;
         }
-
         protected void OpenAttachmentViewer()
         {
             if (SelectedDoc == null)
@@ -92,12 +87,8 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
         protected string GetAttachmentStreamUrl(Guid id)
         {
-            string options =
-                "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
-
-            bool useMock =
-                Configuration.GetValue<bool>("SageX3:UseMockData", true);
-
+            string options = "#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=0";
+            bool useMock = Configuration.GetValue<bool>("SageX3:UseMockData", true);
             var doc = State.Attachments.FirstOrDefault(x => x.Id == id);
 
             if (doc == null)
@@ -117,6 +108,37 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 return string.Empty;
 
             return GetAttachmentStreamUrl(doc.Id);
+        }
+
+        private async Task<bool> TestSageConnection()
+        {
+            try
+            {
+                var sageUrl = Configuration["SageX3:BaseUrl"];
+
+                if (string.IsNullOrWhiteSpace(sageUrl))
+                {
+                    SageConnected = false;
+                    return false;
+                }
+
+                using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(5);
+
+                var request = new HttpRequestMessage(HttpMethod.Head, sageUrl);
+                var response = await client.SendAsync(request);
+
+                SageConnected = response.IsSuccessStatusCode;
+                System.Diagnostics.Debug.WriteLine($"Sage Connection Test: {(SageConnected ? "Connected" : "Unavailable")}");
+
+                return SageConnected;
+            }
+            catch (Exception ex)
+            {
+                SageConnected = false;
+                System.Diagnostics.Debug.WriteLine($"Sage Connection Test Failed: {ex.Message}");
+                return false;
+            }
         }
         protected async Task HandleAttachDocument(AttachmentDto? doc)
         {
@@ -215,6 +237,8 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
         }
         protected async Task BrowseSageX3()
         {
+            await TestSageConnection();
+
             string currentUserIdentity = DashboardState.IsAdminEnvironment ? "SageAdmin" : "SageEmployee";
 
             try
@@ -261,18 +285,9 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                     }
                 }
 
-                SelectedDoc = State.Attachments.FirstOrDefault();
-
+                SelectedDoc = null;
                 State.LogActivity("Sage Repository", "Browsed Documents", currentUserIdentity);
                 State.Notify();
-
-                Notifications.Notify(new Radzen.NotificationMessage
-                {
-                    Severity = NotificationSeverity.Info,
-                    Summary = "Browse Success",
-                    Detail = $"Loaded {State.Attachments.Count} document(s) seamlessly.",
-                    Duration = 3000.0
-                });
             }
             catch (Exception ex)
             {
@@ -359,7 +374,6 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                 State.SetUploading(false);
             }
         }
-
         protected async Task DeleteDocument(AttachmentDto? doc)
         {
             if (doc == null) return;
@@ -374,7 +388,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
                     var response = await Http.DeleteAsync($"api/v1/Attachment/delete/{doc.Id}");
                     if (!response.IsSuccessStatusCode)
                     {
-                        Notifications.Notify(new Radzen.NotificationMessage { Severity = Radzen.NotificationSeverity.Error, Summary = "Deletion Error", Detail = "Database failed to delete document record.", Duration = 2000 });
+                        Notifications.Notify(new Radzen.NotificationMessage { Severity = NotificationSeverity.Error, Summary = "Deletion Error", Detail = "Database failed to delete document record.", Duration = 2000 });
                         return;
                     }
                 }
@@ -394,7 +408,7 @@ namespace OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
         protected string FormatSize(long bytes) => bytes < 1048576 ? $"{(bytes / 1024.0):F1} KB" : $"{(bytes / 1048576.0):F1} MB";
 
-        protected Icon GetIcon(string filename)
+        protected Microsoft.FluentUI.AspNetCore.Components.Icon GetIcon(string filename)
         {
             if (!string.IsNullOrEmpty(filename) && filename.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                 return new Icons.Regular.Size16.DocumentPdf();

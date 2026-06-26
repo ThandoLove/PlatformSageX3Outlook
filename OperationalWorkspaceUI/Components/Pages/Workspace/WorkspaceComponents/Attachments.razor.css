@@ -5,185 +5,232 @@
 /* 1. LAYOUT ROOT - Fluid height anchor context */
 .attach-container {
     background: #fdfdfd;
-    min-height: calc(100vh - 40px) !important; /* grow under header */
+    min-height: calc(100vh - 40px); /* Grows naturally with content to prevent double scroll traps */
     font-family: 'Inter', 'Segoe UI', sans-serif;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* 2. PAGE TITLE AREA */
 .page-title-header {
-    padding: 16px 20px 8px 20px !important;
-    background: white !important;
-    flex-shrink: 0 !important;
+    padding: 12px 20px 6px 20px;
+    background: white;
+    flex-shrink: 0;
 }
 
     .page-title-header .page-title {
-        font-size: 20px !important;
-        font-weight: 700 !important;
-        color: #0f172a !important;
-        margin: 0 !important;
-        border-bottom: 3px solid #002d5a !important;
-        padding-bottom: 8px !important;
-        display: inline-block !important;
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+        border-bottom: 3px solid #002d5a;
+        padding-bottom: 6px;
+        display: inline-block;
     }
 
-/* 3. TOP ACTION BAR */
+/* 3. TOP ACTION MENU & FILTERS ALIGNMENT */
 .top-bar {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 10px 20px !important;
-    background: white !important;
-    border-bottom: 1px solid #eef2f6 !important;
-    flex-shrink: 0 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    background: white;
+    border-bottom: 1px solid #eef2f6;
+    flex-shrink: 0;
 }
 
 .header-left-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
+    .header-left-actions .top-bar-filters-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
 .search-box {
-    display: inline-flex !important;
-    align-items: center !important;
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 6px !important;
-    padding: 0 10px !important;
-    width: 300px !important;
-    height: 32px !important;
-    box-sizing: border-box !important;
+    display: inline-flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0 10px;
+    width: min(260px, 100%);
+    height: 30px;
+    box-sizing: border-box;
 }
 
     .search-box input {
-        border: none !important;
-        background: transparent !important;
-        padding: 6px 4px !important;
-        width: 100% !important;
-        outline: none !important;
-        font-size: 13px !important;
+        border: none;
+        background: transparent;
+        padding: 4px;
+        width: 100%;
+        outline: none;
+        font-size: 13px;
     }
 
 .ui-select {
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 6px !important;
-    padding: 4px 10px !important;
-    font-size: 13px !important;
-    background: white !important;
-    color: #475569 !important;
-    height: 32px !important;
-    outline: none !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 13px;
+    background: white;
+    color: #475569;
+    height: 30px;
+    outline: none;
 }
 
+.top-bar-filters-row .ui-select {
+    height: 30px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+}
+/* ========================================================= 
+   DOCUMENTS SYSTEM RECONCILIATION - PART 2
+========================================================= */
+
+/* 4. ABSOLUTE NATIVE BUTTON ELIMINATION SEALS */
+.upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .upload-wrapper input[type="file"],
+    .upload-wrapper .hidden-file,
+    input[type="file"]#fileInput,
+    .hidden-file,
+    input[type="file"] {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        position: absolute !important;
+    }
 
 .btn-upload-primary {
     background: #0061e0 !important;
     color: white !important;
     border: none !important;
-    border-radius: 8px !important;
-    padding: 6px 14px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    cursor: pointer !important;
-    height: 34px !important;
-    box-sizing: border-box !important;
+    border-radius: 6px;
+    padding: 4px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    height: 30px;
+    box-sizing: border-box;
 }
 
-.btn-upload-primary.is-disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-upload-primary.is-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 
-.upload-ring { width: 16px; height: 16px; margin-right: 8px; }
-.upload-text { font-size: 13px; }
+.upload-ring {
+    width: 14px;
+    height: 14px;
+}
 
+.upload-text {
+    font-size: 12px;
+}
 
-/* ========================================================= 
-   DOCUMENTS SYSTEM RECONCILIATION - PART 2
-========================================================= */
+.refresh-btn {
+    cursor: pointer;
+    font-weight: 600;
+    min-width: 80px;
+    height: 30px;
+}
 
-/* 4. SPLIT VIEW - FORCED ROW COMPRESSION FIX */
+/* 5. SPLIT VIEW GRID STRUCTURE */
 .main-layout {
-    display: flex !important;
-    flex-direction: row !important;
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    gap: 0 !important;
-    background: #f1f5f9 !important;
-    overflow: hidden !important;
-    width: 100% !important;
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    background: #f1f5f9;
+    width: 100%;
+    overflow: visible;
 }
 
-/* 5. DOCUMENT LIST PANE */
 .document-list-pane {
-    background: white !important;
-    flex: 1 1 auto !important; /* Fills remaining left footprint */
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
+    background: white;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .pane-header {
-    padding: 10px 20px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    min-height: 40px !important;
-    flex-shrink: 0 !important;
-    background: #f8fafc !important;
+    padding: 8px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 36px;
+    flex-shrink: 0;
+    background: #f8fafc;
 }
 
     .pane-header .title {
-        font-weight: 700 !important;
-        color: #1e293b !important;
-        font-size: 13px !important;
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 12px;
     }
 
-/* 6. TABLE WRAPPER CONTAINER ENGINE */
+.sage-status {
+    margin-left: 12px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #065f46;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* 🚀 FIXED SCROLLS: Stripped flex and overflow targets completely to enforce ONE page scroller */
 .table-wrapper {
-    flex: 1 !important;
-    overflow-y: auto !important; /* Isolate vertical row list scrolling safely */
-    overflow-x: hidden !important;
-    background: white !important;
-    padding: 16px 20px !important;
-    min-height: 0 !important;
+    background: white;
+    padding: 12px 20px;
 }
 
 .ui-table {
-    width: 100% !important;
-    table-layout: fixed !important; /* Holds fixed width constraints securely */
-    border-collapse: collapse !important;
-    font-size: 12px !important;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 12px;
 }
 
-
-    /* ========================================================= 
-   DOCUMENTS SYSTEM RECONCILIATION - PART 3
-========================================================= */
-
-    .ui-table th {
-        background: #f8fafc !important;
-        padding: 10px 12px !important;
-        text-align: left !important;
-        color: #64748b !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        font-size: 10px !important;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 10 !important;
-        border-bottom: 1px solid #e2e8f0 !important;
+    .ui-table tbody tr.is-selected td {
+        background: #eff6ff;
     }
 
-        /* Hardcoded Layout Target Cell Width Allocation System */
+    .ui-table tbody tr:hover td {
+        background: #f8fafc;
+    }
+
+    .ui-table th {
+        background: #f8fafc;
+        padding: 8px 12px;
+        text-align: left;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 10px;
+        z-index: 10;
+        border-bottom: 1px solid #e2e8f0;
+        position: static; /* Sticky scrubbed for single-page scrolling architecture */
+    }
+
         .ui-table th:nth-child(1), .ui-table td:nth-child(1) {
             width: 40px !important;
         }
@@ -205,68 +252,83 @@
         }
 
         .ui-table th:nth-child(6), .ui-table td:nth-child(6) {
-            width: 180px !important;
+            width: 220px !important;
         }
 
     .ui-table td {
-        padding: 12px !important;
-        border-bottom: 1px solid #f8fafc !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
+        padding: 10px 12px;
+        border-bottom: 1px solid #f8fafc;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
 .file-name-cell {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    font-weight: 600 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    min-width: 0;
 }
+
+    .file-name-cell span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
 .related-pill {
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-    padding: 2px 8px !important;
-    border-radius: 12px !important;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+/* ========================================================= 
+   DOCUMENTS SYSTEM RECONCILIATION - PART 3
+========================================================= */
+
+.action-row {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+/* 🚀 FIXED BUTTONS: Restored clean corporate format cells exactly as you specified */
+.btn-preview-ghost, .btn-attach-teal, .btn-delete-ghost {
+    height: 28px !important;
+    border-radius: 6px !important;
     font-size: 11px !important;
     font-weight: 600 !important;
-}
-
-/* ACTION ITEM HOUSING MODIFIERS */
-.action-row {
-    display: flex !important;
-    gap: 6px !important;
-    justify-content: flex-end !important;
-}
-
-.btn-preview-ghost, .btn-attach-teal, .btn-delete-ghost {
-    height: 26px !important;
-    border-radius: 4px !important;
-    font-size: 11px !important;
     cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .btn-preview-ghost {
-    background: white !important;
-    border: 1px solid #e2e8f0 !important;
-    padding: 0 8px !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 0 12px !important;
     color: #475569 !important;
 }
 
     .btn-preview-ghost:hover {
-        background: #f1f5f9 !important;
+        background: #f8fafc !important;
+        border-color: #94a3b8 !important;
+        color: #1e293b !important;
     }
 
 .btn-attach-teal {
     background: #008272 !important;
-    color: white !important;
+    color: #ffffff !important;
     border: none !important;
-    padding: 0 12px !important;
-    font-weight: 600 !important;
+    padding: 0 16px !important;
 }
 
     .btn-attach-teal:hover {
@@ -274,138 +336,186 @@
     }
 
 .btn-delete-ghost {
-    background: white !important;
-    border: 1px solid #fee2e2 !important;
-    padding: 0 6px !important;
+    background: #fff5f5 !important;
+    border: 1px solid #fecaca !important;
+    padding: 0 8px !important;
     color: #ef4444 !important;
 }
 
     .btn-delete-ghost:hover {
-        background: #fef2f2 !important;
+        background: #fee2e2 !important;
+        border-color: #fca5a5 !important;
+        color: #dc2626 !important;
     }
 
-/* ========================================================= 
-   DOCUMENTS SYSTEM RECONCILIATION - PART 4
-========================================================= */
-
-/* 7. DOCUMENT PREVIEW PANE - LOCKED SYSTEM CHASSIS FOOTPRINT */
+/* 🚀 FIXED PREVIEW PANEL: Erased duplicate inner tracks completely */
 .document-preview-pane {
-    background: white !important;
-    display: flex !important;
-    flex-direction: column !important;
-    border-left: 1px solid #e2e8f0 !important;
-    width: 420px !important; /* increased width for better preview space */
-    min-width: 360px !important;
-    max-width: 520px !important;
-    flex-shrink: 0 !important;
-    min-height: 0 !important;
-    align-self: stretch !important;
-    box-sizing: border-box !important;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #e2e8f0;
+    width: 380px;
+    min-width: 380px;
+    max-width: 380px;
+    flex-shrink: 0;
+    align-self: stretch;
+    box-sizing: border-box;
+    overflow: visible; /* Disables secondary scrolling */
 }
 
-/* 8. LIST METRICS FOOTER BAR */
 .list-footer {
-    padding: 10px 20px !important;
-    border-top: 1px solid #f1f5f9 !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    background: white !important;
-    flex-shrink: 0 !important;
+    padding: 8px 20px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    flex-shrink: 0;
+    height: 40px;
 }
 
 .btn-sage-browse {
-    background: #f1f5f9 !important;
-    border: none !important;
-    border-radius: 6px !important;
-    padding: 0 16px !important;
-    color: #2563eb !important;
-    font-weight: 700 !important;
-    font-size: 13px !important;
-    cursor: pointer !important;
-    height: 32px !important;
-    display: inline-flex !important;
-    align-items: center !important;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 6px;
+    padding: 0 12px;
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
 }
 
-    .btn-sage-browse:hover {
-        background-color: #e2e8f0 !important;
-    }
-
-/* 10. PREVIEW PANEL ELEMENT STYLING */
+/* 🚀 PREVIEW INFO FLOWS NATURAL: No height loops or duplicate scroll tracks */
 .preview-info {
-    padding: 20px !important;
-    overflow-y: auto !important;
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: visible;
 }
 
 .preview-hero {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px !important;
-    margin-bottom: 8px !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
 }
 
 .hero-filename {
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    color: #0f172a !important;
-    word-break: break-all !important;
-    white-space: normal !important;
+    font-weight: 700;
+    font-size: 13px;
+    color: #0f172a;
+    word-break: break-all;
+    white-space: normal;
 }
 
 .preview-meta {
-    padding-left: 32px !important;
-    color: #94a3b8 !important;
-    font-size: 12px !important;
-    margin-bottom: 16px !important;
-    font-weight: 500 !important;
+    padding-left: 32px;
+    color: #94a3b8;
+    font-size: 11px;
+    margin-bottom: 8px;
+    font-weight: 500;
 }
 
 .detail-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 10px !important;
-    padding: 14px !important;
-    background: #f8fafc !important;
-    border-radius: 8px !important;
-    border: 1px solid #f1f5f9 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #f1f5f9;
 }
 
 .detail-row {
-    display: flex !important;
-    justify-content: space-between !important;
-    font-size: 12px !important;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    width: 100%;
 }
 
-    .detail-row label {
-        color: #64748b !important;
-        font-weight: 500 !important;
+    .detail-row .lbl {
+        color: #64748b;
+        font-weight: 500;
     }
 
-    .detail-row span {
-        font-weight: 600 !important;
-        color: #1e293b !important;
+    .detail-row .val {
+        font-weight: 600;
+        color: #1e293b;
+        text-align: right;
     }
 
-.btn-attach-full, .btn-delete-full {
-    width: 100% !important;
-    border: none !important;
-    height: 36px !important;
-    border-radius: 6px !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+.pdf-preview-container {
+    width: 100%;
+    height: min(45vh, 400px); /* Responsive heights limit total sidebar layout length */
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    margin-top: 6px;
+}
+
+    .pdf-preview-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+.preview-empty-fallback {
+    margin-top: 10px;
+    padding: 16px;
+    text-align: center;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    background: #f8fafc;
+    flex-shrink: 0;
+}
+
+    .preview-empty-fallback p {
+        margin: 0;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+.related-records {
+    margin-top: 10px;
+}
+
+.preview-bottom-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-attach-full, .btn-delete-full, .btn-fullscreen {
+    width: 100%;
+    border: none;
+    height: 32px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+}
+
+.btn-fullscreen {
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #e2e8f0;
 }
 
 .btn-attach-full {
     background: #008272 !important;
     color: white !important;
-    margin-top: 16px !important;
 }
 
     .btn-attach-full:hover {
@@ -413,64 +523,55 @@
     }
 
 .btn-delete-full {
-    background: white !important;
-    color: #ef4444 !important;
-    border: 1px solid #fee2e2 !important;
-    margin-top: 8px !important;
+    background: white;
+    color: #ef4444;
+    border: 1px solid #fee2e2;
+    margin-top: 8px;
 }
 
     .btn-delete-full:hover {
-        background: #fef2f2 !important;
-    }
-/* Small helpers to replace inline style attributes removed from markup */
-::deep .hidden-file,
-.hidden-file {
-    display: none !important;
-    visibility: hidden !important;
-    width: 0 !important;
-    height: 0 !important;
-    opacity: 0 !important;
-    position: absolute !important;
-}
-
-    /* Deletes the internal browser string text inside Chrome, Edge, and Safari */
-    ::deep .hidden-file::-webkit-file-upload-button {
-        display: none !important;
-    }
-
-    ::deep .hidden-file::file-selector-button {
-        display: none !important;
+        background: #fef2f2;
     }
 
 .file-name-cell-inner {
-    display: flex !important;
-    gap: 8px !important;
-    align-items: center !important;
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .file-name-text {
-    font-weight: 600 !important;
-    font-size: 0.95rem !important;
-    color: #0f172a !important;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #0f172a;
 }
 
 .dismiss-icon {
-    cursor: pointer !important;
+    cursor: pointer;
 }
 
 .preview-empty {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 100% !important;
-    color: #94a3b8 !important;
-    gap: 8px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #94a3b8;
+    gap: 8px;
+}
+
+.attach-container ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.attach-container ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
 }
 
 @media (max-width: 800px) {
     .document-preview-pane {
-        display: none !important;
+        display: none;
     }
 }
 
@@ -478,4 +579,3 @@
     margin: 0 10px;
     font-size: 12px;
 }
-

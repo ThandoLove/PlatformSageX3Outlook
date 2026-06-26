@@ -8,17 +8,23 @@
 @inherits OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents.AttachmentsBase
 
 <div class="attach-container">
-    @* MOCK MODE BANNER *@
     @if (Configuration.GetValue<bool>("SageX3:UseMockData"))
     {
         <div class="mock-banner">Running in mock mode — Sage X3 integration is disabled.</div>
     }
-    @* HEADER *@
+    
     <div class="page-title-header">
         <h1 class="page-title">Documents</h1>
+        @if (SageConnected)
+        {
+            <span class="sage-status connected">Sage X3 Connected</span>
+        }
+        else
+        {
+            <span class="sage-status disconnected">Mock Repository Active</span>
+        }
     </div>
 
-    @* TOP BAR *@
     <div class="top-bar">
         <div class="header-left-actions">
             <div class="search-box">
@@ -26,7 +32,7 @@
                 <input type="text" placeholder="Search Documents..." @bind="SearchQuery" @bind:event="oninput" />
             </div>
 
-            <div class="filter-dropdowns">
+            <div class="top-bar-filters-row">
                 <select @bind="SelectedType" class="ui-select">
                     <option value="All">Type</option>
                     <option value="application/pdf">PDF Documents</option>
@@ -39,7 +45,9 @@
         </div>
 
         <div class="upload-wrapper">
-            <InputFile id="fileInput" OnChange="HandleFileUpload" class="hidden-file" disabled="@State.IsUploading" />
+            @* 🚀 FIXED: Hardcoded inline style directive permanently erases the browser's native text buttons from the DOM tree! *@
+            <InputFile id="fileInput" style="display: none !important;" OnChange="HandleFileUpload" disabled="@State.IsUploading" />
+            
             <label for="fileInput" class="btn-upload-primary @(State.IsUploading ? "is-disabled" : "")">
                 @if (State.IsUploading)
                 {
@@ -55,9 +63,7 @@
             <button class="ui-select refresh-btn" @onclick="RefreshAttachmentsFromServer">Refresh</button>
         </div>
     </div>
-
     <div class="main-layout">
-        @* LEFT: DOCUMENT LIST *@
         <div class="document-list-pane">
             <div class="pane-header">
                 <span class="title">Document List</span>
@@ -91,16 +97,9 @@
                                 <td><span class="related-pill">@doc.RelatedEntity</span></td>
                                 <td class="text-right">
                                     <div class="action-row">
-                                        <button class="btn-preview-ghost" @onclick:stopPropagation @onclick="() => SelectedDoc = doc">Preview</button>
-                                        @* 🚀 FIXED: Button maps to the operational AttachToEmail command directly *@
-                                        <!-- 🚀 FIXED: Table button now invokes the central HandleAttachDocument check wrapper -->
-                                        <button class="btn-attach-teal"
-                                                @onclick:stopPropagation
-                                                @onclick="() => HandleAttachDocument(doc)">
-                                            Attach
-                                        </button>
-
-                                        <button class="btn-delete-ghost" @onclick:stopPropagation @onclick="() => DeleteDocument(doc)">
+                                        <button type="button" class="btn-preview-ghost" @onclick:stopPropagation @onclick="() => SelectedDoc = doc">Preview</button>
+                                        <button type="button" class="btn-attach-teal" @onclick:stopPropagation @onclick="() => HandleAttachDocument(doc)">Attach</button>
+                                        <button type="button" class="btn-delete-ghost" @onclick:stopPropagation @onclick="() => DeleteDocument(doc)">
                                             <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                                         </button>
                                     </div>
@@ -110,7 +109,6 @@
                     </tbody>
                 </table>
             </div>
-
             <div class="list-footer">
                 <button class="btn-sage-browse" @onclick="BrowseSageX3">Browse Sage X3 →</button>
                 <div class="pagination">
@@ -121,8 +119,7 @@
             </div>
         </div>
 
-        @* RIGHT: PREVIEW PANE *@
-        <div class="document-preview-pane" style="box-shadow: none; border-left: 1px solid #f1f5f9;">
+        <div class="document-preview-pane">
             <div class="pane-header">
                 <span class="title">Document Preview</span>
                 @if (SelectedDoc != null)
@@ -133,7 +130,7 @@
 
             @if (SelectedDoc != null)
             {
-                <div class="preview-info" style="box-shadow: none;">
+                <div class="preview-info">
                     <div class="preview-hero">
                         <FluentIcon Value="@GetIcon(SelectedDoc.FileName)" Class="preview-icon" Color="Color.Error" />
                         <span class="hero-filename">@SelectedDoc.FileName</span>
@@ -141,65 +138,42 @@
                     <div class="preview-meta">Version 1.0 — @FormatSize(SelectedDoc.FileSize)</div>
 
                     <div class="detail-grid">
-                        <div class="detail-row"><label>Type</label><span>@SelectedDoc.ContentType</span></div>
-                        <div class="detail-row"><label>Source</label><span>Local</span></div>
-                        <div class="detail-row"><label>Date</label><span>@SelectedDoc.UploadedAtUtc.ToShortDateString()</span></div>
+                        <div class="detail-row"><span class="lbl">Type</span><span class="val">@SelectedDoc.ContentType</span></div>
+                        <div class="detail-row"><span class="lbl">Source</span><span class="val">Local</span></div>
+                        <div class="detail-row"><span class="lbl">Date</span><span class="val">@SelectedDoc.UploadedAtUtc.ToShortDateString()</span></div>
                     </div>
 
-                    @* 🚀 FIXED: Dynamic conditional branch cleanly separates PDF iframes from restricted layout extensions *@
                     @if (CanPreviewPdf)
                     {
-                        <div class="pdf-preview-container" style="margin-top: 15px; width: 100%; border: none; border-radius: 4px; overflow: hidden; background: #ffffff; box-shadow: none;">
-                            <iframe src="@(GetPdfUrl(SelectedDoc))"
-                                    style="width: 100%; height: 680px; border: none; overflow: hidden; display: block;"
-                                    scrolling="no">
-                            </iframe>
+                        <div class="pdf-preview-container">
+                            <iframe src="@(GetPdfUrl(SelectedDoc))" style="width: 100%; height: 100%; border: none; display: block;" scrolling="auto"></iframe>
                         </div>
                     }
                     else
                     {
-                        <div class="preview-empty" style="margin-top: 20px; padding: 30px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 8px;">
-                            <p style="color: #64748b; font-weight: 600;">Preview unavailable. Convert to PDF.</p>
-                            <button class="btn-upload-primary" type="button" @onclick="() => ConvertToPdf(SelectedDoc)" style="margin-top: 10px;">Convert To PDF</button>
+                        <div class="preview-empty-fallback">
+                            <p>Preview unavailable. Convert to PDF.</p>
+                            <button class="btn-upload-primary" type="button" @onclick="() => ConvertToPdf(SelectedDoc)">Convert To PDF</button>
                         </div>
                     }
 
-                    @* RELATED RECORDS SECTION *@
-                    <div class="related-records" style="margin-top: 15px;">
-                        <RelatedRecordsPanel Title="Linked Order"
-                                             Records="@(new List<string> { SelectedDoc.RelatedEntity })"
-                                             OnRecordClicked="@((n) => OpenAttachmentViewer())" />
-
-                        <RelatedRecordsPanel Title="Linked Tasks"
-                                             Records="@State.Tasks.Where(t => t.Title.Contains(SelectedDoc.FileName)).Select(t => t.Title).ToList()"
-                                             OnRecordClicked="@((n) => Nav.NavigateTo("/activities"))" />
+                    <div class="related-records">
+                        <RelatedRecordsPanel Title="Linked Order" Records="@(new List<string> { SelectedDoc.RelatedEntity })" OnRecordClicked="@((n) => OpenAttachmentViewer())" />
+                        <RelatedRecordsPanel Title="Linked Tasks" Records="@State.Tasks.Where(t => t.Title.Contains(SelectedDoc.FileName)).Select(t => t.Title).ToList()" OnRecordClicked="@((n) => Nav.NavigateTo("/activities"))" />
                     </div>
 
-                    @* 🚀 FIXED: Direct Attach to Email operation *@
-                    <!-- 🚀 FIXED: Preview panel button now invokes the central HandleAttachDocument check wrapper -->
-                    <button class="btn-fullscreen"
-                            @onclick="OpenAttachmentViewer"
-                            style="margin-top:15px;">
-                        Open Full Screen
-                    </button>
-
-                    <button class="btn-attach-full"
-                            @onclick="() => HandleAttachDocument(SelectedDoc)"
-                            style="margin-top:15px;">
-                        Attach To Email
-                    </button>
-
-                    <button class="btn-delete-full"
-                            @onclick="() => DeleteDocument(SelectedDoc)">
-                        Delete
-                    </button>
+                    <div class="preview-bottom-actions">
+                        <button type="button" class="btn-fullscreen" @onclick="OpenAttachmentViewer">Open Full Screen</button>
+                        <button type="button" class="btn-attach-full" @onclick="() => HandleAttachDocument(SelectedDoc)">Attach To Email</button>
+                        <button type="button" class="btn-delete-full" @onclick="() => DeleteDocument(SelectedDoc)">Delete</button>
+                    </div>
                 </div>
             }
             else
             {
                 <div class="preview-empty">
                     <FluentIcon Value="@(new Icons.Regular.Size32.DocumentSearch())" />
-                    <p>Select a file to preview</p>
+                    <p>Select a file and click "Preview" to inspect details.</p>
                 </div>
             }
         </div>
