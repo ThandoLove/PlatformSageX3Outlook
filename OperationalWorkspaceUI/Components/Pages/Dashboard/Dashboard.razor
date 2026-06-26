@@ -97,7 +97,8 @@
 
             <div class="flat-layout-cell kpi-box orders-box-tint">
                 <div class="card-label-tiny">Open Orders</div>
-                <div class="metric-value">@(DState.EmailContext.OpenOrderCount > 0 ? DState.EmailContext.OpenOrderCount : (WState.Orders?.Count ?? 0))</div>
+                <div class="metric-value">@(DState.EmailContext.OpenOrderCount > 0 ? DState.EmailContext.OpenOrderCount : 0)</div>
+
                 <span class="metric-subtext">@customerName</span>
             </div>
 

@@ -2,52 +2,40 @@
 using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspace.Domain.Enums; // Required for SalesOrderStatus
 using OperationalWorkspaceApplication.Interfaces.IRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace OperationalWorkspaceInfrastructure.Persistence.Repositories
+
+namespace OperationalWorkspaceInfrastructure.Persistence.Repositories;
+
+public class SalesOrderRepository : ISalesOrderRepository
 {
-    public class SalesOrderRepository : ISalesOrderRepository
+    private readonly IntegrationDbContext _db;
+    public SalesOrderRepository(IntegrationDbContext db) => _db = db;
+
+    // REMOVED: AddAsync implementation entirely
+
+    public async Task<SalesOrder?> GetByIdAsync(Guid id, CancellationToken ct)
+        => await _db.SalesOrders.FirstOrDefaultAsync(o => o.Id == id, ct);
+
+    public async Task<IReadOnlyList<SalesOrder>> GetOpenOrdersAsync(string bpCode, CancellationToken ct)
     {
-        private readonly IntegrationDbContext _db;
-        public SalesOrderRepository(IntegrationDbContext db) => _db = db;
+        return await _db.SalesOrders
+            .Where(o => o.BpCode == bpCode && !o.IsClosed)
+            .ToListAsync(ct);
+    }
 
-        // Use System.Threading.Tasks.Task to satisfy the interface void-task
-        public async System.Threading.Tasks.Task AddAsync(SalesOrder order, CancellationToken ct)
+    public async Task<int> CountByStatusAsync(string bpCode, string status, CancellationToken ct)
+    {
+        if (!Enum.TryParse<SalesOrderStatus>(status, true, out var statusEnum))
         {
-            await _db.SalesOrders.AddAsync(order, ct);
-            await _db.SaveChangesAsync(ct);
+            return 0;
         }
 
-        // Explicitly use Task<T> for methods with return values
-        public async Task<SalesOrder?> GetByIdAsync(Guid id, CancellationToken ct)
-            => await _db.SalesOrders.FirstOrDefaultAsync(o => o.Id == id, ct);
+        return await _db.SalesOrders
+            .CountAsync(o => o.BpCode == bpCode && o.Status == statusEnum, ct);
+    }
 
-        public async Task<IReadOnlyList<SalesOrder>> GetOpenOrdersAsync(string bpCode, CancellationToken ct)
-        {
-            return await _db.SalesOrders
-                .Where(o => o.BpCode == bpCode && !o.IsClosed)
-                .ToListAsync(ct);
-        }
-
-        public async Task<int> CountByStatusAsync(string bpCode, string status, CancellationToken ct)
-        {
-            // Parse string to Enum to fix the '==' error from the previous step
-            if (!Enum.TryParse<SalesOrderStatus>(status, true, out var statusEnum))
-            {
-                return 0;
-            }
-
-            return await _db.SalesOrders
-                .CountAsync(o => o.BpCode == bpCode && o.Status == statusEnum, ct);
-        }
-
-        public async Task<int> CountTotalAsync(CancellationToken ct)
-        {
-            return await _db.SalesOrders.CountAsync(ct);
-        }
+    public async Task<int> CountTotalAsync(CancellationToken ct)
+    {
+        return await _db.SalesOrders.CountAsync(ct);
     }
 }

@@ -22,9 +22,7 @@ public class AutoMapperProfile : Profile
         CreateMap<SalesOrder, OpenOrderDto>();
 
         // DTO to Entity (Write operations)
-        CreateMap<CreateOrderDto, SalesOrder>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
-            .ForMember(dest => dest.CreatedAtUtc, opt => opt.MapFrom(_ => DateTime.UtcNow));
+       
 
         CreateMap<OpenOrderDto, SalesOrder>();
 

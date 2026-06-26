@@ -8,10 +8,9 @@ namespace OperationalWorkspaceApplication.Interfaces.IServices
     public interface IOrderService
     {
         // CREATE
-        Task<OrderDto> CreateOrderAsync(OrderDto order);
+       
 
-        // QUOTES
-        Task CreateQuoteAsync(object model);
+     
 
         // READ (LIST)
         Task<List<OpenOrderDto>> GetOpenOrdersAsync();

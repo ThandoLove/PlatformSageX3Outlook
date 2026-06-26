@@ -36,8 +36,11 @@ public class MockSageX3Client : ISageX3Client
     // 🟢 MOCK SALES MEMBERS
     // =========================================================================
 
-    public Task<CreateSalesOrderResponse> SubmitSalesOrderAsync(CreateSalesOrderRequest req, CancellationToken ct = default)
-        => Task.FromResult(new CreateSalesOrderResponse(Guid.NewGuid()));
+    public async Task<Guid> CreateSalesOrderAsync(string bpCode, string customerRef, decimal totalAmount, CancellationToken ct)
+    {
+        await Task.Delay(10, ct);
+        return Guid.Empty;
+    }
 
     public Task<SalesOrderDetailsResponse?> FetchSalesOrderAsync(GetSalesOrderRequest req, CancellationToken ct = default)
         => Task.FromResult<SalesOrderDetailsResponse?>(new SalesOrderDetailsResponse(new SalesOrderDto { Id = Guid.NewGuid(), OrderNumber = "MOCK-101", TotalAmount = 1500m, OrderStatus = "Open" }));

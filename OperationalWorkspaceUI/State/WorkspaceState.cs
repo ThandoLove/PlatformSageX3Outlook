@@ -12,7 +12,7 @@ namespace OperationalWorkspaceUI.State
         // ======================================================
         public List<ClientDto> Clients { get; set; } = new();
         public List<ContactCreateDto> Contacts { get; set; } = new();
-        public List<OrderDto> Orders { get; set; } = new();
+        
         public List<TaskDto> Tasks { get; set; } = new();
         public List<ActivityDto> ActivityLogs { get; set; } = new();
         public List<KnowledgeDto> KnowledgeBase { get; set; } = new();

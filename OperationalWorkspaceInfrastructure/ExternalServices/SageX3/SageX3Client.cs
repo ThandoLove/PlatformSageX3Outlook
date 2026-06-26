@@ -128,8 +128,11 @@ public class SageX3Client : ISageX3Client
     public Task<CreateClientFromEmailResponse> ProvisionPartnerAccountAsync(CreateClientFromEmailRequest request, CancellationToken ct = default)
         => Task.FromResult(new CreateClientFromEmailResponse());
 
-    public Task<CreateSalesOrderResponse> SubmitSalesOrderAsync(CreateSalesOrderRequest req, CancellationToken ct = default)
-        => Task.FromResult(new CreateSalesOrderResponse(Guid.Empty));
+    public async Task<Guid> CreateSalesOrderAsync(string bpCode, string customerRef, decimal totalAmount, CancellationToken ct)
+    {
+        await Task.Delay(1, ct);
+        throw new NotSupportedException("Write mutations to Sage X3 order structures are blocked at the client engine boundary.");
+    }
 
     // =========================================================================
     // 🚀 FIXED INTERFACE COMPLIANCE: SAFELY IMPLEMENTED NEUTRAL OUTBOUND LAYER

@@ -10,7 +10,7 @@ namespace OperationalWorkspaceApplication.Interfaces.IRepository;
 
 public interface ISalesOrderRepository
 {
-    Task AddAsync(SalesOrder order, CancellationToken ct);
+    
 
     Task<SalesOrder?> GetByIdAsync(Guid id, CancellationToken ct);
 
@@ -20,3 +20,4 @@ public interface ISalesOrderRepository
 
     Task<int> CountTotalAsync(CancellationToken ct);
 }
+

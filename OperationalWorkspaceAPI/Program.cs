@@ -127,7 +127,7 @@ options.AddFixedWindowLimiter("SagePolicy", opt =>
 
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderValidator>();
+
 builder.Services.AddValidatorsFromAssemblyContaining<CustomerValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EmailInsightDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<TaskValidator>();

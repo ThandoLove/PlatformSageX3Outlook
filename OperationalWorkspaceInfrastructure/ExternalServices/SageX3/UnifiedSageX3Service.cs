@@ -8,12 +8,7 @@ using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
 using OperationalWorkspaceInfrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
+
 using Task = System.Threading.Tasks.Task;
 using TaskEntity = OperationalWorkspace.Domain.Entities.TaskEntity;
 
@@ -342,7 +337,11 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<int> CountOpenOrdersAsync(string userId) => await _dbContext.SalesOrders.CountAsync();
         public async Task<int> CountPendingDeliveriesAsync(string userId) => await Task.FromResult(0);
         public async Task<int> CountTotalOrdersAsync() => await _dbContext.SalesOrders.CountAsync();
-        public async Task<CreateSalesOrderResponse> CreateOrderAsync(CreateSalesOrderRequest req, CancellationToken ct) => await _sageClient.SubmitSalesOrderAsync(req, ct);
+        public async Task<Guid> CreateSalesOrderAsync(string bpCode, string customerRef, decimal totalAmount, CancellationToken ct)
+        {
+            await Task.Delay(1, ct);
+            throw new NotSupportedException("Sales order creation is disabled within the workspace productivity layer. Submit via Sage X3 ERP client.");
+        }
         public async Task<SalesOrderDetailsResponse?> GetOrderAsync(GetSalesOrderRequest req, CancellationToken ct) => await _sageClient.FetchSalesOrderAsync(req, ct);
 
     }

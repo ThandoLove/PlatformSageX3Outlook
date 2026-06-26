@@ -1,79 +1,16 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Services
 {
     public class OrderService : IOrderService
     {
-        // ⚠️ Replace with repository later
+        // Kept for local reference/in-memory lookup simulation
         private static readonly List<SalesOrderDto> _orders = new();
-
-        // =========================
-        // CREATE ORDER
-        // =========================
-        public async Task<OrderDto> CreateOrderAsync(OrderDto order)
-        {
-            var salesOrder = new SalesOrderDto
-            {
-                Id = Guid.NewGuid(),
-                OrderNumber = GenerateOrderNumber(),
-
-                // FIX: Ensures SalesOrderDto gets a value if order.OrderDate is null
-                OrderDate = order.OrderDate,
-
-                BusinessPartnerId = order.ClientId,
-                BusinessPartnerName = "Auto-Generated",
-
-                SubTotal = order.TotalAmount,
-                TaxAmount = 0,
-                DiscountAmount = 0,
-                TotalAmount = order.TotalAmount,
-
-                OrderStatus = "Draft",
-                PaymentStatus = "Unpaid",
-                FulfillmentStatus = "NotStarted",
-
-                CreatedAtUtc = DateTime.UtcNow
-            };
-
-            _orders.Add(salesOrder);
-
-            return new OrderDto
-            {
-                ClientId = order.ClientId,
-                // FIX: Explicit fallback for the return DTO
-                OrderDate = order.OrderDate,
-                Description = order.Description,
-                TotalAmount = order.TotalAmount
-            };
-        }
-
-        // =========================
-        // CREATE QUOTE
-        // =========================
-        public async Task CreateQuoteAsync(object model)
-        {
-            // TODO: Replace with proper QuoteDTO
-            await Task.Delay(200);
-
-            var quote = new SalesOrderDto
-            {
-                Id = Guid.NewGuid(),
-                OrderNumber = "Q-" + GenerateOrderNumber(),
-                OrderDate = DateTime.Now,
-
-                BusinessPartnerName = "Quote Client",
-
-                TotalAmount = 0,
-                OrderStatus = "Draft",
-                PaymentStatus = "Unpaid",
-                FulfillmentStatus = "NotStarted",
-
-                CreatedAtUtc = DateTime.UtcNow
-            };
-
-            _orders.Add(quote);
-        }
 
         // =========================
         // GET LIST (UI GRID)
@@ -82,13 +19,16 @@ namespace OperationalWorkspaceApplication.Services
         {
             return _orders.Select(o => new OpenOrderDto
             {
+                // Preserved explicit ID mapping for page routing
+                Id = o.Id,
                 OrderNumber = o.OrderNumber,
 
                 // FIX: Conversion from nullable SalesOrderDto.OrderDate to non-nullable OpenOrderDto.OrderDate
                 OrderDate = o.OrderDate ?? DateTime.Now,
 
                 TotalAmount = o.TotalAmount,
-                Status = o.OrderStatus
+                Status = o.OrderStatus,
+                ClientName = o.BusinessPartnerName ?? "Unknown Client"
             }).ToList();
         }
 
@@ -98,15 +38,6 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<SalesOrderDto?> GetOrderByIdAsync(Guid id)
         {
             return _orders.FirstOrDefault(o => o.Id == id);
-        }
-
-        // =========================
-        // HELPER
-        // =========================
-        private string GenerateOrderNumber()
-        {
-            // Cleaned up the ticks logic to prevent potential index errors
-            return $"SO-{DateTime.UtcNow.Ticks.ToString().Substring(Math.Max(0, DateTime.UtcNow.Ticks.ToString().Length - 6))}";
         }
     }
 }

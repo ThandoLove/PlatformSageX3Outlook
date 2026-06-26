@@ -5,7 +5,7 @@ namespace OperationalWorkspace.Domain.Entities;
 
 public class SalesOrder
 {
-    // Properties
+    // Properties - Kept completely intact for EF Core and read-only query mapping
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string OrderId { get; private set; } = Guid.NewGuid().ToString();
     public string BpCode { get; private set; } = default!;
@@ -23,38 +23,17 @@ public class SalesOrder
     public bool IsClosed => Status == SalesOrderStatus.Completed || Status == SalesOrderStatus.Cancelled;
     public decimal TotalAmount => _lines.Sum(l => l.LineTotal);
 
-    // Constructors
-    private SalesOrder() { } // EF Core Required
-
-    public SalesOrder(string bpCode, List<SalesOrderLine> lines)
-    {
-        BpCode = bpCode;
-        _lines = lines ?? new List<SalesOrderLine>();
-        CreatedAtUtc = DateTime.UtcNow;
-    }
-
-    // Methods
-    public void AddLine(string itemCode, decimal quantity, Money unitPrice)
-    {
-        if (Status != SalesOrderStatus.Draft)
-            throw new InvalidOperationException("Cannot modify confirmed order.");
-
-        if (quantity <= 0)
-            throw new ArgumentException("Quantity must be positive.");
-
-        // This calls the automatically generated constructor of the record
-        _lines.Add(new SalesOrderLine(itemCode, quantity, unitPrice));
-    }
-
-    public void Confirm() => Status = SalesOrderStatus.Confirmed;
+    // Only EF Core constructor is allowed.
+    // This allows data to be read and hydrated from the database/API, 
+    // but makes it impossible to instantiate a new order anywhere else in the code.
+    private SalesOrder() { }
 }
 
 /// <summary>
 /// Represents an individual line item in a sales order.
-/// Using a Record with a Primary Constructor automatically handles properties and the constructor.
+/// Kept read-only to preserve reference data.
 /// </summary>
 public record SalesOrderLine(string ItemCode, decimal Quantity, Money UnitPrice)
 {
-    // The properties ItemCode, Quantity, and UnitPrice are generated automatically.
     public decimal LineTotal => Quantity * UnitPrice.Amount;
 }

@@ -402,13 +402,14 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<int> CountPendingDeliveriesAsync(string userId) => 0;
         public async Task<int> CountTotalOrdersAsync() => 0;
 
-        public async Task<CreateSalesOrderResponse> CreateOrderAsync(
-            CreateSalesOrderRequest req,
-            CancellationToken ct)
+        // Change the method parameters to use basic system types instead of the deleted records
+        public async Task<Guid> CreateOrderAsync(string bpCode, string customerRef, decimal totalAmount, CancellationToken ct)
         {
-            return await Task.FromResult(
-                new CreateSalesOrderResponse(Guid.NewGuid()));
+            // Block mutations in workspace: Forces execution path boundary back to Sage X3
+            await Task.Delay(50, ct);
+            throw new NotSupportedException("Order creation is not supported inside the workspace application. Please create mutations directly in Sage X3.");
         }
+
 
         public async Task<SalesOrderDetailsResponse?> GetOrderAsync(
             GetSalesOrderRequest req,
