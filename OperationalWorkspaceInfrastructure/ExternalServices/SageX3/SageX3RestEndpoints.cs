@@ -62,9 +62,16 @@ public static class SageX3RestEndpoints
         Query(SalesInvoice, count);
 
     // =========================================================================
+    // 🔥 BP-SPECIFIC INVOICE REST ENDPOINTS (CRITICAL FIX)
+    // Runs an explicit query scan matching invoices to a specific customer record
+    // =========================================================================
+    public static string InvoicesByBp(string bpCode, int count = 100) =>
+        Query(SalesInvoice, count, where: $"BPR eq '{EscapeOData(bpCode)}'");
+
+    // =========================================================================
     // 🗑️ CRITICAL DECOMMISSIONING COMPLETED
     // All local relational Stock, Warehouse site filters, and stock adjustment 
-    // endpoint builders have been completely scrubbed from this dictionary! [INDEX]
+    // endpoint builders have been completely scrubbed from this dictionary!
     // =========================================================================
 
     private static string EscapeKey(string key) =>

@@ -16,15 +16,18 @@ namespace OperationalWorkspaceUI.State
         private readonly DashboardUIService _dashboardService;
         private readonly IBusinessPartnerService _bpService;
         private readonly ActivityUIService _activityService;
+        private readonly UIState _uiState;
 
         public DashboardState(
             DashboardUIService dashboardService,
             IBusinessPartnerService bpService,
-            ActivityUIService activityService)
+            ActivityUIService activityService,
+            UIState uiState)
         {
             _dashboardService = dashboardService;
             _bpService = bpService;
             _activityService = activityService;
+            _uiState = uiState;
         }
 
         public bool IsAdminEnvironment { get; private set; }
@@ -149,17 +152,19 @@ namespace OperationalWorkspaceUI.State
                 // 🚀 Set the identity flag explicitly before requesting data hydration
                 IsAdminEnvironment = isAdmin;
 
-                // This invokes your DashboardUIService / MockUnifiedService logic
-                await _dashboardService.LoadDashboardAsync(this);
+                // This invokes your DashboardUIService / MockUnifiedService logic with required parameters
+                await _dashboardService.LoadDashboardAsync(this, _uiState);
                 RecentActivities = await _activityService.GetActivitiesAsync();
 
                 if (IsAdminEnvironment)
                 {
-                    AdminHealth = await _dashboardService.GetSystemHealthAsync();
+                    // Fully qualified state passthrough clears the second argument error
+                    AdminHealth = await _dashboardService.GetSystemHealthAsync(_uiState);
                     await LoadAdminSpecificDataAsync();
                 }
                 else
                 {
+                    // Fallback parameters map safely when outside admin mode
                     AdminHealth = new AdminSystemHealthDto();
                     EmployeeCrm = new EmployeeCRMDTO { TopCustomer = "Tech Innovations Inc.", OpenOpportunities = 2 };
                 }

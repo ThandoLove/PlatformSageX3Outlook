@@ -1,12 +1,9 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace OperationalWorkspaceInfrastructure.ExternalServices.SageX3;
+
+namespace OperationalWorkspaceApplication.Interfaces;
 
 public interface ISageX3Client
 {
@@ -19,23 +16,32 @@ public interface ISageX3Client
     Task<BusinessPartnerSnapshotDto?> FindPartnerByEmailAsync(string email, CancellationToken ct = default);
     Task<CreateClientFromEmailResponse> ProvisionPartnerAccountAsync(CreateClientFromEmailRequest request, CancellationToken ct = default);
 
-    // Sales Operations
+    // Sales Operations (Read-Only Lookups)
     Task<Guid> CreateSalesOrderAsync(string bpCode, string customerRef, decimal totalAmount, CancellationToken ct);
     Task<SalesOrderDetailsResponse?> FetchSalesOrderAsync(GetSalesOrderRequest req, CancellationToken ct = default);
 
     // =========================================================================
-    // 🗑️ CRITICAL DECOMMISSIONING COMPLETED
-    // All local mutable Invoice calculation, summary, and transaction creation
-    // interface methods have been completely scrubbed from this contract!
+    // 📊 GLOBAL INVOICE METRICS (DASHBOARD / ADMIN KPIS)
     // =========================================================================
-
-    // invoices
-
-    Task<InvoiceDto?> GetInvoiceAsync(Guid id, CancellationToken ct = default);
-    Task<IEnumerable<InvoiceDto>> GetInvoicesPagedAsync(int page, int pageSize, CancellationToken ct = default);
     Task<int> GetOverdueInvoicesCountAsync(CancellationToken ct = default);
     Task<int> GetTotalGeneratedInvoicesCountAsync(CancellationToken ct = default);
     Task<int> GetUserInvoicesDueCountAsync(string userId, CancellationToken ct = default);
     Task<int> GetUserTotalInvoicesGeneratedCountAsync(string userId, CancellationToken ct = default);
+    Task<decimal> GetOutstandingInvoiceValueAsync(CancellationToken ct = default);
+    Task<decimal> GetUserOutstandingInvoiceValueAsync(string userId, CancellationToken ct = default);
+    Task<decimal> GetCurrentMonthInvoiceValueAsync(CancellationToken ct = default);
+    Task<decimal> GetUserCurrentMonthInvoiceValueAsync(string userId, CancellationToken ct = default);
 
+    // =========================================================================
+    // 🔥 BP-SPECIFIC INVOICE METRICS (CUSTOMER CONTEXT / BUSINESS PARTNER SNAPSHOT)
+    // =========================================================================
+    Task<int> GetOverdueInvoicesCountAsync(string bpCode, CancellationToken ct = default);
+    Task<decimal> GetOutstandingInvoiceValueAsync(string bpCode, CancellationToken ct = default);
+    Task<decimal> GetCurrentMonthInvoiceValueAsync(string bpCode, CancellationToken ct = default);
+
+    // =========================================================================
+    // 📄 READ-ONLY INVOICE LOOKUPS
+    // =========================================================================
+    Task<InvoiceDto?> GetInvoiceAsync(string invoiceNumber, CancellationToken ct = default);
+    Task<IEnumerable<InvoiceDto>> GetInvoicesPagedAsync(int page, int pageSize, CancellationToken ct = default);
 }

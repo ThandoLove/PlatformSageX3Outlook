@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
+using OperationalWorkspaceApplication.Interfaces;
 
 namespace OperationalWorkspaceUI.State
 {
@@ -52,6 +53,30 @@ namespace OperationalWorkspaceUI.State
             NotifyStateChanged();
         }
 
+        // ======================================================
+        // 🌐 SAGE X3 HEALTH STATUS STATE MACHINE (DECOUPLED FROM UI)
+        // ======================================================
+        public bool IsSageConnected { get; private set; } = false;
+
+        /// <summary>
+        /// Asynchronously verifies network pipeline connectivity using higher-level abstractions.
+        /// </summary>
+        public async Task CheckSageX3ConnectionHealthAsync(ISageX3Client sageClient)
+        {
+            try
+            {
+                var count = await sageClient.GetActivePartnersCountAsync();
+                IsSageConnected = count > 0;
+            }
+            catch
+            {
+                IsSageConnected = false;
+            }
+            finally
+            {
+                NotifyStateChanged();
+            }
+        }
 
         // ======================================================
         // THEME SYSTEM

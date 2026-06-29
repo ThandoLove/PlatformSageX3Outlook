@@ -36,7 +36,7 @@ public class IntegrationDbContext : DbContext
     }
 
     public DbSet<BusinessPartner> BusinessPartners => Set<BusinessPartner>();
-    public DbSet<Invoice> Invoices => Set<Invoice>(); // 🚀 RESTORED: Connected back into your entity map framework [INDEX]
+ 
     public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
     public DbSet<TaskEntity> Tasks => Set<TaskEntity>();
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
@@ -53,7 +53,7 @@ public class IntegrationDbContext : DbContext
 
         // Core Primary Keys Mappings (100% Preserved)
         modelBuilder.Entity<BusinessPartner>().HasKey(bp => bp.Id);
-        modelBuilder.Entity<Invoice>().HasKey(i => i.InvoiceId); // 🚀 RESTORED: Primary database index tracking handle key config [INDEX]
+         // 🚀 RESTORED: Primary database index tracking handle key config [INDEX]
         modelBuilder.Entity<SalesOrder>().HasKey(o => o.Id);
         modelBuilder.Entity<TaskEntity>().HasKey(t => t.Id);
         modelBuilder.Entity<AuditLogEntry>().HasKey(a => a.Id);

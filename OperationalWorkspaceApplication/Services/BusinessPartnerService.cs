@@ -1,28 +1,28 @@
-﻿using OperationalWorkspaceApplication.Abstractions;
+﻿using Microsoft.Extensions.Configuration;
+using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.DTOs;
+using OperationalWorkspaceApplication.Interfaces;
+using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp; // 🔥 Ensures background interface discovery
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
-using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp; // 🔥 Ensures background interface discovery
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using System;
-using System.Text.Json;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Polly;
 using Polly.Retry;
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Services;
 
 public sealed class BusinessPartnerService : IBusinessPartnerService
 {
     private readonly IBusinessPartnerRepository _partnerRepo;
-    private readonly IInvoiceRepository _invoiceRepo;
+    private readonly ISageX3Client _sageClient;
     private readonly ISalesOrderRepository _salesRepo;
     private readonly IUnitOfWork _uow;
     private readonly IClock _clock;
@@ -38,17 +38,17 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
 
     public BusinessPartnerService(
         IBusinessPartnerRepository partnerRepo,
-        IInvoiceRepository invoiceRepo,
+        ISageX3Client sageClient,
         ISalesOrderRepository salesRepo,
         IUnitOfWork uow,
         IClock clock,
         HttpClient httpClient,
         IConfiguration config,
-        ISageSyncJobs syncWorker,              // 🔥 Injected dependency
-        IBackgroundTaskQueue backgroundQueue)  // 🔥 Injected dependency
+        ISageSyncJobs syncWorker,
+        IBackgroundTaskQueue backgroundQueue)
     {
         _partnerRepo = partnerRepo ?? throw new ArgumentNullException(nameof(partnerRepo));
-        _invoiceRepo = invoiceRepo ?? throw new ArgumentNullException(nameof(invoiceRepo));
+        _sageClient = sageClient ?? throw new ArgumentNullException(nameof(sageClient));
         _salesRepo = salesRepo ?? throw new ArgumentNullException(nameof(salesRepo));
         _uow = uow ?? throw new ArgumentNullException(nameof(uow));
         _clock = clock ?? throw new ArgumentNullException(nameof(clock));
@@ -57,12 +57,16 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         _syncWorker = syncWorker ?? throw new ArgumentNullException(nameof(syncWorker));
         _backgroundQueue = backgroundQueue ?? throw new ArgumentNullException(nameof(backgroundQueue));
 
-        // 🚀 Exponential retry engine setup
         _sageRetryPolicy = Policy
             .Handle<HttpRequestException>()
-            .OrResult<HttpResponseMessage>(r => (int)r.StatusCode >= 500 || r.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
-            .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            .OrResult<HttpResponseMessage>(r =>
+                (int)r.StatusCode >= 500 ||
+                r.StatusCode == System.Net.HttpStatusCode.RequestTimeout)
+            .WaitAndRetryAsync(
+                3,
+                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
     }
+
     // ==========================================
     // 🚀 STABILIZED: CREATE CONTACT IN SAGE X3
     // ==========================================
@@ -140,7 +144,7 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
     }
 
     // ==========================================
-    // 🔍 SNAPSHOTS & DATA RETRIEVAL
+    // 🔍 SNAPSHOTS & DATA RETRIEVAL (BY EMAIL)
     // ==========================================
     public async Task<BusinessPartnerSnapshotDto?> GetPartnerByEmailAsync(string? email, CancellationToken ct = default)
     {
@@ -149,20 +153,22 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         var partner = await _partnerRepo.GetByEmailAsync(email!, ct);
         if (partner is null) return null;
 
-        var invoices = await _invoiceRepo.GetByBusinessPartnerAsync(partner.BpCode, ct);
         var orders = await _salesRepo.GetOpenOrdersAsync(partner.BpCode, ct);
 
-        var now = _clock.UtcNow;
-        var overdue = invoices.Where(i => i.DueDate < now && i.OutstandingAmount > 0).ToList();
+        // ====================================================================
+        // FIXED: PULL TARGETED PARTNER METRICS INSTEAD OF GLOBAL SUMMARIES
+        // ====================================================================
+        var outstanding = await _sageClient.GetOutstandingInvoiceValueAsync(partner.BpCode, ct);
+        var overdueCount = await _sageClient.GetOverdueInvoicesCountAsync(partner.BpCode, ct);
 
         return new BusinessPartnerSnapshotDto(
             partner.BpCode,
             partner.Company,
             partner.CreditLimit,
-            invoices.Sum(i => i.OutstandingAmount),
+            outstanding,
             orders.Count,
-            overdue.Count,
-            overdue.Sum(i => i.OutstandingAmount),
+            overdueCount,
+            outstanding,
             partner.LastContactDate)
         {
             FullName = partner.ContactName,
@@ -172,6 +178,9 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             Timeline = await GetRecentActivityTimeline(partner.BpCode, ct)
         };
     }
+
+
+
 
     private async Task<List<ActivityDto>> GetRecentActivityTimeline(string bpCode, CancellationToken ct)
     {
@@ -183,6 +192,9 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         };
     }
 
+    // ==========================================
+    // 🔍 SNAPSHOTS & DATA RETRIEVAL (BY CODE)
+    // ==========================================
     public async Task<BusinessPartnersResponse?> GetSnapshotAsync(
         GetBusinessPartnerSnapshotRequest request,
         CancellationToken ct)
@@ -190,24 +202,27 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         var partner = await _partnerRepo.GetByCodeAsync(request.BpCode, ct);
         if (partner is null) return null;
 
-        var invoices = await _invoiceRepo.GetByBusinessPartnerAsync(request.BpCode, ct);
         var orders = await _salesRepo.GetOpenOrdersAsync(request.BpCode, ct);
 
-        var now = _clock.UtcNow;
-        var overdue = invoices.Where(i => i.DueDate < now && i.OutstandingAmount > 0).ToList();
+        // ====================================================================
+        // FIXED: PULL TARGETED PARTNER METRICS INSTEAD OF GLOBAL SUMMARIES
+        // ====================================================================
+        var outstanding = await _sageClient.GetOutstandingInvoiceValueAsync(request.BpCode, ct);
+        var overdueCount = await _sageClient.GetOverdueInvoicesCountAsync(request.BpCode, ct);
 
         var dto = new BusinessPartnerSnapshotDto(
             partner.BpCode,
             partner.Company,
             partner.CreditLimit,
-            invoices.Sum(i => i.OutstandingAmount),
+            outstanding,
             orders.Count,
-            overdue.Count,
-            overdue.Sum(i => i.OutstandingAmount),
+            overdueCount,
+            outstanding,
             partner.LastContactDate);
 
         return new BusinessPartnersResponse(dto);
     }
+
     // ==========================================
     // 📊 DASHBOARD KPI METHODS
     // ==========================================

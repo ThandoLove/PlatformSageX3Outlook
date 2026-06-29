@@ -1,126 +1,133 @@
 ﻿/* ========================================================= 
-   TOPBAR COMPONENT MASTER FRAME (Scoped Grid Mechanics)
+   TOPBAR MASTER LAYOUT CONTAINER
    ========================================================= */
 .sage-topbar-master {
-    background-color: var(--sage-navy, #003366) !important;
-    height: 40px !important;
-    width: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    padding: 0 15px !important;
-    box-sizing: border-box !important;
+    background-color: #0d1b2a !important; /* Kept to override FluentUI base defaults */
+    height: 48px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ZONE 1: BRANDING (LOCKED - NO SQUISH) */
+/* ZONE 1: BRANDING AND TITLE */
 .zone-left {
-    display: flex !important;
-    align-items: center !important;
+    display: flex;
+    align-items: center;
     gap: 12px;
-    flex: 0 0 auto !important;
-    white-space: nowrap !important;
-    min-width: 0;
+    flex: 0 0 auto;
 }
 
 .sage-brand-text {
-    color: #ffffff !important;
-    font-size: 0.72rem !important;
-    font-weight: 800 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05rem !important;
-    opacity: 1 !important;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06rem;
 }
 
 .topbar-divider {
-    width: 1px !important;
-    height: 16px !important;
-    background: rgba(255, 255, 255, 0.3) !important;
-    margin: 0 8px !important;
-    opacity: 0.4;
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .page-dynamic-title {
-    color: #ffffff !important;
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-    white-space: nowrap !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
-/* ZONE 2: SEARCH (Flexible Center Spacer) */
+/* ZONE 2: CENTERED FIXED SEARCH BAR */
 .zone-middle {
-    flex: 1 !important;
-    display: flex !important;
-    justify-content: center !important;
-    padding: 0 20px !important;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 0 32px;
     min-width: 0;
 }
 
 .search-input-group {
-    display: flex !important;
-    align-items: center !important;
-    background: rgba(255, 255, 255, 0.12) !important;
-    padding: 0 10px !important;
-    border-radius: 4px !important;
-    width: 100% !important;
-    max-width: 380px !important;
-    height: 28px !important;
-    transition: background 0.2s, border-color 0.2s;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0 12px;
+    border-radius: 6px;
+    width: 100%;
+    max-width: 420px;
+    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease-in-out;
 }
 
     .search-input-group:focus-within {
-        background: rgba(255, 255, 255, 0.2) !important;
-        border-color: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
     }
 
 .topbar-search-input {
-    border: none !important;
-    background: transparent !important;
-    font-size: 0.75rem !important;
-    color: #ffffff !important;
-    outline: none !important;
-    width: 100% !important;
+    border: none;
+    background: transparent;
+    font-size: 0.8rem;
+    color: #ffffff;
+    outline: none;
+    width: 100%;
+    margin-left: 8px;
 }
 
-/* ZONE 3: PROFILE & METRICS (Align to Edge) */
+/* ZONE 3: RIGHT SECTION METRICS & CONTROLS */
 .zone-right {
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px;
-    flex: 0 0 auto !important;
-    min-width: 0;
-    justify-content: flex-end !important;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 0 0 auto;
 }
 
 .connection-status {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.7rem;
-    color: #ffffff !important;
-    border-right: 1px solid rgba(255,255,255,0.2);
-    padding-right: 12px;
-    cursor: default;
-    user-select: none;
+    padding-right: 16px;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.user-profile-section {
-    padding: 2px 8px;
-    border-radius: 4px;
-    transition: background 0.2s;
+.conn-text-label {
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
-    .user-profile-section:hover {
-        background: rgba(255, 255, 255, 0.1);
+    .conn-text-label.text-success {
+        color: #10b981;
     }
 
-/* ========================================================= 
-   COMPENSATING UTILITIES FOR INLINE OVERRIDES
-   ========================================================= */
-::deep .fluent-switch-label {
-    color: rgba(255,255,255,0.9) !important;
-    font-size: 0.7rem !important;
+    .conn-text-label.text-error {
+        color: #f43f5e;
+    }
+
+/* USER TEXT INFORMATION BADGE */
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.topbar-persona { color: white !important; font-size: 0.75rem !important; }
+.user-meta-text-wrap {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.user-display-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.user-display-email {
+    font-size: 0.7rem;
+    color: #64748b;
+}

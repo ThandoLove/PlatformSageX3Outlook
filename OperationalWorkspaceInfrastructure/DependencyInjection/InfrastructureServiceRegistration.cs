@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp; // Added this using directive
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Interfaces;
 using OperationalWorkspaceApplication.Abstractions;
 using OperationalWorkspaceApplication.Services;
 using OperationalWorkspaceInfrastructure.Caching;
@@ -101,7 +102,7 @@ public static class InfrastructureServiceRegistration
 
         // Repositories (100% PRESERVED RELEVANT MAPPINGS FROM YOUR EXISTING CODE)
         services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
-        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+       
         services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
       
         services.AddScoped<ITaskRepository, TaskRepository>();

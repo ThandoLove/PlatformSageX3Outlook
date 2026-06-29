@@ -1,10 +1,8 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using OperationalWorkspaceApplication.Interfaces;
+
 
 namespace OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 
@@ -46,15 +44,15 @@ public class MockSageX3Client : ISageX3Client
         => Task.FromResult<SalesOrderDetailsResponse?>(new SalesOrderDetailsResponse(new SalesOrderDto { Id = Guid.NewGuid(), OrderNumber = "MOCK-101", TotalAmount = 1500m, OrderStatus = "Open" }));
 
     // =========================================================================
-    // 🟢 INVOICE MEMBERS (🚀 FIXED FROM BACKEND NETWORK COMPILATION ERROR)
+    // 📄 READ-ONLY INVOICE LOOKUPS
     // =========================================================================
 
-    public Task<InvoiceDto?> GetInvoiceAsync(Guid id, CancellationToken ct = default)
+    public Task<InvoiceDto?> GetInvoiceAsync(string invoiceNumber, CancellationToken ct = default)
     {
         return Task.FromResult<InvoiceDto?>(new InvoiceDto
         {
-            Id = id,
-            InvoiceNumber = "INV-MOCK-771",
+            Id = Guid.NewGuid(),
+            InvoiceNumber = invoiceNumber,
             CustomerName = "Mock Client Industries",
             TotalAmount = 4500.00m,
             OutstandingAmount = 1200.00m,
@@ -66,8 +64,6 @@ public class MockSageX3Client : ISageX3Client
 
     public Task<IEnumerable<InvoiceDto>> GetInvoicesPagedAsync(int page, int pageSize, CancellationToken ct = default)
     {
-        // 🚀 FIXED: Stripped out the broken SafeGetAsync query dependency. 
-        // Instantly dispatches a clean, structured mock data collection array to avoid compiler crashes.
         var mockPagedInvoicesCollection = new List<InvoiceDto>
         {
             new InvoiceDto { Id = Guid.NewGuid(), InvoiceNumber = "INV-MOCK-001", CustomerName = "Tech Innovations Inc.", TotalAmount = 12500m, OutstandingAmount = 0m, Status = "Paid", IssueDate = DateTime.UtcNow.AddDays(-30), DueDate = DateTime.UtcNow },
@@ -76,6 +72,10 @@ public class MockSageX3Client : ISageX3Client
 
         return Task.FromResult<IEnumerable<InvoiceDto>>(mockPagedInvoicesCollection);
     }
+
+    // =========================================================================
+    // 📊 GLOBAL INVOICE METRICS (DASHBOARD / ADMIN KPIS)
+    // =========================================================================
 
     public Task<int> GetOverdueInvoicesCountAsync(CancellationToken ct = default)
         => Task.FromResult(5);
@@ -88,4 +88,37 @@ public class MockSageX3Client : ISageX3Client
 
     public Task<int> GetUserTotalInvoicesGeneratedCountAsync(string userId, CancellationToken ct = default)
         => Task.FromResult(120);
+
+    public Task<decimal> GetOutstandingInvoiceValueAsync(CancellationToken ct = default)
+    {
+        return Task.FromResult(185000m);
+    }
+
+    public Task<decimal> GetUserOutstandingInvoiceValueAsync(string userId, CancellationToken ct = default)
+    {
+        return Task.FromResult(42000m);
+    }
+
+    public Task<decimal> GetCurrentMonthInvoiceValueAsync(CancellationToken ct = default)
+    {
+        return Task.FromResult(76000m);
+    }
+
+    public Task<decimal> GetUserCurrentMonthInvoiceValueAsync(string userId, CancellationToken ct = default)
+    {
+        return Task.FromResult(18000m);
+    }
+
+    // =========================================================================
+    // 🔥 BP-SPECIFIC INVOICE METRICS (CUSTOMER CONTEXT / SNAPSHOTS)
+    // =========================================================================
+
+    public Task<int> GetOverdueInvoicesCountAsync(string bpCode, CancellationToken ct = default)
+        => Task.FromResult(2);
+
+    public Task<decimal> GetOutstandingInvoiceValueAsync(string bpCode, CancellationToken ct = default)
+        => Task.FromResult(42000m);
+
+    public Task<decimal> GetCurrentMonthInvoiceValueAsync(string bpCode, CancellationToken ct = default)
+        => Task.FromResult(18000m);
 }

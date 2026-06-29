@@ -4,6 +4,7 @@ using OperationalWorkspace.Domain.Entities;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IRepository;
 using OperationalWorkspaceApplication.Interfaces.IServices;
+using OperationalWorkspaceApplication.Interfaces;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3;

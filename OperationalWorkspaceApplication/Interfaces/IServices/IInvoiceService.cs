@@ -1,30 +1,24 @@
 ﻿using OperationalWorkspaceApplication.DTOs;
 
-namespace OperationalWorkspaceApplication.Interfaces.IServices
+namespace OperationalWorkspaceApplication.Interfaces.IServices;
+
+public interface IInvoiceService
 {
-    public interface IInvoiceService
-    {
-        Task<int> CountHighRiskAccountsAsync();
-        Task<int> CountInvoicesDueAsync(string userId);
-        Task<int> CountInvoicesGeneratedAsync();
-        Task<int> CountOverdueInvoicesAsync();
+    Task<IEnumerable<InvoiceDto>> GetAllAsync(int page, int pageSize);
 
-        // Shield: Use concrete DTOs so the Controller can access 'Id' and other properties
-        Task<InvoiceDto> CreateFromOrderAsync(Guid orderId);
+    Task<InvoiceDto?> GetByIdAsync(Guid id);
 
-        // FIX: Changed from Task<object> to Task<InvoiceDto>
-        Task<InvoiceDto> CreateInvoiceAsync(InvoiceDto dto);
+    Task<int> CountOverdueInvoicesAsync();
 
-        // FIX: Changed from Task<object> to Task<IEnumerable<InvoiceDto>>
-        // This allows the API to return a proper JSON array of invoices
-        Task<IEnumerable<InvoiceDto>> GetAllAsync(int page, int pageSize);
+    Task<int> CountInvoicesGeneratedAsync();
 
-        Task<InvoiceDto?> GetByIdAsync(Guid id);
-        Task<decimal> GetMonthlySalesAsync(string userId);
-        Task<decimal> GetOutstandingReceivablesAsync(string userId);
-        Task<decimal> GetOutstandingReceivablesAsync();
+    Task<int> CountInvoicesDueAsync(string userId);
 
-        Task<decimal> GetTotalOutstandingReceivablesAsync();
-        Task<decimal> GetTotalMonthlySalesAsync();
-    }
+    Task<decimal> GetOutstandingInvoiceValueAsync();
+
+    Task<decimal> GetUserOutstandingInvoiceValueAsync(string userId);
+
+    Task<decimal> GetCurrentMonthInvoiceValueAsync();
+
+    Task<decimal> GetUserCurrentMonthInvoiceValueAsync(string userId);
 }

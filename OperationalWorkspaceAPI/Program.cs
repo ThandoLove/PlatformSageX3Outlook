@@ -200,19 +200,27 @@ var sageCircuitBreaker = HttpPolicyExtensions
 
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
+    // Fully qualify the Mock implementation class path
+    builder.Services.AddScoped<
+        OperationalWorkspaceApplication.Interfaces.ISageX3Client,
+        OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock.MockSageX3Client>();
 }
 else
 {
+    // Fully qualify the Production implementation class path
     builder.Services
-        .AddHttpClient<ISageX3Client, SageX3Client>(client =>
-        {
-            client.BaseAddress = new Uri(baseUrl);
-            client.Timeout = TimeSpan.FromSeconds(30);
-        })
+        .AddHttpClient<
+            OperationalWorkspaceApplication.Interfaces.ISageX3Client,
+            OperationalWorkspaceInfrastructure.ExternalServices.SageX3.SageX3Client>(client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
         .AddPolicyHandler(sagePolicy)
         .AddPolicyHandler(sageCircuitBreaker);
 }
+
+
 builder.Services
     .AddHttpClient<ISageRestService, SageRestService>(client =>
     {
@@ -301,7 +309,7 @@ builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 builder.Services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
-builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+
 builder.Services.AddScoped<IKnowledgeRepository, KnowledgeRepository>();
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

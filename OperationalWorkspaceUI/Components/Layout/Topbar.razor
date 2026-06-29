@@ -8,14 +8,14 @@
 
 <div class="sage-topbar-master">
 
-    @* ZONE 1: LEFT - Branding & Dynamic Title *@
+    <!-- ZONE 1: BRANDING & TITLE -->
     <div class="zone-left">
         <span class="sage-brand-text">SAGE X3 CONTEXTUAL WORKSPACE</span>
         <div class="topbar-divider"></div>
         <span class="page-dynamic-title">@PageTitle</span>
     </div>
 
-    @* ZONE 2: MIDDLE - Search (Acting as Flexible Spacer) *@
+    <!-- ZONE 2: FLEXIBLE SPACER SEARCH STRIP -->
     <div class="zone-middle">
         <div class="search-input-group">
             <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
@@ -25,32 +25,43 @@
         </div>
     </div>
 
-    @* ZONE 3: RIGHT - Status and Profile *@
-    <div class="zone-right" style="display: flex; align-items: center; gap: 14px;">
+    <!-- ZONE 3: STATUS & DECOUPLED PROFILE VIEW -->
+    <div class="zone-right">
         <div class="connection-status">
-            <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
-                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
-            <span class="conn-text">Connected to Sage X3</span>
+            @if (UIState.IsSageConnected)
+            {
+                <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
+                <span class="conn-text-label text-success">Connected to Sage X3</span>
+            }
+            else
+            {
+                <FluentIcon Value="@(new Icons.Filled.Size12.DismissCircle())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Error" />
+                <span class="conn-text-label text-error">Sage X3 Disconnected</span>
+            }
         </div>
 
-        @* 🚀 FIXED: Displays the real authenticated user parameters dynamically from UIState! [INDEX] *@
-        <div class="user-profile-section" style="display: flex; align-items: center; gap: 8px;">
-            <div style="display: flex; flex-direction: column; text-align: right; font-family: Inter, sans-serif;">
-                <span style="font-size: 13px; font-weight: 600; color: white;">@DisplayName</span>
-                <span style="font-size: 10px; color: #94a3b8;">@DisplayEmail</span>
+        <div class="user-profile-section">
+            <div class="user-meta-text-wrap">
+                <span class="user-display-name">@DisplayName</span>
+                <span class="user-display-email">@DisplayEmail</span>
             </div>
-            <FluentPersona Name="@DisplayName" Status="@PresenceStatus.Available" AvatarSize="24" Brief="true" Class="topbar-persona" />
+            <FluentPersona Name="@DisplayName"
+                           Status="@(string.IsNullOrWhiteSpace(UIState.UserName) ? PresenceStatus.Offline : PresenceStatus.Available)"
+                           AvatarSize="24"
+                           Brief="true"
+                           Class="topbar-persona" />
         </div>
     </div>
 </div>
 @code {
     private string PageTitle { get; set; } = "Dashboard";
 
-    // 🚀 FIXED: Pulls directly from your UIState variables with smooth fallback text strings for initial boots [INDEX]
     private string DisplayName =>
-    string.IsNullOrWhiteSpace(UIState.UserName)
-    ? "Not Logged In"
-    : UIState.UserName;
+        string.IsNullOrWhiteSpace(UIState.UserName)
+        ? "Not Logged In"
+        : UIState.UserName;
 
     private string DisplayEmail =>
         string.IsNullOrWhiteSpace(UIState.UserEmail)
@@ -60,7 +71,7 @@
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
-        UIState.OnChange += HandleStateChanged; // Listens to your NotifyStateChanged() call automatically! [INDEX]
+        UIState.OnChange += HandleStateChanged;
         UpdatePageTitle();
     }
 
@@ -72,7 +83,6 @@
 
     private void HandleStateChanged()
     {
-        // Safe thread execution update when UIState changes asynchronously on login [INDEX]
         InvokeAsync(StateHasChanged);
     }
 
@@ -83,7 +93,6 @@
         if (relativePath.Contains("?"))
             relativePath = relativePath.Split('?')[0];
 
-        // Mapping Logic - Ensures sub-pages show correct parent title
         if (string.IsNullOrEmpty(relativePath) || relativePath.StartsWith("dashboard"))
             PageTitle = "Dashboard";
         else if (relativePath.StartsWith("tickets"))
@@ -117,6 +126,6 @@
     public void Dispose()
     {
         Nav.LocationChanged -= HandleLocationChanged;
-        UIState.OnChange -= HandleStateChanged; // Safe teardown to avoid memory footprint traps [INDEX]
+        UIState.OnChange -= HandleStateChanged;
     }
 }

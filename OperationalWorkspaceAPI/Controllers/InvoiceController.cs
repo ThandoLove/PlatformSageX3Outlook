@@ -49,7 +49,7 @@ namespace OperationalWorkspaceAPI.Controllers
             }
             catch (Exception)
             {
-                return Success(new System.Collections.Generic.List<InvoiceDto>()); // Safe empty fallback return
+                return Failure("Unable to retrieve invoices from Sage X3.");
             }
         }
 

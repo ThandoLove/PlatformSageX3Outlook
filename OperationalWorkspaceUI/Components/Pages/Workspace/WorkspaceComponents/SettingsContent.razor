@@ -1,4 +1,4 @@
-﻿@using OperationalWorkspaceUI.UIServices.ToastUIService 
+﻿@using OperationalWorkspaceUI.UIServices.ToastUIService
 @using OperationalWorkspaceUI.UIServices.Workspace
 @using OperationalWorkspaceUI.State
 
@@ -100,7 +100,8 @@
                 </label>
             </div>
 
-            <div class="card-footer-action-row" style="margin-top: 20px;">
+            <!-- FIXED: Inline margin-top removed and converted to a clean utility class -->
+            <div class="card-footer-action-row toggle-footer-wrapper">
                 <button type="button" class="primary-btn" @onclick="ExecuteGlobalPreferencesCommit">Save Toggles</button>
             </div>
         </section>
@@ -194,7 +195,6 @@
     private bool _isSavingProfile = false;
     private bool _isSavingSecurity = false;
 
-    // Toggle control variables
     private bool _emailNotifications = true;
     private bool _workflowAlerts = true;
     private bool _crmNotifications = false;
@@ -206,7 +206,6 @@
     protected override void OnInitialized()
     {
         UIState.OnChange += RefreshUser;
-
         RefreshUser();
     }
 
@@ -214,10 +213,10 @@
     {
         _profileModel = new ProfileWrapperModel
         {
-            Name = UIState.UserName,
-            Email = UIState.UserEmail,
-            Role = "Sage X3 Operator",
-            Department = "Operations"
+            Name = string.IsNullOrWhiteSpace(UIState.UserName) ? "Not Logged In" : UIState.UserName,
+            Email = string.IsNullOrWhiteSpace(UIState.UserEmail) ? "No Email Provided" : UIState.UserEmail,
+            Role = string.IsNullOrWhiteSpace(UIState.UserName) ? "Guest Operator" : "Sage X3 Operator",
+            Department = string.IsNullOrWhiteSpace(UIState.UserName) ? "None" : "Operations"
         };
 
         InvokeAsync(StateHasChanged);
@@ -233,32 +232,25 @@
         _isSavingProfile = true;
         StateHasChanged();
 
-        await Task.Delay(800); // Simulate network latency loop
+        await Task.Delay(800);
 
         _isSavingProfile = false;
-
         StateHasChanged();
 
-        ToastService.ShowSuccess(
-            $"Profile updated successfully for {_profileModel.Name}."
-        );
+        ToastService.ShowSuccess($"Profile updated successfully for {_profileModel.Name}.");
     }
 
     private async Task ExecuteGlobalPreferencesCommit()
     {
         await SettingsService.SaveSettingsAsync();
-        ToastService.ShowSuccess(
-    "Notification preferences saved successfully."
-);
+        ToastService.ShowSuccess("Notification preferences saved successfully.");
     }
 
     private async Task ExecuteSecurityMutationPipeline()
     {
         if (_securityModel.NewPassword != _securityModel.ConfirmPassword)
         {
-            ToastService.ShowError(
-    "Passwords do not match."
-);
+            ToastService.ShowError("Passwords do not match.");
             return;
         }
 
@@ -268,18 +260,14 @@
         await Task.Delay(1000);
 
         _isSavingSecurity = false;
-        _securityModel = new SecurityWrapperModel(); // Clear memory password values
-        ToastService.ShowSuccess(
-    "Security settings updated successfully."
-);
+        _securityModel = new SecurityWrapperModel();
+        ToastService.ShowSuccess("Security settings updated successfully.");
         StateHasChanged();
     }
 
     private void TriggerFeatureConfigurePrompt(string platform)
     {
-        ToastService.ShowInfo(
-            $"{platform} configuration launched."
-        );
+        ToastService.ShowInfo($"{platform} configuration launched.");
     }
 
     public class ProfileWrapperModel
@@ -288,7 +276,8 @@
         public string Name { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
 
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email tracking route is mandatory."), System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid formatting.")]
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email tracking route is mandatory.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid formatting.")]
         public string Email { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
     }

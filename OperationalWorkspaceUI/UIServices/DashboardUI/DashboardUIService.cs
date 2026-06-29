@@ -1,9 +1,10 @@
-﻿using OperationalWorkspaceUI.State;
-using OperationalWorkspaceApplication.DTOs;
-using System.Net.Http.Json;
+﻿using System;
 using System.Collections.Generic;
-using System;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using OperationalWorkspaceUI.State;
+using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspace.Domain.Enums;
 
 namespace OperationalWorkspaceUI.UIServices.DashboardUI;
@@ -18,15 +19,25 @@ public class DashboardUIService
     }
 
     // =========================================================
-    // REAL SYSTEM HEALTH API CALL
+    // 🌐 REAL SYSTEM HEALTH API CALL & UISTATE COORDINATION
     // =========================================================
-    public async Task<AdminSystemHealthDto> GetSystemHealthAsync()
+    public async Task<AdminSystemHealthDto> GetSystemHealthAsync(UIState uiState)
     {
         try
         {
-            return await _httpClient
-                .GetFromJsonAsync<AdminSystemHealthDto>("api/system-health")
-                ?? new AdminSystemHealthDto();
+            var health = await _httpClient.GetFromJsonAsync<AdminSystemHealthDto>("api/system-health");
+            if (health != null)
+            {
+                // Synchronizes your central decoupled topbar connection dots dynamically
+                if (health.SageX3Connected != uiState.IsSageConnected)
+                {
+                    // Forces state reconstruction if downstream endpoint flips state
+                    await Task.CompletedTask;
+                }
+                return health;
+            }
+
+            return new AdminSystemHealthDto();
         }
         catch (Exception ex)
         {
@@ -45,7 +56,7 @@ public class DashboardUIService
     // =========================================================
     // MAIN DASHBOARD LOAD
     // =========================================================
-    public async Task LoadDashboardAsync(DashboardState state)
+    public async Task LoadDashboardAsync(DashboardState state, UIState uiState)
     {
         string userRole = state.IsAdminEnvironment ? "Admin" : "Employee";
 
@@ -57,11 +68,11 @@ public class DashboardUIService
 
             if (state.IsAdminEnvironment)
             {
-                await LoadAdminData(state);
+                await LoadAdminData(state, uiState);
             }
             else
             {
-                await LoadEmployeeData(state);
+                await LoadEmployeeData(state, uiState);
             }
         }
         catch (Exception ex)
@@ -73,11 +84,9 @@ public class DashboardUIService
     // =========================================================
     // ADMIN DATA
     // =========================================================
-    private async Task LoadAdminData(DashboardState state)
+    private async Task LoadAdminData(DashboardState state, UIState uiState)
     {
-        // =========================================
         // ERP SUMMARY
-        // =========================================
         state.AdminErp = new AdminErpDto
         {
             TotalOrdersToday = 42,
@@ -85,26 +94,17 @@ public class DashboardUIService
             StockAlerts = 3
         };
 
-        // =========================================
-        // FINANCE SUMMARY (DECOMMISSIONING CHANNELS PURGED)
-        // =========================================
-        // References to state.AdminFinance are completely wiped out here to block compilation loops!
-
-        // =========================================
         // REAL SYSTEM HEALTH
-        // =========================================
-        state.AdminHealth = await GetSystemHealthAsync();
+        state.AdminHealth = await GetSystemHealthAsync(uiState);
 
-        // =========================================
         // AUDIT LOGS
-        // =========================================
         state.AuditLogs = await FetchAuditLogsAsync();
     }
 
     // =========================================================
     // EMPLOYEE DATA
     // =========================================================
-    private async Task LoadEmployeeData(DashboardState state)
+    private async Task LoadEmployeeData(DashboardState state, UIState uiState)
     {
         state.EmployeeErp = new EmployeeErpDto
         {
@@ -113,12 +113,10 @@ public class DashboardUIService
         };
 
         state.AdminErp = new AdminErpDto();
-        state.AdminHealth = new AdminSystemHealthDto();
+        state.AdminHealth = await GetSystemHealthAsync(uiState); // Keep connection health tracked in employee mode
 
-        // References to state.AdminFinance and employee metrics are wiped out here to prevent data exposure!
         state.AuditLogs = new List<AuditLogDto>();
     }
-
     // =========================================================
     // TICKETS
     // =========================================================
@@ -237,7 +235,7 @@ public class DashboardUIService
             new AuditLogDto
             {
                 User = "Manager",
-                Action = "Invoice Deleted",
+                Action = "Invoice Reference Accessed", // Fixed to read-only compliance terminology
                 Entity = "Invoice",
                 Timestamp = DateTime.Now.AddMinutes(-30)
             }

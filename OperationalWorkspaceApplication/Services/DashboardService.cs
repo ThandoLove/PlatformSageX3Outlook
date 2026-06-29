@@ -11,7 +11,7 @@ namespace OperationalWorkspaceApplication.Services
     {
         private readonly ISalesService _salesService;
         private readonly IInvoiceService _invoiceService;
-        private readonly IInvoiceRepository _invoiceRepository;
+        
         private readonly ITaskService _taskService;
         private readonly IBusinessPartnerService _businessPartnerService;
         private readonly IAuditLogService _auditLogService;
@@ -23,7 +23,7 @@ namespace OperationalWorkspaceApplication.Services
         public DashboardService(
             ISalesService salesService,
             IInvoiceService invoiceService,
-            IInvoiceRepository invoiceRepository,
+           
             ITaskService taskService,
             IBusinessPartnerService businessPartnerService,
             IAuditLogService auditLogService,
@@ -35,7 +35,7 @@ namespace OperationalWorkspaceApplication.Services
         {
             _salesService = salesService;
             _invoiceService = invoiceService;
-            _invoiceRepository = invoiceRepository; // 🚀 FIXED: Wired up missing constructor routing initialization field
+           
             _taskService = taskService;
             _businessPartnerService = businessPartnerService;
             _auditLogService = auditLogService;

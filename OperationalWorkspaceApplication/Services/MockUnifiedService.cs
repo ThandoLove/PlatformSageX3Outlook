@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OperationalWorkspace.Domain.Entities;
+using OperationalWorkspaceApplication.Interfaces;
 using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
@@ -471,7 +471,25 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<int> CountOverdueInvoicesAsync() => 5;
         public async Task<int> CountInvoicesGeneratedAsync() => 120;
         public async Task<int> CountInvoicesDueAsync(string userId) => 3;
-        public async Task<int> CountHighRiskAccountsAsync() => 2;
+        public async Task<decimal> GetOutstandingInvoiceValueAsync()
+        {
+            return await Task.FromResult(50000m);
+        }
+
+        public async Task<decimal> GetUserOutstandingInvoiceValueAsync(string userId)
+        {
+            return await Task.FromResult(12000m);
+        }
+
+        public async Task<decimal> GetCurrentMonthInvoiceValueAsync()
+        {
+            return await Task.FromResult(120000m);
+        }
+
+        public async Task<decimal> GetUserCurrentMonthInvoiceValueAsync(string userId)
+        {
+            return await Task.FromResult(8500m);
+        }
 
         // =========================================================================
         // 🧪 MOCK COMPLIANCE LAYER STUB (ADDED)
