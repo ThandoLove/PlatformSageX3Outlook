@@ -1,8 +1,7 @@
 ﻿@using OperationalWorkspaceUI.Models.Constant
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
-@using OperationalWorkspaceApplication.DTOs
-@using OperationalWorkspaceApplication.Interfaces.IServices
+
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @implements IDisposable
@@ -10,15 +9,14 @@
 @inject NavigationManager Nav
 @inject NavigationService NavService
 @inject DashboardState DashboardState
-@inject IUserContextService UserContextService
+@inject UIState UIState
 
 <div class="sage-sidebar @(DashboardState.IsSidebarCollapsed ? "is-collapsed" : "")">
 
     <!-- SIDEBAR HEADER -->
-    <div class="sidebar-header" @onclick="ToggleSidebarLayout" style="cursor: pointer;">
+    <div class="sidebar-header" @onclick="ToggleSidebarLayout">
         <FluentIcon Value="@(new Icons.Regular.Size16.LineHorizontal3())"
                     Color="@Color.Fill" />
-        <span class="brand-text">Hub</span>
     </div>
 
     <!-- NAVIGATION -->
@@ -64,8 +62,8 @@
             <span class="nav-link-text">Documents</span>
         </FluentNavLink>
 
-        <!-- ADMIN ONLY -->
-        @if (IsAdmin)
+        <!-- DYNAMIC ADMINISTRATIVE VISIBILITY BLOCKS -->
+        @if (UIState.IsAdminEnvironment)
         {
             <div class="sidebar-divider"></div>
 
@@ -110,17 +108,11 @@
     </div>
 
 </div>
-
 @code {
-    private UserDto? CurrentUser;
-
-    private bool IsAdmin =>
-        CurrentUser?.Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) == true;
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         DashboardState.OnChange += Refresh;
-        CurrentUser = await UserContextService.GetCurrentUserAsync();
+        UIState.OnChange += Refresh;
     }
 
     private void ToggleSidebarLayout()
@@ -136,5 +128,6 @@
     public void Dispose()
     {
         DashboardState.OnChange -= Refresh;
+        UIState.OnChange -= Refresh;
     }
 }

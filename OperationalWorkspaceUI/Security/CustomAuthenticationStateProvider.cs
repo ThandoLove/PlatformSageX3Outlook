@@ -67,11 +67,14 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
     public void NotifyUserLogout()
     {
+        // Reverts the current principal back to an empty anonymous identity
         _currentUser = _anonymous;
 
+        // Forces .NET Core Security pipeline to re-evaluate page access rules
         NotifyAuthenticationStateChanged(
             Task.FromResult(new AuthenticationState(_anonymous)));
     }
+
 
     // Lightweight native JWT payload extractor
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)

@@ -1,8 +1,8 @@
 ﻿/* ========================================================= 
-   TOPBAR MASTER LAYOUT CONTAINER
+   TOPBAR COMPONENT MASTER LAYOUT WRAPPER (NO IMPORTANT SHIT)
    ========================================================= */
 .sage-topbar-master {
-    background-color: #0d1b2a !important; /* Kept to override FluentUI base defaults */
+    background-color: #0f172a; /* Sleek Dark Obsidian Carbon Slate */
     height: 48px;
     width: 100%;
     display: flex;
@@ -10,10 +10,10 @@
     justify-content: space-between;
     padding: 0 20px;
     box-sizing: border-box;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid #1e293b;
 }
 
-/* ZONE 1: BRANDING AND TITLE */
+/* ZONE 1: BRANDING */
 .zone-left {
     display: flex;
     align-items: center;
@@ -26,13 +26,13 @@
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06rem;
+    letter-spacing: 0.05rem;
 }
 
 .topbar-divider {
     width: 1px;
     height: 16px;
-    background: rgba(255, 255, 255, 0.2);
+    background: #334155;
 }
 
 .page-dynamic-title {
@@ -41,7 +41,7 @@
     font-weight: 500;
 }
 
-/* ZONE 2: CENTERED FIXED SEARCH BAR */
+/* ZONE 2: BALANCED CENTER SEARCH STRIP */
 .zone-middle {
     flex: 1;
     display: flex;
@@ -53,20 +53,19 @@
 .search-input-group {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.06);
+    background: #1e293b;
     padding: 0 12px;
     border-radius: 6px;
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
     height: 32px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #334155;
     transition: all 0.2s ease-in-out;
 }
 
     .search-input-group:focus-within {
-        background: rgba(255, 255, 255, 0.1);
         border-color: #2563eb;
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        background: #0f172a;
     }
 
 .topbar-search-input {
@@ -79,7 +78,7 @@
     margin-left: 8px;
 }
 
-/* ZONE 3: RIGHT SECTION METRICS & CONTROLS */
+/* ZONE 3: METRICS AND LIVE USER BADGES */
 .zone-right {
     display: flex;
     align-items: center;
@@ -92,7 +91,7 @@
     align-items: center;
     gap: 6px;
     padding-right: 16px;
-    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: 1px solid #334155;
 }
 
 .conn-text-label {
@@ -108,7 +107,7 @@
         color: #f43f5e;
     }
 
-/* USER TEXT INFORMATION BADGE */
+/* ACCOUNT DETAILS INFORMATION GRID */
 .user-profile-section {
     display: flex;
     align-items: center;
@@ -131,3 +130,28 @@
     font-size: 0.7rem;
     color: #64748b;
 }
+
+
+/* ========================================================= 
+   MODERN COMPACT LOGOUT TEXT BUTTON
+   ========================================================= */
+.topbar-logout-link {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-top: 2px;
+    font-size: 9px;
+    font-weight: 700;
+    color: #f43f5e; /* Obsidian Crimson highlight color */
+    text-transform: uppercase;
+    letter-spacing: 0.03rem;
+    text-align: right;
+    cursor: pointer;
+    outline: none;
+    transition: color 0.2s ease-in-out;
+}
+
+    .topbar-logout-link:hover {
+        color: #fda4af; /* Light soft blush hover glow */
+        text-decoration: underline;
+    }

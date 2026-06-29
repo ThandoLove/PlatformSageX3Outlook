@@ -165,3 +165,54 @@
         color: #005ce6;
         text-decoration: none;
     }
+
+/* ========================================================= 
+   REFLUSHED SPINNING MIDDLEWARE UTILITIES (NO INLINE CSS)
+   ========================================================= */
+.login-error {
+    color: #f43f5e;
+    font-size: 0.85rem;
+    margin-top: 8px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .login-error i {
+        margin-right: 4px;
+    }
+
+.submit-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-chassis .75s linear infinite;
+    margin-right: 8px;
+}
+
+.sso-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #0ea5e9;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-chassis .75s linear infinite;
+    margin-right: 8px;
+}
+
+.btn-sso-login.sso-loading-active {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+@keyframes spinner-chassis {
+    to {
+        transform: rotate(360deg);
+    }
+}

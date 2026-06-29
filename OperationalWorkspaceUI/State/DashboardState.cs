@@ -216,6 +216,18 @@ namespace OperationalWorkspaceUI.State
             }
         }
 
+        public void ClearDashboard()
+        {
+            AllTasks = new List<TaskDto>();
+            RecentActivities = new List<ActivityDto>();
+            AllTickets = new List<TicketDto>();
+            AdminErp = new AdminErpDto();
+            EmployeeCrm = new EmployeeCRMDTO();
+            AdminHealth = new AdminSystemHealthDto();
+            NotifyStateChanged();
+        }
+
+
         public void Dispose()
         {
             OnChange = null;

@@ -1,5 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using OperationalWorkspaceApplication.Interfaces;
 
@@ -15,33 +17,84 @@ namespace OperationalWorkspaceUI.State
         }
 
         // ======================================================
-        // AUTHENTICATION & USER STATE (🚀 FIXED FOR MULTI-PANEL SYNC)
+        // AUTHENTICATION & ROLE MANAGEMENT ENGINE
         // ======================================================
-
-        // In production, default this to empty. The TopBar component handles the fallback to "John Smith".
         public string UserName { get; private set; } = string.Empty;
-        public string UserEmail { get; private set; } = string.Empty; // 🚀 FIXED: Exposed with public read access
+        public string UserEmail { get; private set; } = string.Empty;
+        public string UserRole { get; private set; } = string.Empty;
+        public bool IsAdminEnvironment { get; private set; } = false;
         public bool IsAuthenticated => !string.IsNullOrWhiteSpace(UserName);
 
         /// <summary>
-        /// Updates the state with the production authenticated user.
+        /// Synchronizes the centralized UI layout directly from an identity claims principal payload.
+        /// </summary>
+        public void SynchronizeUserSession(ClaimsPrincipal principal)
+        {
+            if (principal?.Identity?.IsAuthenticated == true)
+            {
+                // PRIORITIZE UNIQUE_NAME EXPLICITLY TO MATCH YOUR PAYLOAD BUILDER CONTRACT
+                UserName = principal.FindFirst("unique_name")?.Value
+                           ?? principal.FindFirst(ClaimTypes.Name)?.Value
+                           ?? "Operator User";
+
+                UserEmail = principal.FindFirst(ClaimTypes.Email)?.Value
+                            ?? principal.FindFirst("email")?.Value
+                            ?? "operator@test.com";
+
+                UserRole = principal.FindFirst(ClaimTypes.Role)?.Value
+                           ?? principal.FindFirst("role")?.Value
+                           ?? "Employee";
+
+                IsAdminEnvironment = UserRole.Equals("Administrator", StringComparison.OrdinalIgnoreCase) ||
+                                     UserRole.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                ClearUser();
+            }
+            NotifyStateChanged();
+        }
+
+
+        /// <summary>
+        /// Manual override fallback method to directly assign values if claims parameters aren't supplied.
         /// </summary>
         public void SetUser(string userName, string userEmail)
         {
             UserName = userName;
-            UserEmail = userEmail; // 🚀 FIXED: Hydrates both fields simultaneously on successful login
+            UserEmail = userEmail;
+            UserRole = "Employee";
+            IsAdminEnvironment = false;
+            NotifyStateChanged();
+        }
+
+        /// <summary>
+        /// Manual override fallback method to directly assign values with administrative privileges.
+        /// </summary>
+        public void SetAdminUser(string userName, string userEmail)
+        {
+            UserName = userName;
+            UserEmail = userEmail;
+            UserRole = "Administrator";
+            IsAdminEnvironment = true;
             NotifyStateChanged();
         }
 
         /// <summary>
         /// Clears the user session data on logout.
         /// </summary>
+        /// <summary>
+        /// Clears the user session data and role environments on logout.
+        /// </summary>
         public void ClearUser()
         {
             UserName = string.Empty;
             UserEmail = string.Empty;
-            NotifyStateChanged();
+            UserRole = string.Empty;
+            IsAdminEnvironment = false; // Relocks all restricted administrative sidebar grids
+            NotifyStateChanged();       // Triggers Topbar and Sidebar components to re-render instantly
         }
+
 
         /// <summary>
         /// Utility to force trigger mock/dummy data for local UI development and testing.
@@ -50,6 +103,8 @@ namespace OperationalWorkspaceUI.State
         {
             UserName = "John Smith";
             UserEmail = "john.smith@company.com";
+            UserRole = "Employee";
+            IsAdminEnvironment = false;
             NotifyStateChanged();
         }
 

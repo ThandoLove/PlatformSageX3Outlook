@@ -1,130 +1,96 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.Security
 @using System.Net.Http.Json
 
-@inject HttpClient Http
-@inject NavigationManager Nav
-@inject AuthenticationStateProvider AuthStateProvider
-@inject Majorsoft.Blazor.Extensions.BrowserStorage.ILocalStorageService LocalStorage
-@inject OperationalWorkspaceUI.UIServices.System.ModalService ModalService
-@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
-@inject OperationalWorkspaceUI.State.UIState UIState
-
 <div class="sage-login-body">
 
-    <!-- HEADER -->
+    <!-- HEADER ICON -->
     <div class="login-icon-circle">
         <i class="ms-Icon ms-Icon--Lock"></i>
     </div>
 
-    <h2 class="login-title">
-        Sign In To Sage X3
-    </h2>
+    <h2 class="login-title">Sign In To Sage X3</h2>
+    <p class="login-subtitle">Access your contextual operational workspace</p>
 
-    <p class="login-subtitle">
-        Access your contextual operational workspace
-    </p>
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
 
-    <EditForm Model="loginModel"
-              OnValidSubmit="HandleLogin">
-
-        <!-- USERNAME -->
+        <!-- USERNAME / EMAIL INPUT FIELD -->
         <div class="input-group-custom">
             <label>Username</label>
             <div class="input-wrapper">
                 <i class="ms-Icon ms-Icon--Contact"></i>
-                <InputText @bind-Value="loginModel.Username"
-                           placeholder="Enter username"
-                           disabled="@isBusy" />
+                <InputText @bind-Value="loginModel.Username" placeholder="operator@test.com or admin@test.com" disabled="@isBusy" />
             </div>
+            <ValidationMessage For="@(() => loginModel.Username)" />
         </div>
 
-        <!-- PASSWORD -->
+        <!-- SECURE PASSWORD INPUT FIELD -->
         <div class="input-group-custom">
             <label>Password</label>
             <div class="input-wrapper">
                 <i class="ms-Icon ms-Icon--Lock"></i>
-                <InputText @bind-Value="loginModel.Password"
-                           type="@PasswordInputType"
-                           placeholder="Enter password"
-                           disabled="@isBusy" />
-
-                <button type="button"
-                        class="password-toggle-btn"
-                        @onclick="TogglePassword"
-                        disabled="@isBusy">
+                <InputText @bind-Value="loginModel.Password" type="@PasswordInputType" placeholder="Enter password" disabled="@isBusy" />
+                <button type="button" class="password-toggle-btn" @onclick="TogglePassword" disabled="@isBusy">
                     <i class="ms-Icon ms-Icon--RedEye"></i>
                 </button>
             </div>
+            <ValidationMessage For="@(() => loginModel.Password)" />
         </div>
 
-        <!-- OPTIONS -->
+        <!-- SESSION RETENTION REMEMBER TOGGLES -->
         <div class="login-options">
             <label class="remember-option">
                 <input type="checkbox" @bind="RememberMe" disabled="@isBusy" />
                 <span>Remember me</span>
             </label>
-
-            <a href="#" class="forgot-link">
-                Forgot Password?
-            </a>
+            <a href="#" class="forgot-link">Forgot Password?</a>
         </div>
 
-        <!-- ERROR -->
+        <!-- DYNAMIC ERROR ALERTS LAYER -->
         @if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
-            <div class="login-error" style="color: #ef4444; font-size: 0.85rem; margin-top: 8px; font-weight: 500;">
-                <i class="ms-Icon ms-Icon--ErrorBadge" style="margin-right: 4px;"></i> @ErrorMessage
+            <div class="login-error">
+                <i class="ms-Icon ms-Icon--ErrorBadge"></i> @ErrorMessage
             </div>
         }
 
-        <!-- SUBMIT -->
-        <button type="submit"
-                class="btn-login-submit"
-                disabled="@isBusy">
+        <!-- SECURE FORM ACTION DISPATCH TRIGGER -->
+        <button type="submit" class="btn-login-submit" disabled="@isBusy">
             @if (isBusy && !isSsoLoading)
             {
-                <span class="spinner-border" style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spinner-border .75s linear infinite; margin-right: 8px;"></span>
+                <span class="spinner-border submit-spinner"></span>
                 <span>Authenticating...</span>
             }
             else
             {
-                <span>
-                    <i class="ms-Icon ms-Icon--Forward"></i>
-                    Sign In
-                </span>
+                <span><i class="ms-Icon ms-Icon--Forward"></i> Sign In</span>
             }
         </button>
 
-        <!-- DIVIDER -->
+        <!-- HORIZONTAL ACCENT DIVIDER -->
         <div class="login-divider">
             <span>or</span>
         </div>
 
-        <!-- SSO BUTTON -->
-        <button type="button"
-                class="btn-sso-login"
-                @onclick="InitiateSSOAuthentication"
-                disabled="@isBusy"
-                style="@(isSsoLoading ? "background: rgba(255,255,255,0.1); color: #94a3b8; cursor: not-allowed;" : "")">
+        <!-- IDENTITY PROVIDER SSO REDIRECT BRIDGE -->
+        <button type="button" class="btn-sso-login @(isSsoLoading ? "sso-loading-active" : "")" @onclick="InitiateSSOAuthentication" disabled="@isBusy">
             @if (isSsoLoading)
             {
-                <span class="spinner-border" style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid #0ea5e9; border-right-color: transparent; border-radius: 50%; animation: spinner-border .75s linear infinite; margin-right: 8px;"></span>
+                <span class="spinner-border sso-spinner"></span>
                 <span>Connecting to Identity Provider...</span>
             }
             else
             {
-                <span>
-                    <i class="ms-Icon ms-Icon--Shield"></i>
-                    Sign in with SSO
-                </span>
+                <span><i class="ms-Icon ms-Icon--Shield"></i> Sign in with SSO</span>
             }
         </button>
 
     </EditForm>
-
 </div>
+
 @code {
     private LoginRequestDto loginModel = new();
     private bool isBusy;
@@ -135,15 +101,18 @@
 
     private string PasswordInputType => ShowPassword ? "text" : "password";
 
-    private void TogglePassword()
-    {
-        ShowPassword = !ShowPassword;
-    }
+    [Inject] private OperationalWorkspaceUI.UIServices.System.AuthService AuthService { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private OperationalWorkspaceUI.UIServices.System.ModalService ModalService { get; set; } = default!;
+    [Inject] private Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env { get; set; } = default!;
+    [Inject] private HttpClient Http { get; set; } = default!;
+    [Inject] private OperationalWorkspaceUI.State.UIState UIState { get; set; } = default!;
+
+    private void TogglePassword() => ShowPassword = !ShowPassword;
 
     private async Task HandleLogin()
     {
-        if (isBusy)
-            return;
+        if (isBusy) return;
 
         try
         {
@@ -151,25 +120,48 @@
             ErrorMessage = null;
             StateHasChanged();
 
-            await Task.Delay(800);
+            await Task.Delay(400);
 
-            string dummyPayloadJson = "{\"unique_name\":\"operator@test.com\",\"role\":\"Admin\",\"permission\":\"orders.view\"}";
+            // =========================================================================
+            // 🛡️ DUAL ROLE EVALUATION MATRIX BASED ON TYPED IDENTITY EMAIL
+            // =========================================================================
+            string targetEmail = string.IsNullOrWhiteSpace(loginModel.Username) ? "operator@test.com" : loginModel.Username;
+            string targetName = "Tia Operator";
+            string targetRole = "Sales";
+
+            if (targetEmail.Contains("admin", StringComparison.OrdinalIgnoreCase))
+            {
+                targetName = "System Manager";
+                targetRole = "Administrator";
+            }
+
+            // Construct payload dictionary mapping explicit JSON token parameter strings
+            string dummyPayloadJson = $"{{\"unique_name\":\"{targetName}\",\"email\":\"{targetEmail}\",\"role\":\"{targetRole}\",\"exp\":4127131100}}";
             string encodedPayload = Convert.ToBase64String(global::System.Text.Encoding.UTF8.GetBytes(dummyPayloadJson))
                 .Replace('+', '-').Replace('/', '_').TrimEnd('=');
 
             string simulatedJwt = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{encodedPayload}.demo_signature_hash";
 
-            await LocalStorage.SetItemAsync("authToken", simulatedJwt);
+            // =========================================================================
+            // ✅ FIXED: PASS THE STRONGLY-TYPED DTO OBJECT TO MATCH ARCHITECTURE CONTRACT
+            // =========================================================================
+            var success = await AuthService.LoginAsync(loginModel);
 
-            if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
+            if (!success)
             {
-                authProvider.NotifyUserAuthentication(simulatedJwt);
+                ErrorMessage = "Authentication rejected by environment security settings.";
+                return;
             }
 
-            UIState.SetUser("Admin Operator", "operator@test.com"); 
+            // Force synchronization from the newly registered Claims Principal target
+            if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
+            {
+                var authState = await authProvider.GetAuthenticationStateAsync();
+                UIState.SynchronizeUserSession(authState.User);
+            }
 
             await ModalService.CloseModal();
-            Nav.NavigateTo("/dashboard", true);
+            Nav.NavigateTo("/dashboard", forceLoad: false);
         }
         catch (Exception ex)
         {
@@ -195,63 +187,52 @@
 
             if (Env.IsDevelopment())
             {
-                await Task.Delay(2500);
+                await Task.Delay(1000);
 
-                string mockSsoPayload = "{\"unique_name\":\"sso.operator@test.com\",\"role\":\"ERPUser\",\"is_sage_user\":true,\"sage_env\":\"SEED\"}";
-                string encodedSso = Convert.ToBase64String(global::System.Text.Encoding.UTF8.GetBytes(mockSsoPayload))
-                    .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+                // Create standard structured request shell parameter targeting your method signature
+                var ssoMockDto = new LoginRequestDto
+                {
+                    Username = "sso.operator@test.com",
+                    Password = "sso_bypass_marker"
+                };
 
-                string simulatedSsoJwt = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{encodedSso}.demo_sso_signature_hash";
-
-                await LocalStorage.SetItemAsync("authToken", simulatedSsoJwt);
+                await AuthService.LoginAsync(ssoMockDto);
 
                 if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
                 {
-                    authProvider.NotifyUserAuthentication(simulatedSsoJwt);
+                    var authState = await authProvider.GetAuthenticationStateAsync();
+                    UIState.SynchronizeUserSession(authState.User);
                 }
 
-                UIState.SetUser("SSO Sage Operator", "sso.operator@test.com"); 
-
                 await ModalService.CloseModal();
-                Nav.NavigateTo("/dashboard", true);
+                Nav.NavigateTo("/dashboard", forceLoad: false);
             }
             else
             {
                 var authResult = await Http.GetFromJsonAsync<LoginResponse>("/api/v1/auth/sso/challenge");
-
                 if (authResult is null || string.IsNullOrWhiteSpace(authResult.Token))
                 {
                     ErrorMessage = "Single Sign-On authentication handshake rejected or timed out.";
                     return;
                 }
 
-                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
-                var jsonToken = handler.ReadToken(authResult.Token) as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
-
-                var isSageUserClaim = jsonToken?.Payload.ContainsKey("is_sage_user") == true
-                                    && bool.Parse(jsonToken.Payload["is_sage_user"].ToString() ?? "false");
-
-                if (!isSageUserClaim)
+                // Enforce structured request mapping bounds across production integration tracks
+                var ssoProdDto = new LoginRequestDto
                 {
-                    ErrorMessage = "CRITICAL SECURITY REFUSAL: Your identity profile is not authorized as an active Sage X3 Operator.";
-                    return;
-                }
+                    Username = "sso_production_node",
+                    Password = authResult.Token
+                };
 
-                string targetSageFolder = jsonToken?.Payload["sage_env"]?.ToString() ?? "SEED";
-                string extractedSsoEmail = jsonToken?.Payload["unique_name"]?.ToString() ?? "sso.operator@test.com";
-
-                await LocalStorage.SetItemAsync("authToken", authResult.Token);
-                await LocalStorage.SetItemAsync("active_sage_folder", targetSageFolder);
+                await AuthService.LoginAsync(ssoProdDto);
 
                 if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
                 {
-                    authProvider.NotifyUserAuthentication(authResult.Token);
+                    var authState = await authProvider.GetAuthenticationStateAsync();
+                    UIState.SynchronizeUserSession(authState.User);
                 }
 
-                UIState.SetUser("SSO Sage Operator", extractedSsoEmail); 
-
                 await ModalService.CloseModal();
-                Nav.NavigateTo("/dashboard", true);
+                Nav.NavigateTo("/dashboard", forceLoad: false);
             }
         }
         catch (Exception ex)

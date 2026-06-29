@@ -2,6 +2,7 @@
 
 @using System.Net.Http.Json
 @using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.JSInterop
 
 @using OperationalWorkspaceUI.State
@@ -25,6 +26,7 @@
 @inject IToastUIService ToastService
 @inject HttpClient Http
 @inject EmailContextUIService EmailUiService
+@inject AuthenticationStateProvider AuthProvider
 
 <FluentLayout Class="app-container">
 
@@ -73,7 +75,6 @@
     private bool _disposed;
     private Action? _unsubscribeEmail;
 
-    // 🚀 FIXED: Hardened lookups reliably detect home root variants and empty directory locations cleanly [INDEX]
     private bool IsAppPage
     {
         get
@@ -82,8 +83,8 @@
             if (path.Contains("?")) path = path.Split('?')[0];
 
             return !string.IsNullOrEmpty(path) &&
-                               path != "login" &&
-                               path != "account/login";
+                   path != "login" &&
+                   path != "account/login";
         }
     }
 
@@ -148,7 +149,14 @@
 
         try
         {
+            // Initialize backend authorization tracking contexts
             await AuthService.InitializeAsync();
+
+            // =========================================================================
+            // 🔐 SYNCHRONIZE ACTIVE IDENTITY CLAIMS INTO CENTRAL UI STATE ENGINE
+            // =========================================================================
+            var authState = await AuthProvider.GetAuthenticationStateAsync();
+            UIState.SynchronizeUserSession(authState.User);
 
             if (IsAppPage)
             {

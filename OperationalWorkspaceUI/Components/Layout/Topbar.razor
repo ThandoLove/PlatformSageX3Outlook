@@ -1,10 +1,12 @@
-﻿@using OperationalWorkspaceUI.State
+﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 @using Microsoft.FluentUI.AspNetCore.Components
-@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+
+@using OperationalWorkspaceUI.State
 @implements IDisposable
 @inject UIState UIState
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject OperationalWorkspaceUI.UIServices.System.AuthService AuthService
 
 <div class="sage-topbar-master">
 
@@ -15,7 +17,7 @@
         <span class="page-dynamic-title">@PageTitle</span>
     </div>
 
-    <!-- ZONE 2: FLEXIBLE SPACER SEARCH STRIP -->
+    <!-- ZONE 2: CENTER SEARCH BAR -->
     <div class="zone-middle">
         <div class="search-input-group">
             <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
@@ -46,6 +48,14 @@
             <div class="user-meta-text-wrap">
                 <span class="user-display-name">@DisplayName</span>
                 <span class="user-display-email">@DisplayEmail</span>
+
+                <!-- SINGLE PIPELINE LOGOUT LINK -->
+                @if (UIState.IsAuthenticated)
+                {
+                    <button type="button" class="topbar-logout-link" @onclick="ExecuteLogoutPipeline">
+                        Log Out ➔
+                    </button>
+                }
             </div>
             <FluentPersona Name="@DisplayName"
                            Status="@(string.IsNullOrWhiteSpace(UIState.UserName) ? PresenceStatus.Offline : PresenceStatus.Available)"
@@ -55,6 +65,7 @@
         </div>
     </div>
 </div>
+
 @code {
     private string PageTitle { get; set; } = "Dashboard";
 
@@ -121,6 +132,15 @@
             PageTitle = "Settings";
         else
             PageTitle = "Workspace";
+    }
+
+    private async Task ExecuteLogoutPipeline()
+    {
+        // One clean, synchronized method handles clearing local storage, claims, and dashboard states
+        await AuthService.LogoutAsync();
+
+        // Direct internal route passthrough avoids unhandled JS Interop disconnect crashes
+        Nav.NavigateTo("/login", forceLoad: false);
     }
 
     public void Dispose()
