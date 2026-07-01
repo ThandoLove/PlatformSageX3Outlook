@@ -13,6 +13,7 @@
 @using OperationalWorkspaceUI.UIServices.ToastUIService
 @using OperationalWorkspaceUI.UIServices.EmailService
 
+
 @implements IDisposable
 
 @inject UIState UIState
@@ -30,9 +31,17 @@
 
 <FluentLayout Class="app-container">
 
-    @if (IsAppPage)
+    @* ✅ FIX 1: Shroud layout now utilizes clean CSS class tracking, entirely free of inline style strings *@
+    @if (UIState.IsCheckingAuth)
     {
-        <header class="global-header">
+        <div class="initial-app-boot-shroud">
+            <div class="spinner-border text-light mb-3" role="status"></div>
+            <span class="app-boot-label">Initializing Secure Workspace...</span>
+        </div>
+    }
+    else if (UIState.IsAuthenticated)
+    {
+        <header class="global-header layout-guard-header">
             <Topbar />
         </header>
 
@@ -62,8 +71,8 @@
     }
     else
     {
-        <div class="landing-frame">
-            @Body
+        <div class="landing-frame secure-auth-landing-frame">
+            <LoginForm />
         </div>
     }
 
@@ -80,11 +89,11 @@
         get
         {
             var path = Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
-            if (path.Contains("?")) path = path.Split('?')[0];
 
-            return !string.IsNullOrEmpty(path) &&
-                   path != "login" &&
-                   path != "account/login";
+            if (path.Contains("?"))
+                path = path.Split('?')[0];
+
+            return !string.IsNullOrEmpty(path);
         }
     }
 
@@ -149,16 +158,12 @@
 
         try
         {
-            // Initialize backend authorization tracking contexts
             await AuthService.InitializeAsync();
 
-            // =========================================================================
-            // 🔐 SYNCHRONIZE ACTIVE IDENTITY CLAIMS INTO CENTRAL UI STATE ENGINE
-            // =========================================================================
             var authState = await AuthProvider.GetAuthenticationStateAsync();
             UIState.SynchronizeUserSession(authState.User);
 
-            if (IsAppPage)
+            if (UIState.IsAuthenticated)
             {
                 _objRef = DotNetObjectReference.Create(this);
                 await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
@@ -169,6 +174,15 @@
         catch (Exception ex)
         {
             Console.WriteLine($"MainLayout initialization error: {ex.Message}");
+        }
+        finally
+        {
+            UIState.IsCheckingAuth = false;
+
+            if (!_disposed)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 
@@ -185,7 +199,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"OnEmailReceived failed: {ex.Message}");
+            Console.WriteLine("OnEmailReceived failed: " + ex.Message);
         }
     }
 

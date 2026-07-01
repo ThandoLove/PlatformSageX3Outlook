@@ -6,14 +6,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.FluentUI.AspNetCore.Components;
+using OperationalWorkspaceApplication.Orchestration;
 using OperationalWorkspaceApplication.ApplicationState;
 using OperationalWorkspaceApplication.Interfaces.BackgroundJobsApp;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Services;
+using OperationalWorkspaceApplication.Validators;
 using OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 using OperationalWorkspaceInfrastructure.servicesInfra;
 using OperationalWorkspaceInfrastructure.servicesInfra.BackgroundWorkers;
-using OperationalWorkspaceApplication.Validators;
 using OperationalWorkspaceUI.Components;
 using OperationalWorkspaceUI.Security;
 using OperationalWorkspaceUI.State;
@@ -39,14 +40,18 @@ builder.Services.AddHttpContextAccessor();
 // ======================================================
 // 2. AUTH & CRYPTOGRAPHIC COOKIE PROTECTION LAYERS
 // ======================================================
+
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthenticationStateProvider>());
+
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenRefreshCoordinator>();
 
 builder.Services.AddAntiforgery();
+
 
 // ======================================================
 // 3. VALIDATION
@@ -115,6 +120,7 @@ builder.Services.AddScoped<AttachmentUIService>();
 builder.Services.AddScoped<SettingsUIService>();
 builder.Services.AddScoped<AdminDashboardUIService>();
 builder.Services.AddScoped<KnowledgeUIService>();
+builder.Services.AddScoped<EmailOrchestrationService>();
 
 // ======================================================
 // 8. EMAIL ENRICHMENT & API REDIRECTS

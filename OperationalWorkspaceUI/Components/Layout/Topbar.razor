@@ -8,76 +8,95 @@
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.System.AuthService AuthService
 
-<div class="sage-topbar-master">
+<div class="sage-topbar-master" style="position: relative;">
 
-    <!-- ZONE 1: BRANDING & TITLE -->
+    <!-- ZONE 1: BRANDING & TITLE HIERARCHY -->
     <div class="zone-left">
-        <span class="sage-brand-text">SAGE X3 CONTEXTUAL WORKSPACE</span>
+        <div class="brand-group">
+            <span class="sage-brand-text">Sage X3</span>
+            <span class="sage-brand-subtext">Operational Workspace</span>
+        </div>
         <div class="topbar-divider"></div>
         <span class="page-dynamic-title">@PageTitle</span>
     </div>
 
-    <!-- ZONE 2: CENTER SEARCH BAR -->
+    <!-- ZONE 2: CENTER RESPONSIVE SEARCH BAR -->
     <div class="zone-middle">
         <div class="search-input-group">
             <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
                         Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
-                        CustomColor="#ffffff" />
+                        CustomColor="#8aa6c8" />
             <input type="text" placeholder="Search functions or data..." class="topbar-search-input" />
         </div>
     </div>
 
-    <!-- ZONE 3: STATUS & DECOUPLED PROFILE VIEW -->
+    <!-- ZONE 3: CONNECTIVITY STATUS & PREMIUM USER CARD -->
     <div class="zone-right">
         <div class="connection-status">
             @if (UIState.IsSageConnected)
             {
                 <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Success" />
-                <span class="conn-text-label text-success">Connected to Sage X3</span>
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
+                            CustomColor="#34d399" />
+                <span class="conn-text-label text-success">Connected</span>
             }
             else
             {
                 <FluentIcon Value="@(new Icons.Filled.Size12.DismissCircle())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Error" />
-                <span class="conn-text-label text-error">Sage X3 Disconnected</span>
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
+                            CustomColor="#f87171" />
+                <span class="conn-text-label text-error">Disconnected</span>
             }
         </div>
 
+        <!-- HOVER PROFILE CARD OVERVIEW -->
         <div class="user-profile-section">
-            <div class="user-meta-text-wrap">
-                <span class="user-display-name">@DisplayName</span>
-                <span class="user-display-email">@DisplayEmail</span>
-
-                <!-- SINGLE PIPELINE LOGOUT LINK -->
-                @if (UIState.IsAuthenticated)
-                {
-                    <button type="button" class="topbar-logout-link" @onclick="ExecuteLogoutPipeline">
-                        Log Out ➔
-                    </button>
-                }
-            </div>
-            <FluentPersona Name="@DisplayName"
-                           Status="@(string.IsNullOrWhiteSpace(UIState.UserName) ? PresenceStatus.Offline : PresenceStatus.Available)"
-                           AvatarSize="24"
+            <FluentPersona Name="@UIState.UserName"
+                           Status="@(string.IsNullOrWhiteSpace(UIState.UserName) || UIState.UserName == "Not Logged In" ? PresenceStatus.Offline : PresenceStatus.Available)"
+                           AvatarSize="28"
                            Brief="true"
                            Class="topbar-persona" />
+
+            <div class="user-meta-text-wrap">
+                <span class="user-display-name">@DisplayName</span>
+                <span class="user-display-role">@(string.IsNullOrWhiteSpace(UIState.UserRole) ? "Operator" : UIState.UserRole)</span>
+            </div>
         </div>
+
+        <!-- STYLISH CIRCULAR LOGOUT DISPATCH LINK -->
+        @if (UIState.IsAuthenticated)
+        {
+            <button type="button" class="topbar-modern-logout-btn" title="Sign Out" @onclick="PromptLogoutConfirmation">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 0.25s ease;">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </button>
+        }
     </div>
+
+    <!-- ✅ NATIVE OFFICE-SAFE CONFIRMATION DIALOG DROP-DOWN -->
+    @if (_showLogoutConfirmation)
+    {
+        <div class="logout-confirm-popover" style="position: absolute; right: 28px; top: 56px; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 9999; width: 240px; display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-size: 12px; font-weight: 500; color: #f8fafc; text-align: center;">Sign out of your workspace session?</span>
+            <div style="display: flex; gap: 8px; width: 100%;">
+                <button type="button" @onclick="ExecuteLogoutPipeline" style="flex: 1; background: #ef4444; border: none; color: white; padding: 6px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">Yes, Exit</button>
+                <button type="button" @onclick="CancelLogout" style="flex: 1; background: #334155; border: 1px solid #475569; color: #cbd5e1; padding: 6px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">Cancel</button>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     private string PageTitle { get; set; } = "Dashboard";
+    private bool _showLogoutConfirmation = false; // ✅ Track popover toggle state
 
     private string DisplayName =>
-        string.IsNullOrWhiteSpace(UIState.UserName)
-        ? "Not Logged In"
+        string.IsNullOrWhiteSpace(UIState.UserName) || UIState.UserName == "Not Logged In"
+        ? "Guest Operator"
         : UIState.UserName;
-
-    private string DisplayEmail =>
-        string.IsNullOrWhiteSpace(UIState.UserEmail)
-        ? string.Empty
-        : UIState.UserEmail;
 
     protected override void OnInitialized()
     {
@@ -134,13 +153,24 @@
             PageTitle = "Workspace";
     }
 
+    // ✅ Toggle the state visibility cleanly instead of executing native JS methods
+    private void PromptLogoutConfirmation()
+    {
+        _showLogoutConfirmation = !_showLogoutConfirmation;
+    }
+
+    private void CancelLogout()
+    {
+        _showLogoutConfirmation = false;
+    }
+
     private async Task ExecuteLogoutPipeline()
     {
-        // One clean, synchronized method handles clearing local storage, claims, and dashboard states
-        await AuthService.LogoutAsync();
+        _showLogoutConfirmation = false;
 
-        // Direct internal route passthrough avoids unhandled JS Interop disconnect crashes
-        Nav.NavigateTo("/login", forceLoad: false);
+        // Execute session cleanup pipeline
+        await AuthService.LogoutAsync();
+        Nav.NavigateTo("/", forceLoad: false);
     }
 
     public void Dispose()

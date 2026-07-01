@@ -9,13 +9,8 @@ using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using Polly;
 using Polly.Retry;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace OperationalWorkspaceApplication.Services;
 
@@ -161,6 +156,7 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         var outstanding = await _sageClient.GetOutstandingInvoiceValueAsync(partner.BpCode, ct);
         var overdueCount = await _sageClient.GetOverdueInvoicesCountAsync(partner.BpCode, ct);
 
+        // ✅ FIXED: Added missing 8th decimal argument to satisfy the 9-argument record constructor
         return new BusinessPartnerSnapshotDto(
             partner.BpCode,
             partner.Company,
@@ -169,7 +165,8 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             orders.Count,
             overdueCount,
             outstanding,
-            partner.LastContactDate)
+            0m, // 8th decimal placeholder argument
+            partner.LastContactDate) // 9th LastContactDate argument
         {
             FullName = partner.ContactName,
             IsLinkedToSage = true,
@@ -178,9 +175,6 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             Timeline = await GetRecentActivityTimeline(partner.BpCode, ct)
         };
     }
-
-
-
 
     private async Task<List<ActivityDto>> GetRecentActivityTimeline(string bpCode, CancellationToken ct)
     {
@@ -191,7 +185,6 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             new ActivityDto { Title = "Invoice", Action = "INV-2024-001 Generated", Timestamp = _clock.UtcNow.AddDays(-10) }
         };
     }
-
     // ==========================================
     // 🔍 SNAPSHOTS & DATA RETRIEVAL (BY CODE)
     // ==========================================
@@ -210,6 +203,7 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
         var outstanding = await _sageClient.GetOutstandingInvoiceValueAsync(request.BpCode, ct);
         var overdueCount = await _sageClient.GetOverdueInvoicesCountAsync(request.BpCode, ct);
 
+        // ✅ FIXED: Added missing 8th decimal argument to satisfy the 9-argument record constructor
         var dto = new BusinessPartnerSnapshotDto(
             partner.BpCode,
             partner.Company,
@@ -218,7 +212,8 @@ public sealed class BusinessPartnerService : IBusinessPartnerService
             orders.Count,
             overdueCount,
             outstanding,
-            partner.LastContactDate);
+            0m, // 8th decimal placeholder argument
+            partner.LastContactDate); // 9th LastContactDate argument
 
         return new BusinessPartnersResponse(dto);
     }

@@ -166,42 +166,29 @@
 </FluentCard>
 
 @code {
-
     // ======================================================
     // OPTIONAL EXTERNAL DATA PARAMETER
     // ======================================================
-
     [Parameter]
     public EmailInsightDto? Data { get; set; }
 
     // ======================================================
-    // INITIALIZATION
+    // INITIALIZATION & DISPOSAL PIPES
     // ======================================================
-
     protected override void OnInitialized()
     {
         State.OnChange += HandleStateChanged;
-
         AppState.OnChange += HandleStateChanged;
     }
-
-    // ======================================================
-    // STATE REFRESH
-    // ======================================================
 
     private void HandleStateChanged()
     {
         InvokeAsync(StateHasChanged);
     }
 
-    // ======================================================
-    // CLEANUP
-    // ======================================================
-
     public void Dispose()
     {
         State.OnChange -= HandleStateChanged;
-
         AppState.OnChange -= HandleStateChanged;
     }
 }

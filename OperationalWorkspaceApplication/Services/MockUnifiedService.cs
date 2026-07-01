@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using OperationalWorkspaceApplication.Interfaces;
-using OperationalWorkspaceApplication.DTOs;
+﻿using OperationalWorkspaceApplication.DTOs;
 using OperationalWorkspaceApplication.Interfaces.IServices;
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
@@ -18,7 +12,6 @@ namespace OperationalWorkspaceApplication.Services
         IKnowledgeService,
         ISalesService,
         IBusinessPartnerService,
-        
         ITaskService,
         IInvoiceService
     {
@@ -39,6 +32,21 @@ namespace OperationalWorkspaceApplication.Services
                 "Initialize")
         ];
 
+        // STEP 1 — Added Demo Data Storage Fields
+        private static readonly List<BusinessPartnerSnapshotDto> _customers = new();
+        private static readonly List<TaskDto> _tasks = new();
+        private static readonly List<SalesOrderDto> _orders = new();
+        private static readonly List<InvoiceDto> _invoices = new();
+
+        // STEP 2 — Service Constructor for Lazy Initialisation
+        public MockUnifiedService()
+        {
+            if (_customers.Count == 0)
+            {
+                SeedDemoData();
+            }
+        }
+
         // =========================================================
         // ACTIVITY SERVICE
         // =========================================================
@@ -56,7 +64,6 @@ namespace OperationalWorkspaceApplication.Services
                 _inMemoryActivities
                     .FirstOrDefault(a => a.Id == id));
         }
-
         public async Task<ActivityDto> CreateAsync(
             CreateActivityDto dto,
             string userEmail)
@@ -132,7 +139,6 @@ namespace OperationalWorkspaceApplication.Services
         {
             await Task.CompletedTask;
         }
-
         // =========================================================
         // EMAIL SERVICE (Hardened to match Guid Contract Signatures)
         // =========================================================
@@ -225,7 +231,6 @@ namespace OperationalWorkspaceApplication.Services
 
             return await Task.FromResult(context);
         }
-
         public async Task<List<OpenOrderDto>> GetLinkedOrdersAsync(Guid emailId)
         {
             return await Task.FromResult(
@@ -238,7 +243,6 @@ namespace OperationalWorkspaceApplication.Services
                 new List<TaskDto>());
         }
 
-       
         // =========================================================
         // BUSINESS PARTNER SERVICE
         // =========================================================
@@ -256,7 +260,12 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<int> CountOpenOpportunitiesAsync() => 15;
         public async Task<int> CountOpenOpportunitiesAsync(string userId) => 4;
         public async Task<int> CountNewLeadsTodayAsync() => 3;
-        public async Task<int> CountActiveCustomersAsync() => 450;
+
+        // STEP 4 — Replaced with in-memory collection tracking loop
+        public async Task<int> CountActiveCustomersAsync()
+        {
+            return await Task.FromResult(_customers.Count);
+        }
 
         public async Task<BusinessPartnersResponse?> GetSnapshotAsync(
             GetBusinessPartnerSnapshotRequest req,
@@ -267,12 +276,18 @@ namespace OperationalWorkspaceApplication.Services
                     new BusinessPartnerSnapshotDto(
                         "C1000",
                         "Mock Corp",
-                        500m,
+                        25000m,
                         5000m,
                         2,
                         1,
                         15000m,
-                        DateTime.UtcNow)));
+                        0m, // 8th decimal argument
+                        DateTime.UtcNow) // 9th LastContactDate argument
+                    {
+                        FullName = "Mock Corp",
+                        IsLinkedToSage = true,
+                        Timeline = new List<ActivityDto>()
+                    }));
         }
 
         public async Task<UpdateCreditLimitResponse> UpdateCreditLimitAsync(
@@ -292,23 +307,36 @@ namespace OperationalWorkspaceApplication.Services
                 return null;
             }
 
+            // Extract the user handle prefix from the email to dynamically match against FullName
+            var userHandle = email.Split('@')[0];
+
+            // Look up the customer dynamically from our seeded _customers list via FullName safely
+            var partner = _customers.FirstOrDefault(x =>
+                x.FullName != null && x.FullName.Contains(userHandle, StringComparison.OrdinalIgnoreCase));
+
+            if (partner != null)
+            {
+                return await Task.FromResult(partner);
+            }
+
+            // Safe static fallback object matching the exact 9-argument signature if no matching entry is found
             return await Task.FromResult(
                 new BusinessPartnerSnapshotDto(
                     "C1000",
                     "Mock Corp",
-                    500m,
+                    100000m,
                     5000m,
                     2,
                     1,
                     15000m,
-                    DateTime.UtcNow)
+                    0m, // 8th argument (decimal)
+                    DateTime.UtcNow) // 9th argument (LastContactDate)
                 {
                     FullName = "Mock User",
                     IsLinkedToSage = true,
                     Timeline = new List<ActivityDto>()
                 });
         }
-
         public async Task<CreateClientFromEmailResponse> CreateFromEmailAsync(
             CreateClientFromEmailRequest request,
             CancellationToken ct = default)
@@ -371,10 +399,10 @@ namespace OperationalWorkspaceApplication.Services
                 new List<ApprovalDto>());
         }
 
+        // STEP 4 — Replaced to reference the seeded demo tasks collection
         public async Task<List<TaskDto>> GetAllTasksAsync()
         {
-            return await Task.FromResult(
-                new List<TaskDto>());
+            return await Task.FromResult(_tasks);
         }
 
         public async Task<List<ApprovalDto>> GetAllPendingApprovalsAsync()
@@ -394,22 +422,29 @@ namespace OperationalWorkspaceApplication.Services
                     Id = request.TaskId
                 });
         }
-
         // =========================================================
         // SALES SERVICE
         // =========================================================
-        public async Task<int> CountOpenOrdersAsync(string userId) => 0;
-        public async Task<int> CountPendingDeliveriesAsync(string userId) => 0;
-        public async Task<int> CountTotalOrdersAsync() => 0;
 
-        // Change the method parameters to use basic system types instead of the deleted records
+        // STEP 4 — Replaced to count total items from the memory order list
+        public async Task<int> CountOpenOrdersAsync(string userId)
+        {
+            return await Task.FromResult(_orders.Count);
+        }
+
+        public async Task<int> CountPendingDeliveriesAsync(string userId) => 0;
+
+        // STEP 4 — Replaced to return total count of tracking order entities
+        public async Task<int> CountTotalOrdersAsync()
+        {
+            return await Task.FromResult(_orders.Count);
+        }
+
         public async Task<Guid> CreateOrderAsync(string bpCode, string customerRef, decimal totalAmount, CancellationToken ct)
         {
-            // Block mutations in workspace: Forces execution path boundary back to Sage X3
             await Task.Delay(50, ct);
             throw new NotSupportedException("Order creation is not supported inside the workspace application. Please create mutations directly in Sage X3.");
         }
-
 
         public async Task<SalesOrderDetailsResponse?> GetOrderAsync(
             GetSalesOrderRequest req,
@@ -438,14 +473,12 @@ namespace OperationalWorkspaceApplication.Services
                     Id = id
                 });
         }
-
-        public async Task<IEnumerable<InvoiceDto>> GetAllAsync(
-            int page,
-            int pageSize)
+        // STEP 4 — Replaced with paginated query logic matching the in-memory invoices list
+        public async Task<IEnumerable<InvoiceDto>> GetAllAsync(int page, int pageSize)
         {
             return await Task.FromResult(
-                (IEnumerable<InvoiceDto>)
-                new List<InvoiceDto>());
+                _invoices.Skip((page - 1) * pageSize)
+                         .Take(pageSize));
         }
 
         public async Task<InvoiceDto> CreateInvoiceAsync(InvoiceDto dto)
@@ -468,9 +501,17 @@ namespace OperationalWorkspaceApplication.Services
         public async Task<decimal> GetOutstandingReceivablesAsync() => 50000m;
         public async Task<decimal> GetOutstandingReceivablesAsync(string userId) => 12000m;
         public async Task<decimal> GetMonthlySalesAsync(string userId) => 8500m;
-        public async Task<int> CountOverdueInvoicesAsync() => 5;
+
+        // STEP 4 — Replaced to evaluate overdue flags dynamically against live collection items
+        public async Task<int> CountOverdueInvoicesAsync()
+        {
+            return await Task.FromResult(
+                _invoices.Count(i => i.IsOverdue));
+        }
+
         public async Task<int> CountInvoicesGeneratedAsync() => 120;
         public async Task<int> CountInvoicesDueAsync(string userId) => 3;
+
         public async Task<decimal> GetOutstandingInvoiceValueAsync()
         {
             return await Task.FromResult(50000m);
@@ -492,13 +533,117 @@ namespace OperationalWorkspaceApplication.Services
         }
 
         // =========================================================================
-        // 🧪 MOCK COMPLIANCE LAYER STUB (ADDED)
+        // 🧪 MOCK COMPLIANCE LAYER STUB
         // =========================================================================
         public async Task<bool> CreateNewSageClientAsync(ClientDto clientDto)
         {
-            // Instantly returns true to satisfy the interface contract 
-            // and simulate a successful background sync queue completion
             return await Task.FromResult(true);
+        }
+        // =========================================================================
+        // STEP 3 — DEMO ENVIRONMENT DATA SEEDER ENGINE
+        // =========================================================================
+        private static void SeedDemoData()
+        {
+            var random = new Random();
+
+            for (int i = 1; i <= 20; i++)
+            {
+                var id = Guid.NewGuid();
+
+                //------------------------------------------------
+                // Customers
+                //------------------------------------------------
+                _customers.Add(new BusinessPartnerSnapshotDto(
+                    $"BP{i:0000}",
+                    $"Customer {i}",
+                    100000m,
+                    (decimal)random.Next(5000, 50000),
+                    random.Next(0, 8),
+                    random.Next(0, 3),
+                    (decimal)random.Next(0, 12000),
+                    0m, // 8th argument (decimal placeholder)
+                    DateTime.UtcNow.AddDays(-random.Next(30))) // 9th LastContactDate argument
+                {
+                    Id = id,
+                    FullName = $"Customer {i}",
+                    AssignedRep = "Admin Operator",
+                    IsLinkedToSage = true,
+                    Location = "Harare"
+                });
+
+                //------------------------------------------------
+                // Orders
+                //------------------------------------------------
+                if (i <= 8)
+                {
+                    _orders.Add(new SalesOrderDto
+                    {
+                        Id = Guid.NewGuid(),
+                        OrderNumber = $"SO-{1000 + i}",
+                        BusinessPartnerId = id,
+                        BusinessPartnerCode = $"BP{i:0000}",
+                        BusinessPartnerName = $"Customer {i}",
+                        TotalAmount = random.Next(1000, 25000),
+                        OutstandingAmount = random.Next(500, 10000),
+                        OrderStatus = "Open",
+                        CreatedAtUtc = DateTime.UtcNow.AddDays(-i),
+                        RequestedDeliveryDate = DateTime.UtcNow.AddDays(i)
+                    });
+                }
+
+                //------------------------------------------------
+                // Invoices
+                //------------------------------------------------
+                if (i <= 10)
+                {
+                    _invoices.Add(new InvoiceDto
+                    {
+                        Id = Guid.NewGuid(),
+                        InvoiceNumber = $"INV-{5000 + i}",
+                        CustomerName = $"Customer {i}",
+                        OutstandingAmount = random.Next(500, 8000),
+                        Balance = random.Next(500, 8000),
+                        DueDate = DateTime.Today.AddDays(random.Next(-10, 15)),
+                        IssueDate = DateTime.Today.AddDays(-20),
+                        IsOverdue = i % 3 == 0
+                    });
+                }
+
+                //------------------------------------------------
+                // Tasks
+                //------------------------------------------------
+                if (i <= 12)
+                {
+                    _tasks.Add(new TaskDto
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"Follow up Customer {i}",
+                        CompanyName = $"Customer {i}",
+                        AssignedTo = "Admin Operator",
+                        StatusDescription = "Open",
+                        CreatedDate = DateTime.Now.AddDays(-i),
+                        UpdatedDate = DateTime.Now
+                    });
+                }
+
+                //------------------------------------------------
+                // Activities
+                //------------------------------------------------
+                if (i <= 15)
+                {
+                    _inMemoryActivities.Add(
+                        new ActivityDto(
+                            Guid.NewGuid(),
+                            $"Customer Visit {i}",
+                            $"Visited Customer {i}",
+                            "Visit",
+                            id,
+                            DateTime.UtcNow.AddDays(-i),
+                            "Admin Operator",
+                            DateTime.UtcNow.AddDays(-i),
+                            "Create"));
+                }
+            }
         }
     }
 }

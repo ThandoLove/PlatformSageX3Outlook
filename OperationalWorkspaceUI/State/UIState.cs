@@ -1,6 +1,5 @@
 ﻿using Microsoft.JSInterop;
 using System;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using OperationalWorkspaceApplication.Interfaces;
@@ -17,13 +16,18 @@ namespace OperationalWorkspaceUI.State
         }
 
         // ======================================================
-        // AUTHENTICATION & ROLE MANAGEMENT ENGINE
+        // AUTHENTICATION & ROLE MANAGEMENT ENGINE (🚀 OPEN SETTERS)
         // ======================================================
-        public string UserName { get; private set; } = string.Empty;
-        public string UserEmail { get; private set; } = string.Empty;
-        public string UserRole { get; private set; } = string.Empty;
-        public bool IsAdminEnvironment { get; private set; } = false;
-        public bool IsAuthenticated => !string.IsNullOrWhiteSpace(UserName);
+        public string UserName { get; set; } = string.Empty;
+        public string UserEmail { get; set; } = string.Empty;
+        public string UserRole { get; set; } = string.Empty;
+        public bool IsAdminEnvironment { get; set; } = false;
+
+        // FIXED: Changed from read-only lambda expression string evaluation to mutable auto-property
+        public bool IsAuthenticated { get; set; } = false;
+        // ✅ FIX: State guard property blocks distorted rendering during the initial async token check
+        public bool IsCheckingAuth { get; set; } = true;
+
 
         /// <summary>
         /// Synchronizes the centralized UI layout directly from an identity claims principal payload.
@@ -32,14 +36,16 @@ namespace OperationalWorkspaceUI.State
         {
             if (principal?.Identity?.IsAuthenticated == true)
             {
-                // PRIORITIZE UNIQUE_NAME EXPLICITLY TO MATCH YOUR PAYLOAD BUILDER CONTRACT
-                UserName = principal.FindFirst("unique_name")?.Value
-                           ?? principal.FindFirst(ClaimTypes.Name)?.Value
+                // ✅ FIX 7: Order changed to prioritize human-readable ClaimTypes.Name over email values
+                UserName = principal.FindFirst(ClaimTypes.Name)?.Value
+                           ?? principal.FindFirst("name")?.Value
+                           ?? principal.FindFirst("unique_name")?.Value
                            ?? "Operator User";
 
+                // ✅ FIX 7: Changed fallback string assignment component to empty string safety defaults
                 UserEmail = principal.FindFirst(ClaimTypes.Email)?.Value
                             ?? principal.FindFirst("email")?.Value
-                            ?? "operator@test.com";
+                            ?? string.Empty;
 
                 UserRole = principal.FindFirst(ClaimTypes.Role)?.Value
                            ?? principal.FindFirst("role")?.Value
@@ -47,6 +53,8 @@ namespace OperationalWorkspaceUI.State
 
                 IsAdminEnvironment = UserRole.Equals("Administrator", StringComparison.OrdinalIgnoreCase) ||
                                      UserRole.Equals("Admin", StringComparison.OrdinalIgnoreCase);
+
+                IsAuthenticated = true;
             }
             else
             {
@@ -54,7 +62,6 @@ namespace OperationalWorkspaceUI.State
             }
             NotifyStateChanged();
         }
-
 
         /// <summary>
         /// Manual override fallback method to directly assign values if claims parameters aren't supplied.
@@ -65,6 +72,7 @@ namespace OperationalWorkspaceUI.State
             UserEmail = userEmail;
             UserRole = "Employee";
             IsAdminEnvironment = false;
+            IsAuthenticated = true;
             NotifyStateChanged();
         }
 
@@ -77,12 +85,10 @@ namespace OperationalWorkspaceUI.State
             UserEmail = userEmail;
             UserRole = "Administrator";
             IsAdminEnvironment = true;
+            IsAuthenticated = true;
             NotifyStateChanged();
         }
 
-        /// <summary>
-        /// Clears the user session data on logout.
-        /// </summary>
         /// <summary>
         /// Clears the user session data and role environments on logout.
         /// </summary>
@@ -91,10 +97,10 @@ namespace OperationalWorkspaceUI.State
             UserName = string.Empty;
             UserEmail = string.Empty;
             UserRole = string.Empty;
-            IsAdminEnvironment = false; // Relocks all restricted administrative sidebar grids
-            NotifyStateChanged();       // Triggers Topbar and Sidebar components to re-render instantly
+            IsAdminEnvironment = false;
+            IsAuthenticated = false;
+            NotifyStateChanged();
         }
-
 
         /// <summary>
         /// Utility to force trigger mock/dummy data for local UI development and testing.
@@ -105,13 +111,15 @@ namespace OperationalWorkspaceUI.State
             UserEmail = "john.smith@company.com";
             UserRole = "Employee";
             IsAdminEnvironment = false;
+            IsAuthenticated = true;
             NotifyStateChanged();
         }
 
         // ======================================================
-        // 🌐 SAGE X3 HEALTH STATUS STATE MACHINE (DECOUPLED FROM UI)
+        // 🌐 SAGE X3 HEALTH STATUS STATE MACHINE
         // ======================================================
-        public bool IsSageConnected { get; private set; } = false;
+        // FIXED: Shifted from private set to an open public setter accessor
+        public bool IsSageConnected { get; set; } = false;
 
         /// <summary>
         /// Asynchronously verifies network pipeline connectivity using higher-level abstractions.
@@ -149,7 +157,6 @@ namespace OperationalWorkspaceUI.State
             }
             catch (Exception ex) when (ex is InvalidOperationException || ex is JSException)
             {
-                // Caught safely during Prerendering or if localStorage is restricted
             }
             NotifyStateChanged();
         }
@@ -166,7 +173,6 @@ namespace OperationalWorkspaceUI.State
             }
             catch (Exception ex) when (ex is InvalidOperationException || ex is JSException)
             {
-                // Caught safely during Prerendering or if localStorage is restricted
             }
             finally
             {
@@ -233,9 +239,7 @@ namespace OperationalWorkspaceUI.State
             OnChange?.Invoke();
         }
 
-        // ======================================================
-        // MEMORY CLEANUP
-        // ======================================================
+        // Enforces proper IDisposable lifecycle garbage compilation cleanup mechanics
         public void Dispose()
         {
             OnChange = null;

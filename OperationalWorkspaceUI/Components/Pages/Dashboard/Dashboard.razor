@@ -14,6 +14,8 @@
 @using Microsoft.JSInterop
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.UIServices.System
+@using OperationalWorkspaceApplication.Orchestration
+@using OperationalWorkspaceApplication.ApplicationState
 
 @* 2. SERVICE INJECTIONS *@
 @inject DashboardState DState
@@ -22,6 +24,10 @@
 @inject IJSRuntime JS
 @inject NavigationManager NavManager
 @inject ModalService ModalService
+@inject EmailOrchestrationService Orchestrator
+@inject AppStateContainer AppState
+
+
 @inject OperationalWorkspaceApplication.Services.EmailContextBuilder EmailContextBuilder
 @inject IBusinessPartnerService BusinessPartnerService
 
@@ -30,23 +36,8 @@
 <div class="dashboard-wrapper @(AppUIState.IsDarkMode ? "dark-mode" : "")">
 
     @* PRESENTATION LAYER ENVIRONMENT MODE BAR SWITCHER ROW *@
-    <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 15px; background: #1e293b; color: white; border-radius: 6px; margin-bottom: 15px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <h2 style="margin: 0; font-size: 14px; font-weight: 600;">Sage X3 Identity Matrix</h2>
-            <span class="user-badge" style="background: #475569; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">
-                @(DState.IsAdminEnvironment ? "Admin Mode" : "User Mode")
-            </span>
-        </div>
+ 
 
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <button type="button"
-                    @onclick="TogglePresentationRoleAsync"
-                    class="btn-environment-toggle"
-                    style="background: #10b981; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">
-                🔄 SWAP ROLE: @(DState.IsAdminEnvironment ? "To User" : "To Admin")
-            </button>
-        </div>
-    </div>
 
     @if (_isProcessingOutlookData)
     {
@@ -171,50 +162,50 @@
     private string _customModalTitle = string.Empty;
     private RenderFragment? _customModalContent;
 
+    // =========================================================================
+    // ⚙️ UNIFIED OUTLOOK ADD-IN BRIDGE INTERCEPTOR (SINGLE SOURCE OF TRUTH)
+    // =========================================================================
     [JSInvokable]
     public async Task OnEmailReceived(OutlookEmailContext context)
     {
         try
         {
-            _isProcessingOutlookData = true;
-            StateHasChanged();
-
             if (context == null || string.IsNullOrWhiteSpace(context.SenderEmail))
                 return;
 
-            var partner = await BusinessPartnerService.GetPartnerByEmailAsync(context.SenderEmail);
+            _isProcessingOutlookData = true;
+            await InvokeAsync(StateHasChanged);
 
-            var email = new EmailInsightDto
+            // 1. Map incoming Office.js context fields onto your central exchange contract
+            var emailDto = new EmailInsightDto
             {
+                MessageId = Guid.NewGuid().ToString(), // Generates tracking identity signature bounds
+                From = context.SenderEmail,
                 SenderEmail = context.SenderEmail,
                 SenderName = context.SenderName,
                 Subject = context.Subject,
-                BusinessPartnerName = partner?.Company ?? "Unknown Customer",
-                AccountStatus = partner != null ? "Linked" : "New Prospect",
-                OpenOrderCount = partner?.OpenOrderCount ?? 0,
-                ReceivedAt = DateTime.Now
+                Message = "Reading active Microsoft Outlook metadata parameters context...",
+                ReceivedAt = DateTime.UtcNow
             };
 
-            var emailContext = new EmailContextDto
-            {
-                Email = email,
-                LinkedOrders = email.LinkedOrders,
-                LinkedTasks = new List<TaskDto>()
-            };
-
-            DState.SetEmailContextState(emailContext, partner == null);
+            // 2. 🚀 THE ARCHITECTURAL FIX: Route data straight down your orchestrator execution pipeline
+            // This loads customer profiles, invoices, tasks, and historical timeline arrays simultaneously!
+            await Orchestrator.ExecuteAsync(emailDto);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Email pipeline error: {ex.Message}");
+            Console.WriteLine($"[Dashboard] Critical core orchestration delivery failure: {ex.Message}");
         }
         finally
         {
             _isProcessingOutlookData = false;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 
+    // =========================================================================
+    // 🎛️ LIFECYCLE HOOK WIRING & UNIFIED DISPOSAL COUPLING
+    // =========================================================================
     protected override void OnInitialized()
     {
         ModalService.OnShow += HandleShowModal;
@@ -225,21 +216,13 @@
             await DState.LoadDashboardAsync(isAdmin: DState.IsAdminEnvironment);
         });
 
+        // ✅ BIND UNIFIED MONITORING CHANNELS: Tells page wrapper to listen strictly to read-only app state changes
+        AppState.OnChange += Refresh;
         DState.OnChange += Refresh;
         WState.OnChange += Refresh;
         AppUIState.OnChange += Refresh;
     }
 
-   // private Task HandleShowModal(string title, RenderFragment content)
-   // {
-       // _customModalTitle = title;
-       // _customModalContent = content;
-        //_isCustomModalOpen = true;
-        //InvokeAsync(StateHasChanged);
-        //return Task.CompletedTask;
-   /// }
-
-   
     private Task HandleShowModal(string title, RenderFragment content)
     {
         Console.WriteLine($"MODAL RECEIVED: {title}");
@@ -249,10 +232,10 @@
         _isCustomModalOpen = true;
 
         InvokeAsync(StateHasChanged);
-
         return Task.CompletedTask;
     }
-   private Task HandleCloseModal()
+
+    private Task HandleCloseModal()
     {
         _isCustomModalOpen = false;
         _customModalTitle = string.Empty;
@@ -294,15 +277,15 @@
         }
     }
 
-    private void Refresh() => InvokeAsync(StateHasChanged);
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             var dotNetReference = DotNetObjectReference.Create(this);
-
             await JS.InvokeVoidAsync("officeBridge.initialize", dotNetReference);
+
             try
             {
                 var activeUriPath = NavManager.ToBaseRelativePath(NavManager.Uri).ToLowerInvariant();
@@ -341,6 +324,7 @@
         ModalService.OnShow -= HandleShowModal;
         ModalService.OnClose -= HandleCloseModal;
 
+        AppState.OnChange -= Refresh;
         DState.OnChange -= Refresh;
         WState.OnChange -= Refresh;
         AppUIState.OnChange -= Refresh;
@@ -353,3 +337,4 @@
         public string Subject { get; set; } = "";
     }
 }
+

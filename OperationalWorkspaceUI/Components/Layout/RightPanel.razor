@@ -4,6 +4,7 @@
 @using OperationalWorkspaceApplication.Interfaces.IServices
 @using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceApplication.ApplicationState
+@using System.Linq
 
 @implements IDisposable
 
@@ -49,10 +50,145 @@
             }
             else
             {
+                <!-- AI SUMMARY -->
                 <FluentCard Class="insight-panel-card">
-                    <h3>Email Insight</h3>
-                    <p class="insight-main-value">@AppState.CurrentEmail.SenderName</p>
-                    <p class="insight-sub-value">@(CurrentPartner?.Company ?? "Unknown Entity")</p>
+
+                    <h3>AI Summary</h3>
+
+                    <p>
+                        <b>Customer</b><br />
+                        @(AppState.MatchedClient?.FullName ?? "Unknown")
+                    </p>
+
+                    <p>
+                        <b>Outstanding</b><br />
+                        @(AppState.MatchedClient?.TotalOutstanding ?? 0)
+                    </p>
+
+                    <p>
+                        <b>Credit Limit</b><br />
+                        @(AppState.MatchedClient?.CreditLimit ?? 0)
+                    </p>
+
+                    <p>
+                        <b>Orders</b><br />
+                        @AppState.LinkedOrders.Count
+                    </p>
+
+                    <p>
+                        <b>Invoices</b><br />
+                        @AppState.Invoices.Count
+                    </p>
+
+                    <p>
+                        <b>Tasks</b><br />
+                        @AppState.LinkedTasks.Count
+                    </p>
+
+                    <p>
+                        <b>Activities</b><br />
+                        @AppState.AutomationLog.Count
+                    </p>
+
+                </FluentCard>
+
+                <br />
+
+                <!-- AUTOMATION -->
+                <FluentCard Class="insight-panel-card">
+
+                    <h4>Automation Flow</h4>
+
+                    @if (AppState.AutomationLog.Any())
+                    {
+                        @foreach (var log in AppState.AutomationLog)
+                        {
+                            <div style="font-size:12px;margin-bottom:4px;">
+                                @log
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div>No automation yet.</div>
+                    }
+
+                </FluentCard>
+
+                <br />
+
+                <!-- ORDERS -->
+                <FluentCard Class="insight-panel-card">
+
+                    <h4>Open Orders</h4>
+
+                    @foreach (var order in AppState.LinkedOrders)
+                    {
+                        <div style="margin-bottom:8px;">
+
+                            <b>@order.OrderNumber</b>
+
+                            <br />
+
+                            @order.TotalAmount
+
+                        </div>
+                    }
+
+                </FluentCard>
+
+                <br />
+
+                <!-- INVOICES -->
+                <FluentCard Class="insight-panel-card">
+
+                    <h4>Invoices</h4>
+
+                    @foreach (var invoice in AppState.Invoices)
+                    {
+                        <div style="margin-bottom:8px;">
+
+                            <b>@invoice.InvoiceNumber</b>
+
+                            <br />
+
+                            @invoice.OutstandingAmount
+
+                        </div>
+                    }
+
+                </FluentCard>
+
+                <br />
+
+                <!-- TASKS -->
+                <FluentCard Class="insight-panel-card">
+
+                    <h4>Tasks</h4>
+
+                    @foreach (var task in AppState.LinkedTasks)
+                    {
+                        <div style="margin-bottom:8px;">
+                            @task.Title
+                        </div>
+                    }
+
+                </FluentCard>
+
+                <br />
+
+                <!-- ACTIVITIES -->
+                <FluentCard Class="insight-panel-card">
+
+                    <h4>Activities</h4>
+
+                    @foreach (var activity in AppState.AutomationLog)
+                    {
+                        <div style="font-size:12px;margin-bottom:4px;">
+                            @activity
+                        </div>
+                    }
+
                 </FluentCard>
             }
         }
@@ -67,6 +203,7 @@
     protected override void OnInitialized()
     {
         DashboardState.OnChange += Refresh;
+        AppState.OnChange += Refresh; // Listen to global automation updates as well
     }
 
     private void TogglePanel()
@@ -113,6 +250,7 @@
     public void Dispose()
     {
         DashboardState.OnChange -= Refresh;
+        AppState.OnChange -= Refresh;
     }
 
     public class EmailBridgeContext

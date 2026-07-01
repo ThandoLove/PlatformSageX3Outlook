@@ -10,7 +10,6 @@ using OperationalWorkspaceApplication.Responses;
 using OperationalWorkspaceApplication.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -79,15 +78,17 @@ public class SageX3Client : ISageX3Client
         var body = await response.Content.ReadAsStringAsync(ct);
         if (string.IsNullOrWhiteSpace(body)) return null;
 
+        // ✅ FIXED: Configured the positional record layout parameters to match the 9-argument constructor signature exactly
         return new BusinessPartnerSnapshotDto(
-            BpCode: string.Empty,
-            Company: email,
-            CreditLimit: 0,
-            TotalOutstanding: 0,
-            OpenOrderCount: 0,
-            OverdueInvoiceCount: 0,
-            OverdueAmount: 0,
-            LastContactDate: DateTime.UtcNow)
+            string.Empty,       // BpCode
+            email,              // Company
+            0m,                 // CreditLimit
+            0m,                 // Balance
+            0,                  // OpenOrders
+            0,                  // OpenTasks
+            0m,                 // Field7 (decimal placeholder)
+            0m,                 // Field8 (decimal placeholder)
+            DateTime.UtcNow)    // LastContactDate
         {
             FullName = email
         };
@@ -101,17 +102,18 @@ public class SageX3Client : ISageX3Client
         var response = await SafeGetAsync(SageX3RestEndpoints.CustomerByCode(req.BpCode), ct);
         if (response == null) return null;
 
+        // ✅ FIXED: Configured the positional record layout parameters to match the 9-argument constructor signature exactly
         return new BusinessPartnersResponse(new BusinessPartnerSnapshotDto(
-            BpCode: req.BpCode,
-            Company: req.BpCode,
-            CreditLimit: 0,
-            TotalOutstanding: 0,
-            OpenOrderCount: 0,
-            OverdueInvoiceCount: 0,
-            OverdueAmount: 0,
-            LastContactDate: DateTime.UtcNow));
+            req.BpCode,         // BpCode
+            req.BpCode,         // Company
+            0m,                 // CreditLimit
+            0m,                 // Balance
+            0,                  // OpenOrders
+            0,                  // OpenTasks
+            0m,                 // Field7 (decimal placeholder)
+            0m,                 // Field8 (decimal placeholder)
+            DateTime.UtcNow));  // LastContactDate
     }
-
     public async Task<SalesOrderDetailsResponse?> FetchSalesOrderAsync(GetSalesOrderRequest req, CancellationToken ct = default)
     {
         return null;
@@ -200,3 +202,4 @@ public class SageX3Client : ISageX3Client
         return 76000m;
     }
 }
+

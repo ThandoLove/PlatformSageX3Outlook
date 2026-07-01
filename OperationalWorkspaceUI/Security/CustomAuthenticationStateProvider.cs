@@ -1,5 +1,9 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Authorization;
 using Majorsoft.Blazor.Extensions.BrowserStorage;
 
@@ -9,13 +13,19 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 {
     private readonly ClaimsPrincipal _anonymous = new(new ClaimsIdentity());
     private ClaimsPrincipal _currentUser = new(new ClaimsIdentity());
+    private readonly ILocalStorageService _localStorage;
+
+    public CustomAuthenticationStateProvider(ILocalStorageService localStorage)
+    {
+        _localStorage = localStorage;
+    }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         try
         {
-            var token =
-                await _localStorage.GetItemAsync<string>("authToken");
+            // ✅ FIX 3: Changed extraction key from "authToken" to "access_token" to avoid empty reads
+            var token = await _localStorage.GetItemAsync<string>("access_token");
 
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -29,11 +39,8 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
                 return new AuthenticationState(_anonymous);
             }
 
-            var identity =
-                new ClaimsIdentity(claims, "jwt");
-
-            _currentUser =
-                new ClaimsPrincipal(identity);
+            var identity = new ClaimsIdentity(claims, "jwt");
+            _currentUser = new ClaimsPrincipal(identity);
 
             return new AuthenticationState(_currentUser);
         }
@@ -75,8 +82,7 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
             Task.FromResult(new AuthenticationState(_anonymous)));
     }
 
-
-    // Lightweight native JWT payload extractor
+    // Lightweight native JWT payload extractor mapping legacy strings to .NET core ClaimTypes
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
     {
         var segments = jwt.Split('.');
@@ -92,7 +98,35 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
         if (keyValuePairs == null) return Enumerable.Empty<Claim>();
 
-        return keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString() ?? ""));
+        var claims = new List<Claim>();
+
+        foreach (var kvp in keyValuePairs)
+        {
+            var valueStr = kvp.Value?.ToString() ?? "";
+            claims.Add(new Claim(kvp.Key, valueStr));
+
+            // ✅ INTERCEPT LAYER: Map standard payload json objects straight onto framework constants
+            if (kvp.Key.Equals("unique_name", StringComparison.OrdinalIgnoreCase) ||
+                kvp.Key.Equals("name", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!claims.Any(c => c.Type == ClaimTypes.Name))
+                    claims.Add(new Claim(ClaimTypes.Name, valueStr));
+            }
+
+            if (kvp.Key.Equals("role", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!claims.Any(c => c.Type == ClaimTypes.Role))
+                    claims.Add(new Claim(ClaimTypes.Role, valueStr));
+            }
+
+            if (kvp.Key.Equals("email", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!claims.Any(c => c.Type == ClaimTypes.Email))
+                    claims.Add(new Claim(ClaimTypes.Email, valueStr));
+            }
+        }
+
+        return claims;
     }
 
     private static bool IsTokenExpired(ClaimsPrincipal user)
@@ -109,13 +143,5 @@ public class CustomAuthenticationStateProvider : AuthenticationStateProvider
 
         var expiry = DateTimeOffset.FromUnixTimeSeconds(expUnix);
         return expiry <= DateTimeOffset.UtcNow;
-    }
-
-    private readonly ILocalStorageService _localStorage;
-
-    public CustomAuthenticationStateProvider(
-        ILocalStorageService localStorage)
-    {
-        _localStorage = localStorage;
     }
 }

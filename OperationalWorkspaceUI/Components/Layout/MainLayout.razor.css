@@ -1,164 +1,159 @@
 /* =========================================================================
-   UNIVERSAL ENTERPRISE CORE LAYOUT SYSTEM — PREVENTS WORKSPACE SQUASHING
+   UNIVERSAL FLEX-ROW CHASSIS (PERMANENT LEFT ALIGNMENT SYSTEM)
    ========================================================================= */
 
-html,
-body,
-:host,
-fluent-layout,
-.app-container {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 100vh !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background-color: #f8fafc !important;
-    font-family: Inter, "Segoe UI", sans-serif !important;
+#app-root-shell,
+#app-root-shell.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f8fafc;
+    font-family: Inter, "Segoe UI", sans-serif;
 }
 
-.global-header {
-    width: 100% !important;
-    height: 40px !important;
-    flex-shrink: 0 !important;
-    z-index: 2000 !important;
-}
-
-/* THE CONTAINER CHASSIS: Switches smoothly without hardcoded height traps */
-.main-wrapper {
-    display: flex !important;
-    flex-direction: row !important; /* Side-by-side layout on desktops */
-    flex: 1 !important;
-    width: 100% !important;
-    min-height: calc(100vh - 40px) !important; /* account for global header */
-    min-width: 0 !important;
-    align-items: stretch !important;
-    overflow: visible !important;
-}
-
-.sidebar-wrapper {
-    width: var(--sidebar-desktop) !important;
-    height: calc(100vh - 40px) !important; /* full height minus header */
-    flex-shrink: 0 !important;
-    background-color: #003366 !important;
-    border-right: 1px solid #cbd5e1 !important;
-    z-index: 1000 !important;
-    transition: width 0.2s ease !important;
-    position: sticky !important;
-    top: 40px !important;
-    overflow-y: auto !important;
-}
-
-    .sidebar-wrapper.is-collapsed-active {
-        width: 64px !important;
+    #app-root-shell .global-header,
+    #app-root-shell .layout-guard-header {
+        width: 100%;
+        height: 48px;
+        flex-shrink: 0;
+        z-index: 2000;
     }
 
-/* THE PAGE CONTAINER: Enforces automated flexible height distribution scales */
-.page-content {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    min-width: 0 !important;
-    height: 100% !important;
-    min-height: 0 !important; /* Crucial: lets container compute dynamic space tags */
-    overflow: hidden !important;
-    background-color: #f1f5f9 !important;
-}
+    #app-root-shell .main-wrapper {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        width: 100%;
+        height: calc(100vh - 48px);
+        min-height: calc(100vh - 48px);
+        min-width: 0;
+        align-items: stretch;
+        overflow: hidden;
+    }
 
-.content-body {
-    flex: 1 !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    overflow-y: auto !important; /* Scrollable canvas area protects page grids layout from squashing */
-    overflow-x: hidden !important;
-    padding: 16px !important;
-    box-sizing: border-box !important;
-}
+    /* 🚀 MASTER COLUMN WRAPPER: Reserves space on left margin, stopping elements from sliding left */
+    #app-root-shell .sidebar-wrapper {
+        width: 240px;
+        max-width: 240px;
+        min-width: 240px;
+        height: 100%;
+        position: relative; /* 🟢 FIX: Uses relative positioning to stay natively inside layout flow */
+        flex-shrink: 0;
+        background-color: #112237;
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        overflow-x: hidden;
+        overflow-y: auto;
+        box-sizing: border-box;
+        transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.2s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+        /* Programmatic Collapse Hooks */
+        #app-root-shell .sidebar-wrapper.is-collapsed-active {
+            width: 64px;
+            max-width: 64px;
+            min-width: 64px;
+        }
+
+    /* THE PAGE CONTAINER COMPUTE PLANES */
+    #app-root-shell .page-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        height: 100%;
+        background-color: #f1f5f9;
+        overflow: hidden;
+    }
+
+    #app-root-shell .content-body {
+        flex: 1;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 20px;
+        box-sizing: border-box;
+    }
 
 /* =========================================================================
-   🔥 OUTLOOK ADD-IN PANEL & MOBILE FLUID AUTO-GROWTH SPECIFICATION OVERRIDES
+   ⚡ FLUID AUTOMATIC SIDEBAR RAIL COLLAPSE MEDIA OVERRIDES
    ========================================================================= */
+
+/* Laptop Viewports: Below 1100px width -> Auto Collapses to 64px Rail */
+@media (max-width: 1100px) {
+    #app-root-shell .sidebar-wrapper {
+        width: 64px;
+        max-width: 64px;
+        min-width: 64px;
+    }
+}
+
+/* Outlook Taskpane & Mobile frames stay locked to a clean 64px rail */
 @media (max-width: 800px) {
-    .main-wrapper {
-        flex-direction: column !important; /* Stacks layout elements vertically without crushing heights */
-        overflow-y: auto !important; /* Allows the entire narrow frame panel view track to scroll */
-        height: auto !important;
-        max-height: calc(100vh - 40px) !important;
+    #app-root-shell .sidebar-wrapper {
+        width: 64px;
+        max-width: 64px;
+        min-width: 64px;
     }
 
-    .sidebar-wrapper {
-        width: 100% !important;
-        height: 44px !important; /* Fixed, minimal vertical height footprint locks the navigation bar */
-        min-height: 44px !important;
-        max-height: 44px !important;
-        border-right: none !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .page-content {
-        height: auto !important;
-        flex: 1 !important; /* Pushes the main page grid content area to fill the remaining screen space */
-        min-height: 0 !important;
-        overflow: hidden !important;
+    #app-root-shell .content-body {
+        padding: 12px;
     }
 }
 
 /* =========================================================================
-   RESPONSIVE BREAKPOINTS
-   Desktop, Laptop, Small-Laptop, Tablet, Mobile, Outlook Add-in
-   These rules adjust sidebar widths, padding and stacking behavior.
+   📎 INITIAL APPS SHROUD UTILITIES
    ========================================================================= */
-
-:root {
-    --sidebar-desktop: 280px;
-    --sidebar-laptop: 260px;
-    --sidebar-small-laptop: 220px;
-    --sidebar-tablet: 72px; /* compact nav */
-    --sidebar-mobile: 100%;
-    --content-padding-desktop: 24px;
-    --content-padding-mobile: 12px;
+.initial-app-boot-shroud {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100vw;
+    background: linear-gradient(180deg, #15345c 0%, #102846 100%);
+    color: #ffffff;
+    font-family: Inter, sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99999;
 }
 
-/* Large desktops: >= 1400px */
-@media (min-width: 1400px) {
-    .sidebar-wrapper { width: var(--sidebar-desktop) !important; }
-    .content-body { padding: calc(var(--content-padding-desktop) + 8px) !important; }
+.app-boot-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8aa6c8;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
-/* Laptop: 1024 - 1399 */
-@media (min-width: 1024px) and (max-width: 1399px) {
-    .sidebar-wrapper { width: var(--sidebar-laptop) !important; }
-    .content-body { padding: var(--content-padding-desktop) !important; }
+.initial-app-boot-shroud .spinner-border {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top: 3px solid #ffffff;
+    border-radius: 50%;
+    animation: layoutBootSpin 1s linear infinite;
 }
 
-/* Small laptop / large tablet: 900 - 1023 */
-@media (min-width: 900px) and (max-width: 1023px) {
-    .sidebar-wrapper { width: var(--sidebar-small-laptop) !important; }
-    .content-body { padding: 18px !important; }
+@keyframes layoutBootSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
-/* Tablet: 600 - 899 */
-@media (min-width: 600px) and (max-width: 899px) {
-    .main-wrapper { flex-direction: row !important; }
-    .sidebar-wrapper { width: var(--sidebar-tablet) !important; }
-    .sidebar-wrapper.is-collapsed-active { width: 56px !important; }
-    .page-content { overflow: visible !important; }
-    .content-body { padding: 16px !important; }
+#app-root-shell .secure-auth-landing-frame {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f3f2f1;
+    width: 100vw;
 }
-
-/* Mobile & Outlook add-in narrow frames: <= 599 */
-@media (max-width: 599px) {
-    .main-wrapper { flex-direction: column !important; height: auto !important; }
-    .sidebar-wrapper { width: var(--sidebar-mobile) !important; height: 56px !important; min-height: 56px !important; }
-    .page-content { height: auto !important; }
-    .content-body { padding: var(--content-padding-mobile) !important; }
-    .global-header { height: 48px !important; }
-}
-
-/* Outlook add-in tiny panes often have very constrained width; provide a special compact mode */
-@media (max-width: 420px) {
-    .sidebar-wrapper { display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 0 8px !important; }
-    .content-body { padding: 8px !important; }
-    .task-card { grid-template-columns: 1fr 80px !important; gap: 8px !important; }
-}
-

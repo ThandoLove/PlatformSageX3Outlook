@@ -13,16 +13,17 @@
 
 <div class="sage-sidebar @(DashboardState.IsSidebarCollapsed ? "is-collapsed" : "")">
 
-    <!-- SIDEBAR HEADER -->
-    <div class="sidebar-header" @onclick="ToggleSidebarLayout">
+    <!-- SIDEBAR HEADER WITH INTEGRATED COLLAPSE TOGGLE TRIGGER -->
+    <div class="sidebar-header" @onclick="ToggleSidebarLayout" title="Toggle Navigation Panel">
         <FluentIcon Value="@(new Icons.Regular.Size16.LineHorizontal3())"
-                    Color="@Color.Fill" />
+                    Color="@Color.Custom"
+                    CustomColor="#94a3b8" />
     </div>
 
-    <!-- NAVIGATION -->
+    <!-- NAVIGATION MENU LINKS REGISTRATION -->
     <nav class="nav-menu">
 
-        <!-- MAIN -->
+        <!-- SECTION: APPLICATION CORE -->
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())"
                        Href="@AppRoutes.Dashboard"
                        Match="NavLinkMatch.All">
@@ -46,7 +47,7 @@
 
         <div class="sidebar-divider"></div>
 
-        <!-- WORKSPACE -->
+        <!-- SECTION: WORKSPACE REPOSITORIES -->
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())"
                        Href="@AppRoutes.Knowledge">
             <span class="nav-link-text">Knowledge Base</span>
@@ -62,7 +63,7 @@
             <span class="nav-link-text">Documents</span>
         </FluentNavLink>
 
-        <!-- DYNAMIC ADMINISTRATIVE VISIBILITY BLOCKS -->
+        <!-- DYNAMIC ADMINISTRATIVE VISIBILITY BLOCKS (CONDITIONAL SECURITY SHIELD) -->
         @if (UIState.IsAdminEnvironment)
         {
             <div class="sidebar-divider"></div>
@@ -99,7 +100,7 @@
 
     </nav>
 
-    <!-- FOOTER -->
+    <!-- FOOTER ACCESS SECTIONS -->
     <div class="sidebar-footer">
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())"
                        Href="@AppRoutes.Settings">
@@ -108,6 +109,7 @@
     </div>
 
 </div>
+
 @code {
     protected override void OnInitialized()
     {

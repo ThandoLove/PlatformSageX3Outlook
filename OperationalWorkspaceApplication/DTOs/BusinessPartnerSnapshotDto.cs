@@ -12,6 +12,7 @@ namespace OperationalWorkspaceApplication.DTOs
         int OpenOrderCount,
         int OverdueInvoiceCount,
         decimal OverdueAmount,
+        decimal Balance,
         DateTime LastContactDate)
     {
         // 🚀 FIXED: Added infrastructure mapping properties needed by the context builder

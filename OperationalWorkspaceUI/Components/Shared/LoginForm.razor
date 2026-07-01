@@ -122,29 +122,7 @@
 
             await Task.Delay(400);
 
-            // =========================================================================
-            // 🛡️ DUAL ROLE EVALUATION MATRIX BASED ON TYPED IDENTITY EMAIL
-            // =========================================================================
-            string targetEmail = string.IsNullOrWhiteSpace(loginModel.Username) ? "operator@test.com" : loginModel.Username;
-            string targetName = "Tia Operator";
-            string targetRole = "Sales";
-
-            if (targetEmail.Contains("admin", StringComparison.OrdinalIgnoreCase))
-            {
-                targetName = "System Manager";
-                targetRole = "Administrator";
-            }
-
-            // Construct payload dictionary mapping explicit JSON token parameter strings
-            string dummyPayloadJson = $"{{\"unique_name\":\"{targetName}\",\"email\":\"{targetEmail}\",\"role\":\"{targetRole}\",\"exp\":4127131100}}";
-            string encodedPayload = Convert.ToBase64String(global::System.Text.Encoding.UTF8.GetBytes(dummyPayloadJson))
-                .Replace('+', '-').Replace('/', '_').TrimEnd('=');
-
-            string simulatedJwt = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{encodedPayload}.demo_signature_hash";
-
-            // =========================================================================
-            // ✅ FIXED: PASS THE STRONGLY-TYPED DTO OBJECT TO MATCH ARCHITECTURE CONTRACT
-            // =========================================================================
+            // ✅ FIX 8: Dispatches login model directly to your dynamic AuthService container pipeline
             var success = await AuthService.LoginAsync(loginModel);
 
             if (!success)
@@ -153,7 +131,7 @@
                 return;
             }
 
-            // Force synchronization from the newly registered Claims Principal target
+            // ✅ FIX 8: Force clean synchronization from the newly registered Claims Principal target
             if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
             {
                 var authState = await authProvider.GetAuthenticationStateAsync();
@@ -189,7 +167,6 @@
             {
                 await Task.Delay(1000);
 
-                // Create standard structured request shell parameter targeting your method signature
                 var ssoMockDto = new LoginRequestDto
                 {
                     Username = "sso.operator@test.com",
@@ -216,7 +193,6 @@
                     return;
                 }
 
-                // Enforce structured request mapping bounds across production integration tracks
                 var ssoProdDto = new LoginRequestDto
                 {
                     Username = "sso_production_node",

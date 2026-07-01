@@ -2,7 +2,11 @@
 using OperationalWorkspaceApplication.Requests;
 using OperationalWorkspaceApplication.Responses;
 using OperationalWorkspaceApplication.Interfaces;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock;
 
@@ -19,13 +23,13 @@ public class MockSageX3Client : ISageX3Client
         => Task.FromResult(450);
 
     public Task<BusinessPartnersResponse?> GetPartnerFinancialSnapshotAsync(GetBusinessPartnerSnapshotRequest req, CancellationToken ct = default)
-        => Task.FromResult<BusinessPartnersResponse?>(new BusinessPartnersResponse(new BusinessPartnerSnapshotDto("C1000", "Mock Corp", 0m, 0m, 2, 0, 0m, DateTime.UtcNow)));
+        => Task.FromResult<BusinessPartnersResponse?>(new BusinessPartnersResponse(new BusinessPartnerSnapshotDto("C1000", "Mock Corp", 0m, 0m, 2, 0, 0m, 0m, DateTime.UtcNow)));
 
     public Task<UpdateCreditLimitResponse> PushCreditLimitUpdateAsync(UpdateCreditLimitRequest req, CancellationToken ct = default)
         => Task.FromResult(new UpdateCreditLimitResponse(true));
 
     public Task<BusinessPartnerSnapshotDto?> FindPartnerByEmailAsync(string email, CancellationToken ct = default)
-        => Task.FromResult<BusinessPartnerSnapshotDto?>(new BusinessPartnerSnapshotDto("C1000", "Mock Corp", 0m, 0m, 2, 0, 0m, DateTime.UtcNow) { FullName = "Mock User", IsLinkedToSage = true });
+        => Task.FromResult<BusinessPartnerSnapshotDto?>(new BusinessPartnerSnapshotDto("C1000", "Mock Corp", 0m, 0m, 2, 0, 0m, 0m, DateTime.UtcNow) { FullName = "Mock User", IsLinkedToSage = true });
 
     public Task<CreateClientFromEmailResponse> ProvisionPartnerAccountAsync(CreateClientFromEmailRequest request, CancellationToken ct = default)
         => Task.FromResult(new CreateClientFromEmailResponse { Id = Guid.NewGuid(), Code = $"MOCK-{request.Email}" });

@@ -1,157 +1,208 @@
-﻿/* ========================================================= 
-   TOPBAR COMPONENT MASTER LAYOUT WRAPPER (NO IMPORTANT SHIT)
-   ========================================================= */
+﻿/* =========================================================================
+   SAGE X3 PREMIUM COMPACT ENTERPRISE HEADER (48PX OPTIMIZED)
+   ========================================================================= */
 .sage-topbar-master {
-    background-color: #0f172a; /* Sleek Dark Obsidian Carbon Slate */
-    height: 48px;
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    box-sizing: border-box;
-    border-bottom: 1px solid #1e293b;
+    /* 🚀 REDUCED STRUCTURAL SCALE: Slims layout down to professional desktop spec */
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 16px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    background: linear-gradient(180deg, #15345c 0%, #102846 100%) !important;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #ffffff;
+    z-index: 1000;
 }
 
-/* ZONE 1: BRANDING */
+/* ZONE 1: BRAND HIERARCHY TERMINOLOGY WINDOWS */
 .zone-left {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex: 0 0 auto;
+    min-width: 280px !important; /* Shrunk down from 360px */
+    gap: 12px !important; /* Tighter inner gap bounding */
+}
+
+.brand-group {
+    display: flex;
+    flex-direction: column;
 }
 
 .sage-brand-text {
-    color: #ffffff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05rem;
+    font-size: 15px !important; /* Scaled down from massive 18px */
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+    color: #ffffff !important;
+    line-height: 1.1;
+}
+
+.sage-brand-subtext {
+    font-size: 10px !important; /* Small, readable sub-context string label */
+    font-weight: 500;
+    color: #38bdf8;
+    letter-spacing: 0.01em;
 }
 
 .topbar-divider {
     width: 1px;
-    height: 16px;
-    background: #334155;
+    height: 18px; /* Tighter dividing line metric */
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .page-dynamic-title {
-    color: #94a3b8;
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: 14px !important; /* Shrunk from 16px to stand clear in hierarchy */
+    font-weight: 600 !important;
+    color: #ffffff !important;
 }
 
-/* ZONE 2: BALANCED CENTER SEARCH STRIP */
+/* ZONE 2: CENTER MICRO SEARCH CONTAINER BAR */
 .zone-middle {
     flex: 1;
     display: flex;
     justify-content: center;
-    padding: 0 32px;
-    min-width: 0;
+    width: 100%;
+    max-width: 440px !important; /* Narrowed width constraint bounds */
+    min-width: 240px !important;
 }
 
 .search-input-group {
     display: flex;
     align-items: center;
-    background: #1e293b;
-    padding: 0 12px;
-    border-radius: 6px;
     width: 100%;
-    max-width: 400px;
-    height: 32px;
-    border: 1px solid #334155;
-    transition: all 0.2s ease-in-out;
+    height: 32px !important; /* Dropped height down from 42px */
+    border-radius: 6px !important; /* Sharp modern micro-radius corners */
+    background: #1a3356 !important;
+    border: none !important;
+    padding: 0 12px !important; /* Trimmed internal horizontal inset padding */
+    box-sizing: border-box !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04) !important;
 }
 
+    .search-input-group:hover {
+        background: #203d66 !important;
+    }
+
     .search-input-group:focus-within {
-        border-color: #2563eb;
-        background: #0f172a;
+        background: #22466f !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
     }
 
 .topbar-search-input {
-    border: none;
-    background: transparent;
-    font-size: 0.8rem;
-    color: #ffffff;
-    outline: none;
     width: 100%;
-    margin-left: 8px;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding-left: 8px;
+    font-size: 13px !important; /* Crisp 13px standard typing font size */
+    font-weight: 500 !important;
+    color: #ffffff !important;
 }
 
-/* ZONE 3: METRICS AND LIVE USER BADGES */
+    .topbar-search-input::placeholder {
+        color: #8aa6c8 !important;
+    }
+
+/* ZONE 3: COHESIVE SLIM PROFILE WRAP */
 .zone-right {
     display: flex;
     align-items: center;
-    gap: 16px;
-    flex: 0 0 auto;
+    gap: 12px !important; /* Tighter layout compression spacing */
+    padding-left: 16px !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .connection-status {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding-right: 16px;
-    border-right: 1px solid #334155;
+    height: 26px !important; /* Dropped from bulky 34px container shell */
+    padding: 0 10px !important; /* Narrowed tracking pill dimensions */
+    border-radius: 999px !important;
+    background: #163c2b !important;
+    border: none !important;
+    gap: 4px;
 }
 
 .conn-text-label {
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 11px !important; /* Crisp micro label spec */
+    font-weight: 600 !important;
 }
 
-    .conn-text-label.text-success {
-        color: #10b981;
-    }
+.text-success {
+    color: #34d399 !important;
+}
 
-    .conn-text-label.text-error {
-        color: #f43f5e;
-    }
+.text-error {
+    color: #f87171 !important;
+}
 
-/* ACCOUNT DETAILS INFORMATION GRID */
+/* COMPACT PROFILE META ACCESS CARD CARD */
 .user-profile-section {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px !important;
+    padding: 4px 8px !important;
+    border-radius: 8px !important;
 }
+
+    .user-profile-section:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
 
 .user-meta-text-wrap {
     display: flex;
     flex-direction: column;
-    text-align: right;
+    align-items: flex-start;
 }
 
 .user-display-name {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #ffffff;
+    font-size: 12px !important; /* Balanced font reduction */
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    line-height: 1.1;
 }
 
-.user-display-email {
-    font-size: 0.7rem;
-    color: #64748b;
+.user-display-role {
+    font-size: 10px !important; /* Slim text signature line layout */
+    font-weight: 500;
+    color: #8aa6c8 !important;
 }
 
+.topbar-persona {
+    box-shadow: 0 0 0 1.5px #2b4668, 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
 
-/* ========================================================= 
-   MODERN COMPACT LOGOUT TEXT BUTTON
-   ========================================================= */
-.topbar-logout-link {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin-top: 2px;
-    font-size: 9px;
-    font-weight: 700;
-    color: #f43f5e; /* Obsidian Crimson highlight color */
-    text-transform: uppercase;
-    letter-spacing: 0.03rem;
-    text-align: right;
+/* CIRCULAR COMPACT EXIT SHIELD ROW TRIGGER BUTTON */
+.topbar-modern-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px !important; /* Dropped frame bounds down from 34px footprint */
+    height: 28px !important;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     cursor: pointer;
-    outline: none;
-    transition: color 0.2s ease-in-out;
+    padding: 0;
 }
 
-    .topbar-logout-link:hover {
-        color: #fda4af; /* Light soft blush hover glow */
-        text-decoration: underline;
+    .topbar-modern-logout-btn:hover {
+        background: #ef4444 !important;
+        border-color: #ef4444 !important;
     }
+
+        .topbar-modern-logout-btn:hover svg {
+            stroke: #ffffff !important;
+        }
+
+/* HIGH ACCURACY SMOOTH TRANSITIONS TRANSIT ENGINE */
+.search-input-group,
+.user-profile-section,
+.connection-status,
+.topbar-modern-logout-btn {
+    transition: all 0.20s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}

@@ -1,0 +1,109 @@
+﻿@page "/demo/email"
+@inherits OperationalWorkspaceUI.Pages.Demo.EmailSimulator
+
+<PageTitle>Email Simulator</PageTitle>
+
+<div class="email-layout">
+
+    <!-- LEFT: EMAIL LIST -->
+    <div class="email-list">
+
+        <h3>Inbox</h3>
+
+        @foreach (var email in Emails)
+        {
+            @* ✅ FIXED: Updated template loop action click to safely handle async task await execution *@
+            <div class="email-item @(CurrentEmail?.MessageId == email.MessageId ? "active" : "")"
+                 @onclick="async () => await SelectEmail(email)">
+
+                <b>@email.Subject</b>
+                <div class="muted">@email.From</div>
+
+            </div>
+        }
+
+    </div>
+
+    <!-- CENTER: EMAIL VIEW -->
+    <div class="email-view">
+
+        @if (CurrentEmail == null)
+        {
+            <div class="empty-state">
+                Select an email to preview
+            </div>
+        }
+        else
+        {
+            <h2>@CurrentEmail.Subject</h2>
+
+            <p><b>From:</b> @CurrentEmail.From</p>
+
+            <p class="email-body">@CurrentEmail.Message</p>
+
+            <hr />
+
+            <button class="btn btn-primary" @onclick="LinkCustomer">
+                Link Customer
+            </button>
+
+            <button class="btn btn-fluent-success" style="background-color: #107c41; color: white; border: none; padding: 6px 12px; border-radius: 4px;" @onclick="CreateActivity">
+                Create Activity
+            </button>
+
+            <button class="btn btn-warning" @onclick="CreateTask">
+                Create Task
+            </button>
+
+            <button class="btn btn-dark" @onclick="OpenCustomer">
+                Open Customer
+            </button>
+        }
+    </div>
+
+    <!-- RIGHT: CRM INSIGHT PANEL -->
+    <div class="email-right">
+
+        @if (CurrentCustomer != null)
+        {
+            <div class="card">
+
+                <h4>Customer</h4>
+
+                <p><b>@CurrentCustomer.FullName</b></p>
+
+                <p>BP: @CurrentCustomer.BpCode</p>
+
+                <p>Outstanding: @CurrentCustomer.Balance</p>
+
+                <p>Rep: @CurrentCustomer.AssignedRep</p>
+
+            </div>
+        }
+        else
+        {
+            <div class="muted">
+                No customer linked
+            </div>
+        }
+
+    </div>
+
+    @if (AppState?.AutomationLog != null && AppState.AutomationLog.Any())
+    {
+        <div class="card mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Automation Flow</h5>
+                <button class="btn btn-sm btn-outline-danger" @onclick="ClearLog">Clear Log</button>
+            </div>
+
+            @foreach (var log in AppState.AutomationLog)
+            {
+                <div style="font-size:12px; font-family: Consolas, monospace;">
+                    @log
+                </div>
+            }
+        </div>
+    }
+
+</div>
