@@ -10,6 +10,7 @@
 @inject NavigationService NavService
 @inject DashboardState DashboardState
 @inject UIState UIState
+@inject OperationalWorkspaceUI.UIServices.System.AuthService AuthService
 
 <div class="sage-sidebar @(DashboardState.IsSidebarCollapsed ? "is-collapsed" : "")">
 
@@ -63,6 +64,11 @@
             <span class="nav-link-text">Documents</span>
         </FluentNavLink>
 
+        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())"
+                       Href="@AppRoutes.Settings">
+            <span class="nav-link-text">Settings</span>
+        </FluentNavLink>
+
         <!-- DYNAMIC ADMINISTRATIVE VISIBILITY BLOCKS (CONDITIONAL SECURITY SHIELD) -->
         @if (UIState.IsAdminEnvironment)
         {
@@ -100,12 +106,42 @@
 
     </nav>
 
-    <!-- FOOTER ACCESS SECTIONS -->
+    <!-- FOOTER ACCESS SECTIONS: Modern horizontal action lines -->
     <div class="sidebar-footer">
-        <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())"
-                       Href="@AppRoutes.Settings">
-            <span class="nav-link-text">Settings</span>
-        </FluentNavLink>
+        <div class="footer-actions">
+            <button type="button" class="footer-action footer-menu-trigger" @onclick="ToggleFooterMenu" title="Open menu">
+                <span class="footer-action-icon">☰</span>
+                <span class="footer-action-label">Menu</span>
+            </button>
+
+            @if (_footerMenuOpen)
+            {
+                <div class="footer-menu-dropdown">
+                    <FluentNavLink class="footer-menu-item" Icon="@(new Icons.Regular.Size16.Settings())" Href="@AppRoutes.Settings">
+                        <span>Settings</span>
+                    </FluentNavLink>
+
+                    <button type="button" class="footer-menu-item" @onclick='() => Nav.NavigateTo("/help")'>
+                        <span>Help</span>
+                    </button>
+
+                    <button type="button" class="footer-menu-item footer-signout" @onclick="PromptFooterLogoutConfirmation">
+                        <span>Sign Out</span>
+                    </button>
+                </div>
+            }
+
+            @if (_showFooterLogoutConfirmation)
+            {
+                <div class="footer-logout-popover">
+                    <span class="pop-text">Sign out of your workspace session?</span>
+                    <div class="pop-actions">
+                        <button type="button" class="pop-confirm" @onclick="ExecuteFooterLogoutPipeline">Yes, Exit</button>
+                        <button type="button" class="pop-cancel" @onclick="CancelFooterLogout">Cancel</button>
+                    </div>
+                </div>
+            }
+        </div>
     </div>
 
 </div>
@@ -131,5 +167,34 @@
     {
         DashboardState.OnChange -= Refresh;
         UIState.OnChange -= Refresh;
+    }
+
+    private bool _showFooterLogoutConfirmation = false;
+
+    private bool _footerMenuOpen = false;
+
+    private void ToggleFooterMenu()
+    {
+        _footerMenuOpen = !_footerMenuOpen;
+        // close logout confirmation when opening menu
+        if (_footerMenuOpen)
+            _showFooterLogoutConfirmation = false;
+    }
+
+    private void PromptFooterLogoutConfirmation()
+    {
+        _showFooterLogoutConfirmation = !_showFooterLogoutConfirmation;
+    }
+
+    private void CancelFooterLogout()
+    {
+        _showFooterLogoutConfirmation = false;
+    }
+
+    private async Task ExecuteFooterLogoutPipeline()
+    {
+        _showFooterLogoutConfirmation = false;
+        await AuthService.LogoutAsync();
+        Nav.NavigateTo("/", forceLoad: false);
     }
 }

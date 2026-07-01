@@ -101,6 +101,162 @@
     background-color: rgba(0, 0, 0, 0.1);
 }
 
+.footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 12px;
+}
+
+.footer-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.footer-action:hover {
+    background: rgba(255,255,255,0.03);
+    color: #ffffff;
+}
+
+.footer-signout {
+    color: #fca5a5;
+}
+
+.footer-signout:hover {
+    background: rgba(252,165,165,0.06);
+    color: #fee2e2;
+}
+
+.footer-action-label {
+    flex: 1;
+    font-size: 13px;
+}
+
+.footer-logout-popover {
+    margin-top: 8px;
+    background: #0b1220;
+    border: 1px solid #20314a;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(2,6,23,0.6);
+}
+
+.footer-logout-popover .pop-text {
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+}
+
+.footer-logout-popover .pop-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.footer-logout-popover .pop-confirm {
+    flex: 1;
+    background: #ef4444;
+    border: none;
+    color: white;
+    padding: 6px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.footer-logout-popover .pop-cancel {
+    flex: 1;
+    background: #334155;
+    border: 1px solid #475569;
+    color: #cbd5e1;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Footer menu dropdown */
+.footer-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.footer-action-icon {
+    font-size: 14px;
+}
+
+.footer-menu-dropdown {
+    margin-top: 8px;
+    background: #071226;
+    border: 1px solid #213043;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.footer-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.footer-menu-item:hover {
+    background: rgba(255,255,255,0.03);
+    color: #fff;
+}
+
+/* Increase sidebar visual height and modernize */
+.sage-sidebar,
+.sidebar {
+    min-height: 100vh;
+    padding-bottom: 12px;
+    border-right: 1px solid rgba(255,255,255,0.04);
+}
+
+.sidebar-header {
+    height: 56px;
+}
+
+.nav-menu {
+    padding: 16px 0;
+}
+
+.fluent-nav-link {
+    height: 44px !important;
+    padding: 0 12px !important;
+    margin: 6px 10px !important;
+}
+
+.nav-link-text {
+    max-width: 180px;
+}
+
 .nav-menu .group-title {
     font-size: 10px;
     text-transform: uppercase;

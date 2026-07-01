@@ -2,8 +2,7 @@
    UNIVERSAL FLEX-ROW CHASSIS (PERMANENT LEFT ALIGNMENT SYSTEM)
    ========================================================================= */
 
-#app-root-shell,
-#app-root-shell.app-container {
+.app-container {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -14,15 +13,15 @@
     font-family: Inter, "Segoe UI", sans-serif;
 }
 
-    #app-root-shell .global-header,
-    #app-root-shell .layout-guard-header {
+    .app-container .global-header,
+    .app-container .layout-guard-header {
         width: 100%;
         height: 48px;
         flex-shrink: 0;
         z-index: 2000;
     }
 
-    #app-root-shell .main-wrapper {
+    .app-container .main-wrapper {
         display: flex;
         flex-direction: row;
         flex: 1;
@@ -35,7 +34,7 @@
     }
 
     /* 🚀 MASTER COLUMN WRAPPER: Reserves space on left margin, stopping elements from sliding left */
-    #app-root-shell .sidebar-wrapper {
+    .app-container .sidebar-wrapper {
         width: 240px;
         max-width: 240px;
         min-width: 240px;
@@ -51,14 +50,14 @@
     }
 
         /* Programmatic Collapse Hooks */
-        #app-root-shell .sidebar-wrapper.is-collapsed-active {
+        .app-container .sidebar-wrapper.is-collapsed-active {
             width: 64px;
             max-width: 64px;
             min-width: 64px;
         }
 
     /* THE PAGE CONTAINER COMPUTE PLANES */
-    #app-root-shell .page-content {
+    .app-container .page-content {
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -68,7 +67,7 @@
         overflow: hidden;
     }
 
-    #app-root-shell .content-body {
+    .app-container .content-body {
         flex: 1;
         height: 100%;
         overflow-y: auto;
@@ -83,7 +82,7 @@
 
 /* Laptop Viewports: Below 1100px width -> Auto Collapses to 64px Rail */
 @media (max-width: 1100px) {
-    #app-root-shell .sidebar-wrapper {
+    .app-container .sidebar-wrapper {
         width: 64px;
         max-width: 64px;
         min-width: 64px;
@@ -92,13 +91,13 @@
 
 /* Outlook Taskpane & Mobile frames stay locked to a clean 64px rail */
 @media (max-width: 800px) {
-    #app-root-shell .sidebar-wrapper {
+    .app-container .sidebar-wrapper {
         width: 64px;
         max-width: 64px;
         min-width: 64px;
     }
 
-    #app-root-shell .content-body {
+    .app-container .content-body {
         padding: 12px;
     }
 }
@@ -149,7 +148,7 @@
     }
 }
 
-#app-root-shell .secure-auth-landing-frame {
+.app-container .secure-auth-landing-frame {
     display: flex;
     justify-content: center;
     align-items: center;
