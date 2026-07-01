@@ -13,14 +13,14 @@
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Hangfire.Core" Version="1.8.23" />
-    <PackageReference Include="Majorsoft.Blazor.Extensions.BrowserStorage" Version="2.0.0" />
+    <PackageReference Include="Majorsoft.Blazor.Extensions.BrowserStorage" Version="2.1.0" />
     
 
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.14.2" />
-    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.2" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.14.3" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Radzen.Blazor" Version="10.4.5" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.18.0" />
+    <PackageReference Include="Radzen.Blazor" Version="11.0.5" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
    
   </ItemGroup>
 
