@@ -147,24 +147,24 @@ namespace OperationalWorkspaceApplication.Services
             return await Task.FromResult(true);
         }
 
-        public async Task<EmailInsightDto?> GetEmailByIdAsync(Guid emailId)
+        public async Task<EmailInsightDto?> GetEmailByIdAsync(string outlookMessageId)
         {
             return await Task.FromResult(
                 new EmailInsightDto
                 {
-                    MessageId = emailId.ToString(),
+                    MessageId = outlookMessageId ?? string.Empty,
                     Subject = "Mock Subject",
                     From = "test@example.com",
                     ReceivedAt = DateTime.UtcNow
                 });
         }
 
-        public async Task<EmailContextDto?> GetEmailContextAsync(Guid emailId)
+        public async Task<EmailContextDto?> GetEmailContextAsync(string outlookMessageId)
         {
             var email =
                 new EmailInsightDto
                 {
-                    MessageId = emailId.ToString(),
+                    MessageId = outlookMessageId ?? string.Empty,
                     Subject = "Urgent: Verification Needed for Outstanding Order ORD-MOCK-7721",
                     From = "client-operator@postmantesting.com",
                     ReceivedAt = DateTime.UtcNow.AddMinutes(-5),
@@ -231,13 +231,13 @@ namespace OperationalWorkspaceApplication.Services
 
             return await Task.FromResult(context);
         }
-        public async Task<List<OpenOrderDto>> GetLinkedOrdersAsync(Guid emailId)
+        public async Task<List<OpenOrderDto>> GetLinkedOrdersAsync(string outlookMessageId)
         {
             return await Task.FromResult(
                 new List<OpenOrderDto>());
         }
 
-        public async Task<List<TaskDto>> GetLinkedTasksAsync(Guid emailId)
+        public async Task<List<TaskDto>> GetLinkedTasksAsync(string outlookMessageId)
         {
             return await Task.FromResult(
                 new List<TaskDto>());

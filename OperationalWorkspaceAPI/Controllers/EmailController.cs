@@ -36,23 +36,25 @@ namespace OperationalWorkspaceAPI.Controllers
             if (!isSynced)
                 return BadRequest("Email already exists or failed to sync.");
 
+            // Return the canonical Outlook message id so the client can use it for subsequent context calls
             return Accepted(new
             {
                 success = true,
-                message = "Email synced successfully"
+                message = "Email synced successfully",
+                messageId = dto.MessageId
             });
         }
 
         // ---------------------------------------------------------------------
-        // 2. GET EMAIL (BASIC)
+        // 2. GET EMAIL (BASIC) - accepts Outlook message id string
         // ---------------------------------------------------------------------
         [HttpGet("{emailId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(Guid emailId)
+        public async Task<IActionResult> GetById(string emailId)
         {
-            if (emailId == Guid.Empty)
-                return BadRequest("Invalid cryptographic transaction identifier.");
+            if (string.IsNullOrWhiteSpace(emailId))
+                return BadRequest("Invalid message identifier.");
 
             var email = await _service.GetEmailByIdAsync(emailId);
 
@@ -72,29 +74,8 @@ namespace OperationalWorkspaceAPI.Controllers
         {
             if (string.IsNullOrWhiteSpace(emailId))
                 return BadRequest("Invalid message tracking identifier.");
-
-            EmailContextDto? context = null;
-
-            // 💡 COMPATIBILITY SWAPPER LAYER:
-            // Maps the incoming string tracking ID directly over to your backend service layer.
-            if (emailId == "MOCK_SAGE_X3_TEST_CONVERSATION" || emailId == "DEMO_CONVERSATION_VAL_9988")
-            {
-                // Local dev mock configuration path fallback
-                Guid devMockGuid = Guid.Parse("00000000-0000-0000-0000-000000000001");
-                context = await _service.GetEmailContextAsync(devMockGuid);
-            }
-            else if (Guid.TryParse(emailId, out Guid parsedGuid))
-            {
-                // Database-matched Guid string translation path
-                context = await _service.GetEmailContextAsync(parsedGuid);
-            }
-            else
-            {
-                // 🚀 REAL OUTLOOK MULTI-TENANT PROD ROUTING ACTION:
-                // Since Outlook provides string IDs, your underlying IEmailService implementation 
-                // can also look up via a custom GetEmailContextByMessageIdAsync(string messageId) if needed.
-                // Right now, if no match fallback is found, it evaluates gracefully below.
-            }
+            // Delegate to service using Outlook message id
+            var context = await _service.GetEmailContextAsync(emailId);
 
             // 🔥 FIX: Check if context is completely empty or matched with an Un-registered/Unknown profile
             if (context == null || context.Email == null || string.IsNullOrWhiteSpace(context.Email.BusinessPartnerCode) || context.Email.BusinessPartnerCode == "Unknown")

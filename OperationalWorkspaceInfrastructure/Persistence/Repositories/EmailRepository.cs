@@ -30,16 +30,13 @@ namespace OperationalWorkspaceInfrastructure.Persistence.Repositories
             await _db.SaveChangesAsync();
         }
 
-        // Hardened lookup accepts the type-safe Guid tracking parameter
-        public async System.Threading.Tasks.Task<Email?> GetByMessageIdAsync(Guid emailId)
+        // Hardened lookup accepts the Outlook message id string
+        public async System.Threading.Tasks.Task<Email?> GetByMessageIdAsync(string outlookMessageId)
         {
-            if (emailId == Guid.Empty) return null;
-
-            // Safely converts the cryptographic token key into a clean lookup string
-            var targetStringId = emailId.ToString();
+            if (string.IsNullOrWhiteSpace(outlookMessageId)) return null;
 
             return await _db.Emails
-                .FirstOrDefaultAsync(e => e.MessageId == targetStringId);
+                .FirstOrDefaultAsync(e => e.MessageId == outlookMessageId);
         }
     }
 }

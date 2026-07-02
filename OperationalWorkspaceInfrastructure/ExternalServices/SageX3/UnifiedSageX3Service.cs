@@ -182,33 +182,31 @@ namespace OperationalWorkspaceApplication.Services
 
         public async Task<bool> SyncEmailAsync(EmailInsightDto dto) => await Task.FromResult(true);
 
-        public async Task<EmailInsightDto?> GetEmailByIdAsync(Guid emailId)
+        public async Task<EmailInsightDto?> GetEmailByIdAsync(string outlookMessageId)
         {
-            return await Task.FromResult(new EmailInsightDto { MessageId = emailId.ToString() });
+            return await Task.FromResult(new EmailInsightDto { MessageId = outlookMessageId ?? string.Empty });
         }
 
-        public async Task<List<OpenOrderDto>> GetLinkedOrdersAsync(Guid emailId)
+        public async Task<List<OpenOrderDto>> GetLinkedOrdersAsync(string outlookMessageId)
         {
             return await Task.FromResult(new List<OpenOrderDto>());
         }
 
-        public async Task<List<TaskDto>> GetLinkedTasksAsync(Guid emailId)
+        public async Task<List<TaskDto>> GetLinkedTasksAsync(string outlookMessageId)
         {
             return await Task.FromResult(new List<TaskDto>());
         }
 
-        public async Task<EmailContextDto?> GetEmailContextAsync(Guid emailId)
+        public async Task<EmailContextDto?> GetEmailContextAsync(string outlookMessageId)
         {
-            if (emailId == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(outlookMessageId))
             {
                 return null;
             }
 
-            var stringEmailId = emailId.ToString();
-
-            var linkedOrders = await GetLinkedOrdersAsync(emailId);
-            var linkedTasks = await GetLinkedTasksAsync(emailId);
-            var email = await GetEmailByIdAsync(emailId);
+            var linkedOrders = await GetLinkedOrdersAsync(outlookMessageId);
+            var linkedTasks = await GetLinkedTasksAsync(outlookMessageId);
+            var email = await GetEmailByIdAsync(outlookMessageId);
 
             return new EmailContextDto
             {

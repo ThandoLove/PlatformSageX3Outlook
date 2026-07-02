@@ -15,6 +15,10 @@ window.officeBridge = {
     _isInitializing: false,
     _isProcessingEmail: false,
     _itemChangedHandler: null,
+    _disposed: false,
+    _initRetryCount: 0,
+    _maxInitRetries: 5,
+    _retryDelayMs: 2000,
 
     enableAutomation: true,
 
@@ -36,10 +40,19 @@ window.officeBridge = {
             // Browser mode safety
             if (typeof Office === "undefined") {
 
-                console.log(
-                    "Sage X3 Outlook Bridge : Browser mode"
-                );
+                console.log("Sage X3 Outlook Bridge : Office.js not found");
 
+                // Retry initialization a few times to allow Office.js to load in hosted environments
+                if (this._initRetryCount < this._maxInitRetries) {
+                    const delay = this._retryDelayMs * Math.pow(2, this._initRetryCount);
+                    console.warn(`officeBridge: Office.js missing, retrying init in ${delay}ms`);
+                    this._initRetryCount++;
+                    setTimeout(() => {
+                        try { this.initialize(dotNetHelper); } catch (e) { console.error('Retry initialize failed', e); }
+                    }, delay);
+                }
+
+                // In pure browser mode we will not wire Outlook handlers but the bridge still functions in degraded mode
                 return;
             }
 
@@ -59,6 +72,17 @@ window.officeBridge = {
             console.log(
                 "Sage X3 Outlook Bridge : Initializing"
             );
+
+            // Attach basic window visibility and focus handlers to improve reliability inside Outlook task pane
+            try {
+                window.addEventListener('visibilitychange', this._onVisibilityChange.bind(this));
+                window.addEventListener('focus', this._onWindowFocus.bind(this));
+                window.addEventListener('blur', this._onWindowBlur.bind(this));
+                window.addEventListener('beforeunload', this._dispose.bind(this));
+            }
+            catch (e) {
+                console.warn('officeBridge: could not attach window event handlers', e);
+            }
 
             this._itemChangedHandler = async () => {
 
@@ -96,12 +120,8 @@ window.officeBridge = {
                 }
             );
 
-            if (
-                Office?.context?.mailbox?.item
-            ) {
-
+            if (Office?.context?.mailbox?.item) {
                 await this.checkSender();
-
             }
 
             this._isInitialized = true;
@@ -126,6 +146,64 @@ window.officeBridge = {
             this._isInitializing = false;
 
         }
+    },
+
+    // ======================================================
+    // LIFECYCLE / WINDOW EVENT HELPERS
+    // ======================================================
+
+    _onVisibilityChange: function () {
+        try {
+            if (document && !document.hidden) {
+                // when tab becomes visible, re-check selected item
+                if (!this._isProcessingEmail) {
+                    this.checkSender();
+                }
+            }
+        }
+        catch (e) { console.warn('visibility handler error', e); }
+    },
+
+    _onWindowFocus: function () {
+        try {
+            if (!this._isInitialized && !this._isInitializing) {
+                // Try gentle re-init when focus returns
+                this.initialize(this._dotNetHelper);
+            }
+            if (!this._isProcessingEmail) {
+                this.checkSender();
+            }
+        }
+        catch (e) { console.warn('focus handler error', e); }
+    },
+
+    _onWindowBlur: function () {
+        // no-op for now, placeholder for analytics or resource throttling
+    },
+
+    _dispose: function () {
+        try {
+            if (this._disposed) return;
+            this._disposed = true;
+
+            // remove mailbox handler if present
+            try {
+                if (Office?.context?.mailbox && Office.context.mailbox.removeHandlerAsync) {
+                    Office.context.mailbox.removeHandlerAsync(Office.EventType.ItemChanged, (res) => { /* noop */ });
+                }
+            }
+            catch (e) { /* ignore */ }
+
+            // remove our window event listeners
+            try {
+                window.removeEventListener('visibilitychange', this._onVisibilityChange.bind(this));
+                window.removeEventListener('focus', this._onWindowFocus.bind(this));
+                window.removeEventListener('blur', this._onWindowBlur.bind(this));
+                window.removeEventListener('beforeunload', this._dispose.bind(this));
+            }
+            catch (e) { /* ignore */ }
+        }
+        catch (e) { console.warn('dispose failed', e); }
     },
 
     // ======================================================
@@ -548,26 +626,13 @@ window.officeBridge = {
                     .item;
 
             const context = {
-
-                senderEmail:
-
-                    this._getSenderEmail(
-                        item
-                    ),
-
-                senderName:
-
-                    this._getSenderName(
-                        item
-                    ),
-
-                subject:
-
-                    item.subject
-
-                    ||
-
-                    "No Subject"
+                // Use Outlook-provided stable identifiers where available
+                MessageId: item.internetMessageId || item.itemId || item.conversationId || "",
+                SenderEmail: this._getSenderEmail(item),
+                SenderName: this._getSenderName(item),
+                Subject: item.subject || "No Subject",
+                From: (item.from && (item.from.emailAddress || item.from.address)) || (item.sender && (item.sender.emailAddress || item.sender.address)) || "",
+                ReceivedAt: (item.dateTimeReceived && item.dateTimeReceived.toISOString && item.dateTimeReceived.toISOString()) || (item.dateTimeCreated && item.dateTimeCreated.toISOString && item.dateTimeCreated.toISOString()) || new Date().toISOString()
             };
 
             await this._dotNetHelper

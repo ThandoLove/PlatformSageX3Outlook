@@ -82,6 +82,7 @@
     private DotNetObjectReference<MainLayout>? _objRef;
     private bool _initialized;
     private bool _disposed;
+    private bool _wasAuthenticated;
     private Action? _unsubscribeEmail;
 
     private bool IsAppPage
@@ -100,8 +101,9 @@
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
-
-        UIState.OnChange += RefreshUI;
+        // Track authentication state changes so we can guard protected routes
+        _wasAuthenticated = UIState.IsAuthenticated;
+        UIState.OnChange += HandleUIStateChange;
         DashboardState.OnChange += RefreshUI;
         AppState.OnChange += RefreshUI;
 
@@ -205,6 +207,36 @@
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => RefreshUI();
 
+    private void HandleUIStateChange()
+    {
+        // Called when UIState changes. If the user transitioned from authenticated -> unauthenticated
+        // replace history to the welcome page so Back does not reveal protected routes.
+        if (_disposed) return;
+
+        var previously = _wasAuthenticated;
+        var now = UIState.IsAuthenticated;
+        _wasAuthenticated = now;
+
+        if (previously && !now)
+        {
+            // user logged out
+            _ = InvokeAsync(() =>
+            {
+                try
+                {
+                    Nav.NavigateTo("/", forceLoad: false, replace: true);
+                }
+                catch { }
+                StateHasChanged();
+            });
+
+            return;
+        }
+
+        // Fallback: refresh UI as usual
+        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+    }
+
     private void RefreshUI()
     {
         if (_disposed) return;
@@ -217,7 +249,7 @@
         _disposed = true;
 
         Nav.LocationChanged -= HandleLocationChanged;
-        UIState.OnChange -= RefreshUI;
+        UIState.OnChange -= HandleUIStateChange;
         DashboardState.OnChange -= RefreshUI;
         AppState.OnChange -= RefreshUI;
 

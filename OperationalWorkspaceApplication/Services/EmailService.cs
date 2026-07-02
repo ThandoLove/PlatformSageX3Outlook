@@ -45,13 +45,11 @@ namespace OperationalWorkspaceApplication.Services
         }
 
         // ---------------------------------------------------------------------
-        // 2. GET BASIC EMAIL (Updated parameter to matching Guid contract format)
+        // 2. GET BASIC EMAIL (Updated parameter to matching string contract format)
         // ---------------------------------------------------------------------
-        public async Task<EmailInsightDto?> GetEmailByIdAsync(Guid emailId)
+        public async Task<EmailInsightDto?> GetEmailByIdAsync(string outlookMessageId)
         {
-            // Maps the Guid token out to a clean structural string tracking key
-            var stringId = emailId.ToString();
-            var email = await _repo.GetByMessageIdAsync(emailId);
+            var email = await _repo.GetByMessageIdAsync(outlookMessageId);
 
             if (email == null)
                 return null;
@@ -66,24 +64,41 @@ namespace OperationalWorkspaceApplication.Services
         }
 
         // ---------------------------------------------------------------------
-        // 3. ⭐ REAL INTELLIGENCE ENTRY POINT (Updated signature to Guid)
+        // 3. ⭐ REAL INTELLIGENCE ENTRY POINT (Updated signature to string)
         // ---------------------------------------------------------------------
-        public async Task<EmailContextDto?> GetEmailContextAsync(Guid emailId)
+        public async Task<EmailContextDto?> GetEmailContextAsync(string outlookMessageId)
         {
-            // Invokes your business context builder using the strict Guid key tracking limits
-            return await _builder.BuildAsync(emailId);
+            if (string.IsNullOrWhiteSpace(outlookMessageId)) return null;
+
+            // The builder expects a GUID for demo/mock lookups. If the stored email maps to a Guid client id
+            // we attempt to resolve it. Otherwise we pass the special mock token for development flows.
+            var stored = await _repo.GetByMessageIdAsync(outlookMessageId);
+
+            if (stored == null)
+            {
+                return null;
+            }
+
+            // Try parse MessageId as Guid (if you store a GUID mapping); otherwise use a fixed demo Guid.
+            if (Guid.TryParse(stored.MessageId, out Guid parsedGuid))
+            {
+                return await _builder.BuildAsync(parsedGuid);
+            }
+
+            // Fallback: builder uses a mock partner lookup via AssignedToUserId; we use stored.Id as client id
+            return await _builder.BuildAsync(stored.Id);
         }
 
         // ---------------------------------------------------------------------
         // 4. ARCHITECTURAL FORWARDERS
         // ---------------------------------------------------------------------
-        public Task<List<OpenOrderDto>> GetLinkedOrdersAsync(Guid emailId)
+        public Task<List<OpenOrderDto>> GetLinkedOrdersAsync(string outlookMessageId)
         {
             throw new NotImplementedException(
                 "Use GetEmailContextAsync instead (Email Intelligence Engine).");
         }
 
-        public Task<List<TaskDto>> GetLinkedTasksAsync(Guid emailId)
+        public Task<List<TaskDto>> GetLinkedTasksAsync(string outlookMessageId)
         {
             throw new NotImplementedException(
                 "Use GetEmailContextAsync instead (Email Intelligence Engine).");

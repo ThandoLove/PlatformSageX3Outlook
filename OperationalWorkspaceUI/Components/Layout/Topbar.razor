@@ -170,7 +170,8 @@
 
         // Execute session cleanup pipeline
         await AuthService.LogoutAsync();
-        Nav.NavigateTo("/", forceLoad: false);
+        // Replace history entry so Back does not return to a protected route
+        Nav.NavigateTo("/", forceLoad: false, replace: true);
     }
 
     public void Dispose()

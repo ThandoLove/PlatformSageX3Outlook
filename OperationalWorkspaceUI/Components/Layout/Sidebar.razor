@@ -195,6 +195,7 @@
     {
         _showFooterLogoutConfirmation = false;
         await AuthService.LogoutAsync();
-        Nav.NavigateTo("/", forceLoad: false);
+        // Replace history entry so Back does not return to protected dashboard
+        Nav.NavigateTo("/", forceLoad: false, replace: true);
     }
 }

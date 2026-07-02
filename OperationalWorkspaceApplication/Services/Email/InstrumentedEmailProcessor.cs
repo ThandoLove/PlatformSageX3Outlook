@@ -47,20 +47,12 @@ namespace OperationalWorkspaceApplication.Services.Email
                     "Beginning transactional tracing and insight calculation extraction for Email Message: {EmailId}",
                     emailId);
 
-                // Validation safeguard parsing inbound trace tracking string tokens over to a crisp Guid context structure
-                if (!Guid.TryParse(emailId, out Guid cleanEmailGuid) || cleanEmailGuid == Guid.Empty)
-                {
-                    _logger.LogWarning("Aborting diagnostic processing trace block: Inbound email token does not match an immutable Guid format definition layout.");
-                    activity?.SetStatus(ActivityStatusCode.Error, "Invalid cryptographic transaction identifier token format mapping.");
-                    return null;
-                }
-
                 try
                 {
                     // =====================================================
-                    // BUSINESS CONTEXT EXTRACTION (Type-Safe Handshake)
+                    // BUSINESS CONTEXT EXTRACTION — use Outlook message id string
                     // =====================================================
-                    var runtimeResult = await _emailService.GetEmailContextAsync(cleanEmailGuid);
+                    var runtimeResult = await _emailService.GetEmailContextAsync(emailId);
 
                     if (runtimeResult != null)
                     {

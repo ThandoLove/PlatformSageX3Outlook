@@ -11,14 +11,14 @@ namespace OperationalWorkspaceApplication.Interfaces.IServices
         Task<bool> SyncEmailAsync(EmailInsightDto dto);
 
         // 2. GET BASIC EMAIL DATA
-        Task<EmailInsightDto?> GetEmailByIdAsync(Guid emailId);
+        Task<EmailInsightDto?> GetEmailByIdAsync(string outlookMessageId);
 
         // 3. ⭐ REAL INTELLIGENCE WORKSPACE ENTRY POINT
-        // Returns the full composite dashboard context validated via strict Guid keys
-        Task<EmailContextDto?> GetEmailContextAsync(Guid emailId);
+        // Returns the full composite dashboard context by Outlook message id
+        Task<EmailContextDto?> GetEmailContextAsync(string outlookMessageId);
 
         // 4. ARCHITECTURAL FORWARDERS
-        Task<List<OpenOrderDto>> GetLinkedOrdersAsync(Guid emailId);
-        Task<List<TaskDto>> GetLinkedTasksAsync(Guid emailId);
+        Task<List<OpenOrderDto>> GetLinkedOrdersAsync(string outlookMessageId);
+        Task<List<TaskDto>> GetLinkedTasksAsync(string outlookMessageId);
     }
 }
