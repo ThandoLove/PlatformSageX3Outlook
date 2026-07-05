@@ -26,6 +26,7 @@ using OperationalWorkspaceUI.UIServices.ToastUIService;
 using OperationalWorkspaceUI.UIServices.Workspace;
 using Radzen;
 using System;
+using System.Linq;
 using System.Net.Http;
 using ToastService = OperationalWorkspaceUI.UIServices.ToastUIService.ToastService;
 
@@ -163,8 +164,47 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Temporary security headers middleware for local verification (adds CSP including Outlook origins)
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers.Append("X-XSS-Protection", "0");
+    context.Response.Headers.Append("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+    if (context.Request.IsHttps)
+    {
+        context.Response.Headers.Append("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+    }
+
+    string csp = "default-src 'self'; " +
+                 "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://appsforoffice.microsoft.com; " +
+                 "style-src 'self' 'unsafe-inline'; " +
+                 "img-src 'self' data: https:; " +
+                 "font-src 'self' https: data:; " +
+                 "connect-src 'self' https: wss:; " +
+                 "frame-ancestors 'self' " +
+                 "https://outlook.office.com " +
+                 "https://outlook.office365.com " +
+                 "https://outlook.live.com " +
+                 "https://appsforoffice.microsoft.com " +
+                 "https://office.com " +
+                 "https://office365.com " +
+                 "https://localhost:7173 " +
+                 "https://localhost:7123;";
+
+    context.Response.Headers.Append("Content-Security-Policy", csp);
+
+    await next();
+});
+
 app.UseStaticFiles();
 
+// Ensure routing and antiforgery middleware are registered for endpoints that require antiforgery tokens
+app.UseRouting();
+
+
+// Adds the antiforgery middleware so endpoints with antiforgery metadata are validated
 app.UseAntiforgery();
 
 // ======================================================
@@ -172,6 +212,15 @@ app.UseAntiforgery();
 // ======================================================
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Temporary endpoint to dump request/response headers for easy verification while debugging Outlook embedding.
+app.MapGet("/debug/headers", (HttpContext context) =>
+{
+    var responseHeaders = context.Response.Headers.ToDictionary(kvp => kvp.Key, kvp => string.Join(";", kvp.Value.Select(v => v ?? string.Empty)));
+    var requestHeaders = context.Request.Headers.ToDictionary(kvp => kvp.Key, kvp => string.Join(";", kvp.Value.Select(v => v ?? string.Empty)));
+
+    return Results.Json(new { requestHeaders, responseHeaders });
+});
 
 // ======================================================
 // 14. EXECUTE APPLICATION CIRCUIT LIFE CYCLES

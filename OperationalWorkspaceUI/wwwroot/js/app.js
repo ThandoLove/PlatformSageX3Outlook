@@ -35,7 +35,8 @@ window.dashboardCharts = {
 // 2. OFFICE.JS BRIDGE (FIXED & ALIGNED)
 // =========================
 
-window.officeBridge = {
+// Lightweight shim that avoids overwriting the full officeBridge implementation
+window.officeBridgeShim = {
     initialize: function (dotNetHelper) {
 
         // 🔥 SAFETY: handle browser mode first
@@ -81,14 +82,22 @@ window.officeBridge = {
                 console.log("Office.js Ready. Outlook Host Detected.");
 
                 // 🔥 FIX: Using arrow functions preserves 'this' context perfectly
-                // Initial load
-                this.extractEmailData(dotNetHelper);
+                // Initial load - delegate to the full officeBridge if present, otherwise use the shim
+                if (window.officeBridge && typeof window.officeBridge.extractEmailData === 'function') {
+                    window.officeBridge.extractEmailData(dotNetHelper);
+                } else {
+                    this.extractEmailData(dotNetHelper);
+                }
 
                 // Listen for email changes
                 Office.context.mailbox.addHandlerAsync(
                     Office.EventType.ItemChanged,
                     () => {
-                        this.extractEmailData(dotNetHelper);
+                        if (window.officeBridge && typeof window.officeBridge.extractEmailData === 'function') {
+                            window.officeBridge.extractEmailData(dotNetHelper);
+                        } else {
+                            this.extractEmailData(dotNetHelper);
+                        }
                     }
                 );
             }
@@ -118,13 +127,25 @@ window.officeBridge = {
 
             console.log("Extracting Email Data for Blazor:", data.SenderEmail);
 
-            dotNetHelper.invokeMethodAsync('OnEmailReceived', data);
+            // Prefer the full bridge if available to keep behavior consistent
+            if (window.officeBridge && typeof window.officeBridge._dotNetHelper !== 'undefined') {
+                // If the official bridge is installed, let it handle invocation
+                try { window.officeBridge._dotNetHelper.invokeMethodAsync('OnEmailReceived', data); } catch { }
+            }
+            else {
+                dotNetHelper.invokeMethodAsync('OnEmailReceived', data);
+            }
 
         } catch (e) {
             console.error("extractEmailData failed:", e);
         }
     }
 };
+
+// If no official bridge exists, expose the shim under the expected global name for compatibility
+if (!window.officeBridge) {
+    window.officeBridge = window.officeBridgeShim;
+}
 
 
 // =========================

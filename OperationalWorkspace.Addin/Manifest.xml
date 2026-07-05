@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <OfficeApp
-  xmlns="http://microsoft.com"
-  xmlns:xsi="http://w3.org"
-  xmlns:bt="http://microsoft.com"
-  xmlns:mailappor="http://microsoft.com"
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
   xsi:type="MailApp">
 
 	<!-- ========================================================================= -->
@@ -17,8 +17,8 @@
 	<Description DefaultValue="Enterprise Outlook add-in bridging email context with Sage X3 and Creatio workflows." />
 
 	<!-- Icon resource definitions for legacy clients -->
-	<IconUrl DefaultValue="https://localhost:7173/images/icon-32.png" />
-	<HighResolutionIconUrl DefaultValue="https://localhost:7173/images/icon-80.png" />
+	<IconUrl DefaultValue="https://localhost:7173/favicon.png" />
+	<HighResolutionIconUrl DefaultValue="https://localhost:7173/favicon.png" />
 
 	<SupportUrl DefaultValue="https://localhost:7173/support" />
 
@@ -49,7 +49,7 @@
 	<!-- ========================================================================= -->
 	<!-- 3. MODERN VERSION OVERRIDES (Ribbon, Surfaces, and Task Pane Engines)     -->
 	<!-- ========================================================================= -->
-	<VersionOverrides xmlns="http://microsoft.com" xsi:type="VersionOverridesV1_0">
+	<VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="VersionOverridesV1_0">
 		<Description DefaultValue="Enterprise Outlook add-in bridging email context with Sage X3 and Creatio workflows." />
 
 		<!-- Requirements targeting unified modern Fluent UI Ribbon requirement sets -->
@@ -390,14 +390,14 @@
 		<!-- ========================================================================= -->
 		<Resources>
 			<bt:Images>
-				<bt:Image id="icon16" DefaultValue="https://localhost:7173/images/icon-16.png" />
-				<bt:Image id="icon32" DefaultValue="https://localhost:7173/images/icon-32.png" />
-				<bt:Image id="icon80" DefaultValue="https://localhost:7173/images/icon-80.png" />
+				<bt:Image id="icon16" DefaultValue="https://localhost:7173/favicon.png" />
+				<bt:Image id="icon32" DefaultValue="https://localhost:7173/favicon.png" />
+				<bt:Image id="icon80" DefaultValue="https://localhost:7173/favicon.png" />
 			</bt:Images>
 
 			<bt:Urls>
 				<!-- Logic execution script file location target mapping -->
-				<bt:Url id="funcFileUrl" DefaultValue="https://localhost:7173/js/officeFunctionFile.html" />
+				<bt:Url id="funcFileUrl" DefaultValue="https://localhost:7173/officeFunctionFile.html" />
 
 				<!-- Blazor Server endpoints rendering specific workspace component modules -->
 				<bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane/workspace" />
