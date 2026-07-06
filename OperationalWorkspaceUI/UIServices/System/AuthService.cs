@@ -75,7 +75,6 @@ public class AuthService
         _nav.NavigateTo("/", forceLoad: false);
     }
 
-
     public async Task<bool> LoginAsync(LoginRequestDto dto)
     {
         if (dto == null) return false;
@@ -87,7 +86,7 @@ public class AuthService
             // ✅ DYNAMIC LOCAL GENERATION RULE: Pull exactly what the user typed on the form fields
             var typedInputName = dto.Username;
 
-            // Extract a display nickname fallback if an full email was supplied
+            // Extract a display nickname fallback if a full email was supplied
             var splitUserPrefix = typedInputName.Contains("@") ? typedInputName.Split('@')[0] : typedInputName;
             var formattedDisplayName = global::System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(splitUserPrefix.Replace(".", " "));
 
@@ -120,7 +119,9 @@ public class AuthService
             await _storage.SetItemAsync(ActiveSageFolderKey, "SEED");
 
             SetAuthHeader(simulatedJwt);
-            _appState.SetAuthentication(simulatedJwt);
+
+            // ✅ FIX 8 (Line 123): Passed missing user profile context identities up to the core state container
+            _appState.SetAuthentication(simulatedJwt, formattedDisplayName, typedInputName);
 
             // Dynamically assign local variables instead of stale hardcoded properties
             _uiState.UserName = formattedDisplayName;
@@ -136,7 +137,6 @@ public class AuthService
             _nav.NavigateTo("/");
             return true;
         }
-
         try
         {
             var response = await _http.PostAsJsonAsync("/api/v1/auth/login", dto);
@@ -175,7 +175,14 @@ public class AuthService
             }
 
             SetAuthHeader(token);
-            _appState.SetAuthentication(token);
+
+            // Extract a clean display nickname from the username to map inside production state profiles
+            var prodUsername = dto.Username;
+            var prodDisplayPrefix = prodUsername.Contains("@") ? prodUsername.Split('@')[0] : prodUsername;
+            var prodDisplayName = global::System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(prodDisplayPrefix.Replace(".", " "));
+
+            // ✅ FIX 8 (Line 178): Appended production user parameters context right into the state initializer signature
+            _appState.SetAuthentication(token, prodDisplayName, prodUsername);
 
             _uiState.UserName = dto.Username;
             _uiState.UserEmail = dto.Username;

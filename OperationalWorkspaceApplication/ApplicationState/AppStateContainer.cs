@@ -16,6 +16,10 @@ public class AppStateContainer : IDisposable
     public bool IsAuthenticated { get; private set; }
     public string? AccessToken { get; private set; }
 
+    // Core Identity Context Metrics
+    public string? UserName { get; private set; }
+    public string? UserEmail { get; private set; }
+
     // Core structural properties required for native Sage X3 endpoints context mapping
     public string ActiveSageEndpoint { get; private set; } = "SEED";
     public string ActiveFolder { get; private set; } = "SEED";
@@ -25,7 +29,7 @@ public class AppStateContainer : IDisposable
     public string LanguageCode { get; private set; } = "en-US";
 
     // ======================================================
-    // COOPERATIVE CORE ENGINES
+    // COOPERATIVE AUTOMATION ENGINES
     // ======================================================
     public List<string> AutomationLog { get; private set; } = new();
     public string EmailCategory { get; private set; } = "";
@@ -64,10 +68,12 @@ public class AppStateContainer : IDisposable
     // ======================================================
     // AUTH & SITE HANDSHAKE SETTERS
     // ======================================================
-    public void SetAuthentication(string token)
+    public void SetAuthentication(string token, string userName, string userEmail)
     {
         IsAuthenticated = true;
         AccessToken = token;
+        UserName = userName;
+        UserEmail = userEmail;
         Notify();
     }
 
@@ -101,6 +107,8 @@ public class AppStateContainer : IDisposable
     {
         IsAuthenticated = false;
         AccessToken = null;
+        UserName = null;
+        UserEmail = null;
         ActiveSageEndpoint = "SEED";
         ActiveFolder = "SEED";
         CurrentCompany = "";

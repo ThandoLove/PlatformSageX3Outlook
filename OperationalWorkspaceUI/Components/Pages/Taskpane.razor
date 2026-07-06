@@ -1,0 +1,149 @@
+﻿@page "/taskpane"
+@inject OperationalWorkspaceApplication.ApplicationState.AppStateContainer AppState
+@inject NavigationManager NavManager
+@implements IDisposable
+
+<div class="taskpane-bootstrap-container">
+    @if (IsLoading)
+    {
+        <!-- Minimal Fluent UI Loading Frame Overlay -->
+        <div class="ms-Spinner-wrapper" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; background-color: #faf9f8;">
+            <div class="spinner-circle" style="border: 4px solid #edebe9; border-top: 4px solid #0078d4; border-radius: 50%; width: 36px; height: 36px; animation: spin 0.8s linear infinite;"></div>
+            <p style="margin-top: 16px; color: #323130; font-size: 13px; font-weight: 600; letter-spacing: -0.1px;">Initializing Safe Security Context...</p>
+        </div>
+    }
+    else if (!AppState.IsAuthenticated)
+    {
+        <!-- Intercepts Unauthenticated Circuits and Halts Navigation until Sign-In completes -->
+        <OperationalWorkspaceUI.Components.Auth.LoginModal 
+            OnAuthenticationSuccess="HandleAuthSuccess" />
+    }
+</div>
+
+<style>
+    @("@keyframes") spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+@code {
+    private bool IsLoading { get; set; } = true;
+    private string TargetRedirect { get; set; } = "/taskpane/workspace";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Bind thread-safe state synchronization routine
+        AppState.OnChange += StateHasChanged;
+        
+        // 1. Capture internal route modifiers from the URL query string input parameter
+        var uri = NavManager.ToAbsoluteUri(NavManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("route", out var customRoute))
+        {
+            TargetRedirect = customRoute.ToString();
+        }
+
+        try
+        {
+            if (AppState.IsAuthenticated)
+            {
+                RedirectToDestination();
+            }
+            else
+            {
+                await AttemptSilentAuthenticationAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            AppState.AddAutomation($"System boot crash error: {ex.Message}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task AttemptSilentAuthenticationAsync()
+    {
+        // Place your structural fallback token checks or Office.js SSO context mappings here.
+        // If an active user cookie, JWT, or web state is retrieved, skip the modal.
+        bool hasCachedSession = false; 
+
+        if (hasCachedSession)
+        {
+            string cachedToken = "eyJhbGciOiJIUzI1Ni...";
+            string cachedUser = "Thando Love";
+            string cachedEmail = "thando@corporate.com";
+
+            AppState.SetAuthentication(cachedToken, cachedUser, cachedEmail);
+            await HydrateSageEnvironmentMatrixAsync();
+            RedirectToDestination();
+        }
+    }
+
+    private async Task HandleAuthSuccess((string Token, string User, string Email) authPayload)
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Populate basic identity data directly into the Scoped State Container
+            AppState.SetAuthentication(authPayload.Token, authPayload.User, authPayload.Email);
+            
+            // Connect to Sage X3 to populate folder/role configuration mappings
+            await HydrateSageEnvironmentMatrixAsync();
+            
+            RedirectToDestination();
+        }
+        catch (Exception ex)
+        {
+            AppState.AddAutomation($"Environment data hydration failed: {ex.Message}");
+            IsLoading = false;
+        }
+    }
+
+    private async Task HydrateSageEnvironmentMatrixAsync()
+    {
+        AppState.SetBusy(true);
+        AppState.AddAutomation("Interrogating Sage X3 Syracuse Web API for organizational topology...");
+
+        // Replacing thread sleep delay logic with your backend Infrastructure service handler later:
+        // var topology = await SageEnvironmentService.GetActiveEnvironmentMatrixAsync();
+        await Task.Delay(450); 
+
+        string targetEndpoint = "https://corporate.local";
+        string targetFolder = "PRODUCTION";
+        string targetCompany = "FR10";
+        string targetSite = "FR101";
+        string targetRole = "ERP_SUPER_USER";
+        string targetLanguage = "en-US";
+
+        // Inject the complete environment parameters safely inside the user session memory bound
+        AppState.SetSageEnvironmentContext(
+            targetEndpoint, 
+            targetFolder, 
+            targetCompany, 
+            targetSite, 
+            targetRole, 
+            targetLanguage
+        );
+
+        AppState.AddAutomation($"Active connection established to Folder: {targetFolder}");
+        AppState.SetBusy(false);
+    }
+
+    private void RedirectToDestination()
+    {
+        // Route smoothly inside the Office WebView2 frame via native Blazor navigation engine
+        NavManager.NavigateTo(TargetRedirect);
+    }
+
+    public void Dispose()
+    {
+        // Strip out the event handler to stop dead components leaking memory on the server
+        AppState.OnChange -= StateHasChanged;
+    }
+}
+

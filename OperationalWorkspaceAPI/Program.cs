@@ -65,8 +65,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
+// Native .NET 10 Interactive Blazor Server Engine Integration
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(o => o.DetailedErrors = true);
+
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
@@ -82,33 +84,40 @@ builder.Services.AddProductionCompression();
 builder.Services.AddEnterpriseTelemetry(builder.Configuration, "OperationalWorkspace-API");
 builder.Services.AddEnterpriseHealthChecks(builder.Configuration);
 
+// =========================================================================
+// ENTERPRISE MULTI-TENANT STATE SECURITY PROFILE
+// =========================================================================
+// MUST be registered as Scoped to cleanly map memory walls within unique Blazor circuits.
+builder.Services.AddScoped<OperationalWorkspaceApplication.ApplicationState.AppStateContainer>();
+
 builder.Services.AddRateLimiter(options =>
 {
-options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-options.AddFixedWindowLimiter("GlobalPolicy", opt =>
-{
-    opt.PermitLimit = 100;
-    opt.Window = TimeSpan.FromMinutes(1);
-    opt.QueueLimit = 10;
-    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-});
+    options.AddFixedWindowLimiter("GlobalPolicy", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 10;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
 
-options.AddFixedWindowLimiter("LoginPolicy", opt =>
-{
-    opt.PermitLimit = 5;
-    opt.Window = TimeSpan.FromMinutes(1);
-    opt.QueueLimit = 2;
-    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-});
+    options.AddFixedWindowLimiter("LoginPolicy", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 2;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
 
-options.AddFixedWindowLimiter("SagePolicy", opt =>
-{
-    opt.PermitLimit = 30;
-    opt.Window = TimeSpan.FromMinutes(1);
-    opt.QueueLimit = 5;
-    opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-});
+    options.AddFixedWindowLimiter("SagePolicy", opt =>
+    {
+        opt.PermitLimit = 30;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 5;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+
     options.AddPolicy("FixedWindowLimitPolicy", httpContext =>
     {
         var partitionKey = httpContext.User.Identity?.Name
@@ -127,7 +136,6 @@ options.AddFixedWindowLimiter("SagePolicy", opt =>
 
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddScoped<IValidator<LoginRequestDto>, LoginRequestValidator>();
-
 builder.Services.AddValidatorsFromAssemblyContaining<CustomerValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EmailInsightDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<TaskValidator>();
@@ -137,7 +145,6 @@ builder.Services.AddScoped<ISecurityContext, SecurityContext>();
 builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IDistributedTokenCacheService, DistributedTokenCacheService>();
-
 builder.Services.AddScoped<IAuthProvider, JwtAuthProvider>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -153,6 +160,7 @@ if (jwtKey.Length < 32)
 {
     throw new InvalidOperationException("JWT Key must be at least 32 characters long.");
 }
+
 builder.Services
     .AddAuthentication(options =>
     {
@@ -200,14 +208,12 @@ var sageCircuitBreaker = HttpPolicyExtensions
 
 if (builder.Environment.IsDevelopment())
 {
-    // Fully qualify the Mock implementation class path
     builder.Services.AddScoped<
         OperationalWorkspaceApplication.Interfaces.ISageX3Client,
         OperationalWorkspaceInfrastructure.ExternalServices.SageX3.Mock.MockSageX3Client>();
 }
 else
 {
-    // Fully qualify the Production implementation class path
     builder.Services
         .AddHttpClient<
             OperationalWorkspaceApplication.Interfaces.ISageX3Client,
@@ -219,7 +225,6 @@ else
         .AddPolicyHandler(sagePolicy)
         .AddPolicyHandler(sageCircuitBreaker);
 }
-
 
 builder.Services
     .AddHttpClient<ISageRestService, SageRestService>(client =>
@@ -238,7 +243,6 @@ builder.Services.AddScoped<MockAttachmentProvider>();
 builder.Services.AddScoped<SageAttachmentProvider>();
 builder.Services.AddScoped<IAttachmentProvider, SmartAttachmentProvider>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
-
 builder.Services.AddScoped<IAuditLogger, AuditLogger>();
 builder.Services.AddScoped<AuditContext>();
 
@@ -265,10 +269,10 @@ builder.Services.AddCors(options =>
         }
     });
 });
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<MockUnifiedService>();
-
     builder.Services.AddScoped<IActivityService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<MockUnifiedService>());
     builder.Services.AddScoped<IKnowledgeService>(sp => sp.GetRequiredService<MockUnifiedService>());
@@ -282,9 +286,6 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<ISageX3Client, MockSageX3Client>();
     builder.Services.AddScoped<ISageRestService, MockSageRestService>();
     builder.Services.AddScoped<ISageAuthService, MockSageAuthService>();
-
-    // 🚀 FIXED FOR DEVELOPMENT MODE: Registers the builder right into the active mock container [INDEX]
-    builder.Services.AddScoped<EmailContextBuilder>();
 }
 else
 {
@@ -297,19 +298,13 @@ else
     builder.Services.AddScoped<IBusinessPartnerService, BusinessPartnerService>();
     builder.Services.AddScoped<ITaskService, TaskService>();
     builder.Services.AddScoped<IOrderService, OrderService>();
-
-    // 🚀 FIXED FOR PRODUCTION MODE: Registers the builder right into the true core container [INDEX]
-    builder.Services.AddScoped<EmailContextBuilder>();
 }
-
-builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<IAttachmentRepository, AttachmentRepository>();
 builder.Services.AddScoped<IBusinessPartnerRepository, BusinessPartnerRepository>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
-
 builder.Services.AddScoped<IKnowledgeRepository, KnowledgeRepository>();
 builder.Services.AddScoped<ISalesOrderRepository, SalesOrderRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -318,11 +313,9 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<JwtTokenService>();
-
-// 🚀 FIXED: Registers the system clock dependency needed to activate your Attachment Service [INDEX]
 builder.Services.AddScoped<IClock, SystemClock>();
 
-// 🚀 FIXED: Registers the context builder dependency required by the Dashboard page UI [INDEX]
+// Unified Consolidated Single Registration of the Context Builder
 builder.Services.AddScoped<EmailContextBuilder>();
 
 var app = builder.Build();
@@ -337,12 +330,10 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 });
 
 app.UseResponseCompression();
-
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseMiddleware<EnterpriseSecurityHeadersMiddleware>();
 
 app.UseHttpsRedirection();
-app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
@@ -371,14 +362,13 @@ app.UseMiddleware<PerformanceTrackingMiddleware>();
 app.MapControllers();
 app.MapCustomHealthEndpoints();
 
+// Enforce Interactive Blazor Server Routing Channels
 app.MapRazorComponents<OperationalWorkspaceUI.Components.App>()
     .AddInteractiveServerRenderMode();
-app.MapFallbackToFile("index.html");
 
 app.MapGet("/metrics", async context =>
 {
     context.Response.ContentType = "text/plain; version=0.0.4; charset=utf-8";
-
     await context.Response.WriteAsync(
         "# HELP application_up Process status metric.\n" +
         "# TYPE application_up gauge\n" +

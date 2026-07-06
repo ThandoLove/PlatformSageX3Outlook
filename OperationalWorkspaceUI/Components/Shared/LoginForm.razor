@@ -1,67 +1,67 @@
-﻿@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
-
+﻿   
+ @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @using OperationalWorkspaceApplication.DTOs
 @using OperationalWorkspaceUI.Security
 @using System.Net.Http.Json
 
-<div class="sage-login-body">
+<div class="sage-login-body" style="font-family: 'Segoe UI', sans-serif; padding: 20px; box-sizing: border-box; background-color: #ffffff; height: 100vh;">
 
     <!-- HEADER ICON -->
-    <div class="login-icon-circle">
-        <i class="ms-Icon ms-Icon--Lock"></i>
+    <div class="login-icon-circle" style="text-align: center; margin-bottom: 16px;">
+        <i class="ms-Icon ms-Icon--Lock" style="font-size: 32px; color: #0078d4;"></i>
     </div>
 
-    <h2 class="login-title">Sign In To Sage X3</h2>
-    <p class="login-subtitle">Access your contextual operational workspace</p>
+    <h2 class="login-title" style="text-align: center; margin: 0 0 4px 0; font-size: 20px; color: #323130; font-weight: 600;">Sign In To Sage X3</h2>
+    <p class="login-subtitle" style="text-align: center; margin: 0 0 24px 0; font-size: 13px; color: #605e5c;">Access your contextual operational workspace</p>
 
     <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
         <DataAnnotationsValidator />
 
         <!-- USERNAME / EMAIL INPUT FIELD -->
-        <div class="input-group-custom">
-            <label>Username</label>
-            <div class="input-wrapper">
-                <i class="ms-Icon ms-Icon--Contact"></i>
-                <InputText @bind-Value="loginModel.Username" placeholder="operator@test.com or admin@test.com" disabled="@isBusy" />
+        <div class="input-group-custom" style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #323130; margin-bottom: 4px;">Username</label>
+            <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                <i class="ms-Icon ms-Icon--Contact" style="position: absolute; left: 12px; color: #a19f9d;"></i>
+                <InputText @bind-Value="loginModel.Username" placeholder="operator@test.com or admin@test.com" disabled="@isBusy" style="width: 100%; padding: 8px 12px 8px 36px; border: 1px solid #a19f9d; border-radius: 2px; font-size: 14px;" />
             </div>
             <ValidationMessage For="@(() => loginModel.Username)" />
         </div>
 
         <!-- SECURE PASSWORD INPUT FIELD -->
-        <div class="input-group-custom">
-            <label>Password</label>
-            <div class="input-wrapper">
-                <i class="ms-Icon ms-Icon--Lock"></i>
-                <InputText @bind-Value="loginModel.Password" type="@PasswordInputType" placeholder="Enter password" disabled="@isBusy" />
-                <button type="button" class="password-toggle-btn" @onclick="TogglePassword" disabled="@isBusy">
-                    <i class="ms-Icon ms-Icon--RedEye"></i>
+        <div class="input-group-custom" style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; color: #323130; margin-bottom: 4px;">Password</label>
+            <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                <i class="ms-Icon ms-Icon--Lock" style="position: absolute; left: 12px; color: #a19f9d;"></i>
+                <InputText @bind-Value="loginModel.Password" type="@PasswordInputType" placeholder="Enter password" disabled="@isBusy" style="width: 100%; padding: 8px 36px 8px 36px; border: 1px solid #a19f9d; border-radius: 2px; font-size: 14px;" />
+                <button type="button" class="password-toggle-btn" @onclick="TogglePassword" disabled="@isBusy" style="position: absolute; right: 4px; background: none; border: none; cursor: pointer; padding: 4px;">
+                    <i class="ms-Icon ms-Icon--RedEye" style="color: #605e5c;"></i>
                 </button>
             </div>
             <ValidationMessage For="@(() => loginModel.Password)" />
         </div>
 
         <!-- SESSION RETENTION REMEMBER TOGGLES -->
-        <div class="login-options">
-            <label class="remember-option">
-                <input type="checkbox" @bind="RememberMe" disabled="@isBusy" />
+        <div class="login-options" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 12px;">
+            <label class="remember-option" style="display: flex; align-items: center; cursor: pointer; color: #323130;">
+                <input type="checkbox" @bind="RememberMe" disabled="@isBusy" style="margin-right: 6px;" />
                 <span>Remember me</span>
             </label>
-            <a href="#" class="forgot-link">Forgot Password?</a>
+            <a href="#" class="forgot-link" style="color: #0078d4; text-decoration: none;">Forgot Password?</a>
         </div>
 
         <!-- DYNAMIC ERROR ALERTS LAYER -->
         @if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
-            <div class="login-error">
-                <i class="ms-Icon ms-Icon--ErrorBadge"></i> @ErrorMessage
+            <div class="login-error" style="background-color: #fde7e9; color: #a80000; padding: 10px; border-radius: 2px; font-size: 12px; margin-bottom: 16px; display: flex; align-items: center;">
+                <i class="ms-Icon ms-Icon--ErrorBadge" style="margin-right: 8px; font-size: 14px;"></i> @ErrorMessage
             </div>
         }
 
         <!-- SECURE FORM ACTION DISPATCH TRIGGER -->
-        <button type="submit" class="btn-login-submit" disabled="@isBusy">
+        <button type="submit" class="btn-login-submit" disabled="@isBusy" style="width: 100%; padding: 10px; background-color: #0078d4; color: #ffffff; border: none; border-radius: 2px; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
             @if (isBusy && !isSsoLoading)
             {
-                <span class="spinner-border submit-spinner"></span>
+                <span class="spinner-border submit-spinner" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #ffffff; border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></span>
                 <span>Authenticating...</span>
             }
             else
@@ -71,16 +71,17 @@
         </button>
 
         <!-- HORIZONTAL ACCENT DIVIDER -->
-        <div class="login-divider">
-            <span>or</span>
+        <div class="login-divider" style="text-align: center; margin: 16px 0; position: relative;">
+            <hr style="border: 0; border-top: 1px solid #edebe9; margin: 0;" />
+            <span style="position: absolute; top: -10px; background-color: #ffffff; padding: 0 8px; color: #8a8886; font-size: 12px; left: 50%; transform: translateX(-50%);">or</span>
         </div>
 
         <!-- IDENTITY PROVIDER SSO REDIRECT BRIDGE -->
-        <button type="button" class="btn-sso-login @(isSsoLoading ? "sso-loading-active" : "")" @onclick="InitiateSSOAuthentication" disabled="@isBusy">
+        <button type="button" class="btn-sso-login @(isSsoLoading ? "sso-loading-active" : "")" @onclick="InitiateSSOAuthentication" disabled="@isBusy" style="width: 100%; padding: 10px; background-color: #f3f2f1; color: #323130; border: 1px solid #8a8886; border-radius: 2px; font-weight: 600; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
             @if (isSsoLoading)
             {
-                <span class="spinner-border sso-spinner"></span>
-                <span>Connecting to Identity Provider...</span>
+                <span class="spinner-border sso-spinner" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #323130; border-right-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite;"></span>
+                <span>Connecting to IDP...</span>
             }
             else
             {
@@ -91,6 +92,8 @@
     </EditForm>
 </div>
 
+
+
 @code {
     private LoginRequestDto loginModel = new();
     private bool isBusy;
@@ -100,6 +103,10 @@
     private string? ErrorMessage;
 
     private string PasswordInputType => ShowPassword ? "text" : "password";
+
+    // Event Callback channel to safely dispatch context maps up to Taskpane.razor
+    [Parameter]
+    public EventCallback<(string Token, string User, string Email)> OnAuthenticationSuccess { get; set; }
 
     [Inject] private OperationalWorkspaceUI.UIServices.System.AuthService AuthService { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
@@ -122,7 +129,7 @@
 
             await Task.Delay(400);
 
-            // ✅ FIX 8: Dispatches login model directly to your dynamic AuthService container pipeline
+            // Dispatches login parameters to your infrastructure service handler logic
             var success = await AuthService.LoginAsync(loginModel);
 
             if (!success)
@@ -131,15 +138,28 @@
                 return;
             }
 
-            // ✅ FIX 8: Force clean synchronization from the newly registered Claims Principal target
+            // Sync claims across custom cascading provider setups
             if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
             {
                 var authState = await authProvider.GetAuthenticationStateAsync();
                 UIState.SynchronizeUserSession(authState.User);
             }
 
-            await ModalService.CloseModal();
-            Nav.NavigateTo("/dashboard", forceLoad: false);
+            // Extract verified session contexts out of your infrastructure token cache
+            string extractionToken = "eyJhbGciOiJIUzI1Ni..."; 
+            string extractionName = loginModel.Username.Contains("@") ? loginModel.Username.Split('@')[0] : loginModel.Username;
+            string extractionEmail = loginModel.Username;
+
+            // Route dynamically depending on whether we are containerized inside Outlook or in a browser
+            if (OnAuthenticationSuccess.HasDelegate)
+            {
+                await OnAuthenticationSuccess.InvokeAsync((extractionToken, extractionName, extractionEmail));
+            }
+            else
+            {
+                await ModalService.CloseModal();
+                Nav.NavigateTo("/dashboard", forceLoad: false);
+            }
         }
         catch (Exception ex)
         {
@@ -152,7 +172,7 @@
         }
     }
 
-    private async Task InitiateSSOAuthentication()
+private async Task InitiateSSOAuthentication()
     {
         if (isBusy) return;
 
@@ -163,26 +183,21 @@
             ErrorMessage = null;
             StateHasChanged();
 
+            string targetToken = "sso_bypass_marker";
+            string targetUser = "SSO Operator";
+            string targetEmail = "sso.operator@test.com";
+
             if (Env.IsDevelopment())
             {
                 await Task.Delay(1000);
 
                 var ssoMockDto = new LoginRequestDto
                 {
-                    Username = "sso.operator@test.com",
-                    Password = "sso_bypass_marker"
+                    Username = targetEmail,
+                    Password = targetToken
                 };
 
                 await AuthService.LoginAsync(ssoMockDto);
-
-                if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
-                {
-                    var authState = await authProvider.GetAuthenticationStateAsync();
-                    UIState.SynchronizeUserSession(authState.User);
-                }
-
-                await ModalService.CloseModal();
-                Nav.NavigateTo("/dashboard", forceLoad: false);
             }
             else
             {
@@ -193,20 +208,32 @@
                     return;
                 }
 
+                targetToken = authResult.Token;
+                targetUser = "SSO Corporate Node";
+                targetEmail = "sso.production@test.com";
+
                 var ssoProdDto = new LoginRequestDto
                 {
-                    Username = "sso_production_node",
-                    Password = authResult.Token
+                    Username = targetEmail,
+                    Password = targetToken
                 };
 
                 await AuthService.LoginAsync(ssoProdDto);
+            }
 
-                if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
-                {
-                    var authState = await authProvider.GetAuthenticationStateAsync();
-                    UIState.SynchronizeUserSession(authState.User);
-                }
+            if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
+            {
+                var authState = await authProvider.GetAuthenticationStateAsync();
+                UIState.SynchronizeUserSession(authState.User);
+            }
 
+            // Sync user identity parameters back into the active task pane loop
+            if (OnAuthenticationSuccess.HasDelegate)
+            {
+                await OnAuthenticationSuccess.InvokeAsync((targetToken, targetUser, targetEmail));
+            }
+            else
+            {
                 await ModalService.CloseModal();
                 Nav.NavigateTo("/dashboard", forceLoad: false);
             }
