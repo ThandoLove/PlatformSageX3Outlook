@@ -1,0 +1,20 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+
+@inherits LayoutComponentBase
+
+<div class="taskpane-layout">
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        <div>Task pane content</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

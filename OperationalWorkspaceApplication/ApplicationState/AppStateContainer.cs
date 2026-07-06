@@ -4,34 +4,115 @@ using OperationalWorkspaceApplication.DTOs;
 
 namespace OperationalWorkspaceApplication.ApplicationState;
 
-// 1. Added IDisposable to enforce cleanup rules
+/// <summary>
+/// Manages the state container for an individual Blazor Server circuit session.
+/// IMPORTANT: Must be registered in Dependency Injection using AddScoped service scope.
+/// </summary>
 public class AppStateContainer : IDisposable
 {
     // ======================================================
-    // AUTH & ENVIRONMENT CONTEXT GOVERNANCE
+    // AUTH & DECOUPLED ERP ENVIRONMENT MATRIX
     // ======================================================
     public bool IsAuthenticated { get; private set; }
     public string? AccessToken { get; private set; }
 
-    // Captures the explicit assigned target environment folder (e.g., "SEED", "PROD")
+    // Core structural properties required for native Sage X3 endpoints context mapping
     public string ActiveSageEndpoint { get; private set; } = "SEED";
+    public string ActiveFolder { get; private set; } = "SEED";
+    public string CurrentCompany { get; private set; } = "";
+    public string CurrentSite { get; private set; } = "";
+    public string UserRole { get; private set; } = "";
+    public string LanguageCode { get; private set; } = "en-US";
 
     // ======================================================
-    // AUTOMATION ENGINE (STEPS 1 - 5 MERGED)
+    // COOPERATIVE CORE ENGINES
     // ======================================================
     public List<string> AutomationLog { get; private set; } = new();
-
     public string EmailCategory { get; private set; } = "";
-
     public bool HasInvoiceRisk { get; private set; }
-
     public string TaskPriority { get; private set; } = "Normal";
-
     public int ActivityCount { get; private set; }
-
     public int TaskCount { get; private set; }
 
-    // Unified helper matching step 1 and your existing implementation style
+    // ======================================================
+    // MAIL OVERLAYS
+    // ======================================================
+    public EmailInsightDto? CurrentEmail { get; private set; }
+    public string? CurrentEmailId => CurrentEmail?.Id.ToString();
+    public string? CurrentSubject => CurrentEmail?.Subject;
+
+    // ======================================================
+    // ERP & CRM TRANSACTION METRICS
+    // ======================================================
+    public BusinessPartnerSnapshotDto? MatchedClient { get; private set; }
+    public List<OpenOrderDto> LinkedOrders { get; private set; } = new();
+    public List<TaskDto> LinkedTasks { get; private set; } = new();
+    public List<SalesOrderDto> SalesOrders { get; private set; } = new();
+    public List<InvoiceDto> Invoices { get; private set; } = new();
+    public List<ActivityDto> Activities { get; private set; } = new();
+
+    // ======================================================
+    // PRESENTATION & UI CANVAS ARCHITECTURES
+    // ======================================================
+    public bool IsBusy { get; private set; }
+
+    // ======================================================
+    // SAFE EVENT DISPATCH ROUTINES
+    // ======================================================
+    public event Action? OnChange;
+
+    // ======================================================
+    // AUTH & SITE HANDSHAKE SETTERS
+    // ======================================================
+    public void SetAuthentication(string token)
+    {
+        IsAuthenticated = true;
+        AccessToken = token;
+        Notify();
+    }
+
+    /// <summary>
+    /// Populates the foundational execution landscape properties for Sage X3 communications.
+    /// </summary>
+    public void SetSageEnvironmentContext(
+        string endpoint,
+        string folder,
+        string company,
+        string site,
+        string role,
+        string language)
+    {
+        ActiveSageEndpoint = endpoint ?? "SEED";
+        ActiveFolder = folder ?? "SEED";
+        CurrentCompany = company ?? "";
+        CurrentSite = site ?? "";
+        UserRole = role ?? "";
+        LanguageCode = language ?? "en-US";
+        Notify();
+    }
+
+    public void SetActiveSageEndpoint(string folder)
+    {
+        ActiveSageEndpoint = folder;
+        Notify();
+    }
+
+    public void ClearAuthentication()
+    {
+        IsAuthenticated = false;
+        AccessToken = null;
+        ActiveSageEndpoint = "SEED";
+        ActiveFolder = "SEED";
+        CurrentCompany = "";
+        CurrentSite = "";
+        UserRole = "";
+        LanguageCode = "en-US";
+        Notify();
+    }
+
+    // ======================================================
+    // AUTOMATION PIPELINE DISPATCHERS
+    // ======================================================
     public void AddAutomation(string message)
     {
         AutomationLog.Insert(0, $"{DateTime.Now:HH:mm:ss}  {message}");
@@ -75,61 +156,7 @@ public class AppStateContainer : IDisposable
     }
 
     // ======================================================
-    // EMAIL
-    // ======================================================
-    public EmailInsightDto? CurrentEmail { get; private set; }
-    public string? CurrentEmailId => CurrentEmail?.Id.ToString();
-    public string? CurrentSubject => CurrentEmail?.Subject;
-
-    // ======================================================
-    // CRM
-    // ======================================================
-    public BusinessPartnerSnapshotDto? MatchedClient { get; private set; }
-    public List<OpenOrderDto> LinkedOrders { get; private set; } = new();
-    public List<TaskDto> LinkedTasks { get; private set; } = new();
-    public List<SalesOrderDto> SalesOrders { get; private set; } = new();
-
-    public List<InvoiceDto> Invoices { get; private set; } = new();
-
-    public List<ActivityDto> Activities { get; private set; } = new();
-
-    // ======================================================
-    // UI
-    // ======================================================
-    public bool IsBusy { get; private set; }
-
-    // ======================================================
-    // EVENTS
-    // ======================================================
-    public event Action? OnChange;
-
-    // ======================================================
-    // AUTH ACTIONS & SITE GOVERNANCE SETTERS
-    // ======================================================
-    public void SetAuthentication(string token)
-    {
-        IsAuthenticated = true;
-        AccessToken = token;
-        Notify();
-    }
-
-    // Direct mutator allowing the login workflow to map environment folders dynamically
-    public void SetActiveSageEndpoint(string folder)
-    {
-        ActiveSageEndpoint = folder;
-        Notify();
-    }
-
-    public void ClearAuthentication()
-    {
-        IsAuthenticated = false;
-        AccessToken = null;
-        ActiveSageEndpoint = "SEED"; // Safely defaults context back to seed configurations
-        Notify();
-    }
-
-    // ======================================================
-    // EMAIL ACTIONS
+    // EMAIL DOMAIN DISPATCHERS
     // ======================================================
     public void SetCurrentEmail(EmailInsightDto email)
     {
@@ -144,7 +171,7 @@ public class AppStateContainer : IDisposable
     }
 
     // ======================================================
-    // CRM ACTIONS
+    // DATA MATRIX SETTERS
     // ======================================================
     public void SetMatchedClient(BusinessPartnerSnapshotDto? client)
     {
@@ -164,8 +191,26 @@ public class AppStateContainer : IDisposable
         Notify();
     }
 
+    public void SetSalesOrders(List<SalesOrderDto> orders)
+    {
+        SalesOrders = orders ?? new List<SalesOrderDto>();
+        Notify();
+    }
+
+    public void SetInvoices(List<InvoiceDto> invoices)
+    {
+        Invoices = invoices ?? new List<InvoiceDto>();
+        Notify();
+    }
+
+    public void SetActivities(List<ActivityDto> activities)
+    {
+        Activities = activities ?? new List<ActivityDto>();
+        Notify();
+    }
+
     // ======================================================
-    // UI ACTIONS
+    // UI CANVAS MUTATORS
     // ======================================================
     public void SetBusy(bool busy)
     {
@@ -174,7 +219,7 @@ public class AppStateContainer : IDisposable
     }
 
     // ======================================================
-    // FULL CONTEXT RESET
+    // CONTEXT STRIPPING SCHEMES
     // ======================================================
     public void ClearEmailContext()
     {
@@ -182,41 +227,25 @@ public class AppStateContainer : IDisposable
         MatchedClient = null;
         LinkedOrders.Clear();
         LinkedTasks.Clear();
+        SalesOrders.Clear();
+        Invoices.Clear();
+        Activities.Clear();
+        EmailCategory = "";
+        HasInvoiceRisk = false;
         Notify();
     }
 
     // ======================================================
-    // INTERNAL NOTIFICATION FLOW
+    // THREAD-SAFE STATE SYNCHRONIZATION 
     // ======================================================
     private void Notify()
     {
         OnChange?.Invoke();
     }
 
-
-    public void SetSalesOrders(List<SalesOrderDto> orders)
-    {
-        SalesOrders = orders;
-        Notify();
-    }
-
-    public void SetInvoices(List<InvoiceDto> invoices)
-    {
-        Invoices = invoices;
-        Notify();
-    }
-
-    public void SetActivities(List<ActivityDto> activities)
-    {
-        Activities = activities;
-        Notify();
-    }
-    // Existing fallback automation hooks kept for backwards service orchestration compatibility
-
-
-
-    // 2. CRITICAL ADDITION: Wipes out trapped listeners automatically 
-    // when a Blazor user session or Outlook Add-In context changes.
+    /// <summary>
+    /// Automatically cuts off trapped event allocation listeners during multi-tenant transitions.
+    /// </summary>
     public void Dispose()
     {
         OnChange = null;
