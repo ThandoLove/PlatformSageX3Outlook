@@ -23,8 +23,7 @@ namespace OperationalWorkspaceUI.State
         public string UserRole { get; set; } = string.Empty;
         public bool IsAdminEnvironment { get; set; } = false;
 
-        // FIXED: Changed from read-only lambda expression string evaluation to mutable auto-property
-        public bool IsAuthenticated { get; set; } = false;
+        // NOTE: Authentication is now handled by AppStateContainer. UIState retains only UI-focused flags.
         // ✅ FIX: State guard property blocks distorted rendering during the initial async token check
         public bool IsCheckingAuth { get; set; } = true;
 
@@ -54,7 +53,7 @@ namespace OperationalWorkspaceUI.State
                 IsAdminEnvironment = UserRole.Equals("Administrator", StringComparison.OrdinalIgnoreCase) ||
                                      UserRole.Equals("Admin", StringComparison.OrdinalIgnoreCase);
 
-                IsAuthenticated = true;
+                // Authentication truth is owned by AppStateContainer. UIState only mirrors user profile fields.
             }
             else
             {
@@ -72,7 +71,6 @@ namespace OperationalWorkspaceUI.State
             UserEmail = userEmail;
             UserRole = "Employee";
             IsAdminEnvironment = false;
-            IsAuthenticated = true;
             NotifyStateChanged();
         }
 
@@ -85,7 +83,6 @@ namespace OperationalWorkspaceUI.State
             UserEmail = userEmail;
             UserRole = "Administrator";
             IsAdminEnvironment = true;
-            IsAuthenticated = true;
             NotifyStateChanged();
         }
 
@@ -98,7 +95,6 @@ namespace OperationalWorkspaceUI.State
             UserEmail = string.Empty;
             UserRole = string.Empty;
             IsAdminEnvironment = false;
-            IsAuthenticated = false;
             NotifyStateChanged();
         }
 
@@ -111,7 +107,6 @@ namespace OperationalWorkspaceUI.State
             UserEmail = "john.smith@company.com";
             UserRole = "Employee";
             IsAdminEnvironment = false;
-            IsAuthenticated = true;
             NotifyStateChanged();
         }
 

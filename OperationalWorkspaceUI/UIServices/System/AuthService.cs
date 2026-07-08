@@ -126,7 +126,6 @@ public class AuthService
             // Dynamically assign local variables instead of stale hardcoded properties
             _uiState.UserName = formattedDisplayName;
             _uiState.UserEmail = typedInputName;
-            _uiState.IsAuthenticated = true;
             _uiState.IsSageConnected = true;
             _uiState.NotifyStateChanged();
 
@@ -186,7 +185,6 @@ public class AuthService
 
             _uiState.UserName = dto.Username;
             _uiState.UserEmail = dto.Username;
-            _uiState.IsAuthenticated = true;
             _uiState.IsSageConnected = true;
             _uiState.NotifyStateChanged();
 

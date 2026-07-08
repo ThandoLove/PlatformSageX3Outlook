@@ -5,6 +5,7 @@
     <CascadingValue Value="@UIState">
 
         <Router AppAssembly="@typeof(App).Assembly">
+            <!-- DefaultLayout remains MainLayout to ensure consistent layout for routes -->
 
             <Found Context="routeData">
                 <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />

@@ -85,6 +85,7 @@ builder.Services.AddScoped<EmailContextBuilder>();
 
 builder.Services.AddScoped<SageStateService>();
 
+// Ensure AppStateContainer is registered as scoped so it is the single source-of-truth for circuit session state
 builder.Services.AddScoped<AppStateContainer>();
 builder.Services.AddScoped<EventBus>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueueService>();

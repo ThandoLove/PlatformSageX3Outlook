@@ -4,6 +4,7 @@
 @using OperationalWorkspaceUI.State
 @implements IDisposable
 @inject UIState UIState
+@inject OperationalWorkspaceApplication.ApplicationState.AppStateContainer AppState
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 @inject OperationalWorkspaceUI.UIServices.System.AuthService AuthService
@@ -64,7 +65,7 @@
         </div>
 
         <!-- STYLISH CIRCULAR LOGOUT DISPATCH LINK -->
-        @if (UIState.IsAuthenticated)
+        @if (AppState.IsAuthenticated)
         {
             <button type="button" class="topbar-modern-logout-btn" title="Sign Out" @onclick="PromptLogoutConfirmation">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 0.25s ease;">

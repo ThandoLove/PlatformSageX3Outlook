@@ -1,0 +1,150 @@
+@page "/taskpane"
+@page "/taskpane/{**path}"
+@layout TaskPaneLayout
+
+
+
+@using OperationalWorkspaceApplication.DTOs
+
+@using OperationalWorkspaceUI.Components.Pages.Dashboard
+@using OperationalWorkspaceApplication.ApplicationState
+
+
+@implements IDisposable
+@inject AppStateContainer AppState
+@inject IJSRuntime JS
+@inject OperationalWorkspaceApplication.Orchestration.EmailOrchestrationService Orchestrator
+
+<div class="taskpane-host" style="position: relative; min-height: 100vh; width: 100%; box-sizing: border-box;">
+
+    <!-- DYNAMIC CORE VIEWPORT CONTAINER -->
+    @if (_componentType != null)
+    {
+        <DynamicComponent Type="_componentType" Parameters="_parameters" />
+    }
+    else
+    {
+        <div class="taskpane-notfound" style="padding: 16px; text-align: center; color: #605e5c;">
+            <h4>Task pane route not found</h4>
+            <p style="font-size: 11px;">Requested path: @_requestedPath</p>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public string? path { get; set; }
+
+    private string _requestedPath = string.Empty;
+    private Type? _componentType;
+    private IDictionary<string, object>? _parameters;
+
+    protected override void OnInitialized()
+    {
+        // 🚀 CRITICAL: Listens to AppState changes so that when login succeeds,
+        // the router re-evaluates and switches from Home to Dashboard automatically!
+        AppState.OnChange += HandleSecurityStateChange;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var dotNetReference = DotNetObjectReference.Create(this);
+                await JS.InvokeVoidAsync("officeBridge.initialize", dotNetReference);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Office.js background listener bypassed: {ex.Message}");
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnEmailReceived(OutlookEmailContext context)
+    {
+        if (context == null || string.IsNullOrWhiteSpace(context.SenderEmail)) return;
+
+        var emailDto = new EmailInsightDto
+        {
+            MessageId = Guid.NewGuid().ToString(),
+            From = context.SenderEmail,
+            SenderEmail = context.SenderEmail,
+            SenderName = context.SenderName,
+            Subject = context.Subject,
+            Message = "Reading active Microsoft Outlook metadata parameters context...",
+            ReceivedAt = DateTime.UtcNow
+        };
+
+        await Orchestrator.ExecuteAsync(emailDto);
+    }
+
+    protected override void OnParametersSet()
+    {
+        _requestedPath = (path ?? string.Empty).Trim('/').ToLowerInvariant();
+        MapPathToComponent(_requestedPath);
+    }
+
+    private void MapPathToComponent(string p)
+    {
+        // =========================================================================
+        // 🔒 THE FLOW INTERCEPTOR: If the user is NOT authenticated yet,
+        // force the background component to be Home.razor, ignoring the dashboard path!
+        // =========================================================================
+        if (!AppState.IsAuthenticated)
+        {
+            // Maps straight to your customized Home landing page component
+            _componentType = typeof(Home);
+            _parameters = new Dictionary<string, object>();
+            return;
+        }
+
+        // =========================================================================
+        // 🟢 UNLOCKED ACTIVE STATE: Map standard deep-links once they log in successfully
+        // =========================================================================
+        _componentType = p switch
+        {
+            "" => typeof(Dashboard),
+            "workspace" => typeof(Dashboard),
+            "compose/template" => typeof(ComposePage),
+            "compose/ai-response" => typeof(ComposePage),
+            "compose/attach-documents" => typeof(ComposePage),
+            "compose/followup" => typeof(ComposePage),
+            "tickets" => typeof(Wrapper_Tickets),
+            "settings" => typeof(Wrapper_Settings),
+            "tasks" => typeof(Wrapper_Tasks),
+            "businesspartner" => typeof(Wrapper_BusinessPartner),
+            "sendknowledge" => typeof(Wrapper_SendKnowledge),
+            "admin" => typeof(Wrapper_Admin),
+            "admin/dashboard" => typeof(Wrapper_Admin_Dashboard),
+            "admin/system-health" => typeof(Wrapper_Admin_SystemHealth),
+            "admin/audit-logs" => typeof(Wrapper_Admin_AuditLogs),
+            "admin/tasks" => typeof(Wrapper_Admin_Tasks),
+            _ => null
+        };
+
+        _parameters = _componentType != null ? new Dictionary<string, object>() : null;
+    }
+
+    private void HandleSecurityStateChange()
+    {
+        // Re-evaluate the active component path layout matrix state when authentication shifts
+        MapPathToComponent(_requestedPath);
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= HandleSecurityStateChange;
+    }
+
+    public class OutlookEmailContext
+    {
+        public string SenderEmail { get; set; } = "";
+        public string SenderName { get; set; } = "";
+        public string Subject { get; set; } = "";
+    }
+}

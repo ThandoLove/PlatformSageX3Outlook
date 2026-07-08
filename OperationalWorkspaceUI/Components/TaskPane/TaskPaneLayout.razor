@@ -1,20 +1,98 @@
+@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components
 @using Microsoft.JSInterop
+@using OperationalWorkspaceApplication.ApplicationState
+@using OperationalWorkspaceUI.Components.Shared
 
-@inherits LayoutComponentBase
+@using OperationalWorkspaceUI.UIServices.System
 
-<div class="taskpane-layout">
-    @if (ChildContent != null)
+@inject IJSRuntime JS
+@inject AppStateContainer AppState
+@inject NavigationManager Nav
+@inject ModalService ModalService
+@inject AuthService AuthService
+@inject EventBus EventBus
+
+<div class="taskpane-layout-root">
+
+    <!-- 🟢 THE CORE ENVIRONMENT VIEWPORT: The dashboard pages render cleanly underneath -->
+    <div class="taskpane-page-viewport-canvas">
+        @Body
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 🔒 PRE-LOADED SECURITY DIALOG: Premium Center-Aligned Login Modal Shroud  -->
+    <!-- ========================================================================= -->
+    @if (!AppState.IsAuthenticated)
     {
-        @ChildContent
-    }
-    else
-    {
-        <div>Task pane content</div>
+        <div class="taskpane-modal-security-shroud">
+            <div class="taskpane-modal-dialog-box">
+
+                <!-- PREMIUM INTEGRATED IDENTITY WINDOW SUB-HEADER -->
+                <div class="modal-security-header-bar">
+                    <span class="modal-security-icon">🔒</span>
+                    <span class="modal-security-title">Security Authorization Check</span>
+                </div>
+
+                <!-- EMBEDDED FORM WINDOW HUB -->
+                <div class="modal-form-content-wrap">
+                    <LoginForm OnAuthenticationSuccess="OnAuthenticationSuccessHandler" />
+                </div>
+
+            </div>
+        </div>
     }
 </div>
 
 @code {
-    [Parameter]
-    public RenderFragment? ChildContent { get; set; }
+    private DotNetObjectReference<TaskPaneLayout>? _objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _objRef = DotNetObjectReference.Create(this);
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"TaskPaneLayout init failure: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task OnAuthenticationSuccessHandler((string Token, string User, string Email) args)
+    {
+        try
+        {
+            AppState.SetAuthentication(args.Token, args.User ?? "Operator", args.Email ?? string.Empty);
+            await AuthService.InitializeAsync();
+            await InvokeAsync(StateHasChanged);
+
+            try
+            {
+                Nav.NavigateTo("/taskpane/workspace", forceLoad: false);
+            }
+            catch { }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Auth success handler error: {ex.Message}");
+        }
+    }
+
+    [JSInvokable]
+    public Task OnUploadRequested(string mode)
+    {
+        try { EventBus.Publish("UPLOAD_REQUESTED", mode); } catch { }
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+        _objRef = null;
+    }
 }

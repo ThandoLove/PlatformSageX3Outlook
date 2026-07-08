@@ -13,7 +13,6 @@
 @using OperationalWorkspaceUI.UIServices.ToastUIService
 @using OperationalWorkspaceUI.UIServices.EmailService
 
-
 @implements IDisposable
 
 @inject UIState UIState
@@ -29,9 +28,9 @@
 @inject EmailContextUIService EmailUiService
 @inject AuthenticationStateProvider AuthProvider
 
-<FluentLayout Class="app-container">
+<FluentLayout Id="app-root-shell" Class="app-container">
 
-    @* ✅ FIX 1: Shroud layout now utilizes clean CSS class tracking, entirely free of inline style strings *@
+    @* PHASE 1: PRE-RENDER LOOPS SERVICE INITIALIZATION SHIELD *@
     @if (UIState.IsCheckingAuth)
     {
         <div class="initial-app-boot-shroud">
@@ -39,7 +38,15 @@
             <span class="app-boot-label">Initializing Secure Workspace...</span>
         </div>
     }
-    else if (UIState.IsAuthenticated)
+    @* ✅ ARCHITECTURAL BYPASS ACTIVE: Let TaskPaneLayout own the view grid and inner login modal overlays inside Outlook *@
+    else if (IsTaskpanePath)
+    {
+        <main class="page-content taskpane-exclusive-view-wrapper" style="height: 100vh; width: 100vw; overflow: hidden; background: #ffffff;">
+            @Body
+        </main>
+    }
+    @* PHASE 2: STANDARD COMPACT PLATFORM SHELL FOR FULL STANDALONE BROWSER OPERATORS *@
+    else if (AppState.IsAuthenticated)
     {
         <header class="global-header layout-guard-header">
             <Topbar />
@@ -69,6 +76,7 @@
 
         </div>
     }
+    @* PHASE 3: LOCKED STANDALONE BROWSER LOGIN LANDING CHASSIS *@
     else
     {
         <div class="landing-frame secure-auth-landing-frame">
@@ -101,9 +109,11 @@
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
-        // Track authentication state changes so we can guard protected routes
-        _wasAuthenticated = UIState.IsAuthenticated;
-        UIState.OnChange += HandleUIStateChange;
+        
+        // Track authentication state changes so we can guard protected routes safely
+        _wasAuthenticated = AppState.IsAuthenticated;
+        
+        AppState.OnChange += HandleUIStateChange;
         DashboardState.OnChange += RefreshUI;
         AppState.OnChange += RefreshUI;
 
@@ -165,7 +175,15 @@
             var authState = await AuthProvider.GetAuthenticationStateAsync();
             UIState.SynchronizeUserSession(authState.User);
 
-            if (UIState.IsAuthenticated)
+            // Mirror the auth state into the centralized AppStateContainer so both systems agree
+            if (authState.User?.Identity?.IsAuthenticated == true)
+            {
+                var name = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Operator";
+                var email = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
+                AppState.SetAuthentication(string.Empty, name, email);
+            }
+
+            if (AppState.IsAuthenticated)
             {
                 _objRef = DotNetObjectReference.Create(this);
                 await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
@@ -205,6 +223,7 @@
         }
     }
 
+
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => RefreshUI();
 
     private void HandleUIStateChange()
@@ -212,19 +231,26 @@
         // Called when UIState changes. If the user transitioned from authenticated -> unauthenticated
         // replace history to the welcome page so Back does not reveal protected routes.
         if (_disposed) return;
-
         var previously = _wasAuthenticated;
-        var now = UIState.IsAuthenticated;
+        var now = AppState.IsAuthenticated;
         _wasAuthenticated = now;
 
         if (previously && !now)
         {
-            // user logged out
+            // User logged out
             _ = InvokeAsync(() =>
             {
                 try
                 {
-                    Nav.NavigateTo("/", forceLoad: false, replace: true);
+                    // ✅ FIX: Evaluate current trailing address to capture the active execution mode context
+                    var activeSubPath = Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
+
+                    // Only execute hard base root redirects if the user is running a standalone web browser shell!
+                    // This blocks the framework from crashing the Outlook taskpane layouts if a token changes.
+                    if (!activeSubPath.StartsWith("taskpane"))
+                    {
+                        Nav.NavigateTo("/", forceLoad: false, replace: true);
+                    }
                 }
                 catch { }
                 StateHasChanged();
@@ -235,6 +261,17 @@
 
         // Fallback: refresh UI as usual
         _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+    }
+
+    // ✅ EXTRA CRITICAL ROUTING PATH METHOD PROPERTIES FOR HTML INJECTION BLOCKS
+    // Checks if the active browser URI track matches an Outlook Taskpane frame execution environment
+    private bool IsTaskpanePath
+    {
+        get
+        {
+            var relativeUrl = Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
+            return relativeUrl.StartsWith("taskpane");
+        }
     }
 
     private void RefreshUI()
@@ -249,13 +286,20 @@
         _disposed = true;
 
         Nav.LocationChanged -= HandleLocationChanged;
-        UIState.OnChange -= HandleUIStateChange;
+
+        // ✅ CRITICAL BUG REPAIR: Unsubscribe cleanly from the correct variable handler channel instance
+        AppState.OnChange -= HandleUIStateChange;
+
         DashboardState.OnChange -= RefreshUI;
         AppState.OnChange -= RefreshUI;
 
         _unsubscribeEmail?.Invoke();
         _unsubscribeEmail = null;
-        _objRef?.Dispose();
-        _objRef = null;
+
+        if (_objRef != null)
+        {
+            _objRef.Dispose();
+            _objRef = null;
+        }
     }
 }

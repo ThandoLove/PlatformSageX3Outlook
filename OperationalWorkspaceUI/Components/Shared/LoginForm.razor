@@ -4,7 +4,7 @@
 @using OperationalWorkspaceUI.Security
 @using System.Net.Http.Json
 
-<div class="sage-login-body" style="font-family: 'Segoe UI', sans-serif; padding: 20px; box-sizing: border-box; background-color: #ffffff; height: 100vh;">
+<div class="sage-login-body" style="font-family: 'Segoe UI', sans-serif; padding: 20px; box-sizing: border-box; background-color: #ffffff; height: auto; width: 100%;">
 
     <!-- HEADER ICON -->
     <div class="login-icon-circle" style="text-align: center; margin-bottom: 16px;">
@@ -114,6 +114,7 @@
     [Inject] private Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env { get; set; } = default!;
     [Inject] private HttpClient Http { get; set; } = default!;
     [Inject] private OperationalWorkspaceUI.State.UIState UIState { get; set; } = default!;
+    [Inject] private OperationalWorkspaceApplication.ApplicationState.AppStateContainer AppState { get; set; } = default!;
 
     private void TogglePassword() => ShowPassword = !ShowPassword;
 
@@ -138,7 +139,7 @@
                 return;
             }
 
-            // Sync claims across custom cascading provider setups
+            // Sync claims across custom cascading provider setups and populate single source-of-truth AppState
             if (AuthStateProvider is CustomAuthenticationStateProvider authProvider)
             {
                 var authState = await authProvider.GetAuthenticationStateAsync();
@@ -146,9 +147,12 @@
             }
 
             // Extract verified session contexts out of your infrastructure token cache
-            string extractionToken = "eyJhbGciOiJIUzI1Ni..."; 
+            string extractionToken = "eyJhbGciOiJIUzI1Ni...";
             string extractionName = loginModel.Username.Contains("@") ? loginModel.Username.Split('@')[0] : loginModel.Username;
             string extractionEmail = loginModel.Username;
+
+            // Always populate the centralized AppStateContainer
+            AppState.SetAuthentication(extractionToken, extractionName, extractionEmail);
 
             // Route dynamically depending on whether we are containerized inside Outlook or in a browser
             if (OnAuthenticationSuccess.HasDelegate)
@@ -226,6 +230,9 @@ private async Task InitiateSSOAuthentication()
                 var authState = await authProvider.GetAuthenticationStateAsync();
                 UIState.SynchronizeUserSession(authState.User);
             }
+
+            // Always populate the centralized AppStateContainer for downstream components
+            AppState.SetAuthentication(targetToken, targetUser, targetEmail);
 
             // Sync user identity parameters back into the active task pane loop
             if (OnAuthenticationSuccess.HasDelegate)
