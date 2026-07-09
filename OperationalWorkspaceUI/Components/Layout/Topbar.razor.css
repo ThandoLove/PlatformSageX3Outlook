@@ -5,7 +5,6 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* 🚀 REDUCED STRUCTURAL SCALE: Slims layout down to professional desktop spec */
     height: 48px !important;
     min-height: 48px !important;
     padding: 0 16px !important;
@@ -24,8 +23,8 @@
 .zone-left {
     display: flex;
     align-items: center;
-    min-width: 280px !important; /* Shrunk down from 360px */
-    gap: 12px !important; /* Tighter inner gap bounding */
+    min-width: 280px !important;
+    gap: 12px !important;
 }
 
 .brand-group {
@@ -34,7 +33,7 @@
 }
 
 .sage-brand-text {
-    font-size: 15px !important; /* Scaled down from massive 18px */
+    font-size: 15px !important;
     font-weight: 700 !important;
     letter-spacing: -0.01em !important;
     color: #ffffff !important;
@@ -42,7 +41,7 @@
 }
 
 .sage-brand-subtext {
-    font-size: 10px !important; /* Small, readable sub-context string label */
+    font-size: 10px !important;
     font-weight: 500;
     color: #38bdf8;
     letter-spacing: 0.01em;
@@ -50,12 +49,12 @@
 
 .topbar-divider {
     width: 1px;
-    height: 18px; /* Tighter dividing line metric */
+    height: 18px;
     background: rgba(255, 255, 255, 0.12);
 }
 
 .page-dynamic-title {
-    font-size: 14px !important; /* Shrunk from 16px to stand clear in hierarchy */
+    font-size: 14px !important;
     font-weight: 600 !important;
     color: #ffffff !important;
 }
@@ -66,7 +65,7 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    max-width: 440px !important; /* Narrowed width constraint bounds */
+    max-width: 440px !important;
     min-width: 240px !important;
 }
 
@@ -74,11 +73,11 @@
     display: flex;
     align-items: center;
     width: 100%;
-    height: 32px !important; /* Dropped height down from 42px */
-    border-radius: 6px !important; /* Sharp modern micro-radius corners */
+    height: 32px !important;
+    border-radius: 6px !important;
     background: #1a3356 !important;
     border: none !important;
-    padding: 0 12px !important; /* Trimmed internal horizontal inset padding */
+    padding: 0 12px !important;
     box-sizing: border-box !important;
     box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04) !important;
 }
@@ -98,7 +97,7 @@
     border: none !important;
     outline: none !important;
     padding-left: 8px;
-    font-size: 13px !important; /* Crisp 13px standard typing font size */
+    font-size: 13px !important;
     font-weight: 500 !important;
     color: #ffffff !important;
 }
@@ -107,11 +106,29 @@
         color: #8aa6c8 !important;
     }
 
+    /* 🔵 LOCK FOCUS STATE: Prevents browser user-agent themes from rendering a white overlay box on click */
+    .topbar-search-input:focus,
+    .topbar-search-input:active {
+        background: transparent !important;
+        color: #ffffff !important;
+        outline: none !important;
+    }
+
+    /* 🔵 LOCK AUTOFILL STATE: Blocks browser credential/search memories from painting fields white */
+    .topbar-search-input:-webkit-autofill,
+    .topbar-search-input:-webkit-autofill:hover,
+    .topbar-search-input:-webkit-autofill:focus,
+    .topbar-search-input:-webkit-autofill:active {
+        -webkit-text-fill-color: #ffffff !important;
+        transition: background-color 999999s ease-in-out 0s !important;
+        box-shadow: 0 0 0px 1000px transparent inset !important;
+    }
+
 /* ZONE 3: COHESIVE SLIM PROFILE WRAP */
 .zone-right {
     display: flex;
     align-items: center;
-    gap: 12px !important; /* Tighter layout compression spacing */
+    gap: 12px !important;
     padding-left: 16px !important;
     border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -119,8 +136,8 @@
 .connection-status {
     display: flex;
     align-items: center;
-    height: 26px !important; /* Dropped from bulky 34px container shell */
-    padding: 0 10px !important; /* Narrowed tracking pill dimensions */
+    height: 26px !important;
+    padding: 0 10px !important;
     border-radius: 999px !important;
     background: #163c2b !important;
     border: none !important;
@@ -128,7 +145,7 @@
 }
 
 .conn-text-label {
-    font-size: 11px !important; /* Crisp micro label spec */
+    font-size: 11px !important;
     font-weight: 600 !important;
 }
 
@@ -140,7 +157,7 @@
     color: #f87171 !important;
 }
 
-/* COMPACT PROFILE META ACCESS CARD CARD */
+/* COMPACT PROFILE META ACCESS CARD */
 .user-profile-section {
     display: flex;
     align-items: center;
@@ -160,14 +177,14 @@
 }
 
 .user-display-name {
-    font-size: 12px !important; /* Balanced font reduction */
+    font-size: 12px !important;
     font-weight: 600 !important;
     color: #ffffff !important;
     line-height: 1.1;
 }
 
 .user-display-role {
-    font-size: 10px !important; /* Slim text signature line layout */
+    font-size: 10px !important;
     font-weight: 500;
     color: #8aa6c8 !important;
 }
@@ -181,7 +198,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px !important; /* Dropped frame bounds down from 34px footprint */
+    width: 28px !important;
     height: 28px !important;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.06);

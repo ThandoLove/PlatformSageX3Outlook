@@ -30,7 +30,6 @@
 
 <FluentLayout Id="app-root-shell" Class="app-container">
 
-    @* PHASE 1: PRE-RENDER LOOPS SERVICE INITIALIZATION SHIELD *@
     @if (UIState.IsCheckingAuth)
     {
         <div class="initial-app-boot-shroud">
@@ -38,14 +37,13 @@
             <span class="app-boot-label">Initializing Secure Workspace...</span>
         </div>
     }
-    @* ✅ ARCHITECTURAL BYPASS ACTIVE: Let TaskPaneLayout own the view grid and inner login modal overlays inside Outlook *@
     else if (IsTaskpanePath)
     {
-        <main class="page-content taskpane-exclusive-view-wrapper" style="height: 100vh; width: 100vw; overflow: hidden; background: #ffffff;">
+        <main class="page-content taskpane-exclusive-view-wrapper"
+              style="height:100vh;width:100vw;overflow:hidden;background:#ffffff;">
             @Body
         </main>
     }
-    @* PHASE 2: STANDARD COMPACT PLATFORM SHELL FOR FULL STANDALONE BROWSER OPERATORS *@
     else if (AppState.IsAuthenticated)
     {
         <header class="global-header layout-guard-header">
@@ -76,7 +74,6 @@
 
         </div>
     }
-    @* PHASE 3: LOCKED STANDALONE BROWSER LOGIN LANDING CHASSIS *@
     else
     {
         <div class="landing-frame secure-auth-landing-frame">
@@ -87,35 +84,30 @@
 </FluentLayout>
 
 @code {
+
     private DotNetObjectReference<MainLayout>? _objRef;
+
     private bool _initialized;
     private bool _disposed;
     private bool _wasAuthenticated;
+
     private Action? _unsubscribeEmail;
-
-    private bool IsAppPage
-    {
-        get
-        {
-            var path = Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
-
-            if (path.Contains("?"))
-                path = path.Split('?')[0];
-
-            return !string.IsNullOrEmpty(path);
-        }
-    }
 
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
-        
-        // Track authentication state changes so we can guard protected routes safely
+
         _wasAuthenticated = AppState.IsAuthenticated;
-        
+
         AppState.OnChange += HandleUIStateChange;
-        DashboardState.OnChange += RefreshUI;
         AppState.OnChange += RefreshUI;
+        DashboardState.OnChange += RefreshUI;
+
+        // Skip the authentication splash inside Outlook taskpane.
+        if (IsTaskpanePath)
+        {
+            UIState.IsCheckingAuth = false;
+        }
 
         _unsubscribeEmail = EventBus.Subscribe("EMAIL_RECEIVED", async data =>
         {
@@ -132,15 +124,18 @@
                 if (syncResponse.IsSuccessStatusCode)
                 {
                     var result = await EmailUiService.LoadEmailContextWithStatusAsync(email.MessageId);
+
                     DashboardState.SetEmailContextState(result.Context, result.IsUnknownSender);
 
                     if (result.IsUnknownSender)
                     {
-                        ToastService.ShowInfo("Sender email address not matched in Sage X3 records. Prompting registration.");
+                        ToastService.ShowInfo(
+                            "Sender email address not matched in Sage X3 records. Prompting registration.");
                     }
                     else
                     {
-                        ToastService.ShowSuccess($"Sage X3 Customer context loaded: {result.Context?.Email?.BusinessPartnerName}");
+                        ToastService.ShowSuccess(
+                            $"Sage X3 Customer context loaded: {result.Context?.Email?.BusinessPartnerName}");
                     }
                 }
                 else
@@ -165,7 +160,9 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || _initialized || _disposed) return;
+        if (!firstRender || _initialized || _disposed)
+            return;
+
         _initialized = true;
 
         try
@@ -173,31 +170,46 @@
             await AuthService.InitializeAsync();
 
             var authState = await AuthProvider.GetAuthenticationStateAsync();
+
             UIState.SynchronizeUserSession(authState.User);
 
-            // Mirror the auth state into the centralized AppStateContainer so both systems agree
             if (authState.User?.Identity?.IsAuthenticated == true)
             {
-                var name = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Operator";
-                var email = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
+                var name =
+                    authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                    ?? "Operator";
+
+                var email =
+                    authState.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                    ?? string.Empty;
+
                 AppState.SetAuthentication(string.Empty, name, email);
             }
 
-            if (AppState.IsAuthenticated)
-            {
-                _objRef = DotNetObjectReference.Create(this);
-                await JS.InvokeVoidAsync("officeBridge.initialize", _objRef);
-            }
+            // ALWAYS initialize the Outlook bridge.
+            // The bridge itself determines whether Office.js is available.
+            _objRef = DotNetObjectReference.Create(this);
+
+            await JS.InvokeVoidAsync(
+                "officeBridge.initialize",
+                _objRef);
         }
-        catch (JSDisconnectedException) { }
-        catch (ObjectDisposedException) { }
+        catch (JSDisconnectedException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"MainLayout initialization error: {ex.Message}");
         }
         finally
         {
-            UIState.IsCheckingAuth = false;
+            if (!IsTaskpanePath)
+            {
+                UIState.IsCheckingAuth = false;
+            }
 
             if (!_disposed)
             {
@@ -207,99 +219,104 @@
     }
 
     [JSInvokable]
-    public async Task OnEmailReceived(EmailInsightDto emailData)
+    public Task OnEmailReceived(EmailInsightDto emailData)
     {
-        if (_disposed) return;
-        if (emailData == null) return;
+        if (_disposed)
+            return Task.CompletedTask;
+
+        if (emailData == null)
+            return Task.CompletedTask;
 
         try
         {
             EventBus.Publish("EMAIL_RECEIVED", emailData);
-            await Task.CompletedTask;
         }
         catch (Exception ex)
         {
             Console.WriteLine("OnEmailReceived failed: " + ex.Message);
         }
+
+        return Task.CompletedTask;
     }
 
-
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e) => RefreshUI();
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        RefreshUI();
+    }
 
     private void HandleUIStateChange()
     {
-        // Called when UIState changes. If the user transitioned from authenticated -> unauthenticated
-        // replace history to the welcome page so Back does not reveal protected routes.
-        if (_disposed) return;
+        if (_disposed)
+            return;
+
         var previously = _wasAuthenticated;
         var now = AppState.IsAuthenticated;
+
         _wasAuthenticated = now;
 
         if (previously && !now)
         {
-            // User logged out
             _ = InvokeAsync(() =>
             {
                 try
                 {
-                    // ✅ FIX: Evaluate current trailing address to capture the active execution mode context
-                    var activeSubPath = Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
+                    var activeSubPath =
+                        Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
 
-                    // Only execute hard base root redirects if the user is running a standalone web browser shell!
-                    // This blocks the framework from crashing the Outlook taskpane layouts if a token changes.
                     if (!activeSubPath.StartsWith("taskpane"))
                     {
-                        Nav.NavigateTo("/", forceLoad: false, replace: true);
+                        Nav.NavigateTo("/", replace: true);
                     }
                 }
-                catch { }
+                catch
+                {
+                }
+
                 StateHasChanged();
             });
 
             return;
         }
 
-        // Fallback: refresh UI as usual
-        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+        _ = InvokeAsync(StateHasChanged);
     }
 
-    // ✅ EXTRA CRITICAL ROUTING PATH METHOD PROPERTIES FOR HTML INJECTION BLOCKS
-    // Checks if the active browser URI track matches an Outlook Taskpane frame execution environment
     private bool IsTaskpanePath
     {
         get
         {
             var relativeUrl = Nav.ToBaseRelativePath(Nav.Uri).ToLowerInvariant();
+
             return relativeUrl.StartsWith("taskpane");
         }
     }
 
     private void RefreshUI()
     {
-        if (_disposed) return;
-        _ = InvokeAsync(() => { if (!_disposed) StateHasChanged(); });
+        if (_disposed)
+            return;
+
+        _ = InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
+
         _disposed = true;
 
         Nav.LocationChanged -= HandleLocationChanged;
 
-        // ✅ CRITICAL BUG REPAIR: Unsubscribe cleanly from the correct variable handler channel instance
         AppState.OnChange -= HandleUIStateChange;
-
-        DashboardState.OnChange -= RefreshUI;
         AppState.OnChange -= RefreshUI;
+        DashboardState.OnChange -= RefreshUI;
 
         _unsubscribeEmail?.Invoke();
         _unsubscribeEmail = null;
 
-        if (_objRef != null)
-        {
-            _objRef.Dispose();
-            _objRef = null;
-        }
+        _objRef?.Dispose();
+        _objRef = null;
     }
+
 }

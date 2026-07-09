@@ -24,10 +24,28 @@
     <!-- ZONE 2: CENTER RESPONSIVE SEARCH BAR -->
     <div class="zone-middle">
         <div class="search-input-group">
-            <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
-                        Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
-                        CustomColor="#8aa6c8" />
-            <input type="text" placeholder="Search functions or data..." class="topbar-search-input" />
+            <!-- Functional click event added directly to the magnifying glass icon -->
+            <button type="button" @onclick="ExecuteSearch" style="background: transparent; border: none; padding: 0; display: flex; align-items: center; cursor: pointer;">
+                <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
+                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
+                            CustomColor="#8aa6c8" />
+            </button>
+
+            <!-- 🚀 TWO-WAY DATA BINDING & KEYBOARD TRIGGER INJECTION -->
+            <input type="text"
+                   placeholder="Search functions or data..."
+                   class="topbar-search-input"
+                   @bind-value="_searchQuery"
+                   @bind-value:event="oninput"
+                   @onkeyup="HandleSearchKeyUp" />
+
+            <!-- Clear Button appears dynamically when user types text strings -->
+            @if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                <button type="button" @onclick="ClearSearch" style="background: transparent; border: none; color: #8aa6c8; cursor: pointer; padding: 0 4px; display: flex; align-items: center;">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="#8aa6c8" />
+                </button>
+            }
         </div>
     </div>
 
@@ -77,7 +95,7 @@
         }
     </div>
 
-    <!-- ✅ NATIVE OFFICE-SAFE CONFIRMATION DIALOG DROP-DOWN -->
+    <!-- NATIVE OFFICE-SAFE CONFIRMATION DIALOG DROP-DOWN -->
     @if (_showLogoutConfirmation)
     {
         <div class="logout-confirm-popover" style="position: absolute; right: 28px; top: 56px; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 9999; width: 240px; display: flex; flex-direction: column; gap: 8px;">
@@ -92,7 +110,8 @@
 
 @code {
     private string PageTitle { get; set; } = "Dashboard";
-    private bool _showLogoutConfirmation = false; // ✅ Track popover toggle state
+    private bool _showLogoutConfirmation = false;
+    private string _searchQuery = string.Empty; // 🚀 Holds current query characters
 
     private string DisplayName =>
         string.IsNullOrWhiteSpace(UIState.UserName) || UIState.UserName == "Not Logged In"
@@ -115,6 +134,37 @@
     private void HandleStateChanged()
     {
         InvokeAsync(StateHasChanged);
+    }
+
+    // 🚀 INTERACTIVE KEYBOARD ENGINES
+    private void HandleSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            ExecuteSearch();
+        }
+    }
+
+    private void ExecuteSearch()
+    {
+        if (string.IsNullOrWhiteSpace(_searchQuery)) return;
+
+        Console.WriteLine($"Search pipeline executed for string parameter context: {_searchQuery}");
+
+        // 🔓 OPTION A: Broadcast query directly to UIState container state singletons
+        // UIState.CurrentSearchFilter = _searchQuery;
+        // UIState.NotifyStateChanged();
+
+        // 🔓 OPTION B: Auto-route the user directly to a filtered data-grid view space
+        // Nav.NavigateTo($"/dashboard?search={Uri.EscapeDataString(_searchQuery)}", forceLoad: false);
+    }
+
+    private void ClearSearch()
+    {
+        _searchQuery = string.Empty;
+        // Optional: Re-execute search with blank parameters to clear filtered data-grids
+        // UIState.CurrentSearchFilter = string.Empty;
+        // UIState.NotifyStateChanged();
     }
 
     private void UpdatePageTitle()
@@ -154,7 +204,6 @@
             PageTitle = "Workspace";
     }
 
-    // ✅ Toggle the state visibility cleanly instead of executing native JS methods
     private void PromptLogoutConfirmation()
     {
         _showLogoutConfirmation = !_showLogoutConfirmation;
@@ -168,10 +217,7 @@
     private async Task ExecuteLogoutPipeline()
     {
         _showLogoutConfirmation = false;
-
-        // Execute session cleanup pipeline
         await AuthService.LogoutAsync();
-        // Replace history entry so Back does not return to a protected route
         Nav.NavigateTo("/", forceLoad: false, replace: true);
     }
 

@@ -16,7 +16,6 @@
 
   <IconUrl DefaultValue="https://localhost:7173/favicon.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:7173/favicon.png"/>
-  <SupportUrl DefaultValue="https://localhost:7173/support" />
 
   <Hosts>
     <Host Name="Mailbox"/>
@@ -68,6 +67,9 @@
           <FunctionFile resid="functionFile"/>
 
           <ExtensionPoints>
+            <!-- ===================================================================== -->
+            <!-- A. MESSAGE READ COMMAND SURFACE                                       -->
+            <!-- ===================================================================== -->
             <ExtensionPoint xsi:type="MessageReadCommandSurface">
               <OfficeTab id="TabDefault">
 
@@ -229,6 +231,9 @@
 
               </OfficeTab>
             </ExtensionPoint>
+            <!-- ===================================================================== -->
+            <!-- B. MESSAGE COMPOSE COMMAND SURFACE                                    -->
+            <!-- ===================================================================== -->
             <ExtensionPoint xsi:type="MessageComposeCommandSurface">
               <OfficeTab id="TabDefault">
                 <Group id="grpX3ComposeActions">
@@ -333,6 +338,9 @@
               </OfficeTab>
             </ExtensionPoint>
 
+            <!-- ===================================================================== -->
+            <!-- C. CONTEXT MENU COMMAND SURFACE                                       -->
+            <!-- ===================================================================== -->
             <ExtensionPoint xsi:type="ContextMenu">
               <OfficeMenu id="ContextMenuMsgRead">
                 <Control xsi:type="Button" id="ctxOpenWorkspace">
@@ -378,6 +386,9 @@
         </DesktopFormFactor>
       </Host>
     </Hosts>
+    <!-- ========================================================================= -->
+    <!-- 4. CENTRALIZED STRING & ASSET RESOURCE DESCRIPTIONS                       -->
+    <!-- ========================================================================= -->
     <Resources>
       <bt:Images>
         <bt:Image id="icon16" DefaultValue="https://localhost:7173/favicon.png" />
@@ -387,6 +398,8 @@
 
       <bt:Urls>
         <bt:Url id="functionFile" DefaultValue="https://localhost:7173/officeFunctionFile.html" />
+        
+        <!-- 🚀 TASKPANE WRAPPER CONFIGURATION: Reverting to uniform sub-paths for your single entry router -->
         <bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane/workspace" />
         <bt:Url id="tpCreateContactUrl" DefaultValue="https://localhost:7173/taskpane/contact/create" />
         <bt:Url id="tpViewOrdersUrl" DefaultValue="https://localhost:7173/taskpane/orders/view" />
