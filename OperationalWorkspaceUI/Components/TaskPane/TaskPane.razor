@@ -7,6 +7,8 @@
 @using OperationalWorkspaceUI.Components.Pages.Dashboard
 @using OperationalWorkspaceApplication.ApplicationState
 @using OperationalWorkspaceUI.Components.Pages.Forms
+@using OperationalWorkspaceUI.Components.Pages.TaskPane
+@using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
 
 @implements IDisposable
@@ -63,7 +65,10 @@
         // This solves the URL jumping bugs because truncated paths fall cleanly into folder groups!
 
         // 1. Dashboard, CRM Snapshots, Customer and AI Summary mappings
-        if (string.IsNullOrWhiteSpace(p) || p == "workspace" || p.StartsWith("customer") || p.StartsWith("orders") || p.StartsWith("ai"))
+        if (
+      string.IsNullOrWhiteSpace(p)
+      || p == "workspace"
+  )
         {
             _componentType = typeof(Dashboard);
         }
@@ -95,6 +100,21 @@
         else if (p.StartsWith("task"))
         {
             _componentType = typeof(Tasks); // Loads your real flat /tasks component!
+        }
+
+        else if (p.StartsWith("customer"))
+        {
+            _componentType = typeof(BusinessPartner);
+        }
+
+        else if (p.StartsWith("orders"))
+        {
+            _componentType = typeof(Orders);
+        }
+
+        else if (p.StartsWith("ai"))
+        {
+            _componentType = typeof(AISummary);
         }
 
         // 5. Explicit safety fallback matching

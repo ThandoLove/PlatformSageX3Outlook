@@ -1,10 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <OfficeApp
-    xmlns="http://microsoft.com"
-    xmlns:xsi="http://w3.org"
-    xmlns:bt="http://microsoft.com"
-    xmlns:mailappor="http://microsoft.com"
-    xsi:type="MailApp">
+ xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+ xsi:type="MailApp">
 
   <Id>61f77d34-7389-4e09-9686-dcbbcdccbd1d</Id>
   <Version>1.0.0.0</Version>
@@ -41,11 +40,11 @@
     </Form>
   </FormSettings>
 
-  <Permissions>ReadWriteItem</Permissions>
+  <Permissions>ReadItem</Permissions>
 
   <Rule xsi:type="RuleCollection" Mode="Or">
     <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
-    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/>
+    
   </Rule>
 
   <DisableEntityHighlighting>false</DisableEntityHighlighting>
@@ -403,12 +402,11 @@
         <bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane/workspace" />
         <bt:Url id="tpCreateContactUrl" DefaultValue="https://localhost:7173/taskpane/contact/create" />
         <bt:Url id="tpViewOrdersUrl" DefaultValue="https://localhost:7173/taskpane/orders/view" />
-        <bt:Url id="tpViewCustomerUrl" DefaultValue="https://localhost:7173/taskpane/customer/view" />
-        <bt:Url id="tpAiSummaryUrl" DefaultValue="https://localhost:7173/taskpane/ai/summary" />
-        <bt:Url id="tpCreateTaskUrl" DefaultValue="https://localhost:7173/taskpane/task/create" />
+        <bt:Url id="tpAiSummaryUrl" DefaultValue="https://localhost:7173/taskpane/TaskPaneAiSummary" />
+        <bt:Url id="tpCreateTaskUrl" DefaultValue="https://localhost:7173/taskpane/tasks" />
         <bt:Url id="tpInsertTemplateUrl" DefaultValue="https://localhost:7173/taskpane/compose/template" />
-        <bt:Url id="tpAiResponseUrl" DefaultValue="https://localhost:7173/taskpane/compose/ai-response" />
-        <bt:Url id="tpAttachDocsUrl" DefaultValue="https://localhost:7173/taskpane/compose/attach-documents" />
+       
+        <bt:Url id="tpAttachDocsUrl" DefaultValue="https://localhost:7173/taskpane/attachments" />
         <bt:Url id="tpFollowUpUrl" DefaultValue="https://localhost:7173/taskpane/compose/followup" />
       </bt:Urls>
 
