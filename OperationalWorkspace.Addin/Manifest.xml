@@ -50,7 +50,7 @@
   <DisableEntityHighlighting>false</DisableEntityHighlighting>
 
   <VersionOverrides
-      xmlns="http://microsoft.com"
+      xmlns="http://schemas.microsoft.com/office/mailappversionoverrides"
       xsi:type="VersionOverridesV1_0">
 
     <Requirements>
