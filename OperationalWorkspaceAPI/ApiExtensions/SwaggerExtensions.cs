@@ -1,24 +1,26 @@
 ﻿using Microsoft.AspNetCore.Builder; // Required for IApplicationBuilder
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi;// Use .Models for OpenApiInfo/Scheme
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.OpenApi; // Use for OpenApiInfo/Scheme
 using System.Collections.Generic;
 
 namespace OperationalWorkspaceAPI.ApiExtensions;
 
 public static class SwaggerExtensions
 {
-    // This is for builder.Services
+    // Register Swagger generation and add a Swagger document per discovered API version
     public static IServiceCollection AddWorkspaceSwagger(this IServiceCollection services)
     {
         services.AddSwaggerGen(c =>
         {
+            // Default/fallback doc
             c.SwaggerDoc("v1", new OpenApiInfo
             {
                 Title = "Operational Workspace API",
                 Version = "v1"
             });
 
-            // 1. Define the Security Scheme
+            // Define the security scheme for Bearer JWT
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -29,7 +31,7 @@ public static class SwaggerExtensions
                 Description = "Enter your JWT token."
             });
 
-            // 2. Apply Requirement Globally using the new Delegate Pattern
+            // Apply requirement globally
             c.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
             {
                 {
@@ -37,20 +39,51 @@ public static class SwaggerExtensions
                     new List<string>()
                 }
             });
+
+            // If the versioned API explorer is available at startup, register docs for each discovered API version.
+            using var sp = services.BuildServiceProvider();
+            var provider = sp.GetService<IApiVersionDescriptionProvider>();
+            if (provider != null)
+            {
+                foreach (var description in provider.ApiVersionDescriptions)
+                {
+                    c.SwaggerDoc(description.GroupName, new OpenApiInfo
+                    {
+                        Title = $"Operational Workspace API {description.GroupName}",
+                        Version = description.ApiVersion.ToString(),
+                        Description = "Operational Workspace API"
+                    });
+                }
+            }
         });
 
         return services;
     }
 
-    // FIX: ADD THIS METHOD SO THE ERROR IN PROGRAM.CS GOES AWAY
+    // Configure the Swagger UI and expose one endpoint per API version
     public static IApplicationBuilder UseWorkspaceSwagger(this IApplicationBuilder app)
     {
+        var provider = app.ApplicationServices.GetService<IApiVersionDescriptionProvider>();
+
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Operational Workspace API v1");
+            if (provider != null)
+            {
+                foreach (var description in provider.ApiVersionDescriptions)
+                {
+                    c.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", $"Operational Workspace API {description.GroupName}");
+                }
+            }
+            else
+            {
+                // Fallback single endpoint
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Operational Workspace API v1");
+            }
+
             c.RoutePrefix = "swagger"; // This makes it available at /swagger
         });
+
         return app;
     }
 }

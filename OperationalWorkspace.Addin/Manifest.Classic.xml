@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xsi:type="MailApp">
+
+  <Id>61f77d34-7389-4e09-9686-dcbbcdccbd1d</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>PlatformSageX3OutlookProvider</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+
+  <DisplayName DefaultValue="Operational Sage X3 Workspace"/>
+  <Description DefaultValue="Enterprise Outlook add-in bridging email context with Sage X3 and Creatio workflows."/>
+
+  <IconUrl DefaultValue="https://localhost:7173/favicon.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:7173/favicon.png"/>
+
+  <Hosts>
+	<Host Name="Mailbox"/>
+  </Hosts>
+
+  <Requirements>
+	<Sets>
+	  <Set Name="Mailbox" MinVersion="1.1"/>
+	</Sets>
+  </Requirements>
+  <FormSettings>
+	<Form xsi:type="ItemRead">
+	  <DesktopSettings>
+		<SourceLocation DefaultValue="https://localhost:7173/taskpane"/>
+		<RequestedHeight>250</RequestedHeight>
+	  </DesktopSettings>
+	</Form>
+	<Form xsi:type="ItemEdit">
+	  <DesktopSettings>
+		<SourceLocation DefaultValue="https://localhost:7173/taskpane"/>
+	  </DesktopSettings>
+	</Form>
+  </FormSettings>
+
+  <!-- Allowlist domains. Placed after FormSettings to conform to manifest schema ordering -->
+  <AppDomains>
+	<AppDomain>https://localhost:7173</AppDomain>
+  </AppDomains>
+
+  <Permissions>ReadItem</Permissions>
+
+  <Rule xsi:type="RuleCollection" Mode="Or">
+	<Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+  </Rule>
+
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <VersionOverrides
+	  xmlns="http://schemas.microsoft.com/office/mailappversionoverrides"
+	  xsi:type="VersionOverridesV1_0">
+
+	<Requirements>
+	  <bt:Sets DefaultMinVersion="1.5">
+		<bt:Set Name="Mailbox"/>
+	  </bt:Sets>
+	</Requirements>
+
+	<Hosts>
+	  <Host xsi:type="MailHost">
+		<DesktopFormFactor>
+
+		  <FunctionFile resid="functionFile"/>
+
+		  <ExtensionPoints>
+			<!-- A. MESSAGE READ COMMAND SURFACE -->
+			<ExtensionPoint xsi:type="MessageReadCommandSurface">
+			  <OfficeTab id="TabDefault">
+
+				<Group id="grpX3CrmActions">
+				  <Label resid="lblCrmGroup"/>
+
+				  <Control xsi:type="Button" id="btnOpenWorkspace">
+					<Label resid="lblOpenWorkspace"/>
+					<Supertip>
+					  <Title resid="lblOpenWorkspace"/>
+					  <Description resid="tipOpenWorkspace"/>
+					</Supertip>
+					<Icon>
+					  <bt:Image size="16" resid="icon16"/>
+					  <bt:Image size="32" resid="icon32"/>
+					  <bt:Image size="80" resid="icon80"/>
+					</Icon>
+					<Action xsi:type="ShowTaskpane">
+					  <SourceLocation resid="tpWorkspaceUrl"/>
+					</Action>
+				  </Control>
+
+				  <Control xsi:type="Button" id="btnLinkToCrm">
+					<Label resid="lblLinkToCrm"/>
+					<Supertip>
+					  <Title resid="lblLinkToCrm"/>
+					  <Description resid="tipLinkToCrm"/>
+					</Supertip>
+					<Icon>
+					  <bt:Image size="16" resid="icon16"/>
+					  <bt:Image size="32" resid="icon32"/>
+					  <bt:Image size="80" resid="icon80"/>
+					</Icon>
+					<Action xsi:type="ExecuteFunction">
+					  <FunctionName>onLinkToCrmClicked</FunctionName>
+					</Action>
+				  </Control>
+
+				  <Control xsi:type="Button" id="btnCreateContact">
+					<Label resid="lblCreateContact"/>
+					<Supertip>
+					  <Title resid="lblCreateContact"/>
+					  <Description resid="tipCreateContact"/>
+					</Supertip>
+					<Icon>
+					  <bt:Image size="16" resid="icon16"/>
+					  <bt:Image size="32" resid="icon32"/>
+					  <bt:Image size="80" resid="icon80"/>
+					</Icon>
+					<Action xsi:type="ShowTaskpane">
+					  <SourceLocation resid="tpCreateContactUrl"/>
+					</Action>
+				  </Control>
+				</Group>
+
+				<!-- Additional groups omitted for brevity (kept in primary manifest) -->
+
+			  </OfficeTab>
+			</ExtensionPoint>
+
+			<!-- Context menu and compose omitted for brevity -->
+
+		  </ExtensionPoints>
+		</DesktopFormFactor>
+	  </Host>
+	</Hosts>
+
+	<Resources>
+	  <bt:Images>
+		<bt:Image id="icon16" DefaultValue="https://localhost:7173/favicon.png" />
+		<bt:Image id="icon32" DefaultValue="https://localhost:7173/favicon.png" />
+		<bt:Image id="icon80" DefaultValue="https://localhost:7173/favicon.png" />
+	  </bt:Images>
+
+	  <bt:Urls>
+		<bt:Url id="functionFile" DefaultValue="https://localhost:7173/officeFunctionFile.html" />
+		<bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane/workspace" />
+		<bt:Url id="tpCreateContactUrl" DefaultValue="https://localhost:7173/taskpane/contact/create" />
+		<bt:Url id="tpViewOrdersUrl" DefaultValue="https://localhost:7173/taskpane/orders/view" />
+		<bt:Url id="tpAiSummaryUrl" DefaultValue="https://localhost:7173/taskpane/TaskPaneAiSummary" />
+		<bt:Url id="tpCreateTaskUrl" DefaultValue="https://localhost:7173/taskpane/tasks" />
+		<bt:Url id="tpInsertTemplateUrl" DefaultValue="https://localhost:7173/taskpane/compose/template" />
+		<bt:Url id="tpAttachDocsUrl" DefaultValue="https://localhost:7173/taskpane/attachments" />
+		<bt:Url id="tpFollowUpUrl" DefaultValue="https://localhost:7173/taskpane/compose/followup" />
+	  </bt:Urls>
+
+	  <bt:ShortStrings>
+		<bt:String id="lblCrmGroup" DefaultValue="Sage CRM Link" />
+		<bt:String id="lblSalesGroup" DefaultValue="Sage Sales" />
+		<bt:String id="lblUtilityGroup" DefaultValue="ERP Utilities" />
+	  </bt:ShortStrings>
+	</Resources>
+  </VersionOverrides>
+</OfficeApp>

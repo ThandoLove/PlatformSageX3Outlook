@@ -30,56 +30,52 @@
 
 <FluentLayout Id="app-root-shell" Class="app-container">
 
-    @if (UIState.IsCheckingAuth)
-    {
-        <div class="initial-app-boot-shroud">
-            <div class="spinner-border text-light mb-3" role="status"></div>
-            <span class="app-boot-label">Initializing Secure Workspace...</span>
+   @if (UIState.IsCheckingAuth)
+{
+    <div class="initial-app-boot-shroud">
+        <div class="spinner-border text-light mb-3" role="status"></div>
+        <span class="app-boot-label">Initializing Secure Workspace...</span>
+    </div>
+}
+else if (AppState.IsAuthenticated || IsTaskpanePath)
+{
+    <header class="global-header layout-guard-header">
+        <Topbar />
+    </header>
+
+    <div class="main-wrapper">
+
+        <div class="sidebar-wrapper @(DashboardState.IsSidebarCollapsed ? "is-collapsed-active" : "")">
+            <Sidebar />
         </div>
-    }
-    else if (IsTaskpanePath)
-    {
-        <main class="page-content taskpane-exclusive-view-wrapper"
-              style="height:100vh;width:100vw;overflow:hidden;background:#ffffff;">
-            @Body
-        </main>
-    }
-    else if (AppState.IsAuthenticated)
-    {
-        <header class="global-header layout-guard-header">
-            <Topbar />
-        </header>
 
-        <div class="main-wrapper">
+        <main class="page-content">
+            <div class="content-body">
 
-            <div class="sidebar-wrapper @(DashboardState.IsSidebarCollapsed ? "is-collapsed-active" : "")">
-                <Sidebar />
+                @if (UIState.IsLoading || AppState.IsBusy)
+                {
+                    <LoadingSpinner />
+                }
+                else
+                {
+                    @Body
+                }
+
             </div>
+        </main>
 
-            <main class="page-content">
-                <div class="content-body">
-                    @if (UIState.IsLoading || AppState.IsBusy)
-                    {
-                        <LoadingSpinner />
-                    }
-                    else
-                    {
-                        @Body
-                    }
-                </div>
-            </main>
+        <ToastNotification />
 
-            <ToastNotification />
-            <RightPanel />
+        <RightPanel />
 
-        </div>
-    }
-    else
-    {
-        <div class="landing-frame secure-auth-landing-frame">
-            <LoginForm />
-        </div>
-    }
+    </div>
+}
+else
+{
+    <div class="landing-frame secure-auth-landing-frame">
+        <LoginForm />
+    </div>
+}
 
 </FluentLayout>
 
