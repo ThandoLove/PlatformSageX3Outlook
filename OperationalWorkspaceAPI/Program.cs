@@ -56,16 +56,18 @@ Log.Logger = new LoggerConfiguration()
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog();
-
 builder.Services.AddApiLayer();
+
+// Register Swagger integration (AddApiLayer already configures API versioning and explorer)
 builder.Services.AddWorkspaceSwagger();
+
+
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
-// Native .NET 10 Interactive Blazor Server Engine Integration
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(o => o.DetailedErrors = true);
 
@@ -83,13 +85,7 @@ builder.Services.AddHangfireServer(options =>
 builder.Services.AddProductionCompression();
 builder.Services.AddEnterpriseTelemetry(builder.Configuration, "OperationalWorkspace-API");
 builder.Services.AddEnterpriseHealthChecks(builder.Configuration);
-
-// =========================================================================
-// ENTERPRISE MULTI-TENANT STATE SECURITY PROFILE
-// =========================================================================
-// MUST be registered as Scoped to cleanly map memory walls within unique Blazor circuits.
 builder.Services.AddScoped<OperationalWorkspaceApplication.ApplicationState.AppStateContainer>();
-
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -140,7 +136,6 @@ builder.Services.AddValidatorsFromAssemblyContaining<CustomerValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EmailInsightDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<TaskValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<TicketValidator>();
-
 builder.Services.AddScoped<ISecurityContext, SecurityContext>();
 builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
@@ -236,7 +231,6 @@ builder.Services
     .AddPolicyHandler(sageCircuitBreaker);
 
 builder.Services.Configure<SageSecurityOptions>(builder.Configuration.GetSection("SageSecurityOptions"));
-
 InfrastructureServiceRegistration.AddInfrastructureServices(builder.Services, builder.Configuration);
 
 builder.Services.AddScoped<MockAttachmentProvider>();
@@ -314,10 +308,7 @@ builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IClock, SystemClock>();
-
-// Unified Consolidated Single Registration of the Context Builder
 builder.Services.AddScoped<EmailContextBuilder>();
-
 var app = builder.Build();
 
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
@@ -362,7 +353,6 @@ app.UseMiddleware<PerformanceTrackingMiddleware>();
 app.MapControllers();
 app.MapCustomHealthEndpoints();
 
-// Enforce Interactive Blazor Server Routing Channels
 app.MapRazorComponents<OperationalWorkspaceUI.Components.App>()
     .AddInteractiveServerRenderMode();
 

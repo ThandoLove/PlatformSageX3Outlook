@@ -10,138 +10,377 @@
 @using OperationalWorkspaceUI.Components.Pages.TaskPane
 @using OperationalWorkspaceUI.Components.Pages.Workspace.WorkspaceComponents
 
-
 @implements IDisposable
+
 @inject AppStateContainer AppState
 @inject IJSRuntime JS
 @inject NavigationManager Nav
 
-<!-- ✅ FIX 1: Enforce a dedicated CSS wrapper container that clips desktop styling properties
-     and forces your real components to adapt cleanly to a portrait sidebar panel context! -->
-<div class="taskpane-embedded-wrapper" style="width: 100%; height: 100vh; overflow-y: auto; overflow-x: hidden; background: #ffffff; padding: 12px; box-sizing: border-box;">
+<!--
+    TASK PANE ROUTING FLOW
 
-    @if (AppState.IsAuthenticated && _componentType != null)
+    /taskpane
+        ↓
+    Not authenticated
+        ↓
+    Home.razor
+
+    Home → Sign In
+        ↓
+    LoginForm modal
+
+    Successful login
+        ↓
+    /taskpane/workspace
+        ↓
+    Dashboard
+-->
+
+<div class="taskpane-embedded-wrapper"
+     style="width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #ffffff;
+    padding: 12px;
+    box-sizing: border-box;">
+
+    @if (!AppState.IsAuthenticated)
     {
-        <DynamicComponent Type="_componentType" Parameters="_parameters" />
-    }
-    else if (!AppState.IsAuthenticated)
-    {
-        <!-- Underlying background canvas stays locked; TaskPaneLayout throws the modal on top -->
+        <!--
+            OUTLOOK ENTRY PAGE
+
+            /taskpane
+
+            The Home component is rendered directly here.
+            Home.razor should NOT also own the /taskpane route.
+        -->
         <Home />
+    }
+    else if (_componentType != null)
+    {
+        <!--
+            AUTHENTICATED TASK PANE CONTENT
+
+            Examples:
+
+            /taskpane/workspace
+            /taskpane/contact
+            /taskpane/compose/template
+            /taskpane/compose/attach-documents
+            /taskpane/compose/followup
+            /taskpane/task
+            /taskpane/customer
+            /taskpane/orders
+            /taskpane/ai
+        -->
+        <DynamicComponent Type="_componentType"
+                          Parameters="_parameters" />
     }
     else
     {
-        <div class="taskpane-fallback" style="text-align: center; padding-top: 40px; color: #605e5c; font-family: sans-serif;">
-            <h4 style="font-size: 14px; margin-bottom: 4px;">Navigation Route Resolved Bypassed</h4>
-            <p style="font-size: 11px; margin-bottom: 12px;">Active path state lookup: @_requestedPath</p>
-            <button style="background: #0078d4; color: #ffffff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer;" @onclick="FallbackToDashboard">Go to Dashboard</button>
+        <!--
+            AUTHENTICATED FALLBACK
+
+            This appears if the requested route does not map
+            to one of the known task pane components.
+        -->
+        <div class="taskpane-fallback"
+             style="text-align: center;
+            padding-top: 40px;
+            color: #605e5c;
+            font-family: sans-serif;">
+
+            <h4 style="font-size: 14px;
+                margin-bottom: 8px;">
+                Page Not Found
+            </h4>
+
+            <p style="font-size: 11px;
+                margin-bottom: 12px;">
+                Active path: @_requestedPath
+            </p>
+
+            <button style="background: #0078d4;
+                color: #ffffff;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 11px;
+                cursor: pointer;"
+                    @onclick="FallbackToDashboard">
+
+                Go to Dashboard
+
+            </button>
+
         </div>
     }
 
 </div>
 
 @code {
+
+    /*
+        Captures everything after /taskpane/
+
+        Examples:
+
+        /taskpane
+            path = null or ""
+
+        /taskpane/workspace
+            path = "workspace"
+
+        /taskpane/contact
+            path = "contact"
+
+        /taskpane/compose/attach-documents
+            path = "compose/attach-documents"
+    */
+
     [Parameter]
     public string? path { get; set; }
 
     private string _requestedPath = string.Empty;
+
     private Type? _componentType;
+
     private Dictionary<string, object>? _parameters;
+
+
+    /*
+        Subscribe to authentication changes.
+
+        When AppState changes after login, this component
+        recalculates the route mapping and refreshes.
+    */
 
     protected override void OnInitialized()
     {
         AppState.OnChange += HandleSecurityStateChange;
     }
 
+
+    /*
+        Runs whenever the route parameter changes.
+    */
+
     protected override void OnParametersSet()
     {
-        _requestedPath = (path ?? string.Empty).Trim('/').ToLowerInvariant();
+        _requestedPath = (path ?? string.Empty)
+            .Trim('/')
+            .ToLowerInvariant();
+
         MapPathToComponent(_requestedPath);
     }
 
+
+    /*
+        Maps the Outlook task pane URL to the actual component.
+
+        IMPORTANT:
+
+        /taskpane
+            DOES NOT map to Dashboard.
+
+        The base route is the landing page.
+
+        /taskpane/workspace
+            maps to Dashboard.
+    */
+
     private void MapPathToComponent(string p)
     {
-        // ✅ FIX 2: Group and map manifest requests cleanly directly to your REAL components.
-        // This solves the URL jumping bugs because truncated paths fall cleanly into folder groups!
+        /*
+            BASE TASK PANE ROUTE
 
-        // 1. Dashboard, CRM Snapshots, Customer and AI Summary mappings
-        if (
-      string.IsNullOrWhiteSpace(p)
-      || p == "workspace"
-  )
+            /taskpane
+
+            Home is rendered by the main Razor markup
+            while the user is unauthenticated.
+
+            Therefore we do not assign Dashboard here.
+        */
+
+        if (string.IsNullOrWhiteSpace(p))
+        {
+            _componentType = null;
+        }
+
+
+        /*
+            DASHBOARD
+
+            /taskpane/workspace
+        */
+
+        else if (p == "workspace")
         {
             _componentType = typeof(Dashboard);
         }
 
-        // 2. Contacts / Add-Contact mappings
+
+        /*
+            CONTACTS
+
+            Examples:
+
+            /taskpane/contact
+            /taskpane/contacts
+        */
+
         else if (p.StartsWith("contact"))
         {
-            _componentType = typeof(NewContactForm); // Loads your real flat /forms/add-contact component!
+            _componentType = typeof(NewContactForm);
         }
 
-        // 3. Compose Ribbon Commands Group
+
+        /*
+            COMPOSE COMMANDS
+
+            Examples:
+
+            /taskpane/compose/template
+            /taskpane/compose/attach-documents
+            /taskpane/compose/followup
+        */
+
         else if (p.StartsWith("compose"))
         {
             if (p.Contains("attach-documents"))
             {
-                _componentType = typeof(Attachments); // Loads your real flat /attachments component!
+                _componentType = typeof(Attachments);
             }
             else if (p.Contains("followup"))
             {
-                _componentType = typeof(Activity); // Loads your real flat /activities component!
+                _componentType = typeof(Activity);
             }
             else
             {
-                _componentType = typeof(ComposePage); // Base fallback for text template insertions
+                _componentType = typeof(ComposePage);
             }
         }
 
-        // 4. Tasks mappings
+
+        /*
+            TASKS
+
+            /taskpane/task
+            /taskpane/tasks
+        */
+
         else if (p.StartsWith("task"))
         {
-            _componentType = typeof(Tasks); // Loads your real flat /tasks component!
+            _componentType = typeof(Tasks);
         }
+
+
+        /*
+            CUSTOMER / BUSINESS PARTNER
+
+            /taskpane/customer
+        */
 
         else if (p.StartsWith("customer"))
         {
             _componentType = typeof(BusinessPartner);
         }
 
+
+        /*
+            ORDERS
+
+            /taskpane/orders
+        */
+
         else if (p.StartsWith("orders"))
         {
             _componentType = typeof(Orders);
         }
+
+
+        /*
+            AI SUMMARY
+
+            /taskpane/ai
+        */
 
         else if (p.StartsWith("ai"))
         {
             _componentType = typeof(AISummary);
         }
 
-        // 5. Explicit safety fallback matching
+
+        /*
+            UNKNOWN ROUTE
+        */
+
         else
         {
             _componentType = null;
         }
 
-        _parameters = _componentType != null ? new Dictionary<string, object>() : null;
+
+        /*
+            DynamicComponent parameters.
+
+            Currently your mapped components do not require
+            route parameters, so this remains empty.
+        */
+
+        _parameters = _componentType != null
+            ? new Dictionary<string, object>()
+            : null;
     }
+
+
+    /*
+        Safety fallback.
+
+        If an authenticated user lands on an unknown task pane
+        route, return them to the dashboard.
+    */
 
     private void FallbackToDashboard()
     {
-        Nav.NavigateTo("/taskpane/workspace", forceLoad: false);
+        Nav.NavigateTo(
+            "/taskpane/workspace",
+            forceLoad: false
+        );
     }
+
+
+    /*
+        Called whenever AppState changes.
+
+        Most importantly:
+
+        Login successful
+            ↓
+        AppState.IsAuthenticated = true
+            ↓
+        Component refreshes
+    */
 
     private void HandleSecurityStateChange()
     {
         InvokeAsync(() =>
         {
             MapPathToComponent(_requestedPath);
+
             StateHasChanged();
         });
     }
+
+
+    /*
+        Cleanup.
+    */
 
     public void Dispose()
     {
         AppState.OnChange -= HandleSecurityStateChange;
     }
+
 }

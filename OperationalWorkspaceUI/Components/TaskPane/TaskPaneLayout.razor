@@ -23,7 +23,9 @@
     <!-- ========================================================================= -->
     <!-- 🔒 PRE-LOADED SECURITY DIALOG: Premium Center-Aligned Login Modal Shroud  -->
     <!-- ========================================================================= -->
-    @if (!AppState.IsAuthenticated)
+    @* Do not render the layout-level LoginForm when we're embedded inside the taskpane route
+       because TaskPane itself renders the Home or Login UI. This prevents duplicate login UIs. *@
+    @if (!AppState.IsAuthenticated && !IsTaskpaneRoute())
     {
         <div class="taskpane-modal-security-shroud">
             <div class="taskpane-modal-dialog-box">
@@ -46,6 +48,19 @@
 
 @code {
     private DotNetObjectReference<TaskPaneLayout>? _objRef;
+
+    private bool IsTaskpaneRoute()
+    {
+        try
+        {
+            var relative = Nav.ToBaseRelativePath(Nav.Uri).Trim('/').ToLowerInvariant();
+            return relative.StartsWith("taskpane");
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

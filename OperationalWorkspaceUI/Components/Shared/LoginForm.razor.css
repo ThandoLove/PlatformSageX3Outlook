@@ -1,218 +1,387 @@
-﻿/* Container Padding */
+﻿/* =========================================================
+   LOGIN FORM ROOT
+   ========================================================= */
+
 .sage-login-body {
-    padding: 10px 15px;
-    text-align: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 24px;
+    background: #ffffff;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Top Icon Circle */
+
+/* =========================================================
+   LOGIN ICON
+   ========================================================= */
+
 .login-icon-circle {
-    width: 80px;
-    height: 80px;
-    background-color: #f0f7ff; /* Very light blue */
-    color: #005ce6; /* Sage/Microsoft Blue */
-    border-radius: 50%;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 18px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
-    font-size: 32px;
+    border-radius: 50%;
+    background-color: #f0f7ff;
 }
 
-/* Typography */
+    .login-icon-circle i {
+        font-size: 32px;
+        color: #005ce6;
+    }
+
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
+
 .login-title {
-    font-size: 1.6rem;
+    margin: 0 0 6px;
+    text-align: center;
+    font-size: 22px;
     font-weight: 700;
     color: #1a1a1a;
-    margin-bottom: 8px;
 }
 
 .login-subtitle {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 30px;
+    margin: 0 0 28px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666666;
 }
 
-/* Input Fields */
+
+/* =========================================================
+   FORM GROUP
+   ========================================================= */
+
 .input-group-custom {
+    margin-bottom: 18px;
     text-align: left;
-    margin-bottom: 20px;
 }
 
     .input-group-custom label {
         display: block;
+        margin-bottom: 7px;
+        font-size: 13px;
         font-weight: 600;
-        font-size: 0.85rem;
-        margin-bottom: 8px;
-        color: #333;
+        color: #323130;
     }
 
+
+/* =========================================================
+   INPUT WRAPPER
+   ========================================================= */
+
 .input-wrapper {
+    position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
+    box-sizing: border-box;
     border: 1px solid #d1d1d1;
     border-radius: 6px;
-    padding: 10px 14px;
-    background: #fff;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
     .input-wrapper:focus-within {
         border-color: #005ce6;
-        box-shadow: 0 0 0 2px rgba(0, 92, 230, 0.1);
+        box-shadow: 0 0 0 2px rgba(0, 92, 230, 0.12);
     }
 
-    .input-wrapper i {
-        color: #666;
-        margin-right: 12px;
-        font-size: 1.1rem;
+
+    /* LEFT ICON */
+
+    .input-wrapper > i {
+        position: absolute;
+        left: 12px;
+        z-index: 1;
+        color: #666666;
+        font-size: 16px;
+        pointer-events: none;
     }
+
+
+    /* INPUT */
 
     .input-wrapper input {
+        width: 100%;
+        box-sizing: border-box;
         border: none;
         outline: none;
-        width: 100%;
-        font-size: 0.95rem;
+        background: transparent;
+        padding: 11px 12px 11px 40px;
+        font-size: 14px;
         color: #1a1a1a;
     }
 
-/* Options Row (Remember Me / Forgot Pwd) */
-.login-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    font-size: 0.85rem;
+
+/* PASSWORD INPUT */
+
+.password-wrapper input {
+    padding-right: 42px;
 }
 
-    .login-options a {
+
+/* =========================================================
+   PASSWORD TOGGLE
+   ========================================================= */
+
+.password-toggle-btn {
+    position: absolute;
+    right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #605e5c;
+    cursor: pointer;
+}
+
+    .password-toggle-btn:hover {
         color: #005ce6;
-        text-decoration: none;
     }
 
-        .login-options a:hover {
-            text-decoration: underline;
-        }
+    .password-toggle-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
 
-/* Buttons */
+
+/* =========================================================
+   VALIDATION
+   ========================================================= */
+
+.validation-message {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #a80000;
+}
+
+
+/* =========================================================
+   REMEMBER / FORGOT PASSWORD
+   ========================================================= */
+
+.login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    font-size: 13px;
+}
+
+.remember-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #323130;
+    cursor: pointer;
+}
+
+    .remember-option input {
+        margin: 0;
+        cursor: pointer;
+    }
+
+.forgot-link {
+    color: #005ce6;
+    text-decoration: none;
+}
+
+    .forgot-link:hover {
+        text-decoration: underline;
+    }
+
+
+/* =========================================================
+   ERROR MESSAGE
+   ========================================================= */
+
+.login-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    background-color: #fde7e9;
+    color: #a80000;
+    font-size: 13px;
+}
+
+    .login-error i {
+        flex-shrink: 0;
+    }
+
+
+/* =========================================================
+   PRIMARY LOGIN BUTTON
+   ========================================================= */
+
 .btn-login-submit {
     width: 100%;
-    background-color: #005ce6;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    border: none;
+    border-radius: 6px;
+    background-color: #005ce6;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-    .btn-login-submit:hover {
+    .btn-login-submit:hover:not(:disabled) {
         background-color: #004bbd;
     }
 
+    .btn-login-submit:active:not(:disabled) {
+        transform: translateY(1px);
+    }
+
+    .btn-login-submit:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
 .login-divider {
-    margin: 20px 0;
     display: flex;
     align-items: center;
-    text-align: center;
-    color: #999;
-    font-size: 0.8rem;
+    gap: 12px;
+    margin: 20px 0;
+    color: #8a8886;
+    font-size: 12px;
 }
 
-    .login-divider::before, .login-divider::after {
-        content: '';
+    .login-divider::before,
+    .login-divider::after {
+        content: "";
         flex: 1;
         border-bottom: 1px solid #e0e0e0;
     }
 
-    .login-divider span {
-        padding: 0 10px;
-    }
+
+/* =========================================================
+   SSO BUTTON
+   ========================================================= */
 
 .btn-sso-login {
     width: 100%;
-    background-color: #fff;
-    color: #1a1a1a;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     border: 1px solid #d1d1d1;
-    padding: 12px;
     border-radius: 6px;
-    font-size: 0.95rem;
+    background-color: #ffffff;
+    color: #323130;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-    .btn-sso-login:hover {
+    .btn-sso-login:hover:not(:disabled) {
         background-color: #f9f9f9;
+        border-color: #a19f9d;
     }
 
-/* Footer help text */
-.login-footer-help {
-    margin-top: 25px;
-    font-size: 0.85rem;
-    color: #666;
-}
-
-    .login-footer-help a {
-        color: #005ce6;
-        text-decoration: none;
+    .btn-sso-login:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
     }
 
-/* ========================================================= 
-   REFLUSHED SPINNING MIDDLEWARE UTILITIES (NO INLINE CSS)
+
+    /* =========================================================
+   SSO LOADING STATE
    ========================================================= */
-.login-error {
-    color: #f43f5e;
-    font-size: 0.85rem;
-    margin-top: 8px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
-    .login-error i {
-        margin-right: 4px;
+    .btn-sso-login.sso-loading-active {
+        background-color: #f1f5f9;
+        color: #64748b;
     }
 
-.submit-spinner {
+
+/* =========================================================
+   SPINNERS
+   ========================================================= */
+
+.submit-spinner,
+.sso-spinner {
     display: inline-block;
-    width: 1rem;
-    height: 1rem;
+    width: 16px;
+    height: 16px;
     border: 2px solid currentColor;
     border-right-color: transparent;
     border-radius: 50%;
-    animation: spinner-chassis .75s linear infinite;
-    margin-right: 8px;
+    animation: spinner-chassis 0.75s linear infinite;
+}
+
+.submit-spinner {
+    color: #ffffff;
 }
 
 .sso-spinner {
-    display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid #0ea5e9;
-    border-right-color: transparent;
-    border-radius: 50%;
-    animation: spinner-chassis .75s linear infinite;
-    margin-right: 8px;
+    color: #005ce6;
 }
 
-.btn-sso-login.sso-loading-active {
-    background-color: #f1f5f9;
-    color: #94a3b8;
-    cursor: not-allowed;
-}
 
 @keyframes spinner-chassis {
     to {
         transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   OUTLOOK TASK PANE RESPONSIVENESS
+   ========================================================= */
+
+@media (max-width: 500px) {
+
+    .sage-login-body {
+        padding: 18px 14px;
+    }
+
+    .login-icon-circle {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+    }
+
+        .login-icon-circle i {
+            font-size: 28px;
+        }
+
+    .login-title {
+        font-size: 20px;
+    }
+
+    .login-subtitle {
+        margin-bottom: 22px;
+        font-size: 13px;
+    }
+
+    .input-wrapper input {
+        font-size: 13px;
     }
 }
