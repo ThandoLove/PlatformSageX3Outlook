@@ -1,229 +1,1131 @@
-﻿@using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
 @using Microsoft.FluentUI.AspNetCore.Components
-
 @using OperationalWorkspaceUI.State
+@using OperationalWorkspaceApplication.ApplicationState
+@using OperationalWorkspaceUI.UIServices.System
+
 @implements IDisposable
+
 @inject UIState UIState
-@inject OperationalWorkspaceApplication.ApplicationState.AppStateContainer AppState
+@inject AppStateContainer AppState
 @inject NavigationManager Nav
-@inject IJSRuntime JS
-@inject OperationalWorkspaceUI.UIServices.System.AuthService AuthService
+@inject AuthService AuthService
 
-<div class="sage-topbar-master" style="position: relative;">
 
-    <!-- ZONE 1: BRANDING & TITLE HIERARCHY -->
+<div class="sage-topbar-master">
+
+    <!-- =========================================================
+         ZONE 1
+         BRANDING + PAGE TITLE
+         ========================================================= -->
+
     <div class="zone-left">
+
         <div class="brand-group">
-            <span class="sage-brand-text">Sage X3</span>
-            <span class="sage-brand-subtext">Operational Workspace</span>
+
+            <span class="sage-brand-text">
+                Sage X3
+            </span>
+
+            <span class="sage-brand-subtext">
+                Operational Workspace
+            </span>
+
         </div>
+
         <div class="topbar-divider"></div>
-        <span class="page-dynamic-title">@PageTitle</span>
+
+        <span class="page-dynamic-title">
+            @PageTitle
+        </span>
+
     </div>
 
-    <!-- ZONE 2: CENTER RESPONSIVE SEARCH BAR -->
+
+    <!-- =========================================================
+         ZONE 2
+         GLOBAL WORKSPACE SEARCH
+         ========================================================= -->
+
     <div class="zone-middle">
-        <div class="search-input-group">
-            <!-- Functional click event added directly to the magnifying glass icon -->
-            <button type="button" @onclick="ExecuteSearch" style="background: transparent; border: none; padding: 0; display: flex; align-items: center; cursor: pointer;">
-                <FluentIcon Value="@(new Icons.Regular.Size16.Search())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
-                            CustomColor="#8aa6c8" />
-            </button>
 
-            <!-- 🚀 TWO-WAY DATA BINDING & KEYBOARD TRIGGER INJECTION -->
-            <input type="text"
-                   placeholder="Search functions or data..."
-                   class="topbar-search-input"
-                   @bind-value="_searchQuery"
-                   @bind-value:event="oninput"
-                   @onkeyup="HandleSearchKeyUp" />
+        <div class="topbar-search-container">
 
-            <!-- Clear Button appears dynamically when user types text strings -->
-            @if (!string.IsNullOrWhiteSpace(_searchQuery))
-            {
-                <button type="button" @onclick="ClearSearch" style="background: transparent; border: none; color: #8aa6c8; cursor: pointer; padding: 0 4px; display: flex; align-items: center;">
-                    <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom" CustomColor="#8aa6c8" />
+            <div class="search-input-group">
+
+                <!-- SEARCH ICON -->
+
+                <button type="button"
+                        class="topbar-search-button"
+                        title="Search workspace"
+                        aria-label="Search workspace"
+                        @onclick="ExecuteSearch">
+
+                    <svg width="16"
+                         height="16"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round"
+                         stroke-linejoin="round"
+                         aria-hidden="true">
+
+                        <circle cx="11" cy="11" r="7"></circle>
+
+                        <line x1="16.65"
+                              y1="16.65"
+                              x2="21"
+                              y2="21"></line>
+
+                    </svg>
+
                 </button>
+
+
+                <!-- SEARCH INPUT -->
+
+                <input type="text"
+                       class="topbar-search-input"
+                       value="@_searchQuery"
+                       @oninput="HandleSearchInput"
+                       @onkeydown="HandleSearchKeyDown"
+                       placeholder="Search functions or data..."
+                       autocomplete="off"
+                       spellcheck="false"
+                       aria-label="Search functions or data"
+                       aria-expanded="@(_searchOpen ? "true" : "false")" />
+
+
+                <!-- CLEAR -->
+
+                @if (!string.IsNullOrWhiteSpace(_searchQuery))
+                {
+                    <button type="button"
+                            class="topbar-clear-search-button"
+                            title="Clear search"
+                            aria-label="Clear search"
+                            @onclick="ClearSearch">
+
+                        <svg width="15"
+                             height="15"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2"
+                             stroke-linecap="round"
+                             stroke-linejoin="round"
+                             aria-hidden="true">
+
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+
+                        </svg>
+
+                    </button>
+                }
+
+            </div>
+
+
+            <!-- =====================================================
+                 SEARCH RESULTS
+                 ===================================================== -->
+
+            @if (_searchOpen)
+            {
+                <div class="topbar-search-results"
+                     role="listbox"
+                     aria-label="Search results">
+
+                    @if (string.IsNullOrWhiteSpace(_searchQuery))
+                    {
+                        <div class="search-empty-state">
+
+                            <div class="search-empty-icon">
+
+                                <svg width="18"
+                                     height="18"
+                                     viewBox="0 0 24 24"
+                                     fill="none"
+                                     stroke="currentColor"
+                                     stroke-width="1.8"
+                                     stroke-linecap="round"
+                                     stroke-linejoin="round">
+
+                                    <circle cx="11" cy="11" r="7"></circle>
+
+                                    <line x1="16.65"
+                                          y1="16.65"
+                                          x2="21"
+                                          y2="21"></line>
+
+                                </svg>
+
+                            </div>
+
+                            <div>
+                                <div class="search-empty-title">
+                                    Search workspace
+                                </div>
+
+                                <div class="search-empty-description">
+                                    Search functions, pages and workspace data.
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                    else if (_filteredSearchResults.Count == 0)
+                    {
+                        <div class="search-no-results">
+
+                            <div class="search-no-results-title">
+                                No results found
+                            </div>
+
+                            <div class="search-no-results-description">
+                                No workspace item matches
+                                <strong>@_searchQuery</strong>.
+                            </div>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="search-results-header">
+
+                            <span>
+                                Search results
+                            </span>
+
+                            <span class="search-results-count">
+                                @_filteredSearchResults.Count
+                            </span>
+
+                        </div>
+
+
+                        <div class="search-results-list">
+
+                            @for (var i = 0; i < _filteredSearchResults.Count; i++)
+                            {
+                                var result = _filteredSearchResults[i];
+
+                                <button type="button"
+                                        class="search-result-item @(i == _selectedSearchIndex ? "search-result-active" : "")"
+                                        @onclick="() => OpenSearchResult(result)"
+                                        role="option"
+                                        aria-selected="@(i == _selectedSearchIndex)">
+
+                                    <span class="search-result-icon">
+
+                                        @if (result.Category == "Dashboard")
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <rect x="3"
+                                                      y="3"
+                                                      width="7"
+                                                      height="7"
+                                                      rx="1"></rect>
+
+                                                <rect x="14"
+                                                      y="3"
+                                                      width="7"
+                                                      height="7"
+                                                      rx="1"></rect>
+
+                                                <rect x="3"
+                                                      y="14"
+                                                      width="7"
+                                                      height="7"
+                                                      rx="1"></rect>
+
+                                                <rect x="14"
+                                                      y="14"
+                                                      width="7"
+                                                      height="7"
+                                                      rx="1"></rect>
+
+                                            </svg>
+                                        }
+                                        else if (result.Category == "Contacts")
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <circle cx="9"
+                                                        cy="8"
+                                                        r="3"></circle>
+
+                                                <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path>
+
+                                                <path d="M16 5.5a3 3 0 0 1 0 5.8"></path>
+
+                                                <path d="M18 14c1.8.8 3 2.5 3 4.5"></path>
+
+                                            </svg>
+                                        }
+                                        else if (result.Category == "Tickets")
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <path d="M4 6h16v12H4z"></path>
+
+                                                <path d="M8 10h8"></path>
+
+                                                <path d="M8 14h5"></path>
+
+                                            </svg>
+                                        }
+                                        else if (result.Category == "Activities")
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <circle cx="12"
+                                                        cy="12"
+                                                        r="8"></circle>
+
+                                                <path d="M12 8v4l3 2"></path>
+
+                                            </svg>
+                                        }
+                                        else if (result.Category == "Tasks")
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <circle cx="12"
+                                                        cy="12"
+                                                        r="9"></circle>
+
+                                                <path d="m8 12 2.5 2.5L16 9"></path>
+
+                                            </svg>
+                                        }
+                                        else if (result.Category == "Documents")
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <path d="M6 3h9l4 4v14H6z"></path>
+
+                                                <path d="M14 3v5h5"></path>
+
+                                                <path d="M9 13h6"></path>
+
+                                                <path d="M9 17h6"></path>
+
+                                            </svg>
+                                        }
+                                        else if (result.Category == "Knowledge")
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22z"></path>
+
+                                                <path d="M4 5.5v13"></path>
+
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <svg width="17"
+                                                 height="17"
+                                                 viewBox="0 0 24 24"
+                                                 fill="none"
+                                                 stroke="currentColor"
+                                                 stroke-width="1.8"
+                                                 stroke-linecap="round"
+                                                 stroke-linejoin="round">
+
+                                                <circle cx="12"
+                                                        cy="12"
+                                                        r="9"></circle>
+
+                                                <path d="M12 8v8"></path>
+
+                                                <path d="M8 12h8"></path>
+
+                                            </svg>
+                                        }
+
+                                    </span>
+
+
+                                    <span class="search-result-content">
+
+                                        <span class="search-result-title">
+                                            @result.Title
+                                        </span>
+
+                                        <span class="search-result-description">
+                                            @result.Description
+                                        </span>
+
+                                    </span>
+
+
+                                    <span class="search-result-category">
+                                        @result.Category
+                                    </span>
+
+                                </button>
+                            }
+
+                        </div>
+                    }
+
+                </div>
             }
+
         </div>
+
     </div>
 
-    <!-- ZONE 3: CONNECTIVITY STATUS & PREMIUM USER CARD -->
+
+    <!-- =========================================================
+         ZONE 3
+         CONNECTION + USER + SIGN OUT
+         ========================================================= -->
+
     <div class="zone-right">
+
+        <!-- CONNECTION -->
+
         <div class="connection-status">
+
             @if (UIState.IsSageConnected)
             {
-                <FluentIcon Value="@(new Icons.Filled.Size12.CheckmarkCircle())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
-                            CustomColor="#34d399" />
-                <span class="conn-text-label text-success">Connected</span>
+                <span class="connection-dot connection-dot-online"></span>
+
+                <span class="conn-text-label text-success">
+                    Connected
+                </span>
             }
             else
             {
-                <FluentIcon Value="@(new Icons.Filled.Size12.DismissCircle())"
-                            Color="@Microsoft.FluentUI.AspNetCore.Components.Color.Custom"
-                            CustomColor="#f87171" />
-                <span class="conn-text-label text-error">Disconnected</span>
+                <span class="connection-dot connection-dot-offline"></span>
+
+                <span class="conn-text-label text-error">
+                    Disconnected
+                </span>
             }
+
         </div>
 
-        <!-- HOVER PROFILE CARD OVERVIEW -->
+
+        <!-- USER -->
+
         <div class="user-profile-section">
+
             <FluentPersona Name="@UIState.UserName"
-                           Status="@(string.IsNullOrWhiteSpace(UIState.UserName) || UIState.UserName == "Not Logged In" ? PresenceStatus.Offline : PresenceStatus.Available)"
+                           Status="@(string.IsNullOrWhiteSpace(UIState.UserName) ||
+                                     UIState.UserName == "Not Logged In"
+                                         ? PresenceStatus.Offline
+                                         : PresenceStatus.Available)"
                            AvatarSize="28"
                            Brief="true"
                            Class="topbar-persona" />
 
+
             <div class="user-meta-text-wrap">
-                <span class="user-display-name">@DisplayName</span>
-                <span class="user-display-role">@(string.IsNullOrWhiteSpace(UIState.UserRole) ? "Operator" : UIState.UserRole)</span>
+
+                <span class="user-display-name">
+                    @DisplayName
+                </span>
+
+                <span class="user-display-role">
+                    @(string.IsNullOrWhiteSpace(UIState.UserRole)
+                        ? "Operator"
+                        : UIState.UserRole)
+                </span>
+
             </div>
+
         </div>
 
-        <!-- STYLISH CIRCULAR LOGOUT DISPATCH LINK -->
+
+        <!-- =====================================================
+             SIGN OUT
+             ===================================================== -->
+
         @if (AppState.IsAuthenticated)
         {
-            <button type="button" class="topbar-modern-logout-btn" title="Sign Out" @onclick="PromptLogoutConfirmation">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke 0.25s ease;">
+            <button type="button"
+                    class="topbar-modern-logout-btn"
+                    title="Sign Out"
+                    aria-label="Sign Out"
+                    @onclick="PromptLogoutConfirmation">
+
+                <svg width="16"
+                     height="16"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true">
+
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+
                     <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
+
+                    <line x1="21"
+                          y1="12"
+                          x2="9"
+                          y2="12"></line>
+
                 </svg>
+
             </button>
         }
+
     </div>
 
-    <!-- NATIVE OFFICE-SAFE CONFIRMATION DIALOG DROP-DOWN -->
+
+    <!-- =========================================================
+         LOGOUT CONFIRMATION
+         ========================================================= -->
+
     @if (_showLogoutConfirmation)
     {
-        <div class="logout-confirm-popover" style="position: absolute; right: 28px; top: 56px; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 9999; width: 240px; display: flex; flex-direction: column; gap: 8px;">
-            <span style="font-size: 12px; font-weight: 500; color: #f8fafc; text-align: center;">Sign out of your workspace session?</span>
-            <div style="display: flex; gap: 8px; width: 100%;">
-                <button type="button" @onclick="ExecuteLogoutPipeline" style="flex: 1; background: #ef4444; border: none; color: white; padding: 6px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">Yes, Exit</button>
-                <button type="button" @onclick="CancelLogout" style="flex: 1; background: #334155; border: 1px solid #475569; color: #cbd5e1; padding: 6px; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer;">Cancel</button>
+        <div class="logout-confirm-popover">
+
+            <span class="logout-confirm-text">
+                Sign out of your workspace session?
+            </span>
+
+
+            <div class="logout-confirm-actions">
+
+                <button type="button"
+                        class="logout-confirm-yes"
+                        @onclick="ExecuteLogoutPipeline">
+
+                    Yes, Exit
+
+                </button>
+
+
+                <button type="button"
+                        class="logout-confirm-cancel"
+                        @onclick="CancelLogout">
+
+                    Cancel
+
+                </button>
+
             </div>
+
         </div>
     }
+
 </div>
 
+
 @code {
+
+    /* =========================================================
+       STATE
+       ========================================================= */
+
     private string PageTitle { get; set; } = "Dashboard";
-    private bool _showLogoutConfirmation = false;
-    private string _searchQuery = string.Empty; // 🚀 Holds current query characters
+
+    private bool _showLogoutConfirmation;
+
+    private string _searchQuery = string.Empty;
+
+    private bool _searchOpen;
+
+    private int _selectedSearchIndex = -1;
+
+    private List<SearchResult> _filteredSearchResults = new();
+
+
+    /* =========================================================
+       SEARCH DATA
+       ========================================================= */
+
+    private readonly List<SearchResult> _workspaceSearchItems =
+        new()
+        {
+            new SearchResult(
+                "Dashboard",
+                "Workspace dashboard",
+                "Dashboard",
+                "/dashboard",
+                "/taskpane/workspace"),
+
+            new SearchResult(
+                "Contacts",
+                "Business partners and customer contacts",
+                "Contacts",
+                "/business-partners",
+                "/taskpane/contacts"),
+
+            new SearchResult(
+                "Tickets",
+                "Customer support tickets",
+                "Tickets",
+                "/tickets",
+                "/taskpane/tickets"),
+
+            new SearchResult(
+                "Activities",
+                "Customer interactions and activities",
+                "Activities",
+                "/activities",
+                "/taskpane/activities"),
+
+            new SearchResult(
+                "My Tasks",
+                "Your assigned workspace tasks",
+                "Tasks",
+                "/tasks",
+                "/taskpane/tasks"),
+
+            new SearchResult(
+                "Documents",
+                "Documents and Sage X3 attachments",
+                "Documents",
+                "/attachments",
+                "/taskpane/attachments"),
+
+            new SearchResult(
+                "Knowledge Base",
+                "Sage X3 knowledge and reference information",
+                "Knowledge",
+                "/knowledge",
+                "/taskpane/knowledge-page"),
+
+            new SearchResult(
+                "Settings",
+                "Workspace settings and preferences",
+                "Settings",
+                "/settings",
+                "/taskpane/settings")
+        };
+
+
+    /* =========================================================
+       DISPLAY NAME
+       ========================================================= */
 
     private string DisplayName =>
-        string.IsNullOrWhiteSpace(UIState.UserName) || UIState.UserName == "Not Logged In"
-        ? "Guest Operator"
-        : UIState.UserName;
+        string.IsNullOrWhiteSpace(UIState.UserName) ||
+        UIState.UserName == "Not Logged In"
+            ? "Guest Operator"
+            : UIState.UserName;
+
+
+    /* =========================================================
+       INITIALIZATION
+       ========================================================= */
 
     protected override void OnInitialized()
     {
         Nav.LocationChanged += HandleLocationChanged;
+
         UIState.OnChange += HandleStateChanged;
+
         UpdatePageTitle();
     }
 
-    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+
+    /* =========================================================
+       ROUTE CHANGE
+       ========================================================= */
+
+    private void HandleLocationChanged(
+        object? sender,
+        LocationChangedEventArgs e)
     {
+        _searchOpen = false;
+
+        _searchQuery = string.Empty;
+
+        _filteredSearchResults.Clear();
+
+        _selectedSearchIndex = -1;
+
         UpdatePageTitle();
-        InvokeAsync(StateHasChanged);
+
+        _ = InvokeAsync(StateHasChanged);
     }
+
+
+    /* =========================================================
+       STATE CHANGE
+       ========================================================= */
 
     private void HandleStateChanged()
     {
-        InvokeAsync(StateHasChanged);
-    }
-
-    // 🚀 INTERACTIVE KEYBOARD ENGINES
-    private void HandleSearchKeyUp(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
+        if (!IsDisposed)
         {
-            ExecuteSearch();
+            _ = InvokeAsync(StateHasChanged);
         }
     }
 
+
+    private bool IsDisposed;
+
+
+    /* =========================================================
+       SEARCH INPUT
+       ========================================================= */
+
+    private void HandleSearchInput(ChangeEventArgs e)
+    {
+        _searchQuery = e.Value?.ToString() ?? string.Empty;
+
+        _selectedSearchIndex = -1;
+
+        if (string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            _filteredSearchResults.Clear();
+
+            _searchOpen = true;
+
+            return;
+        }
+
+        var query =
+            _searchQuery
+                .Trim()
+                .ToLowerInvariant();
+
+        _filteredSearchResults =
+            _workspaceSearchItems
+                .Where(item =>
+                    item.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    item.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    item.Category.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+        _searchOpen = true;
+    }
+
+
+    /* =========================================================
+       KEYBOARD SEARCH
+       ========================================================= */
+
+    private void HandleSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            _searchOpen = false;
+
+            _selectedSearchIndex = -1;
+
+            _ = InvokeAsync(StateHasChanged);
+
+            return;
+        }
+
+
+        if (e.Key == "ArrowDown")
+        {
+            if (_filteredSearchResults.Count == 0)
+                return;
+
+            if (_selectedSearchIndex < _filteredSearchResults.Count - 1)
+            {
+                _selectedSearchIndex++;
+            }
+            else
+            {
+                _selectedSearchIndex = 0;
+            }
+
+            _ = InvokeAsync(StateHasChanged);
+
+            return;
+        }
+
+
+        if (e.Key == "ArrowUp")
+        {
+            if (_filteredSearchResults.Count == 0)
+                return;
+
+            if (_selectedSearchIndex > 0)
+            {
+                _selectedSearchIndex--;
+            }
+            else
+            {
+                _selectedSearchIndex =
+                    _filteredSearchResults.Count - 1;
+            }
+
+            _ = InvokeAsync(StateHasChanged);
+
+            return;
+        }
+
+
+        if (e.Key == "Enter")
+        {
+            ExecuteSearch();
+
+            return;
+        }
+    }
+
+
+    /* =========================================================
+       EXECUTE SEARCH
+       ========================================================= */
+
     private void ExecuteSearch()
     {
-        if (string.IsNullOrWhiteSpace(_searchQuery)) return;
+        if (string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            _searchOpen = true;
 
-        Console.WriteLine($"Search pipeline executed for string parameter context: {_searchQuery}");
+            return;
+        }
 
-        // 🔓 OPTION A: Broadcast query directly to UIState container state singletons
-        // UIState.CurrentSearchFilter = _searchQuery;
-        // UIState.NotifyStateChanged();
 
-        // 🔓 OPTION B: Auto-route the user directly to a filtered data-grid view space
-        // Nav.NavigateTo($"/dashboard?search={Uri.EscapeDataString(_searchQuery)}", forceLoad: false);
+        if (_filteredSearchResults.Count == 0)
+        {
+            _searchOpen = true;
+
+            return;
+        }
+
+
+        var resultIndex =
+            _selectedSearchIndex >= 0 &&
+            _selectedSearchIndex < _filteredSearchResults.Count
+                ? _selectedSearchIndex
+                : 0;
+
+
+        var result =
+            _filteredSearchResults[resultIndex];
+
+        OpenSearchResult(result);
     }
+
+
+    /* =========================================================
+       OPEN SEARCH RESULT
+       ========================================================= */
+
+    private void OpenSearchResult(SearchResult result)
+    {
+        _searchOpen = false;
+
+        _searchQuery = string.Empty;
+
+        _selectedSearchIndex = -1;
+
+        _filteredSearchResults.Clear();
+
+        var route =
+            IsTaskpane
+                ? result.TaskpaneRoute
+                : result.NormalRoute;
+
+        Nav.NavigateTo(route);
+    }
+
+
+    /* =========================================================
+       CLEAR SEARCH
+       ========================================================= */
 
     private void ClearSearch()
     {
         _searchQuery = string.Empty;
-        // Optional: Re-execute search with blank parameters to clear filtered data-grids
-        // UIState.CurrentSearchFilter = string.Empty;
-        // UIState.NotifyStateChanged();
+
+        _filteredSearchResults.Clear();
+
+        _selectedSearchIndex = -1;
+
+        _searchOpen = true;
     }
+
+
+    /* =========================================================
+       TASK PANE DETECTION
+       ========================================================= */
+
+    private bool IsTaskpane
+    {
+        get
+        {
+            var relative =
+                Nav.ToBaseRelativePath(Nav.Uri)
+                   .TrimStart('/')
+                   .ToLowerInvariant();
+
+            return relative == "taskpane" ||
+                   relative.StartsWith("taskpane/");
+        }
+    }
+
+
+    /* =========================================================
+       PAGE TITLE
+       ========================================================= */
 
     private void UpdatePageTitle()
     {
-        var relativePath = Nav.ToBaseRelativePath(Nav.Uri).ToLower();
+        var relativePath =
+            Nav.ToBaseRelativePath(Nav.Uri)
+               .TrimStart('/')
+               .ToLowerInvariant();
 
-        if (relativePath.Contains("?"))
-            relativePath = relativePath.Split('?')[0];
 
-        if (string.IsNullOrEmpty(relativePath) || relativePath.StartsWith("dashboard"))
+        var queryIndex =
+            relativePath.IndexOf('?');
+
+        if (queryIndex >= 0)
+        {
+            relativePath =
+                relativePath[..queryIndex];
+        }
+
+
+        relativePath =
+            relativePath.TrimEnd('/');
+
+
+        /* =====================================================
+           TASK PANE
+           ===================================================== */
+
+        if (relativePath == "taskpane" ||
+            relativePath == "taskpane/workspace")
+        {
             PageTitle = "Dashboard";
-        else if (relativePath.StartsWith("tickets"))
-            PageTitle = "Tickets";
-        else if (relativePath.StartsWith("activities"))
-            PageTitle = "Activities";
-        else if (relativePath.StartsWith("kb") || relativePath.StartsWith("knowledge"))
-            PageTitle = "Knowledge Base";
-        else if (relativePath.StartsWith("tasks"))
-            PageTitle = "My Tasks";
-        else if (relativePath.Contains("attachments") || relativePath.Contains("documents"))
-            PageTitle = "Documents";
-        else if (relativePath.StartsWith("contacts"))
+        }
+        else if (relativePath == "taskpane/contacts")
+        {
             PageTitle = "Contacts";
-        else if (relativePath.StartsWith("admin-dashboard"))
-            PageTitle = "Admin Dashboard";
-        else if (relativePath.StartsWith("admin-tasks"))
-            PageTitle = "Admin Tasks";
-        else if (relativePath.StartsWith("admin/users"))
-            PageTitle = "Users";
-        else if (relativePath.StartsWith("admin/audit-logs"))
-            PageTitle = "Audit Logs";
-        else if (relativePath.StartsWith("admin/system-health"))
-            PageTitle = "System Health";
-        else if (relativePath.StartsWith("settings"))
+        }
+        else if (relativePath == "taskpane/tickets")
+        {
+            PageTitle = "Tickets";
+        }
+        else if (relativePath == "taskpane/activities")
+        {
+            PageTitle = "Activities";
+        }
+        else if (relativePath == "taskpane/tasks")
+        {
+            PageTitle = "My Tasks";
+        }
+        else if (relativePath == "taskpane/attachments" ||
+                 relativePath == "taskpane/documents")
+        {
+            PageTitle = "Documents";
+        }
+        else if (relativePath == "taskpane/knowledge-page" ||
+                 relativePath == "taskpane/knowledge")
+        {
+            PageTitle = "Knowledge Base";
+        }
+        else if (relativePath == "taskpane/settings")
+        {
             PageTitle = "Settings";
+        }
+
+
+        /* =====================================================
+           NORMAL APPLICATION
+           ===================================================== */
+
+        else if (relativePath == "" ||
+                 relativePath == "dashboard")
+        {
+            PageTitle = "Dashboard";
+        }
+        else if (relativePath.StartsWith("tickets"))
+        {
+            PageTitle = "Tickets";
+        }
+        else if (relativePath.StartsWith("activities"))
+        {
+            PageTitle = "Activities";
+        }
+        else if (relativePath.StartsWith("knowledge") ||
+                 relativePath.StartsWith("kb"))
+        {
+            PageTitle = "Knowledge Base";
+        }
+        else if (relativePath.StartsWith("tasks"))
+        {
+            PageTitle = "My Tasks";
+        }
+        else if (relativePath.StartsWith("attachments") ||
+                 relativePath.StartsWith("documents"))
+        {
+            PageTitle = "Documents";
+        }
+        else if (relativePath.StartsWith("contacts") ||
+                 relativePath.StartsWith("business-partners"))
+        {
+            PageTitle = "Contacts";
+        }
+        else if (relativePath.StartsWith("settings"))
+        {
+            PageTitle = "Settings";
+        }
+
+
+        /* =====================================================
+           ADMIN
+           ===================================================== */
+
+        else if (relativePath == "admin-dashboard" ||
+                 relativePath == "admin/dashboard")
+        {
+            PageTitle = "Admin Dashboard";
+        }
+        else if (relativePath.StartsWith("admin-tasks"))
+        {
+            PageTitle = "Admin Tasks";
+        }
+        else if (relativePath.StartsWith("admin/users"))
+        {
+            PageTitle = "Users";
+        }
+        else if (relativePath.StartsWith("admin/audit-logs"))
+        {
+            PageTitle = "Audit Logs";
+        }
+        else if (relativePath.StartsWith("admin/system-health"))
+        {
+            PageTitle = "System Health";
+        }
         else
+        {
             PageTitle = "Workspace";
+        }
     }
+
+
+    /* =========================================================
+       LOGOUT
+       ========================================================= */
 
     private void PromptLogoutConfirmation()
     {
-        _showLogoutConfirmation = !_showLogoutConfirmation;
+        _showLogoutConfirmation = true;
+
+        _ = InvokeAsync(StateHasChanged);
     }
+
 
     private void CancelLogout()
     {
         _showLogoutConfirmation = false;
+
+        _ = InvokeAsync(StateHasChanged);
     }
+
 
     private async Task ExecuteLogoutPipeline()
     {
         _showLogoutConfirmation = false;
-        await AuthService.LogoutAsync();
-        Nav.NavigateTo("/", forceLoad: false, replace: true);
+
+        try
+        {
+            await AuthService.LogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Topbar logout error: {ex}");
+        }
+
+        if (!IsDisposed)
+        {
+            await InvokeAsync(StateHasChanged);
+        }
     }
+
+
+    /* =========================================================
+       DISPOSE
+       ========================================================= */
 
     public void Dispose()
     {
+        IsDisposed = true;
+
         Nav.LocationChanged -= HandleLocationChanged;
+
         UIState.OnChange -= HandleStateChanged;
     }
+
+
+    /* =========================================================
+       SEARCH RESULT MODEL
+       ========================================================= */
+
+    private sealed record SearchResult(
+        string Title,
+        string Description,
+        string Category,
+        string NormalRoute,
+        string TaskpaneRoute);
 }

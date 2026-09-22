@@ -1,7 +1,6 @@
 ﻿@using OperationalWorkspaceUI.Models.Constant
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceUI.UIServices.System
-
 @using Icons = Microsoft.FluentUI.AspNetCore.Components.Icons
 
 @implements IDisposable
@@ -12,64 +11,134 @@
 @inject UIState UIState
 @inject OperationalWorkspaceUI.UIServices.System.AuthService AuthService
 
-<div class="sage-sidebar @(DashboardState.IsSidebarCollapsed ? "is-collapsed" : "")">
 
-    <!-- SIDEBAR HEADER WITH INTEGRATED COLLAPSE TOGGLE TRIGGER -->
-    <div class="sidebar-header" @onclick="ToggleSidebarLayout" title="Toggle Navigation Panel">
-        <FluentIcon Value="@(new Icons.Regular.Size16.LineHorizontal3())"
-                    Color="@Color.Custom"
-                    CustomColor="#94a3b8" />
+<div class="sage-sidebar">
+
+    <!-- =========================================================
+         HEADER / WORK ACTIONS
+         ========================================================= -->
+
+    <div class="sidebar-header">
+
+        <button type="button"
+                class="sidebar-menu-trigger"
+                @onclick="ToggleCommandMenu"
+                title="Work Actions"
+                aria-label="Work Actions"
+                aria-expanded="@_commandMenuOpen">
+
+            <span class="hamburger-icon" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+
+        </button>
+
     </div>
 
-    <!-- NAVIGATION MENU LINKS REGISTRATION -->
-    <nav class="nav-menu">
 
-        <!-- SECTION: APPLICATION CORE -->
+    <!-- =========================================================
+         PRIMARY NAVIGATION
+         ========================================================= -->
+
+    <nav class="nav-menu" aria-label="Workspace navigation">
+
+        <!-- DASHBOARD -->
+
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Board())"
-                       Href="@AppRoutes.Dashboard"
-                       Match="NavLinkMatch.All">
+                       Href="@DashboardRoute"
+                       Match="NavLinkMatch.All"
+                       title="Dashboard">
+
             <span class="nav-link-text">Dashboard</span>
+
         </FluentNavLink>
+
+
+        <!-- CONTACTS -->
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Person())"
-                       Href="@AppRoutes.BusinessPartners">
+                       Href="@ContactsRoute"
+                       title="Contacts">
+
             <span class="nav-link-text">Contacts</span>
+
         </FluentNavLink>
+
+
+        <!-- TICKETS -->
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.TicketDiagonal())"
-                       Href="@AppRoutes.Tickets">
+                       Href="@TicketsRoute"
+                       title="Tickets">
+
             <span class="nav-link-text">Tickets</span>
+
         </FluentNavLink>
 
+
+        <!-- ACTIVITIES -->
+
         <FluentNavLink Icon="@(new Icons.Regular.Size16.DataUsage())"
-                       Href="@AppRoutes.Activity">
+                       Href="@ActivitiesRoute"
+                       title="Activities">
+
             <span class="nav-link-text">Activities</span>
+
         </FluentNavLink>
+
 
         <div class="sidebar-divider"></div>
 
-        <!-- SECTION: WORKSPACE REPOSITORIES -->
+
+        <!-- KNOWLEDGE BASE -->
+
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Library())"
-                       Href="@AppRoutes.Knowledge">
+                       Href="@KnowledgeRoute"
+                       title="Knowledge Base">
+
             <span class="nav-link-text">Knowledge Base</span>
+
         </FluentNavLink>
+
+
+        <!-- MY TASKS -->
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.CheckmarkCircle())"
-                       Href="@AppRoutes.Tasks">
+                       Href="@TasksRoute"
+                       title="My Tasks">
+
             <span class="nav-link-text">My Tasks</span>
+
         </FluentNavLink>
+
+
+        <!-- DOCUMENTS -->
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Book())"
-                       Href="@AppRoutes.Attachments">
+                       Href="@DocumentsRoute"
+                       title="Documents">
+
             <span class="nav-link-text">Documents</span>
+
         </FluentNavLink>
+
+
+        <!-- SETTINGS -->
 
         <FluentNavLink Icon="@(new Icons.Regular.Size16.Settings())"
-                       Href="@AppRoutes.Settings">
+                       Href="@SettingsRoute"
+                       title="Settings">
+
             <span class="nav-link-text">Settings</span>
+
         </FluentNavLink>
 
-        <!-- DYNAMIC ADMINISTRATIVE VISIBILITY BLOCKS (CONDITIONAL SECURITY SHIELD) -->
+
+        <!-- =====================================================
+             ADMINISTRATION
+             ===================================================== -->
         @if (UIState.IsAdminEnvironment)
         {
             <div class="sidebar-divider"></div>
@@ -78,90 +147,674 @@
                 <span class="nav-link-text">Administration</span>
             </div>
 
+
             <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldSettings())"
-                           Href="@AppRoutes.Administration">
+                           Href="@AppRoutes.Administration"
+                           title="Admin Dashboard">
+
                 <span class="nav-link-text">Admin Dashboard</span>
+
             </FluentNavLink>
+
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.TaskListSquareLtr())"
-                           Href="@AppRoutes.AdministrationTasks">
+                           Href="@AppRoutes.AdministrationTasks"
+                           title="Admin Tasks">
+
                 <span class="nav-link-text">Admin Tasks</span>
+
             </FluentNavLink>
+
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.PeopleTeam())"
-                           Href="/admin/users">
+                           Href="/admin/users"
+                           title="User Management">
+
                 <span class="nav-link-text">User Management</span>
+
             </FluentNavLink>
+
 
             <FluentNavLink Icon="@(new Icons.Regular.Size16.DocumentBulletList())"
-                           Href="/admin/audit-logs">
+                           Href="/admin/audit-logs"
+                           title="Audit Logs">
+
                 <span class="nav-link-text">Audit Logs</span>
+
             </FluentNavLink>
 
+
             <FluentNavLink Icon="@(new Icons.Regular.Size16.ShieldTask())"
-                           Href="/admin/system-health">
+                           Href="/admin/system-health"
+                           title="System Health">
+
                 <span class="nav-link-text">System Health</span>
+
             </FluentNavLink>
         }
 
     </nav>
 
-    <!-- FOOTER ACCESS SECTIONS: Modern horizontal action lines -->
+
+    <!-- =========================================================
+         WORK ACTIONS DRAWER
+         ========================================================= -->
+    @if (_commandMenuOpen)
+    {
+        <div class="sidebar-command-drawer"
+             role="dialog"
+             aria-modal="false"
+             aria-label="Work Actions">
+
+            <div class="command-drawer-header">
+
+                <div class="command-drawer-heading">
+
+                    <div class="command-drawer-title">
+                        Work Actions
+                    </div>
+
+                    <div class="command-drawer-subtitle">
+                        Workspace shortcuts
+                    </div>
+
+                </div>
+
+
+                <button type="button"
+                        class="command-drawer-close"
+                        @onclick="CloseCommandMenu"
+                        aria-label="Close Work Actions"
+                        title="Close">
+
+                    <span aria-hidden="true">×</span>
+
+                </button>
+
+            </div>
+
+
+            <div class="command-drawer-body">
+
+                <!-- DASHBOARD -->
+
+                <button type="button"
+                        class="command-drawer-action"
+                        @onclick="OpenDashboard">
+
+                    <span class="command-action-icon">
+
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Board())"
+                                    Color="@Color.Custom"
+                                    CustomColor="#334155" />
+
+                    </span>
+
+                    <span class="command-action-content">
+
+                        <strong>Dashboard</strong>
+
+                        <small>
+                            Open workspace dashboard
+                        </small>
+
+                    </span>
+
+                </button>
+
+
+                <!-- CONTACTS -->
+
+                <button type="button"
+                        class="command-drawer-action"
+                        @onclick="OpenContacts">
+
+                    <span class="command-action-icon">
+
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Person())"
+                                    Color="@Color.Custom"
+                                    CustomColor="#334155" />
+
+                    </span>
+
+                    <span class="command-action-content">
+
+                        <strong>Contacts</strong>
+
+                        <small>
+                            Open business partners
+                        </small>
+
+                    </span>
+
+                </button>
+
+
+                <!-- MY TASKS -->
+
+                <button type="button"
+                        class="command-drawer-action"
+                        @onclick="OpenTasks">
+
+                    <span class="command-action-icon">
+
+                        <FluentIcon Value="@(new Icons.Regular.Size16.CheckmarkCircle())"
+                                    Color="@Color.Custom"
+                                    CustomColor="#334155" />
+
+                    </span>
+
+                    <span class="command-action-content">
+
+                        <strong>My Tasks</strong>
+
+                        <small>
+                            View assigned tasks
+                        </small>
+
+                    </span>
+
+                </button>
+
+
+                <!-- DOCUMENTS -->
+
+                <button type="button"
+                        class="command-drawer-action"
+                        @onclick="OpenDocuments">
+
+                    <span class="command-action-icon">
+
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Book())"
+                                    Color="@Color.Custom"
+                                    CustomColor="#334155" />
+
+                    </span>
+
+                    <span class="command-action-content">
+
+                        <strong>Documents</strong>
+
+                        <small>
+                            Open workspace documents
+                        </small>
+
+                    </span>
+
+                </button>
+
+
+                <!-- CREATE ACTIVITY -->
+
+                <button type="button"
+                        class="command-drawer-action"
+                        @onclick="CreateActivity">
+
+                    <span class="command-action-icon">
+
+                        <FluentIcon Value="@(new Icons.Regular.Size16.AddCircle())"
+                                    Color="@Color.Custom"
+                                    CustomColor="#334155" />
+
+                    </span>
+
+                    <span class="command-action-content">
+
+                        <strong>Create Activity</strong>
+
+                        <small>
+                            Record a customer interaction
+                        </small>
+
+                    </span>
+
+                </button>
+
+
+                <!-- REFRESH -->
+
+                <button type="button"
+                        class="command-drawer-action"
+                        @onclick="RefreshWorkspace">
+
+                    <span class="command-action-icon">
+
+                        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowClockwise())"
+                                    Color="@Color.Custom"
+                                    CustomColor="#334155" />
+
+                    </span>
+
+                    <span class="command-action-content">
+
+                        <strong>Refresh Context</strong>
+
+                        <small>
+                            Refresh the current workspace
+                        </small>
+
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- =========================================================
+         SIDEBAR FOOTER
+         ========================================================= -->
+
     <div class="sidebar-footer">
+
         <div class="footer-actions">
-            <button type="button" class="footer-action footer-menu-trigger" @onclick="ToggleFooterMenu" title="Open menu">
-                <span class="footer-action-icon">☰</span>
-                <span class="footer-action-label">Menu</span>
+
+            <!-- THREE-DOT MENU -->
+
+            <button type="button"
+                    class="footer-action footer-menu-trigger"
+                    @onclick="ToggleFooterMenu"
+                    title="More"
+                    aria-label="More"
+                    aria-expanded="@_footerMenuOpen">
+
+                <span class="footer-dots" aria-hidden="true">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </span>
+
             </button>
 
+
+            <!-- =================================================
+                 FOOTER MENU
+                 ================================================= -->
             @if (_footerMenuOpen)
             {
-                <div class="footer-menu-dropdown">
-                    <FluentNavLink class="footer-menu-item" Icon="@(new Icons.Regular.Size16.Settings())" Href="@AppRoutes.Settings">
+                <div class="footer-menu-dropdown"
+                     role="menu"
+                     aria-label="Account and application actions">
+
+                    <div class="footer-menu-header">
+
+                        <span class="footer-menu-title">
+                            Workspace
+                        </span>
+
+                        <span class="footer-menu-subtitle">
+                            Account &amp; settings
+                        </span>
+
+                    </div>
+
+
+                    <!-- SETTINGS -->
+
+                    <button type="button"
+                            class="footer-menu-item"
+                            @onclick="OpenSettings">
+
+                        <span class="footer-menu-item-icon">
+
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Settings())"
+                                        Color="@Color.Custom"
+                                        CustomColor="#475569" />
+
+                        </span>
+
                         <span>Settings</span>
-                    </FluentNavLink>
 
-                    <button type="button" class="footer-menu-item" @onclick='() => Nav.NavigateTo("/help")'>
+                    </button>
+
+
+                    <!-- HELP -->
+
+                    <button type="button"
+                            class="footer-menu-item"
+                            @onclick="OpenHelp">
+
+                        <span class="footer-menu-item-icon">
+
+                            <FluentIcon Value="@(new Icons.Regular.Size16.QuestionCircle())"
+                                        Color="@Color.Custom"
+                                        CustomColor="#475569" />
+
+                        </span>
+
                         <span>Help</span>
+
                     </button>
 
-                    <button type="button" class="footer-menu-item footer-signout" @onclick="PromptFooterLogoutConfirmation">
+
+                    <div class="footer-menu-separator"></div>
+
+
+                    <!-- SIGN OUT -->
+
+                    <button type="button"
+                            class="footer-menu-item footer-signout"
+                            @onclick="PromptFooterLogoutConfirmation">
+
+                        <span class="footer-menu-item-icon">
+
+                            <svg width="16"
+                                 height="16"
+                                 viewBox="0 0 24 24"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 stroke-width="2"
+                                 stroke-linecap="round"
+                                 stroke-linejoin="round"
+                                 aria-hidden="true">
+
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+
+                                <polyline points="16 17 21 12 16 7" />
+
+                                <line x1="21"
+                                      y1="12"
+                                      x2="9"
+                                      y2="12" />
+
+                            </svg>
+
+                        </span>
+
                         <span>Sign Out</span>
+
                     </button>
+
                 </div>
             }
 
+
+            <!-- =================================================
+                 LOGOUT CONFIRMATION
+                 ================================================= -->
             @if (_showFooterLogoutConfirmation)
             {
-                <div class="footer-logout-popover">
-                    <span class="pop-text">Sign out of your workspace session?</span>
-                    <div class="pop-actions">
-                        <button type="button" class="pop-confirm" @onclick="ExecuteFooterLogoutPipeline">Yes, Exit</button>
-                        <button type="button" class="pop-cancel" @onclick="CancelFooterLogout">Cancel</button>
+                <div class="footer-logout-popover"
+                     role="dialog"
+                     aria-label="Confirm sign out">
+
+                    <div class="pop-text">
+                        Sign out of your workspace session?
                     </div>
+
+
+                    <div class="pop-actions">
+
+                        <button type="button"
+                                class="pop-confirm"
+                                @onclick="ExecuteFooterLogoutPipeline">
+
+                            Yes, Exit
+
+                        </button>
+
+
+                        <button type="button"
+                                class="pop-cancel"
+                                @onclick="CancelFooterLogout">
+
+                            Cancel
+
+                        </button>
+
+                    </div>
+
                 </div>
             }
+
         </div>
+
     </div>
 
 </div>
 
+
 @code {
+
+    private bool _commandMenuOpen;
+
+    private bool _footerMenuOpen;
+
+    private bool _showFooterLogoutConfirmation;
+
+
+    /* =============================================================
+       TASKPANE DETECTION
+       ============================================================= */
+
+    private bool IsTaskpane
+    {
+        get
+        {
+            var relative = Nav
+                .ToBaseRelativePath(Nav.Uri)
+                .TrimStart('/')
+                .ToLowerInvariant();
+
+            return relative == "taskpane" ||
+                   relative.StartsWith("taskpane/");
+        }
+    }
+
+
+    /* =============================================================
+       ROUTES
+       ============================================================= */
+
+    private string DashboardRoute =>
+        IsTaskpane
+            ? "/taskpane/workspace"
+            : AppRoutes.Dashboard;
+
+
+    private string ContactsRoute =>
+        IsTaskpane
+            ? "/taskpane/contacts"
+            : AppRoutes.BusinessPartners;
+
+
+    private string TicketsRoute =>
+        IsTaskpane
+            ? "/taskpane/tickets"
+            : AppRoutes.Tickets;
+
+
+    private string ActivitiesRoute =>
+        IsTaskpane
+            ? "/taskpane/activities"
+            : AppRoutes.Activity;
+
+
+    private string TasksRoute =>
+        IsTaskpane
+            ? "/taskpane/tasks"
+            : AppRoutes.Tasks;
+
+
+    private string DocumentsRoute =>
+        IsTaskpane
+            ? "/taskpane/attachments"
+            : AppRoutes.Attachments;
+
+
+    private string KnowledgeRoute =>
+        IsTaskpane
+            ? "/taskpane/knowledge-page"
+            : AppRoutes.Knowledge;
+
+
+    private string SettingsRoute =>
+        IsTaskpane
+            ? "/taskpane/settings"
+            : AppRoutes.Settings;
+
+
+    /* =============================================================
+       LIFECYCLE
+       ============================================================= */
+
     protected override void OnInitialized()
     {
         DashboardState.OnChange += Refresh;
         UIState.OnChange += Refresh;
     }
 
-    private void ToggleSidebarLayout()
-    {
-        DashboardState.ToggleGlobalSidebar();
-    }
 
     private void Refresh()
     {
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
+
+
+    /* =============================================================
+       WORK ACTIONS
+       ============================================================= */
+
+    private void ToggleCommandMenu()
+    {
+        _commandMenuOpen = !_commandMenuOpen;
+
+        if (_commandMenuOpen)
+        {
+            _footerMenuOpen = false;
+            _showFooterLogoutConfirmation = false;
+        }
+    }
+
+
+    private void CloseCommandMenu()
+    {
+        _commandMenuOpen = false;
+    }
+
+
+    private void OpenDashboard()
+    {
+        CloseCommandMenu();
+
+        Nav.NavigateTo(DashboardRoute);
+    }
+
+
+    private void OpenContacts()
+    {
+        CloseCommandMenu();
+
+        Nav.NavigateTo(ContactsRoute);
+    }
+
+
+    private void OpenTasks()
+    {
+        CloseCommandMenu();
+
+        Nav.NavigateTo(TasksRoute);
+    }
+
+
+    private void OpenDocuments()
+    {
+        CloseCommandMenu();
+
+        Nav.NavigateTo(DocumentsRoute);
+    }
+
+
+    private void CreateActivity()
+    {
+        CloseCommandMenu();
+
+        Nav.NavigateTo(ActivitiesRoute);
+    }
+
+
+    private async Task RefreshWorkspace()
+    {
+        CloseCommandMenu();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    /* =============================================================
+       FOOTER MENU
+       ============================================================= */
+
+    private void ToggleFooterMenu()
+    {
+        _footerMenuOpen = !_footerMenuOpen;
+
+        if (_footerMenuOpen)
+        {
+            _commandMenuOpen = false;
+            _showFooterLogoutConfirmation = false;
+        }
+    }
+
+
+    private void OpenSettings()
+    {
+        _footerMenuOpen = false;
+        _showFooterLogoutConfirmation = false;
+
+        Nav.NavigateTo(SettingsRoute);
+    }
+
+
+    private void OpenHelp()
+    {
+        _footerMenuOpen = false;
+        _showFooterLogoutConfirmation = false;
+
+        Nav.NavigateTo("/help");
+    }
+
+
+    /* =============================================================
+       LOGOUT
+       ============================================================= */
+
+    private void PromptFooterLogoutConfirmation()
+    {
+        _showFooterLogoutConfirmation = true;
+    }
+
+
+    private void CancelFooterLogout()
+    {
+        _showFooterLogoutConfirmation = false;
+    }
+
+
+    private async Task ExecuteFooterLogoutPipeline()
+    {
+        _showFooterLogoutConfirmation = false;
+        _footerMenuOpen = false;
+        _commandMenuOpen = false;
+
+        try
+        {
+            await AuthService.LogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Sidebar logout error: {ex}");
+        }
+    }
+
+
+    /* =============================================================
+       DISPOSE
+       ============================================================= */
 
     public void Dispose()
     {
@@ -169,33 +822,4 @@
         UIState.OnChange -= Refresh;
     }
 
-    private bool _showFooterLogoutConfirmation = false;
-
-    private bool _footerMenuOpen = false;
-
-    private void ToggleFooterMenu()
-    {
-        _footerMenuOpen = !_footerMenuOpen;
-        // close logout confirmation when opening menu
-        if (_footerMenuOpen)
-            _showFooterLogoutConfirmation = false;
-    }
-
-    private void PromptFooterLogoutConfirmation()
-    {
-        _showFooterLogoutConfirmation = !_showFooterLogoutConfirmation;
-    }
-
-    private void CancelFooterLogout()
-    {
-        _showFooterLogoutConfirmation = false;
-    }
-
-    private async Task ExecuteFooterLogoutPipeline()
-    {
-        _showFooterLogoutConfirmation = false;
-        await AuthService.LogoutAsync();
-        // Replace history entry so Back does not return to protected dashboard
-        Nav.NavigateTo("/", forceLoad: false, replace: true);
-    }
 }

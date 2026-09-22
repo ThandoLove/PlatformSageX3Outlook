@@ -65,6 +65,10 @@ builder.Services.AddWorkspaceSwagger();
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllersWithViews();
+// Antiforgery is required for interactive Razor component endpoints that carry antiforgery metadata
+// (server-side interactive endpoints such as /taskpane/{**path}). Register the antiforgery services so
+// the middleware can validate requests from the Blazor interactive renderer.
+builder.Services.AddAntiforgery();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 
@@ -146,14 +150,33 @@ var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PlatformSageX3OutlookBackend";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PlatformSageX3OutlookAddin";
 
+// In development, provide a fallback developer JWT key so the local dev server can run
+// without requiring production secrets. Do NOT use this in production.
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
-    throw new InvalidOperationException("CRITICAL CONFIGURATION ERROR: Cryptographic JWT Master Signing Key is missing.");
+    if (builder.Environment.IsDevelopment())
+    {
+        jwtKey = "dev-local-jwt-key-change-this-before-deploy-0001"; // length > 32
+        Console.WriteLine("Warning: Jwt:Key not set. Using development fallback key. Replace in production.");
+    }
+    else
+    {
+        throw new InvalidOperationException("CRITICAL CONFIGURATION ERROR: Cryptographic JWT Master Signing Key is missing.");
+    }
 }
 
 if (jwtKey.Length < 32)
 {
-    throw new InvalidOperationException("JWT Key must be at least 32 characters long.");
+    if (builder.Environment.IsDevelopment())
+    {
+        // Pad the key to meet minimum length for local development
+        jwtKey = jwtKey.PadRight(48, 'X');
+        Console.WriteLine("Warning: Jwt:Key was too short and has been padded for development. Replace with a secure key in production.");
+    }
+    else
+    {
+        throw new InvalidOperationException("JWT Key must be at least 32 characters long.");
+    }
 }
 
 builder.Services
@@ -326,6 +349,11 @@ app.UseMiddleware<EnterpriseSecurityHeadersMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// Antiforgery middleware must be registered after routing and before endpoints for endpoints that
+// include antiforgery metadata (Razor interactive components). This middleware will validate the
+// antiforgery tokens automatically for those endpoints.
+app.UseAntiforgery();
 
 if (app.Environment.IsDevelopment())
 {

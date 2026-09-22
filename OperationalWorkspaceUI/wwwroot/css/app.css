@@ -1,14 +1,14 @@
 /* =========================================================================
-   💎 ENTERPRISE UNIVERSAL HIGH-FIDELITY GLASSMORPHISM THEME SYSTEM
+   💎 PART 1: ENTERPRISE UNIVERSAL HIGH-FIDELITY GLASSMORPHISM THEME SYSTEM
    ========================================================================= */
 
-/* Overhaul the main application backdrop with a smooth, premium mesh gradient */
+/* --- MAIN APPLICATION BACKDROP --- */
 html,
 body,
 :host,
 fluent-layout,
 .app-container {
-    background: radial-gradient(at 0% 0%, rgba(241, 245, 249, 1) 0px, transparent 45%), radial-gradient(at 50% 0%, rgba(224, 242, 254, 0.5) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.3) 0px, transparent 45%), #f8fafc !important;
+    background: radial-gradient(at 0% 0%, rgba(241, 245, 249, 1) 0px, transparent 45%), radial-gradient(at 50% 0%, rgba(224, 242, 254, 0.5) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(243, 232, 255, 0.3) 0px, transparent 45%), #f8fafc;
 }
 
 /* --- UNIVERSAL COMPONENT GLASS CONTAINERS --- */
@@ -26,245 +26,554 @@ fluent-layout,
 .kb-widget-card,
 .reports-card,
 .task-card {
-    background: rgba(255, 255, 255, 0.52) !important; /* Premium semi-transparent canvas tint */
-    -webkit-backdrop-filter: blur(8px) !important; /* Slightly tighter blur for compact density */
-    backdrop-filter: blur(8px) !important; /* Premium frosting depth */
-    border: 1px solid rgba(255, 255, 255, 0.55) !important; /* Uniform crystal reflection edge */
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.02), inset 0 1px 1px rgba(255, 255, 255, 0.75) !important;
-    border-radius: 10px !important;
-    box-sizing: border-box !important;
-    margin: 0 !important; /* Erases overlapping background boxes layout spacing bugs */
-    padding: 8px 10px !important; /* Compact breathing room */
-    transition: transform 0.16s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.16s ease !important;
+    background: rgba(255, 255, 255, 0.52);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.02), inset 0 1px 1px rgba(255, 255, 255, 0.75);
+    border-radius: 10px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 8px 10px;
+    transition: transform 0.16s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.16s ease;
 }
 
     /* Premium card hover micro-interactions */
-    .white-metrics-card:hover { transform: translateY(-1px) !important; box-shadow: 0 10px 20px rgba(15,23,42,0.035) !important; }
+    .white-metrics-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.035);
+    }
 
-/* Compact card utility you can apply per-component */
-.card--compact { padding: 6px 8px !important; border-radius: 8px !important; }
-
-/* Tighter headers inside glass cards */
-.fluent-card .panel-header, .card .card-header, .tasks-widget-card .panel-header { padding: 8px 6px !important; }
-
-/* Compact buttons */
-.fluent-card .footer-btn, .card .footer-btn, .reports-card .report-action-btn, .task-card .action-btn { padding: 6px 8px !important; font-size: 0.84rem !important; }
-
-/* --- SECURED GLASS NAVIGATION TOPBAR OVERHAUL --- */
-.sage-topbar-master, .global-header {
-    background: rgba(15, 32, 66, 0.75) !important; /* Deep navy glass tint */
-    -webkit-backdrop-filter: blur(12px) !important;
-    backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+/* Compact card utility */
+.card--compact {
+    padding: 6px 8px;
+    border-radius: 8px;
 }
 
-/* --- SECURED GLASS LAYOUT DRAWER SIDEBAR OVERHAUL --- */
-.sage-sidebar, .sidebar, .sidebar-wrapper {
-    background: rgba(0, 43, 85, 0.65) !important; /* Rich sapphire glass tint */
-    -webkit-backdrop-filter: blur(20px) !important;
-    backdrop-filter: blur(20px) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+/* Tighter headers inside glass cards */
+.fluent-card .panel-header,
+.card .card-header,
+.tasks-widget-card .panel-header {
+    padding: 8px 6px;
+}
+
+/* Compact buttons */
+.fluent-card .footer-btn,
+.card .footer-btn,
+.reports-card .report-action-btn,
+.task-card .action-btn {
+    padding: 6px 8px;
+    font-size: 0.84rem;
+}
+
+
+/* =========================================================================
+   💎 PART 2: SECURED GLASS NAVIGATION, DRAWERS, AND INTEGRATED INPUT FIELDS
+   ========================================================================= */
+
+/* --- TOPBAR --- */
+.sage-topbar-master,
+.global-header {
+    background: rgba(15, 32, 66, 0.75);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- SIDEBAR --- */
+.sage-sidebar,
+.sidebar,
+.sidebar-wrapper {
+    background: rgba(0, 43, 85, 0.65);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar-header {
-    background: rgba(0, 32, 64, 0.4) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: rgba(0, 32, 64, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* --- HIGH-DENSITY GLASS COMPACT FORM INPUT FIELD OVERRIDES --- */
-input[type="text"], input[type="password"], select, textarea, .search-container, .company-selector {
-    background: rgba(255, 255, 255, 0.6) !important;
-    -webkit-backdrop-filter: blur(6px) !important;
-    backdrop-filter: blur(6px) !important;
-    border: 1px solid rgba(203, 213, 225, 0.7) !important;
-    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02) !important;
-    color: #0f172a !important;
-    border-radius: 6px !important;
-    height: 30px !important;
-    font-size: 12px !important;
-    box-sizing: border-box !important;
+/* --- FORM INPUTS --- */
+input[type="text"],
+input[type="password"],
+select,
+textarea,
+.search-container,
+.company-selector {
+    background: rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(203, 213, 225, 0.7);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
+    color: #0f172a;
+    border-radius: 6px;
+    height: 30px;
+    font-size: 12px;
+    box-sizing: border-box;
 }
 
-    input[type="text"]:focus, select:focus {
-        background: #ffffff !important;
-        border-color: #2563eb !important;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    input[type="text"]:focus,
+    input[type="password"]:focus,
+    select:focus,
+    textarea:focus {
+        background: #ffffff;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-/* --- RESPONSIVE LIQUID DATA TABLES IN GLASS --- */
-.responsive-table-wrapper {
-    background: rgba(255, 255, 255, 0.35) !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-}
-
-.sage-table tr:hover, .table-row-hover:hover {
-    background: rgba(255, 255, 255, 0.5) !important;
-}
-
-/* --- HIGH-FIDELITY GLASS PROMPT OVERLAY MODALS --- */
-.modal-overlay {
-    background: rgba(15, 23, 42, 0.25) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
-    backdrop-filter: blur(14px) !important;
-}
-
-.modal-box {
-    background: rgba(255, 255, 255, 0.85) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
-    backdrop-filter: blur(24px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.6) !important;
-    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18) !important;
-}
 
 /* =========================================================================
-   UNIVERSAL ENTERPRISE RESPONSIVE UTILITIES FOR ALL APP PAGES
+   💎 PART 3: LIQUID DATA TABLES, MODAL OVERLAYS, AND GLOBAL UTILITIES
    ========================================================================= */
 
-/* The primary wrapper for your pages (Contacts, Tickets, etc.) */
+/* --- RESPONSIVE TABLES --- */
+.responsive-table-wrapper {
+    background: rgba(255, 255, 255, 0.35);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.sage-table tr:hover,
+.table-row-hover:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* --- MODAL OVERLAY --- */
+.modal-overlay {
+    background: rgba(15, 23, 42, 0.25);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+
+/* --- MODAL BOX --- */
+.modal-box {
+    background: rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.18);
+}
+
+
+/* =========================================================================
+   💎 UNIVERSAL ENTERPRISE RESPONSIVE UTILITIES
+   ========================================================================= */
+
+/* Primary page wrapper */
 .enterprise-page-layout {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    width: 100% !important;
-    height: 100% !important;
-    box-sizing: border-box !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 
-/* A smart, auto-fitting grid for summary cards or metric listings */
+/* Responsive data grid */
 .responsive-data-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; /* tighter columns for modern compact look */
-    gap: 12px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* Master-Detail splitter layout used in Contacts & Tickets views */
+/* Master-detail splitter */
 .split-view-container {
-    display: grid !important;
-    grid-template-columns: 1fr 360px !important; /* Left: Master list, Right: Detail panel */
-    gap: 16px !important;
-    height: 100% !important;
-    width: 100% !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .scrollable-list-pane {
-    height: 100% !important;
-    overflow-y: auto !important;
-    padding-right: 4px !important;
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
-/* =========================================================================
-   📱 OUTLOOK ADD-IN PANEL & MOBILE OVERRIDES FOR ALL OTHER PAGES
-   ========================================================================= */
-@media (max-width: 800px) {
-    /* Stacks Master-Detail views vertically inside Outlook */
-    .split-view-container {
-        display: flex !important;
-        flex-direction: column !important;
-        overflow-y: auto !important;
-        height: auto !important;
-    }
-
-    /* Forces columns or items to occupy single columns */
-    .responsive-data-grid {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-    }
-}
 
 /* =========================================================================
-   GLOBAL COMPACT GLASS OVERRIDES
-   Applies a consistent compact glassmorphic treatment across all components
-   without editing each component file. This reduces perceived size and
-   ensures cards, headers, icons, buttons and inputs are visually cohesive.
+   💎 PART 4: COMPACT VARIABLE SYSTEMS AND DESIGN SYNCHRONIZATION
    ========================================================================= */
 
 :root {
-    --glass-bg-compact: rgba(255,255,255,0.52);
+    --glass-bg-compact: rgba(255, 255, 255, 0.52);
     --glass-blur-compact: 8px;
     --ui-radius-compact: 8px;
     --ui-padding-compact-sm: 6px;
     --ui-padding-compact-md: 10px;
 }
 
-/* Apply compact glass canvas to common containers */
-.fluent-card, .card, .tasks-widget-card, .white-metrics-card, .kb-widget-card, .reports-card, .hub-container, .timeline-card {
-    background: var(--glass-bg-compact) !important;
-    -webkit-backdrop-filter: blur(var(--glass-blur-compact)) !important;
-    backdrop-filter: blur(var(--glass-blur-compact)) !important;
-    border-radius: var(--ui-radius-compact) !important;
-    padding: var(--ui-padding-compact-md) !important;
+/* Shared glass variables */
+.fluent-card,
+.card,
+.tasks-widget-card,
+.white-metrics-card,
+.kb-widget-card,
+.reports-card,
+.hub-container,
+.timeline-card {
+    background: var(--glass-bg-compact);
+    -webkit-backdrop-filter: blur(var(--glass-blur-compact));
+    backdrop-filter: blur(var(--glass-blur-compact));
+    border-radius: var(--ui-radius-compact);
+    padding: var(--ui-padding-compact-md);
 }
 
-/* Make headers and titles compact */
-.panel-header h3, .card-header, .panel-title, .reports-title {
-    font-size: 0.98rem !important;
-    margin: 0 !important;
-    font-weight: 600 !important;
+/* Panel typography */
+.panel-header h3,
+.card-header,
+.panel-title,
+.reports-title {
+    font-size: 0.98rem;
+    margin: 0;
+    font-weight: 600;
 }
 
-.panel-header, .card-header {
-    padding: 8px 6px !important;
+.panel-header,
+.card-header {
+    padding: 8px 6px;
 }
 
-/* Compact footer and actions */
-.panel-footer, .kb-footer, .card .footer-btn, .reports-card .report-action-btn, .footer-btn {
-    padding: 6px !important;
+/* Panel operation rows */
+.panel-footer,
+.kb-footer,
+.card .footer-btn,
+.reports-card .report-action-btn,
+.footer-btn {
+    padding: 6px;
 }
 
-/* Buttons: smaller, denser */
-.fluent-card .fluent-button, .fluent-button, button.action-tile, .fluent-button .ms-Button {
-    padding: 6px 8px !important;
-    font-size: 0.86rem !important;
+/* System-wide operation button compression */
+.fluent-card .fluent-button,
+.fluent-button,
+button.action-tile,
+.fluent-button .ms-Button {
+    padding: 6px 8px;
+    font-size: 0.86rem;
 }
-
-/* Icons: scale down subtlely to reduce vertical rhythm */
-fluent-icon svg, .fluent-icon svg, .ms-Icon, .icon-small {
-    width: 16px !important;
-    height: 16px !important;
-}
-
-/* Inputs compact */
-input[type="text"], input[type="password"], select, textarea, .fluent-search, .search-full {
-    height: 30px !important;
-    padding: 6px 8px !important;
-    font-size: 12px !important;
-}
-
-/* Truncate long text to avoid wrapping and tall cards */
-.fluent-card .doc-filename, .fluent-card .kb-title, .fluent-card .ticket-title, .fluent-card .activity-title,
-.card .doc-filename, .card .kb-title, .card .ticket-title, .card .activity-title {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-/* Compact grid settings */
-.responsive-data-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important; gap: 12px !important; }
-
-/* Reduce default line-heights and margins to tighten layout */
-body, .fluent-card, .card { line-height: 1.2 !important; }
-
-/* Utility: force a compact card where needed */
-.card--glass-compact { padding: var(--ui-padding-compact-sm) !important; border-radius: calc(var(--ui-radius-compact) - 2px) !important; }
 
 
 /* =========================================================================
-   🛑 PERMANENT DUPLICATE BORDER KILLER: STRIPS INTERNAL SEARCH INPUTS
+   💎 PART 5: ICON SCALE MATRICES, TEXT TRUNCATION, AND BORDER ELIMINATORS
    ========================================================================= */
 
-/* Tells the browser to completely ignore text input borders inside search boxes */
+/* Icon sizing */
+fluent-icon svg,
+.fluent-icon svg,
+.ms-Icon,
+.icon-small {
+    width: 16px;
+    height: 16px;
+}
+
+/* High-density inputs */
+input[type="text"],
+input[type="password"],
+select,
+textarea,
+.fluent-search,
+.search-full {
+    height: 30px;
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
+/* Text truncation */
+.fluent-card .doc-filename,
+.fluent-card .kb-title,
+.fluent-card .ticket-title,
+.fluent-card .activity-title,
+.card .doc-filename,
+.card .kb-title,
+.card .ticket-title,
+.card .activity-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Baseline spacing */
+body,
+.fluent-card,
+.card {
+    line-height: 1.2;
+}
+
+/* Compact glass card */
+.card--glass-compact {
+    padding: var(--ui-padding-compact-sm);
+    border-radius: calc(var(--ui-radius-compact) - 2px);
+}
+
+/* Search input reset */
 .search-container input[type="text"],
 .search-container .search-input {
-    border: none !important;
-    outline: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    border: none;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+}
+
+
+/* =========================================================================
+   💎 PART 6: METRIC CELL OVERRIDES AND RESPONSIVE GRID FLATTENING
+   ========================================================================= */
+
+@media (max-width: 800px) {
+
+    /* Dashboard metric rows */
+    .sage-dashboard-row,
+    .metrics-grid {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    /* Metric cards */
+    .flat-layout-cell,
+    .kpi-box {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    /* Metric values */
+    .metric-value {
+        font-size: 1.5rem;
+        word-break: break-all;
+        white-space: normal;
+    }
+
+    .customer-title-lock {
+        font-size: 1.05rem;
+        line-height: 1.2;
+        white-space: normal;
+    }
+
+    .customer-cell-header-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Stack master/detail */
+    .split-view-container {
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+    }
+
+    .responsive-data-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+
+/* =========================================================================
+   💎 PART 7: OUTLOOK CONTEXT LAYER
+   ========================================================================= */
+
+/* Main contextual layouts */
+.outlook-taskpane-context .taskpane-fluid-content-container,
+.outlook-taskpane-context .contextual-workspace,
+.outlook-taskpane-context .enterprise-page-layout,
+.outlook-taskpane-context .split-view-container,
+.outlook-taskpane-context .sage-dashboard-row,
+.outlook-taskpane-context .metrics-grid {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    height: auto;
+    overflow: visible;
+    max-width: 440px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* Master-detail vertical layout */
+.outlook-taskpane-context .split-view-container {
+    grid-template-columns: 1fr;
+}
+
+    .outlook-taskpane-context .split-view-container .scrollable-list-pane {
+        max-height: 280px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        padding-bottom: 10px;
+    }
+
+/* Glass data cards */
+.outlook-taskpane-context .contextual-workspace > div,
+.outlook-taskpane-context [class*="Insight"],
+.outlook-taskpane-context [class*="Summary"],
+.outlook-taskpane-context [class*="Timeline"],
+.outlook-taskpane-context form,
+.outlook-taskpane-context .form-row,
+.outlook-taskpane-context .rz-form-layout {
+    background: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: var(--ui-radius-compact, 8px);
+    padding: 12px 14px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+    /* Form group cells */
+    .outlook-taskpane-context .contextual-workspace > div .form-group,
+    .outlook-taskpane-context .contextual-workspace > div div[class*="col-"],
+    .outlook-taskpane-context form .form-group,
+    .outlook-taskpane-context form div[class*="col-"],
+    .outlook-taskpane-context .form-row .form-group,
+    .outlook-taskpane-context .form-row div[class*="col-"],
+    .outlook-taskpane-context .rz-form-layout .form-group,
+    .outlook-taskpane-context .rz-form-layout div[class*="col-"] {
+        width: 100%;
+        max-width: 100%;
+        flex: 1 1 100%;
+    }
+
+/* =========================================================================
+   PART 8: OUTLOOK TYPOGRAPHY
+   ========================================================================= */
+
+/* Micro labels */
+.outlook-taskpane-context h3,
+.outlook-taskpane-context [class*="title"],
+.outlook-taskpane-context .card-label-tiny,
+.outlook-taskpane-context .contextual-workspace div[style*="font-size"],
+.outlook-taskpane-context strong {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* General contextual typography */
+.outlook-taskpane-context span,
+.outlook-taskpane-context div,
+.outlook-taskpane-context a {
+    font-size: 0.88rem;
+    color: #0f172a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.4;
+}
+
+/* Active task descriptor */
+.outlook-taskpane-context [class*="intent"] {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+
+/* =========================================================================
+   💎 PART 9: LIQUID TABLES
+   ========================================================================= */
+
+.outlook-taskpane-context .responsive-table-wrapper,
+.outlook-taskpane-context .sage-table,
+.outlook-taskpane-context table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+    .outlook-taskpane-context .responsive-table-wrapper th,
+    .outlook-taskpane-context .responsive-table-wrapper td,
+    .outlook-taskpane-context .sage-table th,
+    .outlook-taskpane-context .sage-table td,
+    .outlook-taskpane-context table th,
+    .outlook-taskpane-context table td {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+
+
+/* =========================================================================
+   💎 PART 10: QUICK ACTION BUTTON GRID
+   ========================================================================= */
+
+.outlook-taskpane-context .quick-actions-buttons-container,
+.outlook-taskpane-context [class*="action-buttons"] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+    gap: 8px;
+    width: 100%;
+    padding: 4px 0;
+    box-sizing: border-box;
+}
+
+    /* Quick action buttons */
+    .outlook-taskpane-context .quick-actions-buttons-container button,
+    .outlook-taskpane-context .quick-actions-buttons-container .action-tile,
+    .outlook-taskpane-context [class*="action-buttons"] button,
+    .outlook-taskpane-context [class*="action-buttons"] .action-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 66px;
+        padding: 6px;
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: var(--ui-radius-compact, 8px);
+        font-size: 0.74rem;
+        font-weight: 500;
+        color: #334155;
+        cursor: pointer;
+        transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+        .outlook-taskpane-context .quick-actions-buttons-container button:hover,
+        .outlook-taskpane-context .quick-actions-buttons-container .action-tile:hover,
+        .outlook-taskpane-context [class*="action-buttons"] button:hover,
+        .outlook-taskpane-context [class*="action-buttons"] .action-tile:hover {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+            transform: translateY(-1px);
+        }
+
+
+/* =========================================================================
+   💎 PART 11: UNIVERSAL WIDTH GUARDS
+   ========================================================================= */
+
+.outlook-taskpane-context .flat-layout-cell,
+.outlook-taskpane-context .kpi-box,
+.outlook-taskpane-context .white-metrics-card,
+.outlook-taskpane-context .card,
+.outlook-taskpane-context [class*="-panel"],
+.outlook-taskpane-context [class*="-card"] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }

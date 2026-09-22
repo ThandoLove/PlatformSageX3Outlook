@@ -18,19 +18,19 @@
     <link rel="stylesheet" href="css/Forms.css" />
     <link rel="stylesheet" href="css/Workspace.css" />
     <link rel="stylesheet" href="css/Components.css" />
-    
+
     <link rel="stylesheet" href="/css/app.css" />
 
-    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link class="icon" type="image/png" href="/favicon.png" />
 
     <script type="text/javascript">
             // Cache native routing parameters prior to Office JS library interventions
             window._historyCache = { replaceState: window.history.replaceState, pushState: window.history.pushState };
     </script>
-    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <script src="https://microsoft.com"></script>
     <script type="text/javascript">
-        window.history.replaceState = window._historyCache.replaceState;
-        window.history.pushState = window._historyCache.pushState;
+            window.history.replaceState = window._historyCache.replaceState;
+            window.history.pushState = window._historyCache.pushState;
     </script>
 
     <HeadOutlet @rendermode="InteractiveServer" />
@@ -52,7 +52,6 @@
     <script src="/js/app.js"></script>
 
     <!-- CORE BLAZOR RENDER ENGINES & LIBRARY MODULES -->
-    <!-- Use the server-side Blazor runtime for InteractiveServer render mode -->
     <script src="_framework/blazor.server.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
@@ -62,56 +61,57 @@
     <!-- Extracts mailbox item contexts directly inside the core Blazor shell app  -->
     <!-- ========================================================================= -->
     <script>
-        (function () {
-        function setInitialOfficeItem(item) {
-        try {
-        window['initialOfficeItem'] = {
-        subject: item.subject || '',
-        from: (item.from && item.from.emailAddress && item.from.emailAddress.address) || '',
-        body: ''
-        };
+            (function() {
+                function setInitialOfficeItem(item) {
+                    try {
+                        window['initialOfficeItem'] = {
+                            subject: item.subject || '',
+                            from: (item.from && item.from.emailAddress && item.from.emailAddress.address) || '',
+                            body: ''
+                        };
 
-        // Asynchronously parse message body strings from active Outlook composition canvases
-        if (item.getBodyAsync) {
-        item.getBodyAsync("text", function (result) {
-        try {
-        if (result && result.status === window['Office'].AsyncResultStatus.Succeeded) {
-        window['initialOfficeItem'].body = result.value || '';
-        }
-        } catch (e) {
-        // Fallback catch block
-        }
-        });
-        }
-        } catch (e) {
-        window['initialOfficeItem'] = window['initialOfficeItem'] || {};
-        }
-        }
+                        // Asynchronously parse message body strings from active Outlook composition canvases
+                        if (item.getBodyAsync) {
+                            item.getBodyAsync("text", function(result) {
+                                try {
+                                    if (result && result.status === window['Office'].AsyncResultStatus.Succeeded) {
+                                        window['initialOfficeItem'].body = result.value || '';
+                                    }
+                                } catch (e) {
+                                    // Fallback catch block
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        window['initialOfficeItem'] = window['initialOfficeItem'] || {};
+                    }
+                }
 
-        if (window['Office']) {
-        window['Office'].onReady(function (info) {
-        try {
-        // Capture active item context elements natively
-        var item = window['Office'].context.mailbox.item;
-        if (item) {
-        setInitialOfficeItem(item);
-        }
-        } catch (e) {
-        // Fallback catch block
-        }
+                if (window['Office']) {
+                    window['Office'].onReady(function(info) {
+                        try {
+                            // Capture active item context elements natively
+                            var item = window['Office'].context.mailbox.item;
+                            if (item) {
+                                setInitialOfficeItem(item);
+                            }
+                        } catch (e) {
+                            // Fallback catch block
+                        }
 
-        // Enforce routing cache alignment checks across non-Outlook boundaries
-        if (info.host !== window['Office'].HostType.Outlook) {
-        window.history.pushState = window._historyCache.pushState;
-        window.history.replaceState = window._historyCache.replaceState;
-        }
-        });
-        } else {
-        window['initialOfficeItem'] = {};
-        window.history.pushState = window._historyCache.pushState;
-        window.history.replaceState = window._historyCache.replaceState;
-        }
-        })();
+                        // Enforce routing cache alignment checks across non-Outlook boundaries
+                        if (info.host !== window['Office'].HostType.Outlook) {
+                            window.history.pushState = window._historyCache.pushState;
+                            window.history.replaceState = window._historyCache.replaceState;
+                        }
+                    });
+                } else {
+                    window['initialOfficeItem'] = {};
+                    window.history.pushState = window._historyCache.pushState;
+                    window.history.replaceState = window._historyCache.replaceState;
+                }
+            })();
     </script>
 </body>
+
 </html>

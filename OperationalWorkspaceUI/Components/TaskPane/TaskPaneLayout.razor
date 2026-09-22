@@ -1,12 +1,11 @@
 @inherits LayoutComponentBase
+
 @using Microsoft.AspNetCore.Components
-@using Microsoft.JSInterop
+
 @using OperationalWorkspaceApplication.ApplicationState
 @using OperationalWorkspaceUI.Components.Shared
-
 @using OperationalWorkspaceUI.UIServices.System
 
-@inject IJSRuntime JS
 @inject AppStateContainer AppState
 @inject NavigationManager Nav
 @inject ModalService ModalService
@@ -15,99 +14,88 @@
 
 <div class="taskpane-layout-root">
 
-    <!-- 🟢 THE CORE ENVIRONMENT VIEWPORT: The dashboard pages render cleanly underneath -->
-    <div class="taskpane-page-viewport-canvas">
-        @Body
+    <!-- TASK PANE HEADER -->
+    <header class="taskpane-header">
+        <Topbar />
+    </header>
+
+    <!-- TASK PANE BODY -->
+    <div class="taskpane-main-area">
+
+        <!-- COMPACT NAVIGATION -->
+        <aside class="taskpane-sidebar">
+            <Sidebar />
+        </aside>
+
+        <!-- PAGE CONTENT -->
+        <main class="taskpane-page-viewport">
+            <div class="taskpane-page-content">
+                @Body
+            </div>
+        </main>
+
     </div>
 
-    <!-- ========================================================================= -->
-    <!-- 🔒 PRE-LOADED SECURITY DIALOG: Premium Center-Aligned Login Modal Shroud  -->
-    <!-- ========================================================================= -->
-    @* Do not render the layout-level LoginForm when we're embedded inside the taskpane route
-       because TaskPane itself renders the Home or Login UI. This prevents duplicate login UIs. *@
-    @if (!AppState.IsAuthenticated && !IsTaskpaneRoute())
+    <!-- AUTHENTICATION OVERLAY -->
+    @if (!AppState.IsAuthenticated)
     {
         <div class="taskpane-modal-security-shroud">
+
             <div class="taskpane-modal-dialog-box">
 
-                <!-- PREMIUM INTEGRATED IDENTITY WINDOW SUB-HEADER -->
                 <div class="modal-security-header-bar">
                     <span class="modal-security-icon">🔒</span>
-                    <span class="modal-security-title">Security Authorization Check</span>
+                    <span class="modal-security-title">
+                        Security Authorization Check
+                    </span>
                 </div>
 
-                <!-- EMBEDDED FORM WINDOW HUB -->
                 <div class="modal-form-content-wrap">
                     <LoginForm OnAuthenticationSuccess="OnAuthenticationSuccessHandler" />
                 </div>
 
             </div>
+
         </div>
     }
+
 </div>
 
 @code {
-    private DotNetObjectReference<TaskPaneLayout>? _objRef;
 
-    private bool IsTaskpaneRoute()
+    private bool _disposed;
+
+    private async Task OnAuthenticationSuccessHandler(
+        (string Token, string User, string Email) args)
     {
+        if (_disposed)
+            return;
+
         try
         {
-            var relative = Nav.ToBaseRelativePath(Nav.Uri).Trim('/').ToLowerInvariant();
-            return relative.StartsWith("taskpane");
-        }
-        catch
-        {
-            return false;
-        }
-    }
+            AppState.SetAuthentication(
+                args.Token,
+                args.User ?? "Operator",
+                args.Email ?? string.Empty);
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                _objRef = DotNetObjectReference.Create(this);
-                await Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"TaskPaneLayout init failure: {ex.Message}");
-            }
-        }
-    }
-
-    private async Task OnAuthenticationSuccessHandler((string Token, string User, string Email) args)
-    {
-        try
-        {
-            AppState.SetAuthentication(args.Token, args.User ?? "Operator", args.Email ?? string.Empty);
             await AuthService.InitializeAsync();
+
             await InvokeAsync(StateHasChanged);
 
-            try
-            {
-                Nav.NavigateTo("/taskpane/workspace", forceLoad: false);
-            }
-            catch { }
+            Nav.NavigateTo(
+                "/taskpane/workspace",
+                forceLoad: false,
+                replace: true);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Auth success handler error: {ex.Message}");
+            Console.WriteLine(
+                $"Task-pane authentication success handler error: {ex.Message}");
         }
-    }
-
-    [JSInvokable]
-    public Task OnUploadRequested(string mode)
-    {
-        try { EventBus.Publish("UPLOAD_REQUESTED", mode); } catch { }
-        return Task.CompletedTask;
     }
 
     public void Dispose()
     {
-        _objRef?.Dispose();
-        _objRef = null;
+        _disposed = true;
     }
 }

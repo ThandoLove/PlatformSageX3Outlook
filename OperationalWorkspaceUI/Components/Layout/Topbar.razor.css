@@ -1,225 +1,775 @@
-﻿/* =========================================================================
-   SAGE X3 PREMIUM COMPACT ENTERPRISE HEADER (48PX OPTIMIZED)
+﻿
+/* =========================================================================
+   SAGE X3 TOPBAR
    ========================================================================= */
 .sage-topbar-master {
+    position: relative;
+    z-index: 4000;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 48px !important;
-    min-height: 48px !important;
-    padding: 0 16px !important;
-    box-sizing: border-box !important;
-    width: 100% !important;
-    background: linear-gradient(180deg, #15345c 0%, #102846 100%) !important;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    width: 100%;
+    height: 52px;
+    min-height: 52px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    background: #102b4d;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
     color: #ffffff;
-    z-index: 1000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* ZONE 1: BRAND HIERARCHY TERMINOLOGY WINDOWS */
+
+/* =========================================================================
+   LEFT
+   ========================================================================= */
+
 .zone-left {
     display: flex;
     align-items: center;
-    min-width: 280px !important;
-    gap: 12px !important;
+    min-width: 0;
+    flex: 0 1 auto;
+    gap: 11px;
 }
+
 
 .brand-group {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
+
 
 .sage-brand-text {
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.01em !important;
-    color: #ffffff !important;
-    line-height: 1.1;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
 }
 
+
 .sage-brand-subtext {
-    font-size: 10px !important;
+    margin-top: 2px;
+    color: #67c7f3;
+    font-size: 9px;
     font-weight: 500;
-    color: #38bdf8;
-    letter-spacing: 0.01em;
+    line-height: 1;
 }
+
 
 .topbar-divider {
     width: 1px;
-    height: 18px;
-    background: rgba(255, 255, 255, 0.12);
+    height: 20px;
+    flex: 0 0 1px;
+    background: rgba(255, 255, 255, 0.14);
 }
+
 
 .page-dynamic-title {
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    color: #ffffff !important;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #f8fafc;
+    font-size: 13px;
+    font-weight: 600;
 }
 
-/* ZONE 2: CENTER MICRO SEARCH CONTAINER BAR */
+
+/* =========================================================================
+   SEARCH ZONE
+   ========================================================================= */
+
 .zone-middle {
-    flex: 1;
+    position: relative;
     display: flex;
-    justify-content: center;
+    align-items: center;
+    flex: 1 1 420px;
     width: 100%;
-    max-width: 440px !important;
-    min-width: 240px !important;
+    max-width: 500px;
+    min-width: 220px;
+    margin: 0 22px;
 }
 
-.search-input-group {
+
+/* =========================================================================
+   SEARCH SHELL
+   ========================================================================= */
+
+.search-shell {
+    position: relative;
     display: flex;
     align-items: center;
     width: 100%;
-    height: 32px !important;
-    border-radius: 6px !important;
-    background: #1a3356 !important;
-    border: none !important;
-    padding: 0 12px !important;
-    box-sizing: border-box !important;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04) !important;
+    height: 34px;
+    box-sizing: border-box;
+    background: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-    .search-input-group:hover {
-        background: #203d66 !important;
+
+    .search-shell:hover {
+        background: #ffffff;
+        border-color: rgba(255, 255, 255, 0.25);
     }
 
-    .search-input-group:focus-within {
-        background: #22466f !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+
+    .search-shell:focus-within {
+        background: #ffffff;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
     }
+
+
+.search-leading-icon {
+    width: 34px;
+    height: 100%;
+    flex: 0 0 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+    .search-leading-icon fluent-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+
+/* =========================================================================
+   SEARCH INPUT
+   ========================================================================= */
 
 .topbar-search-input {
+    flex: 1 1 auto;
     width: 100%;
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
-    padding-left: 8px;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    color: #ffffff !important;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #0f172a;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    box-sizing: border-box;
 }
 
+
     .topbar-search-input::placeholder {
-        color: #8aa6c8 !important;
+        color: #94a3b8;
+        font-weight: 400;
     }
 
-    /* 🔵 LOCK FOCUS STATE: Prevents browser user-agent themes from rendering a white overlay box on click */
-    .topbar-search-input:focus,
-    .topbar-search-input:active {
-        background: transparent !important;
-        color: #ffffff !important;
-        outline: none !important;
+
+    .topbar-search-input:focus {
+        border: 0;
+        outline: none;
+        box-shadow: none;
     }
 
-    /* 🔵 LOCK AUTOFILL STATE: Blocks browser credential/search memories from painting fields white */
-    .topbar-search-input:-webkit-autofill,
-    .topbar-search-input:-webkit-autofill:hover,
-    .topbar-search-input:-webkit-autofill:focus,
-    .topbar-search-input:-webkit-autofill:active {
-        -webkit-text-fill-color: #ffffff !important;
-        transition: background-color 999999s ease-in-out 0s !important;
-        box-shadow: 0 0 0px 1000px transparent inset !important;
+
+    /* Remove browser search decoration */
+
+    .topbar-search-input::-webkit-search-decoration,
+    .topbar-search-input::-webkit-search-cancel-button,
+    .topbar-search-input::-webkit-search-results-button,
+    .topbar-search-input::-webkit-search-results-decoration {
+        display: none;
     }
 
-/* ZONE 3: COHESIVE SLIM PROFILE WRAP */
+
+/* =========================================================================
+   CLEAR
+   ========================================================================= */
+
+.topbar-clear-search-button {
+    width: 25px;
+    height: 25px;
+    flex: 0 0 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-right: 3px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+}
+
+
+    .topbar-clear-search-button:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+
+/* =========================================================================
+   SEARCH SHORTCUT
+   ========================================================================= */
+
+.search-shortcut {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: 7px;
+    color: #94a3b8;
+    font-size: 9px;
+}
+
+
+    .search-shortcut kbd {
+        min-width: 15px;
+        height: 17px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 3px;
+        border: 1px solid #dbe3ec;
+        border-bottom-color: #cbd5e1;
+        border-radius: 4px;
+        background: #f8fafc;
+        color: #64748b;
+        font-family: inherit;
+        font-size: 8px;
+        font-weight: 600;
+        box-sizing: border-box;
+    }
+
+
+/* =========================================================================
+   SEARCH RESULTS
+   ========================================================================= */
+
+.topbar-search-results {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    max-height: 390px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #dbe3ec;
+    border-radius: 11px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
+    box-sizing: border-box;
+}
+
+
+/* =========================================================================
+   RESULTS HEADER
+   ========================================================================= */
+
+.search-results-header {
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 11px;
+    border-bottom: 1px solid #edf1f5;
+    color: #64748b;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-sizing: border-box;
+}
+
+
+.search-results-count {
+    min-width: 20px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 9px;
+}
+
+
+/* =========================================================================
+   RESULTS LIST
+   ========================================================================= */
+
+.search-results-list {
+    max-height: 355px;
+    overflow-y: auto;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================================
+   RESULT
+   ========================================================================= */
+
+.topbar-search-result {
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.12s ease;
+}
+
+
+    .topbar-search-result:hover,
+    .topbar-search-result.selected {
+        background: #f1f5f9;
+    }
+
+
+    .topbar-search-result:focus-visible {
+        outline: 2px solid rgba(59, 130, 246, 0.45);
+        outline-offset: -2px;
+    }
+
+
+/* =========================================================================
+   RESULT ICON
+   ========================================================================= */
+
+.search-result-icon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f1f5f9;
+}
+
+
+/* =========================================================================
+   RESULT CONTENT
+   ========================================================================= */
+
+.search-result-content {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.search-result-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #1e293b;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+.search-result-description {
+    margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #94a3b8;
+    font-size: 9px;
+    font-weight: 400;
+}
+
+
+.search-result-type {
+    flex: 0 0 auto;
+    padding: 3px 6px;
+    border-radius: 5px;
+    background: #f8fafc;
+    color: #94a3b8;
+    font-size: 8px;
+    font-weight: 600;
+}
+
+
+/* =========================================================================
+   NO RESULTS
+   ========================================================================= */
+
+.search-no-results {
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+
+.search-no-results-icon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+
+.search-no-results-title {
+    color: #334155;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+.search-no-results-text {
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: 9px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================================
+   RIGHT SIDE
+   ========================================================================= */
+
 .zone-right {
     display: flex;
     align-items: center;
-    gap: 12px !important;
-    padding-left: 16px !important;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    flex: 0 0 auto;
+    gap: 9px;
+    min-width: 0;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.09);
 }
+
+
+/* =========================================================================
+   CONNECTION
+   ========================================================================= */
 
 .connection-status {
+    height: 26px;
     display: flex;
     align-items: center;
-    height: 26px !important;
-    padding: 0 10px !important;
-    border-radius: 999px !important;
-    background: #163c2b !important;
-    border: none !important;
-    gap: 4px;
+    gap: 5px;
+    padding: 0 8px;
+    border: 1px solid rgba(52, 211, 153, 0.12);
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.10);
+    white-space: nowrap;
 }
+
 
 .conn-text-label {
-    font-size: 11px !important;
-    font-weight: 600 !important;
+    font-size: 10px;
+    font-weight: 600;
 }
+
 
 .text-success {
-    color: #34d399 !important;
+    color: #6ee7b7;
 }
+
 
 .text-error {
-    color: #f87171 !important;
+    color: #fca5a5;
 }
 
-/* COMPACT PROFILE META ACCESS CARD */
+
+/* =========================================================================
+   USER
+   ========================================================================= */
+
 .user-profile-section {
     display: flex;
     align-items: center;
-    gap: 8px !important;
-    padding: 4px 8px !important;
-    border-radius: 8px !important;
+    gap: 7px;
+    min-width: 0;
+    padding: 3px 5px;
+    border-radius: 8px;
+    transition: background-color 0.15s ease;
 }
+
 
     .user-profile-section:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
+        background: rgba(255, 255, 255, 0.06);
     }
 
-.user-meta-text-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-.user-display-name {
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    color: #ffffff !important;
-    line-height: 1.1;
-}
-
-.user-display-role {
-    font-size: 10px !important;
-    font-weight: 500;
-    color: #8aa6c8 !important;
-}
 
 .topbar-persona {
-    box-shadow: 0 0 0 1.5px #2b4668, 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    flex: 0 0 auto;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.16);
 }
 
-/* CIRCULAR COMPACT EXIT SHIELD ROW TRIGGER BUTTON */
+
+.user-meta-text-wrap {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.user-display-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+.user-display-role {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 2px;
+    color: #8aa6c8;
+    font-size: 9px;
+    font-weight: 500;
+}
+
+
+/* =========================================================================
+   SIGN OUT BUTTON
+   ========================================================================= */
+
 .topbar-modern-logout-btn {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    cursor: pointer;
     padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #a8b8ca;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
+
 
     .topbar-modern-logout-btn:hover {
-        background: #ef4444 !important;
-        border-color: #ef4444 !important;
+        background: #dc2626;
+        border-color: #dc2626;
+        color: #ffffff;
     }
 
-        .topbar-modern-logout-btn:hover svg {
-            stroke: #ffffff !important;
-        }
 
-/* HIGH ACCURACY SMOOTH TRANSITIONS TRANSIT ENGINE */
-.search-input-group,
-.user-profile-section,
-.connection-status,
-.topbar-modern-logout-btn {
-    transition: all 0.20s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    .topbar-modern-logout-btn:active {
+        transform: scale(0.95);
+    }
+
+
+    .topbar-modern-logout-btn:disabled {
+        opacity: 0.65;
+        cursor: wait;
+    }
+
+
+/* =========================================================================
+   LOGOUT SPINNER
+   ========================================================================= */
+
+.logout-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.30);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: topbar-spin 0.7s linear infinite;
 }
+
+
+@keyframes topbar-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================================
+   LOGOUT CONFIRMATION
+   ========================================================================= */
+
+.logout-confirm-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 12px;
+    width: 245px;
+    padding: 13px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #dbe3ec;
+    border-radius: 11px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
+    z-index: 9000;
+}
+
+
+.logout-confirm-text {
+    display: block;
+    margin-bottom: 11px;
+    color: #334155;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+
+.logout-confirm-actions {
+    display: flex;
+    gap: 7px;
+}
+
+
+    .logout-confirm-actions button {
+        flex: 1 1 0;
+        min-height: 30px;
+        border-radius: 7px;
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+
+.logout-confirm-yes {
+    border: 1px solid #dc2626;
+    background: #dc2626;
+    color: #ffffff;
+}
+
+
+    .logout-confirm-yes:hover {
+        background: #b91c1c;
+    }
+
+
+.logout-confirm-cancel {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+}
+
+
+    .logout-confirm-cancel:hover {
+        background: #f8fafc;
+    }
+
+
+/* =========================================================================
+   RESPONSIVE
+   ========================================================================= */
+
+@media (max-width: 850px) {
+
+    .zone-middle {
+        margin: 0 12px;
+        max-width: 420px;
+    }
+
+    .page-dynamic-title {
+        display: none;
+    }
+}
+
+
+@media (max-width: 680px) {
+
+    .sage-topbar-master {
+        padding: 0 9px;
+    }
+
+    .sage-brand-subtext {
+        display: none;
+    }
+
+    .topbar-divider {
+        display: none;
+    }
+
+    .zone-middle {
+        margin: 0 8px;
+        min-width: 150px;
+    }
+
+    .connection-status {
+        padding: 0 6px;
+    }
+
+    .conn-text-label {
+        display: none;
+    }
+
+    .user-meta-text-wrap {
+        display: none;
+    }
+
+    .search-shortcut {
+        display: none;
+    }
+}
+
+
+@media (max-width: 480px) {
+
+    .sage-topbar-master {
+        height: 48px;
+        min-height: 48px;
+    }
+
+    .zone-left {
+        flex: 0 0 auto;
+    }
+
+    .sage-brand-text {
+        font-size: 13px;
+    }
+
+    .zone-middle {
+        flex: 1 1 auto;
+        min-width: 100px;
+        margin: 0 6px;
+    }
+
+    .zone-right {
+        gap: 5px;
+        padding-left: 5px;
+        border-left: 0;
+    }
+
+    .user-profile-section {
+        display: none;
+    }
+
+    .topbar-modern-logout-btn {
+        width: 28px;
+        height: 28px;
+        flex-basis: 28px;
+    }
+}
+
+

@@ -36,14 +36,7 @@
     Dashboard
 -->
 
-<div class="taskpane-embedded-wrapper"
-     style="width: 100%;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    background: #ffffff;
-    padding: 12px;
-    box-sizing: border-box;">
+<div class="taskpane-embedded-wrapper outlook-taskpane-context">
 
     @if (!AppState.IsAuthenticated)
     {
@@ -74,8 +67,10 @@
             /taskpane/orders
             /taskpane/ai
         -->
-        <DynamicComponent Type="_componentType"
-                          Parameters="_parameters" />
+        <div class="taskpane-fluid-content-container">
+            <DynamicComponent Type="_componentType"
+                              Parameters="_parameters" />
+        </div>
     }
     else
     {
@@ -85,29 +80,17 @@
             This appears if the requested route does not map
             to one of the known task pane components.
         -->
-        <div class="taskpane-fallback"
-             style="text-align: center;
-            padding-top: 40px;
-            color: #605e5c;
-            font-family: sans-serif;">
+        <div class="taskpane-fallback">
 
-            <h4 style="font-size: 14px;
-                margin-bottom: 8px;">
+            <h4>
                 Page Not Found
             </h4>
 
-            <p style="font-size: 11px;
-                margin-bottom: 12px;">
+            <p>
                 Active path: @_requestedPath
             </p>
 
-            <button style="background: #0078d4;
-                color: #ffffff;
-                border: none;
-                padding: 6px 12px;
-                border-radius: 4px;
-                font-size: 11px;
-                cursor: pointer;"
+            <button class="taskpane-fallback-btn"
                     @onclick="FallbackToDashboard">
 
                 Go to Dashboard
@@ -118,6 +101,88 @@
     }
 
 </div>
+
+<!-- 
+    =========================================================================
+    OUTLOOK TASKPANE ISOLATION BRIDGE (CSS)
+    Forces the multi-column browser grids to fold flat into a single column 
+    =========================================================================
+-->
+<style>
+    .taskpane-embedded-wrapper.outlook-taskpane-context {
+        width: 100% !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: #ffffff !important;
+        padding: 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .outlook-taskpane-context div, 
+    .outlook-taskpane-context main, 
+    .outlook-taskpane-context section {
+        box-sizing: border-box !important;
+    }
+
+    /* Targeted taskpane adjustments: only affect dashboard/workspace layout elements
+       Avoid blanket changes that break topbar/sidebar or other pages. */
+    .outlook-taskpane-context .dashboard-wrapper,
+    .outlook-taskpane-context .workspace-viewport,
+    .outlook-taskpane-context .metrics-grid,
+    .outlook-taskpane-context .sage-dashboard-row {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Force massive desktop widgets to sit flat within narrow boundaries */
+    .outlook-taskpane-context [class*="card"],
+    .outlook-taskpane-context [class*="widget"],
+    .outlook-taskpane-context [class*="pane"],
+    .outlook-taskpane-context [class*="panel"],
+    .outlook-taskpane-context [class*="snapshot"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: 1 1 100% !important;
+    }
+
+    /* Permit tiny sub-grids (like 2-column action buttons) where screen space allows */
+    .outlook-taskpane-context [class*="action-buttons"],
+    .outlook-taskpane-context [class*="metrics"] {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    /* Structured formatting for fallback UI components */
+    .taskpane-fallback {
+        text-align: center;
+        padding-top: 40px;
+        color: #605e5c;
+        font-family: sans-serif;
+    }
+    .taskpane-fallback h4 {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    .taskpane-fallback p {
+        font-size: 11px;
+        margin-bottom: 12px;
+    }
+    .taskpane-fallback-btn {
+        background: #0078d4;
+        color: #ffffff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+    }
+</style>
 
 @code {
 
@@ -148,7 +213,6 @@
 
     private Dictionary<string, object>? _parameters;
 
-
     /*
         Subscribe to authentication changes.
 
@@ -161,6 +225,31 @@
         AppState.OnChange += HandleSecurityStateChange;
     }
 
+    /*
+        Enforce environmental mapping restrictions directly after rendering.
+        If it finds a browser context lacking Office bindings, it safely returns
+        the view engine execution pipeline back to the main dashboard.
+    */
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var environment = await JS.InvokeAsync<string>("window.checkOfficeEnvironment");
+                
+                // If running in a raw browser page without Outlook integration, force fallback to standard browser Dashboard view
+                if (environment == "Browser" && _requestedPath == "workspace")
+                {
+                    Nav.NavigateTo("/dashboard", forceLoad: false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Environment verification failure: {ex.Message}");
+            }
+        }
+    }
 
     /*
         Runs whenever the route parameter changes.
@@ -335,52 +424,15 @@
     }
 
 
-    /*
-        Safety fallback.
+    /*Safety fallback.If an authenticated user lands on an unknown task paneroute, return them to the dashboard.*/
 
-        If an authenticated user lands on an unknown task pane
-        route, return them to the dashboard.
-    */
-
-    private void FallbackToDashboard()
-    {
-        Nav.NavigateTo(
-            "/taskpane/workspace",
-            forceLoad: false
-        );
+    private void FallbackToDashboard() 
+    { Nav.NavigateTo("/taskpane/workspace", forceLoad: false);
     }
 
-
-    /*
-        Called whenever AppState changes.
-
-        Most importantly:
-
-        Login successful
-            ↓
-        AppState.IsAuthenticated = true
-            ↓
-        Component refreshes
-    */
-
-    private void HandleSecurityStateChange()
-    {
-        InvokeAsync(() =>
-        {
-            MapPathToComponent(_requestedPath);
-
-            StateHasChanged();
-        });
-    }
-
-
-    /*
-        Cleanup.
-    */
-
-    public void Dispose()
-    {
-        AppState.OnChange -= HandleSecurityStateChange;
-    }
-
+    /*Called whenever AppState changes.Most importantly:Login successful↓AppState.IsAuthenticated = true↓Component refreshes*/
+    private void HandleSecurityStateChange() 
+    { InvokeAsync(() => { MapPathToComponent(_requestedPath); StateHasChanged(); }); 
+    }/*Cleanup.*/
+    public void Dispose() { AppState.OnChange -= HandleSecurityStateChange; }
 }

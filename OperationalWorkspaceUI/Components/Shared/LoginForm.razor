@@ -6,37 +6,37 @@
 
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 
-<div class="sage-login-body">
+<div class="sage-login-card-container">
 
-    <!-- HEADER ICON -->
 
-    <div class="login-icon-circle">
 
-        <i class="ms-Icon ms-Icon--Lock"></i>
+    <!-- IDENTITY ICON -->
+    <div class="login-identity-shield-ring">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke-width="1.8"
+             stroke="#1d4ed8">
 
+            <path stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+
+        </svg>
     </div>
 
 
-    <!-- LOGIN TITLE -->
-
-    <h2 class="login-title">
-
-        Sign In To Sage X3
-
+    <!-- TITLE -->
+    <h2 class="login-brand-main-title">
+        Sign In to Sage X3
     </h2>
 
-
-    <!-- LOGIN DESCRIPTION -->
-
-    <p class="login-subtitle">
-
-        Access your contextual operational workspace
-
+    <p class="login-brand-sub-description">
+        Access your contextual workspace
     </p>
 
 
     <!-- LOGIN FORM -->
-
     <EditForm Model="loginModel"
               OnValidSubmit="HandleLogin">
 
@@ -44,192 +44,305 @@
 
 
         <!-- USERNAME -->
+        <div class="modern-input-field-stack">
+            <label class="modern-field-tag-label">Username</label>
 
-        <div class="input-group-custom">
-
-            <label>
-
-                Username
-
-            </label>
-
-
-            <div class="input-wrapper">
-
-                <i class="ms-Icon ms-Icon--Contact"></i>
+            <div class="modern-field-input-box-wrapper">
+                <svg class="modern-field-inline-vector-icon"
+                     xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.7"
+                     stroke="currentColor">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M15.75 6a3.75 3.75 0 1 1-7.5 0
+                    3.75 3.75 0 0 1 7.5 0ZM4.501
+                    20.118a7.5 7.5 0 0 1 14.998 0
+                    A17.933 17.933 0 0 1 12 21.75
+                    c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
 
                 <InputText @bind-Value="loginModel.Username"
-                           placeholder="operator@test.com or admin@test.com"
-                           disabled="@isBusy" />
-
+                           placeholder="Enter your username"
+                           disabled="@isBusy"
+                           class="modern-native-text-input" />
             </div>
 
-
             <ValidationMessage For="@(() => loginModel.Username)" />
-
         </div>
 
 
         <!-- PASSWORD -->
+        <div class="modern-input-field-stack">
 
-        <div class="input-group-custom">
-
-            <label>
-
+            <label class="modern-field-tag-label">
                 Password
-
             </label>
 
+            <div class="modern-field-input-box-wrapper">
 
-            <div class="input-wrapper password-wrapper">
+                <!-- PASSWORD ICON -->
+                <svg class="modern-field-inline-vector-icon"
+                     xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.8"
+                     stroke="currentColor"
+                     aria-hidden="true">
 
-                <i class="ms-Icon ms-Icon--Lock"></i>
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M16.5 10.5V6.75
+                    a4.5 4.5 0 1 0-9 0v3.75
+                    m-.75 11.25h10.5
+                    a2.25 2.25 0 0 0 2.25-2.25
+                    v-6.75
+                    a2.25 2.25 0 0 0-2.25-2.25
+                    H6.75
+                    a2.25 2.25 0 0 0-2.25 2.25
+                    v6.75
+                    a2.25 2.25 0 0 0 2.25 2.25Z" />
+
+                </svg>
 
 
+                <!-- PASSWORD INPUT -->
                 <InputText @bind-Value="loginModel.Password"
                            type="@PasswordInputType"
-                           placeholder="Enter password"
-                           disabled="@isBusy" />
+                           placeholder="Enter your password"
+                           disabled="@isBusy"
+                           class="modern-native-text-input" />
 
 
+                <!-- SHOW / HIDE PASSWORD -->
                 <button type="button"
-                        class="password-toggle-btn"
+                        class="modern-field-password-eye-toggle-btn"
                         @onclick="TogglePassword"
-                        disabled="@isBusy">
+                        disabled="@isBusy"
+                        aria-label="@(ShowPassword ? "Hide password" : "Show password")">
 
-                    <i class="ms-Icon ms-Icon--RedEye"></i>
+                    @if (ShowPassword)
+                    {
+                        <!-- HIDE PASSWORD / EYE SLASH -->
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke-width="1.8"
+                             stroke="currentColor"
+                             aria-hidden="true">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M3 3l18 18" />
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M10.584 10.587
+                            a2.25 2.25 0 0 0 3.183 3.183" />
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M9.88 4.24
+                            A9.72 9.72 0 0 1 12 4.5
+                            c4.638 0 8.573 3.007
+                            9.963 7.178
+                            a1.012 1.012 0 0 1 0 .639
+                            c-.358 1.074-.87 2.07-1.5 2.95" />
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M6.228 6.228
+                            C4.383 7.47 3.007 9.315
+                            2.036 11.683
+                            a1.012 1.012 0 0 0 0 .639
+                            C3.423 16.49 7.36 19.5
+                            12 19.5
+                            a9.76 9.76 0 0 0 3.836-.78" />
+
+                        </svg>
+                    }
+                    else
+                    {
+                        <!-- SHOW PASSWORD / NORMAL EYE -->
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             fill="none"
+                             viewBox="0 0 24 24"
+                             stroke-width="1.8"
+                             stroke="currentColor"
+                             aria-hidden="true">
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M2.036 12.322
+                            a1.012 1.012 0 0 1 0-.639
+                            C3.423 7.51 7.36 4.5
+                            12 4.5
+                            c4.638 0 8.573 3.007
+                            9.963 7.178
+                            .07.207.07.431 0 .639
+                            C20.577 16.49 16.64 19.5
+                            12 19.5
+                            c-4.638 0-8.573-3.007
+                            -9.963-7.178Z" />
+
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M15 12
+                            a3 3 0 1 1-6 0
+                            3 3 0 0 1 6 0Z" />
+
+                        </svg>
+                    }
 
                 </button>
 
             </div>
-
 
             <ValidationMessage For="@(() => loginModel.Password)" />
 
         </div>
 
 
-        <!-- REMEMBER ME / FORGOT PASSWORD -->
+        <!-- REMEMBER / FORGOT PASSWORD -->
+        <div class="modern-login-options-row">
 
-        <div class="login-options">
-
-            <label class="remember-option">
+            <label class="modern-remember-checkbox-tag">
 
                 <input type="checkbox"
                        @bind="RememberMe"
-                       disabled="@isBusy" />
+                       disabled="@isBusy"
+                       class="modern-native-checkbox" />
 
-                <span>
-
-                    Remember me
-
-                </span>
+                <span>Remember me</span>
 
             </label>
 
 
-            <a href="#"
-               class="forgot-link"
-               @onclick:preventDefault="true">
+            <!-- This now has an actual Blazor click event -->
 
-                Forgot Password?
 
-            </a>
+            <button type="button"
+                    class="modern-forgot-password-link"
+                    @onclick="HandleForgotPassword"
+                    disabled="@isBusy">
+                Forgot password?
+            </button>
 
         </div>
 
 
-        <!-- ERROR MESSAGE -->
+        <!-- ERROR -->
         @if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
-            <div class="login-error">
-
-                <i class="ms-Icon ms-Icon--ErrorBadge"></i>
-
-                <span>
-
-                    @ErrorMessage
-
-                </span>
-
+            <div class="modern-login-error-container-alert">
+                <span>@ErrorMessage</span>
             </div>
         }
 
 
-        <!-- NORMAL LOGIN -->
-
+        <!-- SIGN IN -->
         <button type="submit"
-                class="btn-login-submit"
+                class="modern-btn-primary-submit-action"
                 disabled="@isBusy">
 
             @if (isBusy && !isSsoLoading)
             {
-                <span class="submit-spinner"></span>
-
-                <span>
-
-                    Authenticating...
-
-                </span>
+                <span class="modern-submit-spinner-element"></span>
+                <span>Authenticating...</span>
             }
             else
             {
-                <i class="ms-Icon ms-Icon--Forward"></i>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="2"
+                     stroke="currentColor">
 
-                <span>
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M15.75 9V5.25
+                    A2.25 2.25 0 0 0 13.5 3h-6
+                    A2.25 2.25 0 0 0 5.25 5.25v13.5
+                    A2.25 2.25 0 0 0 7.5 21h6
+                    A2.25 2.25 0 0 0 15.75 18.75V15
+                    M12 9l-3 3m0 0 3 3m-3-3h12.75" />
 
-                    Sign In
+                </svg>
 
-                </span>
+                <span>Sign In</span>
             }
 
         </button>
 
 
         <!-- DIVIDER -->
-
-        <div class="login-divider">
-
-            <span>
-
-                or
-
-            </span>
-
+        <div class="modern-login-content-divider-break">
+            <span>or</span>
         </div>
 
 
-        <!-- SSO LOGIN -->
-
+        <!-- SSO -->
         <button type="button"
-                class="btn-sso-login @(isSsoLoading ? "sso-loading-active" : "")"
+                class="modern-btn-secondary-sso-handshake @(isSsoLoading ? "sso-active-pulse" : "")"
                 @onclick="InitiateSSOAuthentication"
                 disabled="@isBusy">
 
             @if (isSsoLoading)
             {
-                <span class="sso-spinner"></span>
-
-                <span>
-
-                    Connecting to IDP...
-
-                </span>
+                <span class="modern-sso-spinner-element"></span>
+                <span>Connecting to IDP...</span>
             }
             else
             {
-                <i class="ms-Icon ms-Icon--Shield"></i>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.8"
+                     stroke="currentColor">
 
-                <span>
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M9 12.75 11.25 15 15 9.75
+                    m-3-7.036
+                    A11.959 11.959 0 0 1 3.598 6
+                    A11.99 11.99 0 0 0 3 9.749
+                    c0 5.592 3.824 10.29 9 11.623
+                    5.176-1.332 9-6.03 9-11.622
+                    0-1.31-.21-2.571-.598-3.751
+                    h-.152
+                    c-3.196 0-6.1-1.248
+                    -8.25-3.285Z" />
 
-                    Sign in with SSO
+                </svg>
 
-                </span>
+                <span>Sign in with SSO</span>
             }
 
         </button>
 
     </EditForm>
+
+
+    <!-- HELP FOOTER -->
+    <div class="modern-login-system-help-footer-row">
+
+        <span>
+            Need help?
+
+            <a href="#"
+               class="modern-contact-admin-link"
+               @onclick="HandleContactAdministrator"
+               @onclick:preventDefault="true">
+
+                Contact your administrator
+
+            </a>
+        </span>
+
+    </div>
 
 </div>
 
@@ -301,11 +414,40 @@
     { get; set; } = default!;
 
 
+    /* PASSWORD SHOW / HIDE */
+
     private void TogglePassword()
     {
         ShowPassword = !ShowPassword;
     }
 
+
+    /* FORGOT PASSWORD */
+
+    /* FORGOT PASSWORD */
+
+    private Task HandleForgotPassword()
+    {
+        ErrorMessage = null;
+
+        // Sage X3 password-reset logic will be called here.
+
+        return Task.CompletedTask;
+    }
+
+
+    /* CONTACT ADMINISTRATOR */
+
+    private Task HandleContactAdministrator()
+    {
+        ErrorMessage =
+            "Please contact your system administrator for assistance with your Sage X3 account.";
+
+        return Task.CompletedTask;
+    }
+
+
+    /* STANDARD LOGIN */
 
     private async Task HandleLogin()
     {
@@ -322,10 +464,8 @@
 
             await Task.Delay(400);
 
-
             var success =
                 await AuthService.LoginAsync(loginModel);
-
 
             if (!success)
             {
@@ -334,7 +474,6 @@
 
                 return;
             }
-
 
             if (AuthStateProvider
                 is CustomAuthenticationStateProvider authProvider)
@@ -345,27 +484,22 @@
                 UIState.SynchronizeUserSession(authState.User);
             }
 
-
             string extractionToken =
                 "eyJhbGciOiJIUzI1Ni...";
-
 
             string extractionName =
                 loginModel.Username.Contains("@")
                     ? loginModel.Username.Split('@')[0]
                     : loginModel.Username;
 
-
             string extractionEmail =
                 loginModel.Username;
-
 
             AppState.SetAuthentication(
                 extractionToken,
                 extractionName,
                 extractionEmail
             );
-
 
             if (OnAuthenticationSuccess.HasDelegate)
             {
@@ -401,6 +535,8 @@
     }
 
 
+    /* SSO LOGIN */
+
     private async Task InitiateSSOAuthentication()
     {
         if (isBusy)
@@ -416,7 +552,6 @@
 
             StateHasChanged();
 
-
             string targetToken =
                 "sso_bypass_marker";
 
@@ -431,14 +566,12 @@
             {
                 await Task.Delay(1000);
 
-
                 var ssoMockDto =
                     new LoginRequestDto
                     {
                         Username = targetEmail,
                         Password = targetToken
                     };
-
 
                 await AuthService.LoginAsync(ssoMockDto);
             }
@@ -449,7 +582,6 @@
                         "/api/v1/auth/sso/challenge"
                     );
 
-
                 if (authResult is null ||
                     string.IsNullOrWhiteSpace(authResult.Token))
                 {
@@ -459,14 +591,11 @@
                     return;
                 }
 
-
                 targetToken =
                     authResult.Token;
 
-
                 targetUser =
                     "SSO Corporate Node";
-
 
                 targetEmail =
                     "sso.production@test.com";
@@ -478,7 +607,6 @@
                         Username = targetEmail,
                         Password = targetToken
                     };
-
 
                 await AuthService.LoginAsync(ssoProdDto);
             }
@@ -542,4 +670,5 @@
         public string? Token { get; set; }
     }
 
+   
 }
