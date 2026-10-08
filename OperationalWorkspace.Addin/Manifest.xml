@@ -15,8 +15,8 @@
 
 	<!-- Development host: localhost (HTTPS) - update to your tunnel or production host when deploying -->
 	<!-- Sideloading/dev: point to local HTTPS dev server when testing locally -->
-	<IconUrl DefaultValue="https://localhost:7123/icons/office-icon-32.svg"/>
-	<HighResolutionIconUrl DefaultValue="https://localhost:7123/icons/office-icon-80.svg"/>
+	<IconUrl DefaultValue="https://localhost:7173/icons/office-icon-32.svg"/>
+	<HighResolutionIconUrl DefaultValue="https://localhost:7173/icons/office-icon-80.svg"/>
 
 	<Hosts>
 		<Host Name="Mailbox"/>
@@ -34,13 +34,13 @@
 				<!-- LOADS THE BASE /TASKPANE GATEWAY ROUTER DIRECTLY -->
 				<!-- Point to the taskpane landing route for compatibility and debugging -->
 			<!-- Sideloading/dev: load taskpane from local dev server -->
-			<SourceLocation DefaultValue="https://localhost:7123/taskpane"/>
+			<SourceLocation DefaultValue="https://localhost:7173/taskpane"/>
 				<RequestedHeight>250</RequestedHeight>
 			</DesktopSettings>
 		</Form>
 		<Form xsi:type="ItemEdit">
 			<DesktopSettings>
-			<SourceLocation DefaultValue="https://localhost:7123/taskpane"/>
+			<SourceLocation DefaultValue="https://localhost:7173/taskpane"/>
 			</DesktopSettings>
 		</Form>
 	</FormSettings>
@@ -81,7 +81,7 @@
 										<bt:Image size="80" resid="icon80" />
 									</Icon>
 									<Action xsi:type="ShowTaskpane">
-										<SourceLocation resid="tpWorkspaceUrl"/>
+										<SourceLocation resid="tpWorkspaceUrl" />
 									</Action>
 								</Control>
 							</Group>
@@ -92,17 +92,23 @@
 			</Host>
 		</Hosts>
 
-		<Resources>
-			<bt:Images>
-				<bt:Image id="icon16" DefaultValue="https://localhost:7123/icons/office-icon-16.svg" />
-			<bt:Image id="icon32" DefaultValue="https://localhost:7123/icons/office-icon-32.svg" />
-			<bt:Image id="icon80" DefaultValue="https://localhost:7123/icons/office-icon-80.svg" />
-			</bt:Images>
-			<bt:Urls>
-				<bt:Url id="functionFile" DefaultValue="https://localhost:7123/officeFunctionFile.html" />
+			<Resources>
+				<bt:Images>
+				<bt:Image id="icon16" DefaultValue="https://localhost:7173/icons/office-icon-16.svg" />
+				<bt:Image id="icon32" DefaultValue="https://localhost:7173/icons/office-icon-32.svg" />
+				<bt:Image id="icon80" DefaultValue="https://localhost:7173/icons/office-icon-80.svg" />
+				</bt:Images>
+		
 				<!-- TARGETS /TASKPANE GATEWAY DIRECTLY FOR ROUTING HANDSHAKES -->
-				<bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7123/taskpane/workspace" />
-			</bt:Urls>
+				<!-- Use the static dashboard HTML for Outlook taskpane fallback (Blazor WASM) -->
+				
+				<bt:Urls>
+					<bt:Url id="functionFile" DefaultValue="https://localhost:7173/officeFunctionFile.html" />
+					<!-- ✅ FIXED: TARGETS THE /TASKPANE GATEWAY DIRECTLY FOR ROUTING HANDSHAKES -->
+					<bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane" />
+				</bt:Urls>
+
+		
 			<bt:ShortStrings>
 				<bt:String id="lblCrmGroup" DefaultValue="Sage CRM Link" />
 				<bt:String id="lblOpenWorkspace" DefaultValue="Open Workspace" />

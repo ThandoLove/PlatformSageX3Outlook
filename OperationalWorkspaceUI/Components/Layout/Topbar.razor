@@ -1,8 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.AspNetCore.Components.Web
-@using Microsoft.AspNetCore.Components.Authorization
-@using Microsoft.JSInterop
+
 @using Microsoft.FluentUI.AspNetCore.Components
 @using OperationalWorkspaceUI.State
 @using OperationalWorkspaceApplication.ApplicationState
@@ -1103,6 +1101,27 @@
         }
     }
 
+    private void ToggleSearchMenuState()
+    {
+        // If the menu is currently open, this collapses it instantly when you click the search icon button
+        _searchOpen = !_searchOpen;
+
+        if (!_searchOpen)
+        {
+            _selectedSearchIndex = -1;
+            _filteredSearchResults.Clear();
+        }
+        else if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            // Re-trigger the active query list evaluation pipeline if search query letters already exist
+            var query = _searchQuery.Trim().ToLowerInvariant();
+            _filteredSearchResults = _workspaceSearchItems
+                .Where(item => item.Title.ToLower().Contains(query) || item.Category.ToLower().Contains(query))
+                .ToList();
+        }
+    }
+
+
 
     /* =========================================================
        DISPOSE
@@ -1128,4 +1147,4 @@
         string Category,
         string NormalRoute,
         string TaskpaneRoute);
-}
+} 

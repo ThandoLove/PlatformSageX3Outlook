@@ -429,7 +429,7 @@
     private void FallbackToDashboard() 
     { Nav.NavigateTo("/taskpane/workspace", forceLoad: false);
     }
-
+     
     /*Called whenever AppState changes.Most importantly:Login successful↓AppState.IsAuthenticated = true↓Component refreshes*/
     private void HandleSecurityStateChange() 
     { InvokeAsync(() => { MapPathToComponent(_requestedPath); StateHasChanged(); }); 

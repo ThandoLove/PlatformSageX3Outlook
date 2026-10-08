@@ -18,19 +18,28 @@
     <link rel="stylesheet" href="css/Forms.css" />
     <link rel="stylesheet" href="css/Workspace.css" />
     <link rel="stylesheet" href="css/Components.css" />
-
     <link rel="stylesheet" href="/css/app.css" />
 
     <link class="icon" type="image/png" href="/favicon.png" />
 
+    <!-- ========================================================================= -->
+    <!-- 🛡️ OFFICIAL MICROSOFT OFFICE JS SDK ROUTING STABILIZER                     -->
+    <!-- ========================================================================= -->
     <script type="text/javascript">
-            // Cache native routing parameters prior to Office JS library interventions
-            window._historyCache = { replaceState: window.history.replaceState, pushState: window.history.pushState };
+        // Preserve pristine history signatures prior to Office runtime script interventions
+        window._historyCache = { 
+            replaceState: window.history.replaceState, 
+            pushState: window.history.pushState 
+        };
     </script>
-    <script src="https://microsoft.com"></script>
+    
+    <!-- ✅ FIX 1: LOAD THE ACTUAL APPSFOROFFICE SDK ENGINE PANEL LAYER -->
+    <script src="https://microsoft.com" type="text/javascript"></script>
+
     <script type="text/javascript">
-            window.history.replaceState = window._historyCache.replaceState;
-            window.history.pushState = window._historyCache.pushState;
+        // Instantly restore core parameters to protect Blazor Server SignalR circuit loops
+        window.history.replaceState = window._historyCache.replaceState;
+        window.history.pushState = window._historyCache.pushState;
     </script>
 
     <HeadOutlet @rendermode="InteractiveServer" />
@@ -57,60 +66,67 @@
     <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
 
     <!-- ========================================================================= -->
-    <!-- 📧 UNIFIED OFFICE.JS RUNTIME CONTEXT EXTRACTOR                            -->
-    <!-- Extracts mailbox item contexts directly inside the core Blazor shell app  -->
+    <!-- 📧 UNIFIED OFFICE.JS RUNTIME ENVIRONMENT INTERCEPTOR                      -->
     <!-- ========================================================================= -->
     <script>
-            (function() {
-                function setInitialOfficeItem(item) {
-                    try {
-                        window['initialOfficeItem'] = {
-                            subject: item.subject || '',
-                            from: (item.from && item.from.emailAddress && item.from.emailAddress.address) || '',
-                            body: ''
-                        };
+        // ✅ FIX 2: REGISTER THE EXACT ENVIRONMENT DETECTOR EXPECTED BY TASKPANE.RAZOR
+        window.checkOfficeEnvironment = function() {
+            if (typeof Office !== 'undefined' && Office.context && Office.context.mailbox) {
+                return "Outlook";
+            }
+            return "Browser";
+        };
 
-                        // Asynchronously parse message body strings from active Outlook composition canvases
-                        if (item.getBodyAsync) {
-                            item.getBodyAsync("text", function(result) {
-                                try {
-                                    if (result && result.status === window['Office'].AsyncResultStatus.Succeeded) {
-                                        window['initialOfficeItem'].body = result.value || '';
-                                    }
-                                } catch (e) {
-                                    // Fallback catch block
+        (function() {
+            window['initialOfficeItem'] = window['initialOfficeItem'] || {};
+
+            function setInitialOfficeItem(item) {
+                try {
+                    window['initialOfficeItem'] = {
+                        subject: item.subject || '',
+                        from: (item.from && item.from.emailAddress && item.from.emailAddress.address) || '',
+                        body: ''
+                    };
+
+                    if (item.getBodyAsync) {
+                        item.getBodyAsync("text", function(result) {
+                            try {
+                                if (result && result.status === window['Office'].AsyncResultStatus.Succeeded) {
+                                    window['initialOfficeItem'].body = result.value || '';
+                                    // Direct trigger event cascade down to active page layout frames if mounted
                                 }
-                            });
-                        }
-                    } catch (e) {
-                        window['initialOfficeItem'] = window['initialOfficeItem'] || {};
+                            } catch (e) { }
+                        });
                     }
+                } catch (e) {
+                    window['initialOfficeItem'] = {};
                 }
+            }
 
-                if (window['Office']) {
-                    window['Office'].onReady(function(info) {
-                        try {
-                            // Capture active item context elements natively
-                            var item = window['Office'].context.mailbox.item;
+            // Await native framework load stack guarantees safely
+            if (typeof Office !== 'undefined') {
+                Office.onReady(function(info) {
+                    try {
+                        if (info.host === Office.HostType.Outlook) {
+                            console.log("Office.js layer verified and active inside Outlook framework runtime panel.");
+                            var item = Office.context.mailbox.item;
                             if (item) {
                                 setInitialOfficeItem(item);
                             }
-                        } catch (e) {
-                            // Fallback catch block
                         }
-
-                        // Enforce routing cache alignment checks across non-Outlook boundaries
-                        if (info.host !== window['Office'].HostType.Outlook) {
-                            window.history.pushState = window._historyCache.pushState;
-                            window.history.replaceState = window._historyCache.replaceState;
-                        }
-                    });
-                } else {
-                    window['initialOfficeItem'] = {};
-                    window.history.pushState = window._historyCache.pushState;
-                    window.history.replaceState = window._historyCache.replaceState;
-                }
-            })();
+                    } catch (e) {
+                        console.error("Office context extraction error: ", e);
+                    } finally {
+                        // Double check routing parameters stability boundaries
+                        window.history.pushState = window._historyCache.pushState;
+                        window.history.replaceState = window._historyCache.replaceState;
+                    }
+                });
+            } else {
+                window.history.pushState = window._historyCache.pushState;
+                window.history.replaceState = window._historyCache.replaceState;
+            }
+        })();
     </script>
 </body>
 

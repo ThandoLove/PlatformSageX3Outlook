@@ -1,6 +1,5 @@
-﻿
-/* =========================================================================
-   SAGE X3 TOPBAR
+﻿/* =========================================================================
+   SAGE X3 TOPBAR MASTER CONTAINER
    ========================================================================= */
 .sage-topbar-master {
     position: relative;
@@ -19,438 +18,377 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-
-/* =========================================================================
-   LEFT
+    /* =========================================================================
+   ZONE 1: LEFT AREA (BRANDING + PAGE TITLE)
    ========================================================================= */
+    .sage-topbar-master .zone-left {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        flex: 0 0 auto;
+        gap: 11px;
+    }
 
-.zone-left {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    flex: 0 1 auto;
-    gap: 11px;
-}
+    .sage-topbar-master .brand-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
 
+    .sage-topbar-master .sage-brand-text {
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.01em;
+    }
 
-.brand-group {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
+    .sage-topbar-master .sage-brand-subtext {
+        margin-top: 2px;
+        color: #67c7f3;
+        font-size: 9px;
+        font-weight: 500;
+        line-height: 1;
+    }
 
+    .sage-topbar-master .topbar-divider {
+        width: 1px;
+        height: 20px;
+        flex: 0 0 1px;
+        background: rgba(255, 255, 255, 0.14);
+    }
 
-.sage-brand-text {
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-}
-
-
-.sage-brand-subtext {
-    margin-top: 2px;
-    color: #67c7f3;
-    font-size: 9px;
-    font-weight: 500;
-    line-height: 1;
-}
-
-
-.topbar-divider {
-    width: 1px;
-    height: 20px;
-    flex: 0 0 1px;
-    background: rgba(255, 255, 255, 0.14);
-}
-
-
-.page-dynamic-title {
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #f8fafc;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-
-/* =========================================================================
-   SEARCH ZONE
+    .sage-topbar-master .page-dynamic-title {
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #f8fafc;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    /* =========================================================================
+   ZONE 2: MIDDLE AREA (MODERNISED ULTRA-CLEAN SEARCH SYSTEM CONTEXT)
    ========================================================================= */
-
-.zone-middle {
-    position: relative;
-    display: flex;
-    align-items: center;
-    flex: 1 1 420px;
-    width: 100%;
-    max-width: 500px;
-    min-width: 220px;
-    margin: 0 22px;
-}
-
-
-/* =========================================================================
-   SEARCH SHELL
-   ========================================================================= */
-
-.search-shell {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    height: 34px;
-    box-sizing: border-box;
-    background: #f8fafc;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 9px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-}
-
-
-    .search-shell:hover {
-        background: #ffffff;
-        border-color: rgba(255, 255, 255, 0.25);
+    .sage-topbar-master .zone-middle {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 0 0 340px;
+        width: 340px;
+        max-width: 340px;
+        min-width: 180px;
+        margin: 0 24px;
+        height: 36px;
     }
 
-
-    .search-shell:focus-within {
-        background: #ffffff;
-        border-color: #60a5fa;
-        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+    .sage-topbar-master .topbar-search-container {
+        position: relative;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
-
-.search-leading-icon {
-    width: 34px;
-    height: 100%;
-    flex: 0 0 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-
-    .search-leading-icon fluent-icon {
-        width: 16px;
-        height: 16px;
+    /* MODERN TRANSLUCENT BACKDROP SHELL */
+    .sage-topbar-master .search-shell {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 34px;
+        background: rgba(255, 255, 255, 0.08); /* Translucent fluent look */
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 6px;
+        box-sizing: border-box;
+        transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
+        .sage-topbar-master .search-shell:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.28);
+        }
 
-/* =========================================================================
-   SEARCH INPUT
-   ========================================================================= */
+        .sage-topbar-master .search-shell:focus-within {
+            background: #ffffff; /* Snaps cleanly to brilliant solid white canvas on focus */
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+        }
 
-.topbar-search-input {
-    flex: 1 1 auto;
-    width: 100%;
-    min-width: 0;
-    height: 100%;
-    padding: 0;
-    border: 0;
-    outline: none;
-    background: transparent;
-    color: #0f172a;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 500;
-    box-sizing: border-box;
-}
-
-
-    .topbar-search-input::placeholder {
-        color: #94a3b8;
-        font-weight: 400;
-    }
-
-
-    .topbar-search-input:focus {
-        border: 0;
-        outline: none;
-        box-shadow: none;
-    }
-
-
-    /* Remove browser search decoration */
-
-    .topbar-search-input::-webkit-search-decoration,
-    .topbar-search-input::-webkit-search-cancel-button,
-    .topbar-search-input::-webkit-search-results-button,
-    .topbar-search-input::-webkit-search-results-decoration {
-        display: none;
-    }
-
-
-/* =========================================================================
-   CLEAR
-   ========================================================================= */
-
-.topbar-clear-search-button {
-    width: 25px;
-    height: 25px;
-    flex: 0 0 25px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    margin-right: 3px;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: #64748b;
-    cursor: pointer;
-    font-size: 17px;
-    line-height: 1;
-}
-
-
-    .topbar-clear-search-button:hover {
-        background: #e2e8f0;
-        color: #0f172a;
-    }
-
-
-/* =========================================================================
-   SEARCH SHORTCUT
-   ========================================================================= */
-
-.search-shortcut {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-right: 7px;
-    color: #94a3b8;
-    font-size: 9px;
-}
-
-
-    .search-shortcut kbd {
-        min-width: 15px;
-        height: 17px;
-        display: inline-flex;
+    /* INTEGRATED LEADING SEARCH ICON BUTTON (REPOSITIONED INSIDE LEFT EDGE) */
+    .sage-topbar-master .topbar-search-button {
+        position: absolute;
+        left: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 26px;
+        height: 26px;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 3px;
-        border: 1px solid #dbe3ec;
-        border-bottom-color: #cbd5e1;
+        background: transparent;
+        border: 0;
+        padding: 0;
         border-radius: 4px;
-        background: #f8fafc;
-        color: #64748b;
+        color: rgba(255, 255, 255, 0.65); /* Silver accent look on dark blue */
+        cursor: pointer;
+        z-index: 10;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+        .sage-topbar-master .topbar-search-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+    /* Invert magnifier colors to dark charcoal gray once background snaps to white */
+    .sage-topbar-master .search-shell:focus-within .topbar-search-button {
+        color: #475569;
+    }
+
+        .sage-topbar-master .search-shell:focus-within .topbar-search-button:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+    /* HIGH-CONTRAST TYPING TEXT FORMAT ROUTINES */
+    .sage-topbar-master .topbar-search-input {
+        flex: 1 1 auto;
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        padding: 0 28px 0 32px; /* Perfect tracking margins: avoids typing overlap errors */
+        border: 0;
+        outline: none;
+        background: transparent;
+        color: #ffffff; /* White input typing text by default against dark blue */
         font-family: inherit;
-        font-size: 8px;
-        font-weight: 600;
+        font-size: 12px;
+        font-weight: 500;
         box-sizing: border-box;
     }
 
+    .sage-topbar-master .search-shell:focus-within .topbar-search-input {
+        color: #0f172a; /* Inverts cleanly to deep charcoal black text on white canvas focus */
+    }
 
-/* =========================================================================
-   SEARCH RESULTS
-   ========================================================================= */
+    .sage-topbar-master .topbar-search-input::placeholder {
+        color: rgba(255, 255, 255, 0.55);
+    }
 
-.topbar-search-results {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    width: 100%;
-    max-height: 390px;
-    overflow: hidden;
-    background: #ffffff;
-    border: 1px solid #dbe3ec;
-    border-radius: 11px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
-    box-sizing: border-box;
+    .sage-topbar-master .search-shell:focus-within .topbar-search-input::placeholder {
+        color: #94a3b8;
+    }
+
+    .sage-topbar-master .topbar-clear-search-button {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        border-radius: 4px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.55);
+        cursor: pointer;
+        z-index: 10;
+    }
+
+        .sage-topbar-master .topbar-clear-search-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+    .sage-topbar-master .search-shell:focus-within .topbar-clear-search-button {
+        color: #64748b;
+    }
+
+        .sage-topbar-master .search-shell:focus-within .topbar-clear-search-button:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+    /* ANIMATED VERTICAL LIST DROPDOWN VIEWPORT PANEL */
+    .sage-topbar-master .topbar-search-results {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        width: 100%;
+        max-height: 380px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.15), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+        box-sizing: border-box;
+        z-index: 999999;
+        animation: topbarSearchFadeIn 0.12s cubic-bezier(0, 0, 0.2, 1) forwards;
+    }
+
+@keyframes topbarSearchFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-
-/* =========================================================================
-   RESULTS HEADER
-   ========================================================================= */
-
-.search-results-header {
-    height: 34px;
+.sage-topbar-master .search-results-header {
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 11px;
-    border-bottom: 1px solid #edf1f5;
+    padding: 0 12px;
+    background: #f8fafc;
+    border-bottom: 1px solid #edf2f7;
     color: #64748b;
     font-size: 9px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     box-sizing: border-box;
 }
 
-
-.search-results-count {
-    min-width: 20px;
-    height: 18px;
+.sage-topbar-master .search-results-count {
+    min-width: 18px;
+    height: 16px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 0 5px;
     border-radius: 10px;
-    background: #eff6ff;
-    color: #2563eb;
+    background: #edf2f7;
+    color: #475569;
     font-size: 9px;
+    font-weight: 700;
 }
 
-
-/* =========================================================================
-   RESULTS LIST
-   ========================================================================= */
-
-.search-results-list {
-    max-height: 355px;
+.sage-topbar-master .search-results-list {
+    display: flex;
+    flex-direction: column; /* Force search records vertical list strip sequence */
+    padding: 4px;
+    gap: 3px;
+    max-height: 310px;
     overflow-y: auto;
-    padding: 5px;
+    overflow-x: hidden;
     box-sizing: border-box;
 }
-
-
-/* =========================================================================
-   RESULT
+    /* =========================================================================
+   SEARCH RESULT ROW COMPONENT MATRIX (ELIMINATES AWKWARD SQUARE BOX CONTEXT)
    ========================================================================= */
-
-.topbar-search-result {
-    width: 100%;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 7px 8px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-    box-sizing: border-box;
-    transition: background-color 0.12s ease;
-}
-
-
-    .topbar-search-result:hover,
-    .topbar-search-result.selected {
-        background: #f1f5f9;
+    .sage-topbar-master .search-results-list .search-result-item {
+        display: flex;
+        flex-direction: row; /* Enforce details and icons align side-by-side horizontally */
+        align-items: center;
+        width: 100%;
+        height: 46px;
+        min-height: 46px;
+        padding: 6px 10px;
+        margin: 0;
+        background: transparent;
+        border: 0;
+        border-radius: 6px;
+        text-align: left;
+        cursor: pointer;
+        box-sizing: border-box;
+        gap: 10px;
+        transition: background 0.12s ease;
     }
 
+        .sage-topbar-master .search-results-list .search-result-item:hover,
+        .sage-topbar-master .search-results-list .search-result-active {
+            background-color: #f1f5f9;
+        }
 
-    .topbar-search-result:focus-visible {
-        outline: 2px solid rgba(59, 130, 246, 0.45);
-        outline-offset: -2px;
+    .sage-topbar-master .search-results-list .search-result-icon {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        flex: 0 0 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        background: #f8fafc;
+        color: #475569;
     }
 
+    .sage-topbar-master .search-results-list .search-result-content {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
 
-/* =========================================================================
-   RESULT ICON
-   ========================================================================= */
+    .sage-topbar-master .search-results-list .search-result-title {
+        display: block;
+        color: #1e293b;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-.search-result-icon {
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: #f1f5f9;
-}
+    .sage-topbar-master .search-results-list .search-result-description {
+        display: block;
+        color: #64748b;
+        font-size: 9px;
+        font-weight: 400;
+        margin-top: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
+    .sage-topbar-master .search-results-list .search-result-category {
+        font-size: 8px;
+        font-weight: 700;
+        color: #2563eb;
+        background: #eff6ff;
+        padding: 2px 5px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        flex: 0 0 auto;
+    }
 
-/* =========================================================================
-   RESULT CONTENT
-   ========================================================================= */
-
-.search-result-content {
-    min-width: 0;
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-}
-
-
-.search-result-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #1e293b;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-
-.search-result-description {
-    margin-top: 3px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: #94a3b8;
-    font-size: 9px;
-    font-weight: 400;
-}
-
-
-.search-result-type {
-    flex: 0 0 auto;
-    padding: 3px 6px;
-    border-radius: 5px;
-    background: #f8fafc;
-    color: #94a3b8;
-    font-size: 8px;
-    font-weight: 600;
-}
-
-
-/* =========================================================================
-   NO RESULTS
-   ========================================================================= */
-
-.search-no-results {
-    min-height: 90px;
+.sage-topbar-master .search-empty-state,
+.sage-topbar-master .search-no-results {
+    min-height: 70px;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 14px;
+    padding: 12px;
     box-sizing: border-box;
+    color: #475569;
 }
 
-
-.search-no-results-icon {
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: #f8fafc;
-}
-
-
-.search-no-results-title {
-    color: #334155;
+.sage-topbar-master .search-empty-title,
+.sage-topbar-master .search-no-results-title {
     font-size: 11px;
     font-weight: 600;
 }
 
-
-.search-no-results-text {
-    margin-top: 3px;
-    color: #94a3b8;
+.sage-topbar-master .search-empty-description,
+.sage-topbar-master .search-no-results-description {
     font-size: 9px;
-    line-height: 1.4;
+    color: #64748b;
 }
 
-
 /* =========================================================================
-   RIGHT SIDE
+   ZONE 3: RIGHT SIDE AREA (CONNECTION STATUS + USER PROFILES)
    ========================================================================= */
-
-.zone-right {
+.sage-topbar-master .zone-right {
     display: flex;
     align-items: center;
     flex: 0 0 auto;
@@ -458,14 +396,10 @@
     min-width: 0;
     padding-left: 12px;
     border-left: 1px solid rgba(255, 255, 255, 0.09);
+    margin-left: auto; /* Locks profile panel elements safely clean against right edge bounds */
 }
 
-
-/* =========================================================================
-   CONNECTION
-   ========================================================================= */
-
-.connection-status {
+.sage-topbar-master .connection-status {
     height: 26px;
     display: flex;
     align-items: center;
@@ -477,57 +411,49 @@
     white-space: nowrap;
 }
 
+.sage-topbar-master .connection-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
 
-.conn-text-label {
+.sage-topbar-master .connection-dot-online {
+    background-color: #34d399;
+}
+
+.sage-topbar-master .connection-dot-offline {
+    background-color: #f87171;
+}
+
+.sage-topbar-master .conn-text-label {
     font-size: 10px;
     font-weight: 600;
 }
 
-
-.text-success {
+.sage-topbar-master .text-success {
     color: #6ee7b7;
 }
 
-
-.text-error {
+.sage-topbar-master .text-error {
     color: #fca5a5;
 }
 
-
-/* =========================================================================
-   USER
-   ========================================================================= */
-
-.user-profile-section {
+.sage-topbar-master .user-profile-section {
     display: flex;
     align-items: center;
     gap: 7px;
     min-width: 0;
     padding: 3px 5px;
     border-radius: 8px;
-    transition: background-color 0.15s ease;
 }
 
-
-    .user-profile-section:hover {
-        background: rgba(255, 255, 255, 0.06);
-    }
-
-
-.topbar-persona {
-    flex: 0 0 auto;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.16);
-}
-
-
-.user-meta-text-wrap {
+.sage-topbar-master .user-meta-text-wrap {
     min-width: 0;
     display: flex;
     flex-direction: column;
 }
 
-
-.user-display-name {
+.sage-topbar-master .user-display-name {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -537,8 +463,7 @@
     font-weight: 600;
 }
 
-
-.user-display-role {
+.sage-topbar-master .user-display-role {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -549,12 +474,7 @@
     font-weight: 500;
 }
 
-
-/* =========================================================================
-   SIGN OUT BUTTON
-   ========================================================================= */
-
-.topbar-modern-logout-btn {
+.sage-topbar-master .topbar-modern-logout-btn {
     width: 30px;
     height: 30px;
     flex: 0 0 30px;
@@ -568,208 +488,72 @@
     color: #a8b8ca;
     cursor: pointer;
     box-sizing: border-box;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-
-    .topbar-modern-logout-btn:hover {
+    .sage-topbar-master .topbar-modern-logout-btn:hover {
         background: #dc2626;
         border-color: #dc2626;
         color: #ffffff;
     }
 
-
-    .topbar-modern-logout-btn:active {
-        transform: scale(0.95);
-    }
-
-
-    .topbar-modern-logout-btn:disabled {
-        opacity: 0.65;
-        cursor: wait;
-    }
-
-
-/* =========================================================================
-   LOGOUT SPINNER
-   ========================================================================= */
-
-.logout-spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.30);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: topbar-spin 0.7s linear infinite;
-}
-
-
-@keyframes topbar-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-
-/* =========================================================================
-   LOGOUT CONFIRMATION
-   ========================================================================= */
-
-.logout-confirm-popover {
+.sage-topbar-master .logout-confirm-popover {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 6px);
     right: 12px;
-    width: 245px;
-    padding: 13px;
+    width: 220px;
+    padding: 12px;
     box-sizing: border-box;
     background: #ffffff;
-    border: 1px solid #dbe3ec;
+    border: 1px solid #cbd5e1;
     border-radius: 11px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
-    z-index: 9000;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+    z-index: 99999;
 }
 
-
-.logout-confirm-text {
+.sage-topbar-master .logout-confirm-text {
     display: block;
-    margin-bottom: 11px;
+    margin-bottom: 9px;
     color: #334155;
     font-size: 11px;
     font-weight: 500;
     line-height: 1.4;
 }
 
-
-.logout-confirm-actions {
+.sage-topbar-master .logout-confirm-actions {
     display: flex;
-    gap: 7px;
+    gap: 6px;
 }
 
-
-    .logout-confirm-actions button {
-        flex: 1 1 0;
-        min-height: 30px;
-        border-radius: 7px;
+    .sage-topbar-master .logout-confirm-actions button {
+        flex: 1;
+        min-height: 28px;
+        border-radius: 6px;
         font-size: 10px;
         font-weight: 600;
         cursor: pointer;
     }
 
-
-.logout-confirm-yes {
-    border: 1px solid #dc2626;
+.sage-topbar-master .logout-confirm-yes {
+    border: 0;
     background: #dc2626;
     color: #ffffff;
 }
 
-
-    .logout-confirm-yes:hover {
-        background: #b91c1c;
-    }
-
-
-.logout-confirm-cancel {
+.sage-topbar-master .logout-confirm-cancel {
     border: 1px solid #cbd5e1;
     background: #ffffff;
     color: #475569;
 }
 
-
-    .logout-confirm-cancel:hover {
-        background: #f8fafc;
-    }
-
-
 /* =========================================================================
-   RESPONSIVE
+   📺 RESPONSIVE CONDENSING MEDIA OVERRIDES
    ========================================================================= */
-
-@media (max-width: 850px) {
-
-    .zone-middle {
-        margin: 0 12px;
-        max-width: 420px;
-    }
-
-    .page-dynamic-title {
-        display: none;
+@media (max-width: 768px) {
+    .sage-topbar-master .page-dynamic-title,
+    .sage-topbar-master .sage-brand-subtext,
+    .sage-topbar-master .topbar-divider,
+    .sage-topbar-master .user-meta-text-wrap,
+    .sage-topbar-master .conn-text-label {
+        display: none !important;
     }
 }
-
-
-@media (max-width: 680px) {
-
-    .sage-topbar-master {
-        padding: 0 9px;
-    }
-
-    .sage-brand-subtext {
-        display: none;
-    }
-
-    .topbar-divider {
-        display: none;
-    }
-
-    .zone-middle {
-        margin: 0 8px;
-        min-width: 150px;
-    }
-
-    .connection-status {
-        padding: 0 6px;
-    }
-
-    .conn-text-label {
-        display: none;
-    }
-
-    .user-meta-text-wrap {
-        display: none;
-    }
-
-    .search-shortcut {
-        display: none;
-    }
-}
-
-
-@media (max-width: 480px) {
-
-    .sage-topbar-master {
-        height: 48px;
-        min-height: 48px;
-    }
-
-    .zone-left {
-        flex: 0 0 auto;
-    }
-
-    .sage-brand-text {
-        font-size: 13px;
-    }
-
-    .zone-middle {
-        flex: 1 1 auto;
-        min-width: 100px;
-        margin: 0 6px;
-    }
-
-    .zone-right {
-        gap: 5px;
-        padding-left: 5px;
-        border-left: 0;
-    }
-
-    .user-profile-section {
-        display: none;
-    }
-
-    .topbar-modern-logout-btn {
-        width: 28px;
-        height: 28px;
-        flex-basis: 28px;
-    }
-}
-
-

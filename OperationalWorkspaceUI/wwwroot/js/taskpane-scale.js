@@ -38,9 +38,12 @@ window.taskpaneScaler = (function () {
                     // Apply calculated scale via CSS transform only
                     scaleWrap.style.transform = 'scale(' + scale + ')';
 
-                    // Set container height to the scaled content height to avoid double scrollbars
-                    root.style.height = Math.max(naturalHeight * scale, root.clientHeight) + 'px';
-                    root.style.overflowY = 'hidden';
+                    // Do not modify child styles or colors. Allow the root to scroll if needed.
+                    // Avoid forcing hidden overflow or explicit heights which can clip content.
+                    root.style.overflowY = 'auto';
+                    scaleWrap.style.display = 'block';
+                    // Ensure the scaled content's width is preserved so layout remains identical
+                    scaleWrap.style.width = naturalWidth + 'px';
 
                     // keep the computed transform; no need to restore prevTransform
                 } catch (e) { console.warn('taskpaneScaler.update failed', e); }

@@ -432,76 +432,68 @@
 
 
             <!-- =================================================
-                 FOOTER MENU
-                 ================================================= -->
+     FOOTER MENU (UPDATED WITH CLOSE × BUTTON)
+     ================================================= -->
             @if (_footerMenuOpen)
             {
                 <div class="footer-menu-dropdown"
                      role="menu"
                      aria-label="Account and application actions">
 
-                    <div class="footer-menu-header">
+                    <div class="footer-menu-header" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; gap: 12px;">
 
-                        <span class="footer-menu-title">
-                            Workspace
-                        </span>
+                        <div style="min-width: 0; display: flex; flex-direction: column;">
+                            <span class="footer-menu-title">
+                                Workspace
+                            </span>
+                            <span class="footer-menu-subtitle">
+                                Account &amp; settings
+                            </span>
+                        </div>
 
-                        <span class="footer-menu-subtitle">
-                            Account &amp; settings
-                        </span>
+                        <!-- ✅ ACCESSIBILITY CLOSE BUTTON ADDED HERE -->
+                        <button type="button"
+                                class="command-drawer-close"
+                                @onclick="ToggleFooterMenu"
+                                aria-label="Close menu"
+                                title="Close"
+                                style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; min-width: 24px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #64748b; font-size: 18px; line-height: 1; cursor: pointer; flex: 0 0 24px;">
+                            <span aria-hidden="true">×</span>
+                        </button>
 
                     </div>
 
-
                     <!-- SETTINGS -->
-
                     <button type="button"
                             class="footer-menu-item"
                             @onclick="OpenSettings">
-
                         <span class="footer-menu-item-icon">
-
                             <FluentIcon Value="@(new Icons.Regular.Size16.Settings())"
                                         Color="@Color.Custom"
                                         CustomColor="#475569" />
-
                         </span>
-
                         <span>Settings</span>
-
                     </button>
 
-
                     <!-- HELP -->
-
                     <button type="button"
                             class="footer-menu-item"
                             @onclick="OpenHelp">
-
                         <span class="footer-menu-item-icon">
-
                             <FluentIcon Value="@(new Icons.Regular.Size16.QuestionCircle())"
                                         Color="@Color.Custom"
                                         CustomColor="#475569" />
-
                         </span>
-
                         <span>Help</span>
-
                     </button>
-
 
                     <div class="footer-menu-separator"></div>
 
-
                     <!-- SIGN OUT -->
-
                     <button type="button"
                             class="footer-menu-item footer-signout"
                             @onclick="PromptFooterLogoutConfirmation">
-
                         <span class="footer-menu-item-icon">
-
                             <svg width="16"
                                  height="16"
                                  viewBox="0 0 24 24"
@@ -511,26 +503,17 @@
                                  stroke-linecap="round"
                                  stroke-linejoin="round"
                                  aria-hidden="true">
-
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-
                                 <polyline points="16 17 21 12 16 7" />
-
-                                <line x1="21"
-                                      y1="12"
-                                      x2="9"
-                                      y2="12" />
-
+                                <line x1="21" y1="12" x2="9" y2="12" />
                             </svg>
-
                         </span>
-
                         <span>Sign Out</span>
-
                     </button>
 
                 </div>
             }
+
 
 
             <!-- =================================================

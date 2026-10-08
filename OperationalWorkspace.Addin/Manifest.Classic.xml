@@ -146,7 +146,7 @@
 
 	  <bt:Urls>
 		<bt:Url id="functionFile" DefaultValue="https://localhost:7173/officeFunctionFile.html" />
-		<bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane/workspace" />
+		<bt:Url id="tpWorkspaceUrl" DefaultValue="https://localhost:7173/taskpane" />
 		<bt:Url id="tpCreateContactUrl" DefaultValue="https://localhost:7173/taskpane/contact/create" />
 		<bt:Url id="tpViewOrdersUrl" DefaultValue="https://localhost:7173/taskpane/orders/view" />
 		<bt:Url id="tpAiSummaryUrl" DefaultValue="https://localhost:7173/taskpane/TaskPaneAiSummary" />

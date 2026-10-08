@@ -17,16 +17,16 @@
 
 
     /* =========================================================================
-   GLOBAL HEADER
+   GLOBAL HEADER (UPDATED TO PREVENT ALIGNMENT BLEED OVERLAPPING)
    ========================================================================= */
 
     .app-container .global-header,
     .app-container .layout-guard-header {
         position: relative;
         width: 100%;
-        height: 48px;
-        min-height: 48px;
-        flex: 0 0 48px;
+        height: 52px; /* ✅ FIXED FROM 48PX TO HARMONIZE STABLE VERTICAL SPACE BOUNDS WITH THE SAGE TOPBAR */
+        min-height: 52px;
+        flex: 0 0 52px;
         box-sizing: border-box;
         z-index: 10000;
     }
@@ -46,13 +46,6 @@
         min-height: 0;
         min-width: 0;
         align-items: stretch;
-        /*
-     * IMPORTANT:
-     * Do not use overflow:hidden here.
-     *
-     * The sidebar owns its flyouts and they must be allowed to
-     * escape the narrow sidebar rail.
-     */
         overflow: visible;
         box-sizing: border-box;
         z-index: 1;
@@ -74,10 +67,6 @@
         background: #112237;
         border-right: 1px solid rgba(255, 255, 255, 0.06);
         box-sizing: border-box;
-        /*
-     * CRITICAL:
-     * Flyouts must be allowed outside the sidebar.
-     */
         overflow: visible;
         z-index: 50000;
         transition: width 0.2s cubic-bezier(.4, 0, .2, 1), min-width 0.2s cubic-bezier(.4, 0, .2, 1), max-width 0.2s cubic-bezier(.4, 0, .2, 1), flex-basis 0.2s cubic-bezier(.4, 0, .2, 1);
@@ -112,10 +101,6 @@
         display: flex;
         flex-direction: column;
         background: #f1f5f9;
-        /*
-     * Page itself may scroll.
-     * It must not establish a clipping boundary for sidebar flyouts.
-     */
         overflow: visible;
         z-index: 1;
     }
@@ -134,9 +119,6 @@
         height: 100%;
         padding: 20px;
         box-sizing: border-box;
-        /*
-     * Keep normal page scrolling here.
-     */
         overflow-y: auto;
         overflow-x: hidden;
         z-index: 1;
@@ -144,7 +126,7 @@
 
 
     /* =========================================================================
-   TASK PANE
+   TASK PANE (UNIFIED STABILIZATION)
    ========================================================================= */
 
     .app-container:has(.taskpane-layout-root) {
@@ -156,15 +138,15 @@
 
         .app-container:has(.taskpane-layout-root) .global-header,
         .app-container:has(.taskpane-layout-root) .layout-guard-header {
-            height: 44px;
-            min-height: 44px;
-            flex-basis: 44px;
+            height: 52px; /* ✅ FIXED FROM 44PX TO PREVENT TOPBAR CLIPPING ABUSE ON DUAL PATH LAUNCHES */
+            min-height: 52px;
+            flex-basis: 52px;
             z-index: 10000;
         }
 
 
         .app-container:has(.taskpane-layout-root) .main-wrapper {
-            height: calc(100vh - 44px);
+            height: calc(100vh - 52px); /* ✅ ALIGNED SPACE PROPORTION VECTOR GRID SETUP */
             min-height: 0;
             overflow: visible;
         }
@@ -206,9 +188,6 @@
             padding: 8px;
             min-height: 0;
             height: 100%;
-            /*
-     * The page content itself scrolls.
-     */
             overflow-y: auto;
             overflow-x: hidden;
             z-index: 1;
@@ -243,6 +222,7 @@
     background: linear-gradient( 180deg, #15345c 0%, #102846 100% );
     color: #ffffff;
     font-family: Inter, "Segoe UI", sans-serif;
+    box-sizing: border-box;
 }
 
 

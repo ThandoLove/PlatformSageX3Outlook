@@ -12,74 +12,93 @@
     <link href="css/workspace.css" rel="stylesheet" />
     <link href="css/components.css" rel="stylesheet" />
 
-    <!-- Ensure the router sees the desired route before Blazor starts -->
-    <script>
-        (function() {
-            try {
-                // Set the path the Blazor Router should start at (welcome/login page)
-                window.history.replaceState({}, '', '/welcome');
-            } catch (e) {
-                // ignore
-            }
-        })();
-    </script>
-
-
     <!-- Office.js (required for Outlook add-in mailbox context) -->
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Capture initial mailbox item and expose to Blazor via window['initialOfficeItem']
-        (function () {
-            function setInitialItem(item) {
-                try {
-                    // Normalize a few useful fields
-                    window['initialOfficeItem'] = {
-                        subject: item.subject || '',
-                        from: (item.from && item.from.emailAddress && item.from.emailAddress.address) || '',
-                        body: ''
-                    };
 
-                    // Get body asynchronously for message read items
-                    if (item.getBodyAsync) {
-                        item.getBodyAsync("text", function (result) {
-                            try {
-                                if (result && result.status === window['Office'].AsyncResultStatus.Succeeded) {
-                                    window['initialOfficeItem'].body = result.value || '';
-                                }
-                            } catch (e) {
-                                // ignore
-                            }
-                        });
-                    }
-                } catch (e) {
-                    window['initialOfficeItem'] = window['initialOfficeItem'] || {};
-                }
-            }
-
-            if (window['Office'] && window['Office'].onReady) {
-                window['Office'].onReady().then(function () {
-                    try {
-                        var item = window['Office'].context.mailbox.item;
-                        setInitialItem(item);
-                    } catch (e) {
-                        // ignore
-                    }
-                });
-            } else {
-                // Fallback; set empty object so Blazor doesn't block
-                window['initialOfficeItem'] = {};
-            }
-        })();
-    </script>
+    <!-- Loader and diagnostics moved to external file to avoid inline script type-check warnings -->
+    <script src="js/dashboard-loader.js"></script>
 </head>
 <body>
     <div id="app">Loading...</div>
 
-    <!-- Blazor interactive script (server/interactive components) -->
-    <script src="_framework/blazor.web.js"></script>
-    <script src="js/app.js"></script>
+    <!-- Blazor interactive script (try WebAssembly first, fallback to server script) -->
+    <script>
+        // @ts-nocheck
+        (function () {
+            try {
+                function loadScript(src, onload, onerror) {
+                    var s = document.createElement('script');
+                    s.src = src;
+                    s.defer = true;
+                    if (onload) s.onload = onload;
+                    if (onerror) s.onerror = onerror;
+                    document.head.appendChild(s);
+                    return s;
+                }
+
+                // Try to load Blazor WebAssembly runtime first (blazor.web.js). If it fails, load blazor.server.js
+                loadScript('_framework/blazor.web.js', function () {
+                    console.log('Loaded blazor.web.js');
+                    // then load app.js which may start the Blazor boot
+                    loadScript('js/app.js', function () { console.log('Loaded js/app.js'); }, function () { console.warn('Failed to load js/app.js'); });
+                }, function () {
+                    console.warn('blazor.web.js failed to load; attempting blazor.server.js');
+                    loadScript('_framework/blazor.server.js', function () {
+                        console.log('Loaded blazor.server.js');
+                        loadScript('js/app.js', function () { console.log('Loaded js/app.js'); }, function () { console.warn('Failed to load js/app.js'); });
+                    }, function () {
+                        console.error('Failed to load both blazor.web.js and blazor.server.js');
+                    });
+                });
+            } catch (e) { console.warn('runtime loader failed', e); }
+        })();
+    </script>
+    <script>
+        // @ts-nocheck
+        // Diagnostic helper: if Blazor/runtime doesn't initialize (common in Outlook WebView due to SignalR restrictions),
+        // replace the loading placeholder with an actionable message and log environment details to console.
+        (function () {
+            try {
+                console.log('dashboard.html: checking Blazor and Office context');
+
+                function showFallback(msg) {
+                    try {
+                        var app = document.getElementById('app');
+                        if (app) {
+                            app.innerHTML = '<div style="padding:16px;color:#111;font-family:Segoe UI, Arial, sans-serif;line-height:1.4;">'
+                                + '<h3>Operational Workspace (fallback)</h3>'
+                                + '<p>' + msg + '</p>'
+                                + '<p><small>Tip: open the app URL in your browser to complete the sign-in and debugging steps.</small></p>'
+                                + '<p><a href="' + window.location.href + '" target="_blank">Open in browser</a></p>'
+                                + '</div>';
+                        }
+                    } catch (e) { console.warn(e); }
+                }
+
+                // If Office context is present, report it
+                try { console.log('Office present:', !!(window.Office && Office.context)); } catch (e) { console.warn(e); }
+
+                // Wait for Blazor runtime to register a global; if not present after 2500ms show fallback
+                var waited = 0;
+                var interval = setInterval(function () {
+                    waited += 250;
+                    var blazorPresent = !!(window.Blazor || (window.DotNet && typeof window.DotNet.invokeMethodAsync === 'function'));
+                    if (blazorPresent) {
+                        console.log('Blazor runtime detected in dashboard.html');
+                        clearInterval(interval);
+                        return;
+                    }
+                    if (waited >= 2500) {
+                        clearInterval(interval);
+                        console.warn('Blazor runtime not detected - showing fallback.');
+                        showFallback('The add-in runtime did not initialize inside Outlook. This commonly happens when the embedded WebView blocks SignalR or WebSocket connections required by Blazor Server.');
+                    }
+                }, 250);
+            } catch (e) { console.warn('dashboard diagnostic failed', e); }
+        })();
+    </script>
 </body>
 </html>
